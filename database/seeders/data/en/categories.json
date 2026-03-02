@@ -1,0 +1,319 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.01.en",
+    "locale": "en",
+    "description": "English category data - Hierarchical structure",
+    "generated_at": "2026-01-25 20:00:00",
+    "data": [
+        {
+            "key": "demo.category.fruits",
+            "name": "Fruits",
+            "slug": "fruits",
+            "parent_key": null,
+            "sort_order": 0,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.berries",
+            "name": "Berries",
+            "slug": "berries",
+            "parent_key": "demo.category.fruits",
+            "sort_order": 1,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.hard-fruits",
+            "name": "Hard Fruits",
+            "slug": "hard-fruits",
+            "parent_key": "demo.category.fruits",
+            "sort_order": 2,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tropical",
+            "name": "Tropical",
+            "slug": "tropical",
+            "parent_key": "demo.category.fruits",
+            "sort_order": 3,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.citrus",
+            "name": "Citrus",
+            "slug": "citrus",
+            "parent_key": "demo.category.fruits",
+            "sort_order": 4,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.stone-fruits",
+            "name": "Stone Fruits",
+            "slug": "stone-fruits",
+            "parent_key": "demo.category.fruits",
+            "sort_order": 5,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.vegetables",
+            "name": "Vegetables",
+            "slug": "vegetables",
+            "parent_key": null,
+            "sort_order": 10,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.leafy-greens",
+            "name": "Leafy Greens",
+            "slug": "leafy-greens",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 11,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.root-vegetables",
+            "name": "Root Vegetables",
+            "slug": "root-vegetables",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 12,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.peppers",
+            "name": "Peppers",
+            "slug": "peppers",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 13,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tomatoes",
+            "name": "Tomatoes",
+            "slug": "tomatoes",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 14,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.legumes",
+            "name": "Legumes",
+            "slug": "legumes",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 15,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.onions-garlic",
+            "name": "Onions & Garlic",
+            "slug": "onions-garlic",
+            "parent_key": "demo.category.vegetables",
+            "sort_order": 16,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.meat",
+            "name": "Meat",
+            "slug": "meat",
+            "parent_key": null,
+            "sort_order": 20,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.beef",
+            "name": "Beef",
+            "slug": "beef",
+            "parent_key": "demo.category.meat",
+            "sort_order": 21,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.poultry",
+            "name": "Poultry",
+            "slug": "poultry",
+            "parent_key": "demo.category.meat",
+            "sort_order": 22,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.lamb",
+            "name": "Lamb",
+            "slug": "lamb",
+            "parent_key": "demo.category.meat",
+            "sort_order": 23,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.seafood",
+            "name": "Seafood",
+            "slug": "seafood",
+            "parent_key": null,
+            "sort_order": 30,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.fish",
+            "name": "Fish",
+            "slug": "fish",
+            "parent_key": "demo.category.seafood",
+            "sort_order": 31,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.shellfish",
+            "name": "Shellfish",
+            "slug": "shellfish",
+            "parent_key": "demo.category.seafood",
+            "sort_order": 32,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.dairy",
+            "name": "Dairy",
+            "slug": "dairy",
+            "parent_key": null,
+            "sort_order": 40,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.milk",
+            "name": "Milk",
+            "slug": "milk",
+            "parent_key": "demo.category.dairy",
+            "sort_order": 41,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cheese",
+            "name": "Cheese",
+            "slug": "cheese",
+            "parent_key": "demo.category.dairy",
+            "sort_order": 42,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yogurt",
+            "name": "Yogurt",
+            "slug": "yogurt",
+            "parent_key": "demo.category.dairy",
+            "sort_order": 43,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.bakery",
+            "name": "Bakery",
+            "slug": "bakery",
+            "parent_key": null,
+            "sort_order": 50,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.bread",
+            "name": "Bread",
+            "slug": "bread",
+            "parent_key": "demo.category.bakery",
+            "sort_order": 51,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pastry",
+            "name": "Pastry",
+            "slug": "pastry",
+            "parent_key": "demo.category.bakery",
+            "sort_order": 52,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.beverages",
+            "name": "Beverages",
+            "slug": "beverages",
+            "parent_key": null,
+            "sort_order": 60,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.water",
+            "name": "Water",
+            "slug": "water",
+            "parent_key": "demo.category.beverages",
+            "sort_order": 61,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.juice",
+            "name": "Juice",
+            "slug": "juice",
+            "parent_key": "demo.category.beverages",
+            "sort_order": 62,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.soft-drinks",
+            "name": "Soft Drinks",
+            "slug": "soft-drinks",
+            "parent_key": "demo.category.beverages",
+            "sort_order": 63,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        }
+    ]
+}

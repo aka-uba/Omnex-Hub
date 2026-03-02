@@ -1,0 +1,150 @@
+{
+    "title": "Media Library",
+    "subtitle": {
+        "default": "Manage image and video files",
+        "directory": "Directory",
+        "notSelected": "Not Selected"
+    },
+    "breadcrumb": {
+        "panel": "Panel",
+        "media": "Media Library"
+    },
+    "toolbar": {
+        "upload": "Upload",
+        "browse": "Browse Directory",
+        "library": "Library",
+        "browseMode": "Switch to directory explorer mode",
+        "search": "Search files...",
+        "parentFolder": "Parent Folder",
+        "gridView": "Grid View",
+        "listView": "List View",
+        "scanSamples": "Scan Public Library"
+    },
+    "filter": {
+        "all": "All Files",
+        "images": "Images",
+        "videos": "Videos",
+        "documents": "Documents"
+    },
+    "filters": {
+        "advancedFilters": "Advanced Filters",
+        "apply": "Apply",
+        "applied": "Filters applied",
+        "searchPlaceholder": "Search file name...",
+        "sizeRange": "File Size",
+        "minSize": "Min (KB)",
+        "maxSize": "Max (KB)"
+    },
+    "type": {
+        "image": "Image",
+        "video": "Video",
+        "document": "Document",
+        "folder": "Folder"
+    },
+    "bulk": {
+        "selected": "files selected",
+        "delete": "Delete",
+        "import": "Import",
+        "clear": "Clear Selection"
+    },
+    "actions": {
+        "preview": "Preview",
+        "edit": "Edit",
+        "delete": "Delete",
+        "import": "Import",
+        "download": "Download"
+    },
+    "table": {
+        "name": "File Name",
+        "type": "Type",
+        "size": "Size",
+        "date": "Date"
+    },
+    "upload": {
+        "uploading": "Uploading..."
+    },
+    "settings": {
+        "title": "Library Settings",
+        "fields": {
+            "defaultPath": "Default Directory Path",
+            "maxFileSize": "Maximum File Size (MB)",
+            "allowedTypes": "Allowed File Types"
+        },
+        "hints": {
+            "defaultPath": "Directory explorer starts from this path"
+        },
+        "scan": {
+            "title": "Scan Directory",
+            "description": "Import files to database",
+            "button": "Scan"
+        },
+        "fileTypes": {
+            "images": "Images",
+            "videos": "Videos",
+            "documents": "Documents"
+        }
+    },
+    "preview": {
+        "title": "File Preview",
+        "fields": {
+            "fileName": "File Name",
+            "size": "Size",
+            "type": "Type",
+            "date": "Date",
+            "path": "File Path"
+        },
+        "actions": {
+            "import": "Import to Library",
+            "download": "Download",
+            "delete": "Delete"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Delete File",
+            "confirm": "Are you sure you want to delete this file?"
+        },
+        "bulk": {
+            "title": "Delete Files",
+            "confirm": "Are you sure you want to delete {count} files?"
+        }
+    },
+    "empty": {
+        "title": "No files found",
+        "uploadHint": "Click Upload button to upload files",
+        "browseHint": "Open a folder to view directory contents"
+    },
+    "modal": {
+        "close": "Close",
+        "cancel": "Cancel",
+        "delete": "Delete"
+    },
+    "toast": {
+        "uploaded": "File uploaded",
+        "uploadFailed": "Failed to upload files",
+        "deleted": "File deleted",
+        "imported": "File imported to library",
+        "importFailed": "Failed to add file",
+        "scanned": "Directory scan completed",
+        "samplesScanned": "{imported} files imported, {skipped} files already exist (total {total} files found)",
+        "copied": "Copied",
+        "settingsSaved": "Settings saved",
+        "pathRequired": "Enter directory path",
+        "bulkImported": "{count} files imported"
+    },
+    "messages": {
+        "enterPath": "Please enter directory path",
+        "scanFailed": "Directory scan failed",
+        "importFailed": "Import failed",
+        "deleteFailed": "Delete operation failed",
+        "loadFailed": "Failed to load files",
+        "setDirectoryPath": "Please set directory path in settings first",
+        "uploadFailed": "failed to upload"
+    },
+    "pagination": {
+        "items": "items",
+        "page": "Page",
+        "previous": "Previous",
+        "next": "Next"
+    }
+}

@@ -1,0 +1,325 @@
+{
+    "title": "Panel",
+    "subtitle": "Genel bakış",
+    "breadcrumb": {
+        "panel": "Panel",
+        "analytics": "Analitik & Raporlar"
+    },
+    "welcome": "Hoş geldiniz, {name}",
+    "welcomeDefault": "Kullanıcı",
+    "header": {
+        "systemAnalytics": "Sistem Analitiği",
+        "downloadReport": "Rapor İndir",
+        "refresh": "Yenile"
+    },
+    "stats": {
+        "totalProducts": "Toplam Ürün",
+        "updatedIn24h": "Son 24 saat içinde güncellendi",
+        "inLast30Days": "Son 30 gün içinde",
+        "inThisPeriod": "Bu dönem içinde",
+        "activeDevices": "Aktif Cihaz",
+        "online": "Çevrimiçi",
+        "offline": "Çevrimdışı",
+        "labelUpdates": "Etiket Güncellemesi",
+        "licenseStatus": "Lisans Durumu",
+        "critical": "Kritik",
+        "licensesExpiring": "{count} Lisans Süresi Doluyor",
+        "allLicensesActive": "Tüm Lisanslar Aktif",
+        "storage": "Depolama",
+        "unlimited": "Sınırsız",
+        "unlimitedStorage": "Sınırsız Depolama",
+        "used": "Kullanılıyor",
+        "remaining": "Kalan",
+        "errorRate": "Hata Oranı",
+        "belowIndustryAvg": "Endüstri ortalamasının altında"
+    },
+    "gateways": {
+        "noDevices": "Henüz kayıtlı cihaz bulunmuyor",
+        "addDevice": "Cihaz Ekle",
+        "onlineDevices": "Çevrimiçi Cihazlar",
+        "deviceActive": "{count} cihaz aktif",
+        "offlineDevices": "Çevrimdışı Cihazlar",
+        "deviceOffline": "{count} cihaz çevrimdışı",
+        "waitingConnection": "Bağlantı bekleniyor",
+        "allOnline": "Tümü çevrimiçi",
+        "totalDevices": "Toplam Cihaz",
+        "registeredDevices": "{count} kayıtlı cihaz",
+        "manage": "Yönet",
+        "deviceGroups": "Cihaz Grupları",
+        "devices": "{count} cihaz"
+    },
+    "widgets": {
+        "products": {
+            "title": "Toplam Ürün",
+            "subtitle": "Kayıtlı ürün sayısı"
+        },
+        "devices": {
+            "title": "Cihazlar",
+            "online": "Çevrimiçi",
+            "offline": "Çevrimdışı",
+            "pending": "Bekleyen"
+        },
+        "templates": {
+            "title": "Şablonlar",
+            "subtitle": "Aktif şablon sayısı"
+        },
+        "users": {
+            "title": "Kullanıcılar",
+            "subtitle": "Aktif kullanıcı sayısı"
+        },
+        "queue": {
+            "title": "Kuyruk",
+            "pending": "Bekleyen"
+        },
+        "sync": {
+            "title": "Senkronizasyon",
+            "today": "Bugün",
+            "success": "Başarılı",
+            "pending": "Bekleyen",
+            "failed": "Başarısız"
+        }
+    },
+    "recentActivity": {
+        "title": "Son Aktiviteler",
+        "empty": "Henüz aktivite kaydı bulunmuyor",
+        "emptyHint": "Sistem işlemleri burada listelenecek",
+        "viewAll": "Tümünü Gör",
+        "exportAll": "TÜM KAYITLARI DIŞA AKTAR"
+    },
+    "quickActions": {
+        "title": "Hızlı İşlemler",
+        "addProduct": "Ürün Ekle",
+        "addDevice": "Cihaz Ekle",
+        "createTemplate": "Şablon Oluştur",
+        "importProducts": "Ürün İçe Aktar"
+    },
+    "charts": {
+        "productsByCategory": "Kategoriye Göre Ürünler",
+        "deviceStatus": "Cihaz Durumu",
+        "syncActivity": "Senkronizasyon Aktivitesi",
+        "labelSync": "Etiket Senkronizasyonu",
+        "labelUpdates": "Etiket Güncellemeleri",
+        "loading": "Grafik verisi yükleniyor...",
+        "loadingDays": "Son {days} günlük veri yükleniyor...",
+        "noData": "Veri bulunamadı",
+        "noChartData": "Grafik verisi bulunamadı",
+        "loadError": "Grafik verisi yüklenemedi",
+        "onlineDevices": "Çevrimiçi",
+        "offlineDevices": "Çevrimdışı",
+        "barTooltip": "{date}: {online} çevrimiçi, {offline} çevrimdışı",
+        "totalUpdates": "Toplam Güncelleme",
+        "dailyAverage": "Günlük Ortalama",
+        "updates": "güncelleme",
+        "noDevices": "Henüz kayıtlı cihaz bulunmuyor"
+    },
+    "period": {
+        "last7Days": "Son 7 Gün",
+        "last30Days": "Son 30 Gün",
+        "last90Days": "Son 90 Gün",
+        "today": "Bugün",
+        "yesterday": "Dün",
+        "daysAgo": "{count} gün önce"
+    },
+    "activity": {
+        "titles": {
+            "login": "Kullanıcı Girişi",
+            "logout": "Kullanıcı Çıkışı",
+            "create": "Yeni Kayıt",
+            "update": "Güncelleme",
+            "delete": "Silme İşlemi",
+            "sync": "Senkronizasyon",
+            "import": "İçe Aktarma",
+            "export": "Dışa Aktarma",
+            "send": "Gönderim",
+            "error": "Hata",
+            "system": "Sistem İşlemi",
+            "bulkPriceUpdate": "Toplu Fiyat Güncellemesi",
+            "deviceSync": "Cihaz Senkronizasyonu",
+            "productImport": "Ürün İçe Aktarma",
+            "connectionWarning": "Bağlantı Uyarısı"
+        },
+        "resources": {
+            "products": "ürün",
+            "devices": "cihaz",
+            "templates": "şablon",
+            "users": "kullanıcı",
+            "companies": "firma",
+            "categories": "kategori",
+            "media": "medya",
+            "playlists": "playlist",
+            "schedules": "zamanlama"
+        },
+        "descriptions": {
+            "login": "{user} sisteme giriş yaptı",
+            "logout": "{user} sistemden çıkış yaptı",
+            "create": "{user} yeni {resource} oluşturdu",
+            "update": "{user} {resource} güncelledi",
+            "delete": "{user} {resource} sildi",
+            "import": "{user} {resource} içe aktardı",
+            "send": "{user} cihaza içerik gönderdi",
+            "export": "{user} veri dışa aktardı",
+            "sync": "{user} senkronizasyon yaptı"
+        },
+        "messages": {
+            "productCreated": "{count} yeni ürün eklendi",
+            "productUpdated": "{count} ürün güncellendi",
+            "productDeleted": "{count} ürün silindi",
+            "deviceCreated": "Yeni cihaz eklendi",
+            "deviceUpdated": "Cihaz güncellendi",
+            "syncCompleted": "Senkronizasyon tamamlandı",
+            "importCompleted": "{count} kayıt içe aktarıldı",
+            "bulkPriceUpdate": "{count} ürün için fiyat güncellemesi yapıldı.",
+            "allDevicesSynced": "Tüm ESL cihazları başarıyla senkronize edildi.",
+            "productsImportedFromERP": "ERP sisteminden {count} yeni ürün aktarıldı.",
+            "gatewayConnectionIssue": "{gateway} bağlantısı geçici olarak kesildi ve yeniden kuruldu."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Cihaz Durumu",
+            "online": "Çevrimiçi",
+            "offline": "Çevrimdışı",
+            "offlineDevices": "Çevrimdışı Cihazlar",
+            "noOffline": "Tüm cihazlar çevrimiçi",
+            "lastSeen": "Son görülme",
+            "viewAll": "Tümünü Gör",
+            "noDevices": "Henüz cihaz yok"
+        },
+        "recentActivities": {
+            "title": "Son Aktiviteler",
+            "viewAll": "Tümünü Gör",
+            "empty": "Henüz aktivite yok"
+        },
+        "renderQueue": {
+            "title": "Render Kuyruğu",
+            "successRate": "Başarı Oranı",
+            "avgTime": "Ort. Süre",
+            "pending": "Bekleyen",
+            "priorityDistribution": "Öncelik Dağılımı",
+            "urgent": "Acil",
+            "high": "Yüksek",
+            "normal": "Normal",
+            "low": "Düşük",
+            "detail": "Detay",
+            "noData": "Kuyruk verisi yok",
+            "seconds": "sn"
+        },
+        "products": {
+            "title": "Ürünler",
+            "total": "Toplam Ürün",
+            "deviceAssigned": "Cihaza Atanmış",
+            "templateAssigned": "Şablona Atanmış",
+            "categories": "Kategoriler",
+            "lastUpdated": "Son Güncellenen",
+            "viewAll": "Tümünü Gör"
+        },
+        "templates": {
+            "title": "Şablonlar",
+            "total": "Toplam Şablon",
+            "system": "Sistem Şablonları",
+            "byType": "Tipe Göre",
+            "label": "Etiket",
+            "signage": "Signage",
+            "tv": "TV",
+            "poster": "Poster",
+            "manage": "Yönet"
+        },
+        "media": {
+            "title": "Medya Kütüphanesi",
+            "totalFiles": "Toplam Dosya",
+            "shared": "Paylaşılan",
+            "companyOnly": "Firmaya Özel",
+            "storageUsage": "Depolama Kullanımı",
+            "browse": "Göz At"
+        },
+        "detailedDevice": {
+            "title": "Detaylı Cihaz Bilgi",
+            "byType": "Türe Göre",
+            "byBranch": "Şubeye Göre",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android TV",
+            "tablet": "Tablet",
+            "webDisplay": "Web Ekran",
+            "pwaPlayer": "PWA Player",
+            "manage": "Yönet",
+            "noBranch": "Şube bilgisi yok"
+        },
+        "signage": {
+            "title": "Dijital Tabela",
+            "connectedDevices": "Bağlı Cihazlar",
+            "totalPlaylists": "Toplam Playlist",
+            "active": "Aktif",
+            "inactive": "Pasif",
+            "playlistItems": "Playlist İçerikleri",
+            "assignedDevices": "Atanmış Cihazlar",
+            "manage": "Yönet",
+            "noData": "Signage verisi yok"
+        },
+        "companyLicense": {
+            "title": "Firma & Lisans",
+            "company": "Firma",
+            "license": "Lisans",
+            "branches": "Şubeler",
+            "users": "Kullanıcılar",
+            "activeSessions": "aktif oturum",
+            "eslLimit": "ESL Limiti",
+            "tvLimit": "TV Limiti",
+            "deviceLimit": "Cihaz Limiti",
+            "storageLimit": "Depolama",
+            "daysRemaining": "{count} gün kaldı",
+            "expired": "Süresi Dolmuş",
+            "unlimited": "Süresiz",
+            "noLimit": "Limitsiz",
+            "noLicense": "Lisans bilgisi yok",
+            "noCompany": "Firma bilgisi yok"
+        },
+        "integrations": {
+            "title": "Entegrasyonlar",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "HAL Künyesi",
+            "hanshow": "Hanshow ESL",
+            "payment": "Ödeme Sistemi",
+            "active": "Aktif",
+            "configured": "Yapılandırılmış",
+            "notConfigured": "Yapılandırılmamış",
+            "disabled": "Devre Dışı",
+            "lastSync": "Son sync"
+        }
+    },
+    "toast": {
+        "refreshed": "Dashboard güncellendi",
+        "refreshError": "Dashboard güncellenirken hata oluştu",
+        "reportPreparing": "Rapor hazırlanıyor...",
+        "reportDownloaded": "Rapor başarıyla indirildi",
+        "reportError": "Rapor indirilemedi",
+        "downloading": "İndiriliyor...",
+        "activityPreparing": "Aktivite kayıtları hazırlanıyor...",
+        "activityExported": "{count} aktivite kaydı dışa aktarıldı",
+        "activityExportError": "Aktivite kayıtları dışa aktarılamadı",
+        "noActivityToExport": "Dışa aktarılacak aktivite kaydı bulunamadı",
+        "loadError": "Veriler yüklenirken bir hata oluştu"
+    },
+    "export": {
+        "headers": {
+            "date": "Tarih",
+            "user": "Kullanıcı",
+            "action": "İşlem",
+            "resource": "Kaynak",
+            "details": "Detay",
+            "ipAddress": "IP Adresi",
+            "metric": "Metrik",
+            "value": "Değer",
+            "totalProduct": "Toplam Ürün",
+            "totalDevice": "Toplam Cihaz",
+            "onlineDevice": "Çevrimiçi Cihaz",
+            "labelUpdate": "Etiket Güncellemesi",
+            "todayUpdates": "Bugünün Güncellemeleri",
+            "templateCount": "Şablon Sayısı",
+            "categoryCount": "Kategori Sayısı",
+            "errorRate": "Hata Oranı"
+        },
+        "system": "Sistem"
+    }
+}

@@ -1,0 +1,1202 @@
+{
+    "title": "Instellingen",
+    "subtitle": "Systeeminstellingen configureren",
+    "breadcrumb": {
+        "panel": "Paneel",
+        "settings": "Instellingen",
+        "general": "Algemene instellingen",
+        "users": "Gebruikersinstellingen",
+        "integrations": "Integraties",
+        "labels": "Labelformaten"
+    },
+    "nav": {
+        "general": "Algemeen",
+        "users": "Gebruikers",
+        "integrations": "Integraties"
+    },
+    "profile": {
+        "title": "Profiel",
+        "subtitle": "Beheer uw persoonlijke gegevens en accountinstellingen",
+        "loadFailed": "Kan gebruikersinformatie niet laden",
+        "personalInfo": "Persoonlijke informatie",
+        "changePassword": "Wachtwoord wijzigen",
+        "changePasswordBtn": "Wachtwoord wijzigen",
+        "accountInfo": "Accountinformatie",
+        "company": "Bedrijf",
+        "role": "Rol",
+        "createdAt": "Account aangemaakt",
+        "lastLogin": "Laatste aanmelding",
+        "form": {
+            "firstName": "Voornaam",
+            "lastName": "Achternaam",
+            "email": "E-mail",
+            "phone": "Telefoon",
+            "currentPassword": "Huidig ​​wachtwoord",
+            "newPassword": "Nieuw wachtwoord",
+            "confirmPassword": "Nieuw wachtwoord (bevestigen)"
+        },
+        "avatar": {
+            "title": "Profielfoto",
+            "selectFile": "Selecteer Bestand",
+            "remove": "Foto verwijderen"
+        },
+        "toast": {
+            "updated": "Profiel bijgewerkt",
+            "avatarUpdated": "Profielfoto bijgewerkt",
+            "avatarRemoved": "Profielfoto verwijderd",
+            "passwordChanged": "Wachtwoord succesvol gewijzigd"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "Super beheerder",
+        "Admin": "Beheerder",
+        "Manager": "Manager",
+        "Editor": "Editor",
+        "Viewer": "Kijker"
+    },
+    "users": {
+        "title": "Gebruikers",
+        "subtitle": "Beheer en bewerk gebruikers",
+        "addUser": "Gebruiker toevoegen",
+        "editUser": "Gebruiker bewerken",
+        "deleteUser": "Gebruiker verwijderen",
+        "noUsers": "Nog geen gebruikers gevonden",
+        "table": {
+            "user": "Gebruiker",
+            "email": "E-mail",
+            "role": "Rol",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Actief",
+            "inactive": "Inactief"
+        },
+        "fields": {
+            "firstName": "Voornaam",
+            "lastName": "Achternaam",
+            "email": "E-mail",
+            "password": "Wachtwoord",
+            "role": "Rol"
+        },
+        "placeholders": {
+            "selectRole": "Selecteer rol"
+        },
+        "roles": {
+            "admin": "Beheerder",
+            "editor": "Editor",
+            "viewer": "Kijker"
+        },
+        "deleteConfirm": "Weet u zeker dat u deze gebruiker wilt verwijderen?",
+        "toast": {
+            "created": "Gebruiker gemaakt",
+            "updated": "Gebruiker bijgewerkt",
+            "deleted": "Gebruiker verwijderd"
+        }
+    },
+    "saveChanges": "Wijzigingen opslaan",
+    "tabs": {
+        "general": "Algemeen",
+        "branding": "Branding",
+        "email": "E-mail/SMTP",
+        "barcode": "Streepjescode"
+    },
+    "general": {
+        "title": "Algemene instellingen",
+        "subtitle": "Systeembrede configuratie-instellingen",
+        "sections": {
+            "company": "Bedrijfsinformatie",
+            "system": "Systeeminstellingen",
+            "locale": "Regionale instellingen",
+            "appearance": "Verschijning"
+        },
+        "fields": {
+            "companyName": "Bedrijfsnaam",
+            "companyPhone": "Telefoon",
+            "companyAddress": "Adres",
+            "timezone": "Tijdzone",
+            "language": "Taal",
+            "currency": "Munteenheid",
+            "dateFormat": "Datumnotatie",
+            "theme": "Thema"
+        },
+        "placeholders": {
+            "companyName": "Bedrijfsnaam",
+            "companyPhone": "+90 xxx xxx xx xx",
+            "companyAddress": "Bedrijfsadres"
+        },
+        "languages": {
+            "tr": "Turks",
+            "en": "Engels"
+        },
+        "currencies": {
+            "TRY": "Turkse lira (₺)",
+            "USD": "Amerikaanse dollar ($)",
+            "EUR": "Euro (€)",
+            "GBP": "Brits pond (£)",
+            "RUB": "Russische roebel (₽)",
+            "AZN": "Azerbeidzjaanse manat (₼)"
+        },
+        "themes": {
+            "light": "Licht",
+            "dark": "Donker",
+            "auto": "Auto"
+        }
+    },
+    "branding": {
+        "title": "Systeembrandingmiddelen",
+        "description": "Standaard systeembranding-items worden hier weergegeven. Deze middelen zijn alleen-lezen en kunnen alleen handmatig door de ontwikkelaar worden gewijzigd vanuit de map public/branding. Gebruik de pagina Bedrijfsbeheer voor bedrijfsmiddelen.",
+        "logoLight": "Logo (licht thema)",
+        "logoDark": "Logo (donker thema)",
+        "favicon": "Favicon",
+        "pwaIcon": "PWA-pictogram",
+        "file": "Bestand"
+    },
+    "email": {
+        "smtp": {
+            "title": "SMTP-instellingen",
+            "testButton": "Test-e-mail verzenden",
+            "testing": "Verzenden...",
+            "fields": {
+                "host": "SMTP-server",
+                "port": "Haven",
+                "username": "Gebruikersnaam",
+                "password": "Wachtwoord",
+                "encryption": "Encryptie",
+                "fromName": "Van Naam",
+                "fromEmail": "Van e-mail",
+                "testEmail": "E-mailadres testen"
+            },
+            "placeholders": {
+                "host": "smtp.voorbeeld.com",
+                "port": "587",
+                "username": "gebruiker@voorbeeld.com",
+                "password": "**********",
+                "fromName": "Omnex-weergavehub",
+                "fromEmail": "noreply@voorbeeld.com",
+                "testEmail": "test@voorbeeld.com"
+            },
+            "hints": {
+                "testEmail": "Indien leeg gelaten, wordt het naar het e-mailadres in uw account verzonden"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "SSL",
+                "none": "Geen"
+            }
+        },
+        "templates": {
+            "title": "E-mailsjablonen",
+            "comingSoon": "De functie voor het bewerken van e-mailsjablonen wordt binnenkort toegevoegd",
+            "welcome": {
+                "title": "Welkomstmail",
+                "description": "Verzonden bij nieuwe gebruikersregistraties"
+            },
+            "passwordReset": {
+                "title": "Wachtwoord opnieuw instellen",
+                "description": "Verzonden bij verzoeken om wachtwoord opnieuw in te stellen"
+            },
+            "errorNotification": {
+                "title": "Foutmelding",
+                "description": "Verzonden vanwege systeemfouten"
+            }
+        }
+    },
+    "integrations": {
+        "title": "Integraties",
+        "subtitle": "Configureer externe systeemintegraties",
+        "configure": "Configureer",
+        "tabs": {
+            "esl": "ESL-systemen",
+            "erp": "ERP",
+            "api": "API",
+            "import": "Bestand Import",
+            "payment": "Betalingssysteem",
+            "mqtt": "MQTT Broker"
+        },
+        "import": {
+            "loading": "Laden...",
+            "settingsTitle": "Import Instellingen",
+            "settingsDescription": "Configureer bestandsgebaseerde productimport-instellingen van ERP- en externe systemen.",
+            "enabled": "Bestandsimport ingeschakeld",
+            "autoImport": "Automatische Import",
+            "autoImportHint": "Indien ingeschakeld worden bestanden in de importmap automatisch geïmporteerd op het opgegeven interval.",
+            "checkInterval": "Controle-interval",
+            "minutes": "minuten",
+            "maxFileSize": "Maximale bestandsgrootte",
+            "allowedFormats": "Toegestane formaten",
+            "importOptions": "Import Opties",
+            "updateExisting": "Bestaande producten bijwerken (SKU-overeenkomst)",
+            "createNew": "Nieuwe producten aanmaken",
+            "skipErrors": "Foutieve rijen overslaan, doorgaan met anderen",
+            "triggerRender": "Automatische render na import activeren",
+            "importDirectory": "Import Map",
+            "importDirectoryHint": "ERP-bestanden moeten naar deze map worden gestuurd. Automatische import scant deze map.",
+            "lastAutoImport": "Laatste automatische import",
+            "testImport": "Testen met bestand",
+            "redirectingToImport": "Doorverwijzen naar productimport pagina...",
+            "settingsSaved": "Import instellingen opgeslagen",
+            "settingsSaveError": "Kon import instellingen niet opslaan",
+            "statusActive": "Actief",
+            "statusAutoActive": "Auto Actief",
+            "statusInactive": "Inactief",
+            "apiDocTitle": "ERP Bestand Push API",
+            "apiDocDescription": "ERP-systemen kunnen importbestanden verzenden via het onderstaande API-eindpunt.",
+            "apiEndpoint": "Upload Eindpunt",
+            "apiAuth": "Authenticatie",
+            "apiAuthHint": "Gebruik de API-sleutel van het API-tabblad.",
+            "apiAuthAlt": "Alternatieve header:",
+            "apiExample": "cURL Voorbeelden",
+            "apiExampleCsv": "CSV-bestand verzenden (Linux/Mac):",
+            "apiExampleJson": "JSON-bestand verzenden (alternatieve header):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "Succesvolle Reactie (200)",
+            "apiResponseErrors": "Foutreacties",
+            "apiErrorDesc": "Beschrijving",
+            "apiError401": "Ongeldige of ontbrekende API-sleutel",
+            "apiError400": "Niet-ondersteund formaat, grootte overschreden of bestand ontbreekt",
+            "apiError403": "Bestandsimport is niet ingeschakeld voor dit bedrijf",
+            "apiErrorDup": "Hetzelfde bestand is al eerder geüpload (hash-overeenkomst)",
+            "apiFormats": "Ondersteunde Formaten",
+            "apiFormatsHint": "Bestanden worden automatisch geparsed met formaatdetectie. Veldtoewijzing wordt automatisch gedaan met SmartFieldMapper.",
+            "apiFieldMapping": "Veldtoewijzing",
+            "apiFieldMappingDesc": "Kolomkoppen in uw bestand worden automatisch toegewezen aan productvelden. Veelvoorkomende voorbeelden hieronder:",
+            "apiFieldTarget": "Doelveld",
+            "apiFieldSample": "Herkende Bronkolomnamen",
+            "apiFieldMappingAuto": "SmartFieldMapper herkent automatisch Turkse, Engelse en gangbare ERP-veldnamen. Standaardtoewijzingen kunnen in instellingen worden geconfigureerd.",
+            "historyTitle": "Import Geschiedenis",
+            "historyLoading": "Geschiedenis laden...",
+            "historyEmpty": "Nog geen import geschiedenis gevonden.",
+            "historyFile": "Bestand",
+            "historySource": "Bron",
+            "historyStatus": "Status",
+            "historyTotal": "Totaal",
+            "historyInserted": "Toegevoegd",
+            "historyUpdated": "Bijgewerkt",
+            "historyFailed": "Mislukt",
+            "historyDate": "Datum",
+            "sourceAuto": "Automatisch",
+            "sourceManual": "Handmatig",
+            "pendingFilesTitle": "Bestanden in Importmap",
+            "pendingFilesDesc": "Wachtende bestanden in de bedrijfsimportmap. U kunt een bestand selecteren om handmatige import te starten.",
+            "pendingFilesEmpty": "Geen wachtende bestanden in importmap.",
+            "alreadyImported": "Reeds Geïmporteerd",
+            "importFile": "Importeren",
+            "fileFormat": "Formaat",
+            "fileSize": "Grootte",
+            "fileModified": "Gewijzigd",
+            "fileAction": "Actie",
+            "defaultImportOptions": "Standaard importopties",
+            "defaultImportOptionsHint": "Deze opties worden standaard gebruikt bij het importeren van bestanden. Ze kunnen bij elke import worden gewijzigd.",
+            "importModalTitle": "Bestand importeren",
+            "importModalOptions": "Importopties",
+            "importModalDefaultsHint": "Opties zijn vooraf aangevinkt met de standaardwaarden uit de instellingen. U kunt ze voor deze import wijzigen.",
+            "savedMappingsWillBeUsed": "{count} opgeslagen veldtoewijzingen worden gebruikt",
+            "noSavedMappingsAutoDetect": "Geen opgeslagen toewijzingen, automatische detectie wordt gebruikt",
+            "startImport": "Import starten",
+            "importConfirmTitle": "Importbevestiging",
+            "importConfirmMessage": "Bestand \"{filename}\" wordt geïmporteerd. Wilt u doorgaan?",
+            "importing": "Bezig met importeren...",
+            "importError": "Importbewerking mislukt",
+            "importErrors": "Fouten",
+            "importResultTitle": "Importresultaat",
+            "mappingSource": "Toewijzingsbron",
+            "mappingSaved": "Opgeslagen Toewijzingen",
+            "mappingAuto": "Automatische Detectie",
+            "configureMappings": "Veldtoewijzing",
+            "configureMappingsTitle": "Standaard Veldtoewijzing",
+            "configureMappingsDesc": "Definieer welke productvelden overeenkomen met kolomkoppen in importbestanden. U kunt een voorbeeldbestand uploaden voor automatische detectie.",
+            "configureMappingsHint": "Voer bronkolomnamen in volgens uw bestandskoppen. Lege velden worden automatisch gematcht met SmartFieldMapper.",
+            "mappingSourcePlaceholder": "Bronkolomnaam (bijv. VOORRAAD_CODE)",
+            "uploadSampleFile": "Voorbeeldbestand Uploaden",
+            "autoDetectedMappings": "{count} velden automatisch toegewezen (van {total} kolommen)",
+            "noAutoDetect": "Automatische detectie mislukt. Voer handmatig in.",
+            "sampleFileFailed": "Voorbeeldbestand kon niet worden geanalyseerd",
+            "mappingsSaved": "{count} veldtoewijzingen opgeslagen",
+            "savedMappings": "{count} veldtoewijzingen opgeslagen",
+            "noMapping": "-- Geen toewijzing --",
+            "noPreviewData": "Geen voorbeeldgegevens gevonden",
+            "mappingDragDrop": "Sleep uw voorbeeldbestand hierheen of selecteer",
+            "mappingFileHint": "Uw bestand wordt geanalyseerd en kolomkoppen worden automatisch gedetecteerd.",
+            "mappingGridTitle": "Veldtoewijzing",
+            "mappingPreviewTitle": "Gegevensvoorbeeld",
+            "fields": {
+                "sku": "SKU / Artikelcode",
+                "name": "Productnaam",
+                "barcode": "Barcode",
+                "slug": "Slug",
+                "kunyeNo": "Certificaat Nr.",
+                "category": "Categorie",
+                "subcategory": "Subcategorie",
+                "brand": "Merk",
+                "origin": "Herkomst",
+                "productionType": "Productietype",
+                "description": "Beschrijving",
+                "currentPrice": "Verkoopprijs",
+                "previousPrice": "Vorige prijs",
+                "priceValidUntil": "Prijs geldig tot",
+                "priceUpdatedAt": "Prijs bijgewerkt op",
+                "previousPriceUpdatedAt": "Vorige prijs bijgewerkt",
+                "vatRate": "BTW-tarief",
+                "discountPercent": "Korting %",
+                "campaignText": "Campagnetekst",
+                "unit": "Eenheid",
+                "stock": "Voorraad",
+                "weight": "Gewicht",
+                "shelfLocation": "Schaplocatie",
+                "supplierCode": "Leverancierscode",
+                "validFrom": "Geldig vanaf",
+                "validUntil": "Geldig tot",
+                "status": "Status",
+                "isFeatured": "Uitgelicht",
+                "imageUrl": "Afbeeldings-URL",
+                "images": "Afbeeldingen",
+                "videos": "Video's",
+                "videoUrl": "Video-URL",
+                "storageInfo": "Opslaginformatie",
+                "group": "Groep",
+                "erpId": "ERP-ID"
+            },
+            "status": {
+                "pending": "In afwachting",
+                "processing": "Verwerken",
+                "completed": "Voltooid",
+                "failed": "Mislukt",
+                "skipped": "Overgeslagen"
+            }
+        },
+        "debug": {
+            "tooltip": "API-foutopsporing - Reactie van de voorraadlijst testen",
+            "modalTitle": "TAMSOFT API-foutopsporing - StokListesi",
+            "loading": "Laden...",
+            "title": "TAMSOFT-instellingen",
+            "defaultDepo": "Standaardmagazijn",
+            "lastSync": "Laatste synchronisatie",
+            "neverSynced": "Nooit gesynchroniseerd",
+            "rawApiResponse": "Ruwe API-reactie (cURL)",
+            "responseSize": "Reactiegrootte",
+            "jsonParse": "JSON-parsering",
+            "parseSuccess": "Succes",
+            "parseFailed": "Mislukt",
+            "isArray": "Is Array",
+            "yes": "Ja",
+            "no": "Nee",
+            "elementCount": "Aantal elementen",
+            "numericArray": "Numerieke array",
+            "firstKeys": "Eerste 10 sleutels",
+            "doubleJsonDetected": "Dubbele JSON gedetecteerd!",
+            "rawResponse": "Ruwe reactie (eerste 500 tekens)",
+            "firstItem": "Eerste artikel",
+            "firstItemUnwrapped": "Eerste item (na uitpakken)",
+            "depoCount": "Magazijntelling",
+            "debugError": "Foutopsporing: {error}",
+            "debugRequestFailed": "Foutopsporingsverzoek mislukt",
+            "apiNoResponse": "API reageerde niet"
+        },
+        "depotMapping": {
+            "newBranches": "{count} nieuwe vestigingen aangemaakt",
+            "existingMappings": "{count} bestaande toewijzingen",
+            "mapped": "{count} magazijnen → filialen in kaart gebracht ({details})"
+        },
+        "companyOverride": "Bedrijfsinstelling",
+        "systemDefault": "Systeemstandaard",
+        "hanshow": {
+            "title": "Hanshow ESL",
+            "description": "Integratie van elektronische schaplabels van Hanshow (ESL-Working v2.5.3 API)",
+            "loading": "Laden...",
+            "active": "Actief",
+            "inactive": "Inactief",
+            "connectionStatus": "Verbindingsstatus controleren...",
+            "fields": {
+                "eslworkingUrl": "ESL-werkende API-URL",
+                "userId": "Gebruikers-ID",
+                "callbackUrl": "Terugbel-URL",
+                "defaultPriority": "Standaardprioriteit",
+                "syncInterval": "Synchronisatie-interval (sec)",
+                "ledColor": "LED-kleur",
+                "maxRetryAttempts": "Maximaal aantal nieuwe pogingen",
+                "options": "Opties",
+                "ledFlashOnUpdate": "Flits-LED bij update",
+                "autoRetry": "Automatisch opnieuw proberen",
+                "enabled": "Integratie actief"
+            },
+            "hints": {
+                "eslworkingUrl": "Adres van de Hanshow ESL-Working-service",
+                "callbackUrl": "Asynchrone callback-URL"
+            },
+            "ledColors": {
+                "green": "Groente",
+                "blue": "Blauw",
+                "red": "Rood",
+                "yellow": "Geel",
+                "white": "Wit"
+            },
+            "buttons": {
+                "testConnection": "Verbinding testen",
+                "save": "Redden",
+                "testing": "Testen...",
+                "saving": "Besparing..."
+            },
+            "connection": {
+                "online": "ESL-werkende verbinding actief",
+                "offline": "ESL-werkende verbinding offline",
+                "responseTime": "Reactietijd: {time}ms",
+                "connectedGateways": "Verbonden gateways ({count})",
+                "startCommand": "ESL-Werkstartcommando"
+            },
+            "connectionSuccess": "ESL-werkende verbinding succesvol ({time}ms) - {count} AP's verbonden",
+            "connectionFailed": "ESL-werkende verbinding mislukt: {error}",
+            "testFailed": "Verbindingstest mislukt: {error}",
+            "testConnection": "Verbinding testen",
+            "saveSuccess": "Hanshow-instellingen opgeslagen",
+            "saveFailed": "Kan instellingen niet opslaan: {error}",
+            "toast": {
+                "testSuccess": "ESL-werkende verbinding succesvol ({time}ms) - {count} AP's verbonden",
+                "testFailed": "ESL-werkende verbinding mislukt: {error}",
+                "saved": "Hanshow-instellingen opgeslagen",
+                "saveFailed": "Kan instellingen niet opslaan: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "PavoDisplay",
+            "description": "PavoDisplay Android elektronische prijskaartjeintegratie (HTTP-SERVER)",
+            "active": "Actief",
+            "integrated": "PavoDisplay-integratie is ingebouwd en actief",
+            "deviceManagement": "Ga naar de pagina {link} voor apparaatbeheer.",
+            "devicesLink": "Apparaten"
+        },
+        "hal": {
+            "title": "HAL-registratiesysteem",
+            "description": "Republiek Turkije Ministerie van Handel HAL-registratiesysteem (HKS) registratiequery-integratie",
+            "loading": "Laden...",
+            "active": "Actief",
+            "inactive": "Inactief",
+            "configured": "Geconfigureerd",
+            "notConfigured": "Niet geconfigureerd",
+            "connectionStatus": "Verbindingsstatus controleren...",
+            "connectionConfigured": "HAL-instellingen geconfigureerd",
+            "connectionNotConfigured": "HAL-instellingen niet geconfigureerd",
+            "enterCredentials": "Voer uw HAL-gebruikersgegevens in voor de registratievraag",
+            "credentialsRequired": "HAL-gebruikersgegevens vereist",
+            "responseTime": "Reactietijd",
+            "fields": {
+                "username": "Gebruikersnaam",
+                "password": "Wachtwoord",
+                "servicePassword": "Servicewachtwoord",
+                "tcVergiNo": "TC-ID/belastingnr",
+                "sifatId": "Titel van de kennisgever",
+                "sifat2Id": "Tweede Persoonsfunctie",
+                "enabled": "Integratie actief"
+            },
+            "hints": {
+                "username": "Uw gebruikersnaam geregistreerd in het HKS-systeem",
+                "password": "Uw HKS-gebruikerswachtwoord",
+                "servicePassword": "HKS-webservicewachtwoord",
+                "tcVergiNo": "TC ID of belastingnummer dat u wilt opvragen (optioneel)",
+                "sifatId": "Selecteer uw bedrijfstitel die is geregistreerd in het HAL-systeem",
+                "sifat2Id": "Selecteer de tweede persoonsfunctie (optioneel)",
+                "howToGet": "Als u geen HAL-gebruikersgegevens heeft, kunt u zich registreren via hal.gov.tr ​​of via E-Government."
+            },
+            "sifatOptions": {
+                "select": "Selecteer...",
+                "sanayici": "Fabrikant",
+                "ihracat": "Exporteren",
+                "ithalat": "Importeren",
+                "uretici": "Producent",
+                "komisyoncu": "Commissaris",
+                "tuccarHalIci": "Handelaar (binnen HAL)",
+                "market": "Markt",
+                "manav": "Groenteboer",
+                "depoTasnif": "Magazijn/Sorteren en verpakken",
+                "ureticiOrgutu": "Producentenorganisatie",
+                "pazarci": "Marktverkoper",
+                "otel": "Hotel",
+                "lokanta": "Restaurant",
+                "yurt": "Slaapzaal",
+                "yemekFabrikasi": "Voedselfabriek",
+                "hastane": "Ziekenhuis",
+                "tuccarHalDisi": "Merchant (buiten HAL)"
+            },
+            "buttons": {
+                "testConnection": "Verbinding testen",
+                "save": "Redden",
+                "testing": "Testen...",
+                "saving": "Besparing..."
+            },
+            "connection": {
+                "online": "HKS-verbinding actief",
+                "offline": "HKS-verbinding offline",
+                "responseTime": "Reactietijd: {time}ms"
+            },
+            "toast": {
+                "connectionSuccess": "HKS-verbinding succesvol",
+                "connectionFailed": "HKS-verbinding mislukt",
+                "testSuccess": "HKS-verbinding succesvol",
+                "testFailed": "HKS-verbinding mislukt: {error}",
+                "saved": "HAL-instellingen opgeslagen",
+                "saveFailed": "Kan instellingen niet opslaan",
+                "servicePasswordMissing": "Servicewachtwoord niet ingevoerd - sommige functies zijn mogelijk beperkt"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "HAL-instellingen niet geconfigureerd. Sla de instellingen op.",
+                "MISSING_CREDENTIALS": "Gebruikersnaam of wachtwoord ontbreekt",
+                "SOAP_NOT_AVAILABLE": "PHP SOAP-extensie niet geïnstalleerd. Neem contact op met uw serverbeheerder.",
+                "SOAP_CONNECTION_FAILED": "Kan geen verbinding maken met de HAL-server. De server is mogelijk niet toegankelijk of er is mogelijk een netwerkprobleem.",
+                "AUTH_ERROR": "HAL-authenticatiefout: {detail}",
+                "UNEXPECTED_RESPONSE": "Onverwacht antwoord ontvangen van de HAL-server",
+                "SOAP_FAULT": "SOAP-protocolfout: {detail}",
+                "CONNECTION_ERROR": "Verbindingsfout: {detail}",
+                "HAL_ERROR_1": "Operatie mislukt. De HAL-service kon het verzoek niet verwerken.",
+                "HAL_ERROR_11": "Gebruikersreferenties onjuist. Gebruikersnaam of wachtwoord zijn verkeerd.",
+                "HAL_ERROR_13": "Authenticatie mislukt. Gebruikersnaam of wachtwoord zijn verkeerd.",
+                "HAL_ERROR_UNEXPECTED": "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.",
+                "HAL_ERROR_GENERIC": "HAL-service heeft een fout geretourneerd (code: {code})"
+            },
+            "infoBox": {
+                "title": "Over het HAL Registratiesysteem",
+                "description": "HAL Registratiesysteem is het officiële systeem dat groenten en fruit volgt van productie tot consumptie. Met de registratiezoekfunctie kunt u de herkomst van het product, de producenteninformatie en de transactiegeschiedenis bekijken.",
+                "apiInfo": "Deze integratie maakt gebruik van HAL SOAP Web Services (BildirimService).",
+                "registerLink": "Bezoek hal.gov.tr ​​om u te registreren voor HKS."
+            }
+        },
+        "tamsoft": {
+            "title": "TAMSOFT ERP",
+            "description": "TAMSOFT ERP-systeemintegratie. Synchroniseer product-, voorraad- en prijsinformatie.",
+            "loading": "Laden...",
+            "active": "Actief",
+            "inactive": "Inactief",
+            "connectionStatus": "Verbindingsstatus controleren...",
+            "connectionSuccess": "TAMSOFT ERP-verbinding succesvol",
+            "connectionFailed": "TAMSOFT ERP-verbinding mislukt",
+            "lastSync": "Laatste synchronisatie",
+            "fields": {
+                "apiUrl": "API-URL",
+                "username": "Gebruikersnaam",
+                "password": "Wachtwoord",
+                "defaultDepo": "Standaardmagazijn",
+                "syncInterval": "Synchronisatie-interval (min)",
+                "autoSync": "Automatische synchronisatie",
+                "onlyStockPositive": "Alleen artikelen op voorraad",
+                "onlyEcommerce": "Alleen e-commerceproducten",
+                "singleBarcode": "Gebruik een enkele streepjescode"
+            },
+            "hints": {
+                "apiUrl": "TAMSOFT Web Service URL-adres",
+                "username": "Uw TAMSOFT-gebruikersnaam",
+                "defaultDepo": "Selecteer standaardmagazijn. Voer een verbindingstest uit om de magazijnlijst te laden.",
+                "loadDepos": "Voer eerst een verbindingstest uit",
+                "syncInterval": "Automatisch synchronisatie-interval (minuten)"
+            },
+            "buttons": {
+                "loadDepolar": "Magazijnen laden",
+                "syncNow": "Synchroniseer nu"
+            },
+            "sync": {
+                "title": "TAMSOFT-synchronisatie",
+                "start": "Synchroniseren",
+                "syncing": "Synchroniseren...",
+                "syncingAll": "Alle magazijnen synchroniseren...",
+                "allDepots": "Alle magazijnen",
+                "noDepoWarning": "Selecteer eerst een magazijn met \"Load Warehouses\".",
+                "depoHint": "Selecteer een magazijn waar u producten uit wilt halen of synchroniseer alle magazijnen",
+                "selectAndSave": "Selecteer en bewaar",
+                "infoTitle": "Synchronisatie-informatie",
+                "infoNew": "Nieuwe producten worden automatisch toegevoegd",
+                "infoUpdate": "Prijs- en voorraadinformatie van bestaande producten worden bijgewerkt",
+                "infoSafe": "Lokaal gewijzigde afbeeldingen blijven behouden",
+                "infoAllDepots": "Als \"Alle magazijnen\" is geselecteerd, worden de producten opeenvolgend uit elk magazijn gehaald",
+                "fullSync": "Volledige synchronisatie"
+            },
+            "toast": {
+                "connectionSuccess": "TAMSOFT-verbinding succesvol",
+                "connectionFailed": "TAMSOFT-verbinding mislukt",
+                "saved": "TAMSOFT-instellingen opgeslagen",
+                "saveFailed": "Kan instellingen niet opslaan",
+                "depoLoaded": "magazijnen geladen",
+                "depoLoadFailed": "Kan de magazijnlijst niet laden",
+                "syncSuccess": "Synchronisatie voltooid: {inserted} toegevoegd, {updated} bijgewerkt, {failed} mislukt",
+                "syncAllSuccess": "{depo_count} magazijnen gesynchroniseerd: {inserted} toegevoegd, {updated} bijgewerkt, {failed} mislukt",
+                "syncFailed": "Synchronisatie mislukt"
+            },
+            "debug": {
+                "tooltip": "API-foutopsporing - Reactie van de voorraadlijst testen",
+                "modalTitle": "TAMSOFT API-foutopsporing - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "Betalingssysteem",
+            "adminOnly": "Deze instellingen kunnen alleen door SuperAdmin worden gewijzigd.",
+            "selectProvider": "Selecteer betalingsprovider",
+            "connectionStatus": "Verbindingsstatus controleren...",
+            "loading": "Laden...",
+            "providers": {
+                "iyzico": {
+                    "name": "Iyzico",
+                    "description": "De toonaangevende betalingsinfrastructuur van Turkije"
+                },
+                "paynet": {
+                    "name": "Betaalnet",
+                    "description": "Veilige virtuele POS-oplossing"
+                }
+            },
+            "providerStatus": {
+                "active": "Actief",
+                "inactive": "Inactief",
+                "configured": "Geconfigureerd",
+                "notConfigured": "Niet geconfigureerd",
+                "test": "Test",
+                "live": "Live"
+            },
+            "statusBadge": {
+                "sandbox": "Sandbox (test)",
+                "production": "Actief (live)",
+                "inactive": "Inactief"
+            },
+            "fields": {
+                "apiKey": "API-sleutel",
+                "secretKey": "Geheime sleutel",
+                "publishableKey": "Publiceerbare sleutel",
+                "environment": "Omgeving",
+                "testMode": "Testmodus",
+                "apiUrl": "API-URL",
+                "callbackUrl": "Terugbel-URL",
+                "currency": "Munteenheid",
+                "installmentEnabled": "Termijnbetaling actief",
+                "maxInstallments": "Maximale termijnen:",
+                "statusActive": "Betaalsysteem actief",
+                "iyzicoSettings": "Iyzico-instellingen",
+                "paynetSettings": "Paynet-instellingen",
+                "installmentSettings": "Afbetalingsinstellingen",
+                "installmentActive": "Termijn actief",
+                "maxInstallment": "Maximale termijn:",
+                "status": "Status",
+                "iyzicoActive": "Iyzico actief",
+                "paynetActive": "Betaalnet actief"
+            },
+            "hints": {
+                "apiKey": "API-sleutel verkregen van Iyzico-paneel",
+                "secretKey": "Geheime sleutel verkregen van paneel",
+                "publishableKey": "Publiceerbare sleutel verkregen via Paynet-paneel",
+                "environment": "Selecteer sandbox voor test, productie voor live transacties",
+                "testMode": "Geen echte transacties in de testmodus",
+                "apiUrl": "Paynet API-serveradres",
+                "callbackUrl": "3D Secure retour-URL (automatisch)",
+                "iyzicoMerchant": "Verkregen van het Iyzico-handelaarspaneel",
+                "paynetMerchant": "Openbare sleutel verkregen van Paynet-handelaarspaneel",
+                "secretKeyHint": "Geheime sleutel (voor API-verzoeken)",
+                "testModeHint": "Geen echte betaling in de testmodus",
+                "callbackReadonly": "3D Secure retouradres (alleen-lezen)"
+            },
+            "placeholders": {
+                "apiKey": "zandbak-xxxxxxxxxxxxxxxx",
+                "secretKey": "zandbak-xxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (bestaand)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "Sandbox (test)",
+                "production": "Productie (live)",
+                "testMode": "Testmodus",
+                "liveMode": "Live-modus"
+            },
+            "currencies": {
+                "TRY": "PROBEER - Turkse lira",
+                "USD": "USD - Amerikaanse dollar",
+                "EUR": "EUR - Euro"
+            },
+            "testing": "Testen...",
+            "buttons": {
+                "testConnection": "Verbinding testen",
+                "save": "Redden",
+                "showHide": "Tonen/Verbergen",
+                "testing": "Testen...",
+                "saving": "Besparing..."
+            },
+            "connectionSuccess": "{provider} verbinding succesvol ({env} modus)",
+            "connectionFailed": "{provider} verbinding mislukt: {error}",
+            "connectionTestFailed": "Verbindingstest mislukt: {error}",
+            "saveSuccess": "{provider} betalingsinstellingen opgeslagen",
+            "saveFailed": "Kan instellingen niet opslaan: {error}",
+            "connection": {
+                "configured": "Iyzico-verbinding geconfigureerd",
+                "notConfigured": "Iyzico-verbinding niet geconfigureerd",
+                "missingKeys": "API-sleutels ontbreken"
+            },
+            "toast": {
+                "testSuccess": "{provider} verbinding succesvol - {environment} modus",
+                "testFailed": "{provider} verbinding mislukt: {error}",
+                "saved": "{provider} betalingsinstellingen opgeslagen",
+                "saveFailed": "Kan instellingen niet opslaan: {error}",
+                "apiKeyRequired": "API-sleutel vereist om het betalingssysteem te activeren",
+                "secretKeyRequired": "Geheime sleutel vereist om het betalingssysteem te activeren",
+                "publishableKeyRequired": "Publiceerbare sleutel vereist om het betalingssysteem te activeren"
+            },
+            "validation": {
+                "apiKeyRequired": "API-sleutel vereist om het betalingssysteem te activeren",
+                "secretKeyRequired": "Geheime sleutel vereist om het betalingssysteem te activeren",
+                "publishableKeyRequired": "Publiceerbare sleutel vereist om het betalingssysteem te activeren"
+            }
+        },
+        "licensePlans": {
+            "title": "Licentieplannen",
+            "description": "Licentieplannen aangeboden aan klanten",
+            "loading": "Laden...",
+            "empty": "Er zijn nog geen licentieplannen gedefinieerd",
+            "recommended": "Aanbevolen",
+            "enterprise": "Onderneming",
+            "inactive": "Inactief",
+            "months": "maanden",
+            "addPlan": "Nieuw plan",
+            "editPlan": "Plan bewerken",
+            "notFound": "Plan niet gevonden",
+            "created": "Plan gemaakt",
+            "updated": "Plan bijgewerkt",
+            "deleted": "Plan verwijderd",
+            "limits": {
+                "users": "Gebruikers",
+                "devices": "Apparaten",
+                "products": "Producten",
+                "templates": "Sjablonen",
+                "storage": "Opslag",
+                "branches": "Takken"
+            },
+            "form": {
+                "name": "Plannaam",
+                "slug": "Naaktslak",
+                "slugPlaceholder": "plannaam",
+                "description": "Beschrijving",
+                "price": "Prijs",
+                "currency": "Munteenheid",
+                "duration": "Duur (maanden)",
+                "maxUsers": "Max. Gebruikers",
+                "maxDevices": "Max. Apparaten",
+                "maxProducts": "Max. Producten",
+                "maxTemplates": "Max. Sjablonen",
+                "maxBranches": "Max. Takken",
+                "storageLimit": "Opslaglimiet (MB)",
+                "features": "Functies",
+                "featuresHint": "Schrijf één kenmerk per regel",
+                "isPopular": "Aanbevolen abonnement",
+                "isEnterprise": "Onderneming",
+                "isActive": "Actief",
+                "sortOrder": "Sorteervolgorde",
+                "unlimited": "Vul 0 in voor onbeperkt",
+                "unlimitedZero": "Vul 0 in voor onbeperkt"
+            },
+            "deleteConfirm": {
+                "title": "Plan verwijderen",
+                "message": "Weet u zeker dat u het abonnement {name} wilt verwijderen?"
+            },
+            "validation": {
+                "nameRequired": "Plannaam is vereist"
+            },
+            "features": {
+                "esl_support": "ESL-ondersteuning",
+                "basic_templates": "Basissjablonen",
+                "email_support": "E-mailondersteuning",
+                "signage_support": "Ondersteuning voor digitale signage",
+                "advanced_templates": "Geavanceerde sjablonen",
+                "priority_support": "Prioritaire ondersteuning",
+                "api_access": "API-toegang",
+                "custom_branding": "Aangepaste branding",
+                "multi_location": "Meerdere locaties",
+                "dedicated_support": "Toegewijde ondersteuning",
+                "sla_guarantee": "SLA-garantie",
+                "custom_integration": "Aangepaste integratie",
+                "white_label": "Witlabel",
+                "unlimited_users": "Onbeperkte gebruikers",
+                "unlimited_devices": "Onbeperkte apparaten",
+                "analytics": "Analytics-rapporten",
+                "export_reports": "Rapport exporteren",
+                "bulk_import": "Bulkimport",
+                "scheduler": "Planner",
+                "notifications": "Meldingen"
+            }
+        },
+        "paymentInfo": {
+            "title": "Over betalingsintegratie",
+            "features": {
+                "title": "Ondersteunde functies",
+                "singlePayment": "Eenmalige betaling",
+                "installment": "Gespreide betaling (2-12 termijnen)",
+                "secure3d": "3D Secure veilige betaling",
+                "refund": "Terugbetalings- en annuleringsoperaties",
+                "cardSaving": "Kaartbesparing (optioneel)",
+                "items": {
+                    "singlePayment": "Eenmalige betaling met creditcard",
+                    "installment": "Gespreide betaling (2-12 termijnen)",
+                    "secure3d": "3D Secure veilige betaling",
+                    "refund": "Terugbetalings- en annuleringsoperaties",
+                    "bkmExpress": "BKM Express-integratie"
+                }
+            },
+            "cards": {
+                "title": "Ondersteunde kaarten"
+            },
+            "testCard": {
+                "title": "Testkaart (Iyzico)",
+                "cardNo": "Kaartnummer:",
+                "expiry": "Vervaldatum:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "Testkaartinformatie (Sandbox)",
+                    "cardNo": "Kaartnummer:",
+                    "expiry": "Vervaldatum:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "API-documentatie",
+                "link": "Iyzico API-documentatie",
+                "iyzicoLink": "Iyzico API-documentatie",
+                "paynetLink": "Paynet API-documentatie"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "ERP-integratie",
+                "description": "SAP, Oracle, Dynamics, Logo, Netsis",
+                "fields": {
+                    "type": "ERP-type",
+                    "endpoint": "API-eindpunt",
+                    "username": "Gebruikersnaam",
+                    "password": "Wachtwoord",
+                    "syncInterval": "Synchronisatie-interval (min)"
+                },
+                "types": {
+                    "sap": "SAP",
+                    "oracle": "Orakel",
+                    "dynamics": "Microsoft Dynamics",
+                    "logo": "Logo",
+                    "netsis": "Netsis",
+                    "other": "Ander"
+                }
+            },
+            "pos": {
+                "title": "POS-integratie",
+                "description": "Wolvox, Sentez, Nebim",
+                "fields": {
+                    "type": "POS-type",
+                    "endpoint": "API-eindpunt",
+                    "apiKey": "API-sleutel",
+                    "storeId": "Winkel-ID"
+                },
+                "types": {
+                    "wolvox": "Wolvox",
+                    "sentez": "Sentez",
+                    "nebim": "Nebim",
+                    "other": "Ander"
+                }
+            },
+            "wms": {
+                "title": "WMS-integratie",
+                "description": "Magazijnbeheersysteem",
+                "fields": {
+                    "endpoint": "API-eindpunt",
+                    "apiKey": "API-sleutel",
+                    "warehouseId": "Magazijn-ID",
+                    "stockSync": "Voorraadsynchronisatie",
+                    "active": "Actief"
+                }
+            },
+            "api": {
+                "title": "API-toegang",
+                "description": "Externe API-integratie",
+                "fields": {
+                    "apiKey": "API-sleutel",
+                    "rateLimit": "Tarieflimiet (aanvragen/min)",
+                    "webhookUrl": "Webhook-URL"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.example.com/api",
+                    "webhookUrl": "https://uw-app.com/webhook"
+                },
+                "docs": {
+                    "title": "API-documentatie",
+                    "subtitle": "Snelle start voor API-gebruik",
+                    "auth": "Authenticatie",
+                    "exampleRequest": "Voorbeeldverzoek"
+                }
+            }
+        },
+        "toast": {
+            "saved": "Integratie-instellingen opgeslagen",
+            "testSuccess": "Verbindingstest succesvol",
+            "testFailed": "Verbindingstest mislukt",
+            "apiKeyGenerated": "Nieuwe API-sleutel gegenereerd"
+        },
+        "messages": {
+            "connectionSuccess": "Verbinding succesvol",
+            "connectionFailed": "Verbinding mislukt",
+            "testSuccess": "Verbindingstest succesvol",
+            "testFailed": "Verbindingstest mislukt",
+            "saved": "Instellingen opgeslagen",
+            "settingsSaved": "Instellingen opgeslagen",
+            "saveFailed": "Kan instellingen niet opslaan",
+            "settingsSaveError": "Kan instellingen niet opslaan",
+            "unknownError": "Er is een onbekende fout opgetreden",
+            "invalidIntegrationType": "Ongeldig integratietype",
+            "apiKeyCopied": "API-sleutel gekopieerd naar klembord",
+            "apiKeyGenerated": "Nieuwe API-sleutel gegenereerd",
+            "settingsLoadFailed": "Kan instellingen niet laden",
+            "paymentConfigured": "{providers} geconfigureerd. Voer een verbindingstest uit.",
+            "noPaymentConfigured": "Er is nog geen betalingsprovider geconfigureerd"
+        },
+        "mqtt": {
+            "title": "MQTT Broker-instellingen",
+            "description": "Brokerverbindingsinstellingen voor ESL-apparaten in MQTT-modus",
+            "brokerUrl": "Broker-URL",
+            "brokerUrlPlaceholder": "localhost of IP-adres",
+            "brokerPort": "Poort",
+            "useTls": "TLS gebruiken",
+            "useTlsHelp": "Activeer voor versleutelde verbinding (poort 8883)",
+            "username": "Gebruikersnaam",
+            "usernamePlaceholder": "Optioneel",
+            "password": "Wachtwoord",
+            "passwordPlaceholder": "Optioneel",
+            "topicPrefix": "Topic-prefix",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "Provider",
+            "providers": {
+                "mosquitto": "Mosquitto (Lokaal)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "Aangepast"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "Automatisch gegenereerd",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "Optioneel - Voor handtekeningverificatie",
+            "contentServerUrl": "Content-server-URL",
+            "contentServerUrlPlaceholder": "Automatisch ingevuld",
+            "reportServerUrl": "Rapportserver-URL",
+            "reportServerUrlPlaceholder": "Automatisch ingevuld",
+            "status": "Status",
+            "statuses": {
+                "active": "Actief",
+                "testing": "Testen",
+                "disabled": "Uitgeschakeld"
+            },
+            "testConnection": "Verbinding testen",
+            "testing": "Bezig met testen...",
+            "connectionSuccess": "Brokerverbinding geslaagd ({time}ms)",
+            "connectionFailed": "Brokerverbinding mislukt",
+            "saved": "MQTT-instellingen opgeslagen",
+            "saveFailed": "MQTT-instellingen konden niet worden opgeslagen",
+            "loading": "Laden...",
+            "notConfigured": "Niet geconfigureerd",
+            "configured": "Geconfigureerd",
+            "lastConnected": "Laatste verbinding",
+            "never": "Nooit verbonden",
+            "save": "Opslaan",
+            "infoTitle": "Over MQTT",
+            "infoText": "MQTT is een lichtgewicht berichtenprotocol voor IoT-apparaten. ESL-apparaten in CLIENT-modus ontvangen opdrachten en rapporteren status via de MQTT-broker.",
+            "setupSteps": "Installatiestappen",
+            "step1": "Installeer Mosquitto of een andere MQTT-broker",
+            "step2": "Voer de broker-URL en poortgegevens in",
+            "step3": "Test de verbinding",
+            "step4": "Configureer apparaten via BLE naar MQTT-modus"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "Productstreepjescode wegen",
+            "description": "Barcode-instellingen voor gewogen producten. Vlagcode + schaalcode = 7-cijferige barcode.",
+            "flagCode": "Vlagcode",
+            "flagCodeHint": "2-cijferige vlagcode gebruikt in schalen (20-29)",
+            "barcodeFormat": "Barcode-formaat",
+            "formatHint": "Barcodeformaat dat in ontwerpen moet worden gebruikt",
+            "preview": "Voorbeeld",
+            "scaleCode": "Schaalcode",
+            "resultBarcode": "Gegenereerde streepjescode",
+            "previewHint": "Voorbeeld: Vlagcode (27) + Schaalcode (09337) = 7-cijferige barcode (2709337)"
+        },
+        "info": {
+            "title": "Barcode-informatie",
+            "howItWorks": "Hoe het werkt?",
+            "description": "Bij gewogen producten bestaat de barcode uit een combinatie van vlagcode en schaalcode. Bij het wegen op de weegschaal wordt de volledige barcode gegenereerd door gewichtsinformatie toe te voegen.",
+            "flag": "Vlag",
+            "scaleCode": "Schaalcode",
+            "result": "Resultaat",
+            "note": "Opmerking: Volledig barcodeformaat vanaf schaal: 27XXXXX QQ qqq + controlecijfer (QQ=kg, qqq=gram)"
+        }
+    },
+    "labels": {
+        "title": "Labelformaten",
+        "subtitle": "Beheer etiketformaten voor afdrukken",
+        "addNew": "Nieuw toevoegen",
+        "listTitle": "Lijst met etiketformaten",
+        "noData": "Geen labelformaten gevonden",
+        "infoTitle": "Over labelformaten",
+        "infoText": "Standaardsysteemformaten kunnen niet worden bewerkt of verwijderd. U kunt uw eigen aangepaste formaten toevoegen en beheren. De maten die u toevoegt, verschijnen in het productafdrukscherm.",
+        "system": "Systeem",
+        "columns": {
+            "name": "Naam",
+            "dimensions": "Afmetingen",
+            "inchDimensions": "Inch",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Actief",
+            "inactive": "Inactief"
+        },
+        "form": {
+            "name": "Naam (optioneel)",
+            "nameHint": "Indien leeg gelaten, wordt het automatisch gegenereerd op basis van dimensies",
+            "width": "Breedte",
+            "height": "Hoogte",
+            "unit": "Eenheid",
+            "active": "Actief",
+            "activeHint": "Inactieve formaten verschijnen niet in de afdruklijst"
+        },
+        "placeholders": {
+            "name": "Automatisch gegenereerd"
+        },
+        "validation": {
+            "dimensionsRequired": "Voer een geldige breedte en hoogte in"
+        },
+        "addTitle": "Nieuwe labelgrootte",
+        "editTitle": "Labelgrootte bewerken",
+        "editSystemTitle": "Grootte systeemlabel",
+        "systemEditInfo": "Dit is een standaardsysteemgrootte. U kunt alleen de actieve/inactieve status wijzigen.",
+        "deleteTitle": "Labelgrootte verwijderen",
+        "deleteConfirm": "Labelgrootte \"{name}\" wordt verwijderd. Wil je doorgaan?",
+        "toast": {
+            "created": "Labelgrootte toegevoegd",
+            "updated": "Labelgrootte bijgewerkt",
+            "deleted": "Labelgrootte verwijderd",
+            "loadFailed": "Kan labelformaten niet laden",
+            "saveFailed": "Operatie mislukt",
+            "statusChanged": "Status van labelformaat bijgewerkt"
+        },
+        "units": {
+            "mm": "mm",
+            "cm": "cm",
+            "inch": "inch"
+        }
+    },
+    "toast": {
+        "saved": "Instellingen opgeslagen",
+        "saveFailed": "Kan instellingen niet opslaan",
+        "smtpSuccess": "SMTP-verbinding succesvol!",
+        "smtpFailed": "SMTP-verbinding mislukt"
+    },
+    "gateway": {
+        "title": "Gateway-instellingen",
+        "subtitle": "Gatewaybeheer voor lokale netwerkapparaten",
+        "newGateway": "Nieuwe poort",
+        "systemTitle": "Gateway-systeem",
+        "systemDescription": "U kunt het gatewaysysteem activeren of deactiveren. Wanneer deze inactief is, wordt er geen inhoud naar apparaten verzonden.",
+        "statusActive": "Actief",
+        "statusInactive": "Inactief",
+        "runtime": {
+            "title": "Gateway Runtime-instellingen",
+            "description": "In deze sectie kunt u de time-out-, poll- en uitstelwaarden van Worker/Gateway beheren.",
+            "retryBaseDelay": "Opnieuw starten (sec)",
+            "retryMaxDelay": "Maximaal opnieuw proberen (sec)",
+            "retryMultiplier": "Probeer de vermenigvuldiger opnieuw",
+            "heartbeatTimeout": "Heartbeat-time-out (sec)",
+            "commandTimeout": "Time-out opdracht (sec)",
+            "pollInterval": "Gateway-peiling (ms)",
+            "scopeCompany": "Toepassingsgebied: Bedrijfsinstelling. Werknemer- en serververzendstromen gebruiken deze waarden.",
+            "scopeUser": "Toepassingsgebied: gebruikersinstelling. Bewaar met Admin/SuperAdmin binnen het bereik van het bedrijf, zodat dit wordt weerspiegeld in de werknemersstroom."
+        },
+        "neverConnected": "Nooit verbonden",
+        "lastSeen": "Laatst gezien",
+        "devices": "Apparaten",
+        "device": "Apparaat",
+        "pendingCommands": "Openstaande opdrachten",
+        "details": "Details",
+        "credentials": "Referenties",
+        "createTitle": "Maak een nieuwe gateway",
+        "credentialsTitle": "Gateway-referenties",
+        "credentialsWarning": "Deze informatie wordt slechts één keer getoond. Bewaar het op een veilige plaats.",
+        "credentialsSecretHidden": "Deze gateway is eerder gemaakt. Om veiligheidsredenen wordt de geheime sleutel alleen getoond tijdens het aanmaken.",
+        "copyConfig": "Kopieer configuratie",
+        "hidden": "[VERBORGEN]",
+        "statusInfo": "Gatewaystatus",
+        "statusLabel": "Status",
+        "lastHeartbeat": "Laatste hartslag",
+        "never": "Nooit",
+        "connectedDevices": "Verbonden apparaten",
+        "noDevices": "Geen aangesloten apparaten",
+        "deleteTitle": "Gateway verwijderen",
+        "deleteConfirm": "Gateway \"{name}\" wordt verwijderd. Wil je doorgaan?",
+        "status": {
+            "online": "Online",
+            "error": "Fout",
+            "offline": "Offline"
+        },
+        "form": {
+            "name": "Gateway-naam",
+            "namePlaceholder": "Voorbeeld: Winkelgateway",
+            "description": "Beschrijving",
+            "descriptionPlaceholder": "Korte beschrijving over gateway",
+            "pollingInterval": "Polling-interval (sec)",
+            "commandTimeout": "Time-out opdracht (sec)"
+        },
+        "empty": {
+            "title": "Geen gateway gevonden",
+            "description": "Er zijn nog geen gateways toegevoegd. Begin met het maken van een nieuwe gateway.",
+            "createFirst": "Maak de eerste gateway"
+        },
+        "toast": {
+            "enabled": "Gatewaysysteem geactiveerd",
+            "disabled": "Gatewaysysteem gedeactiveerd",
+            "saveFailed": "Kan de gatewaystatus niet opslaan",
+            "loadFailed": "Kan gateways niet laden",
+            "nameRequired": "Gatewaynaam is vereist",
+            "created": "Gateway gemaakt",
+            "configCopied": "Configuratie gekopieerd",
+            "detailsFailed": "Kan gatewaygegevens niet laden",
+            "deleted": "Gateway verwijderd",
+            "deleteFailed": "Kan gateway niet verwijderen",
+            "createFailed": "Kan gateway niet maken: {error}",
+            "savedUserLevel": "Toestemming voor bedrijfsinstelling niet gevonden. Wijziging opgeslagen op gebruikersniveau.",
+            "runtimeSavedCompany": "Gateway runtime-instellingen opgeslagen op bedrijfsniveau.",
+            "runtimeSavedUser": "Toestemming voor bedrijfsinstelling niet gevonden. Instellingen opgeslagen op gebruikersniveau.",
+            "runtimeSaveFailed": "Kan runtime-instellingen niet opslaan"
+        },
+        "defaultImage": {
+            "title": "Standaardafbeelding",
+            "description": "Stel de standaardafbeelding in die moet worden weergegeven wanneer het apparaatgeheugen wordt gewist. U kunt verschillende afbeeldingen definiëren op basis van de schermgrootte.",
+            "upload": "Afbeelding uploaden",
+            "uploadTitle": "Upload standaardafbeelding",
+            "uploadInfo": "Deze afbeelding wordt automatisch geladen wanneer het apparaatgeheugen wordt gewist. Het wordt aanbevolen om een ​​afbeelding te selecteren die geschikt is voor de schermgrootte.",
+            "gateway": "Poort",
+            "general": "Algemeen",
+            "noGateways": "U moet eerst een gateway toevoegen",
+            "selectGateway": "Gateway selecteren...",
+            "gatewayHint": "Deze afbeelding wordt weergegeven op apparaten van de geselecteerde gateway",
+            "imageType": "Afbeeldingstype",
+            "typeHint": "Selecteer voor welke schermgrootte/-oriëntatie het zal worden gebruikt",
+            "file": "Afbeeldingsbestand",
+            "dropzone": "Slepen en neerzetten of klikken",
+            "formats": "JPG of PNG, maximaal 5 MB",
+            "selectFile": "Selecteer een afbeelding",
+            "empty": "Er is nog geen standaardafbeelding toegevoegd",
+            "uploaded": "Standaardafbeelding geüpload",
+            "uploadFailed": "Kan afbeelding niet uploaden: {error}",
+            "deleteTitle": "Afbeelding verwijderen",
+            "deleteConfirm": "Weet u zeker dat u deze standaardafbeelding wilt verwijderen?",
+            "deleted": "Standaardafbeelding verwijderd",
+            "deleteFailed": "Kan afbeelding niet verwijderen",
+            "types": {
+                "default": "Algemene standaard (alle apparaten)",
+                "portrait": "Portretschermen",
+                "landscape": "Liggende schermen"
+            }
+        }
+    },
+    "time": {
+        "justNow": "Zojuist",
+        "minutesAgo": "{count} minuten geleden",
+        "hoursAgo": "{count} uur geleden",
+        "daysAgo": "{count} dagen geleden"
+    },
+    "messages": {
+        "unknownError": "Er is een onbekende fout opgetreden",
+        "loadFailed": "Kan gegevens niet laden",
+        "saveFailed": "Opslaan mislukt"
+    }
+}

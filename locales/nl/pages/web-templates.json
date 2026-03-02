@@ -1,0 +1,164 @@
+{
+    "title": "Websjablonen",
+    "subtitle": "Beheer op HTML gebaseerde digitale signage-sjablonen",
+    "breadcrumb": {
+        "panel": "Paneel",
+        "webTemplates": "Websjablonen",
+        "editor": "Editor",
+        "new": "Nieuwe websjabloon",
+        "edit": "Bewerking"
+    },
+    "list": {
+        "title": "Websjablonen",
+        "subtitle": "Maak op HTML gebaseerde sjablonen met VvvebJs",
+        "newTemplate": "Nieuwe websjabloon",
+        "empty": "Er zijn nog geen websjablonen gemaakt",
+        "emptyHint": "Begin met het maken van op HTML gebaseerde digitale signage-sjablonen",
+        "searchPlaceholder": "Sjabloon zoeken...",
+        "total": "Totaal {count} sjablonen"
+    },
+    "filters": {
+        "status": "Status",
+        "type": "Type",
+        "all": "Alle",
+        "search": "Zoekopdracht",
+        "searchPlaceholder": "Sjabloon zoeken..."
+    },
+    "table": {
+        "name": "Sjabloonnaam",
+        "type": "Type",
+        "status": "Status",
+        "dimensions": "Afmetingen",
+        "devices": "Aantal apparaten",
+        "createdAt": "Gemaakt",
+        "updatedAt": "Bijgewerkt",
+        "preview": "Voorbeeld"
+    },
+    "form": {
+        "name": "Sjabloonnaam",
+        "description": "Beschrijving",
+        "type": "Sjabloontype",
+        "status": "Status",
+        "width": "Breedte",
+        "height": "Hoogte",
+        "orientation": "Oriëntatie",
+        "category": "Categorie",
+        "tags": "Labels",
+        "placeholders": {
+            "name": "Voer de sjabloonnaam in",
+            "description": "Sjabloonbeschrijving (optioneel)",
+            "tags": "Tags (door komma's gescheiden)"
+        }
+    },
+    "types": {
+        "signage": "Digitale bewegwijzering",
+        "webpage": "Webpagina",
+        "dashboard": "Dashboard",
+        "menu": "Menubord"
+    },
+    "status": {
+        "draft": "Voorlopige versie",
+        "published": "Gepubliceerd",
+        "archived": "Gearchiveerd"
+    },
+    "orientations": {
+        "landscape": "Landschap",
+        "portrait": "Portret"
+    },
+    "actions": {
+        "new": "Nieuwe sjabloon",
+        "edit": "Bewerking",
+        "delete": "Verwijderen",
+        "duplicate": "Duplicaat",
+        "clone": "Kloon",
+        "preview": "Voorbeeld",
+        "publish": "Publiceren",
+        "unpublish": "Publicatie ongedaan maken",
+        "assignDevices": "Apparaten toewijzen",
+        "viewVersions": "Bekijk versies",
+        "retry": "Opnieuw proberen",
+        "createFirst": "Maak eerste sjabloon",
+        "cancel": "Annuleren"
+    },
+    "editor": {
+        "title": "Websjablooneditor",
+        "newTitle": "Nieuwe websjabloon",
+        "editTitle": "Websjabloon bewerken",
+        "subtitle": "Ontwerp op HTML gebaseerde digitale signage",
+        "loading": "Editor laden...",
+        "loadError": "Kan de editor niet laden",
+        "redirecting": "Doorverwijzen naar redacteur..."
+    },
+    "widgets": {
+        "title": "Omnex-widgets",
+        "productCard": "Productkaart",
+        "priceList": "Prijslijst",
+        "ticker": "Tikker",
+        "clock": "Klok",
+        "countdown": "Aftellen",
+        "qrcode": "QR-code",
+        "weather": "Weer",
+        "news": "Nieuwsfeed"
+    },
+    "assignment": {
+        "title": "Apparaattoewijzing",
+        "selectDevices": "Selecteer Apparaten",
+        "noDevices": "Nog geen apparaten toegewezen",
+        "assignedDevices": "Toegewezen apparaten",
+        "priority": "Prioriteit",
+        "schedule": "Schema",
+        "startDate": "Startdatum",
+        "endDate": "Einddatum"
+    },
+    "versions": {
+        "title": "Versiegeschiedenis",
+        "current": "Huidig",
+        "version": "Versie",
+        "createdAt": "Gemaakt",
+        "createdBy": "Gemaakt door",
+        "notes": "Opmerkingen",
+        "restore": "Herstellen",
+        "compare": "Vergelijken"
+    },
+    "messages": {
+        "loading": "Laden...",
+        "noTemplates": "Nog geen websjablonen",
+        "noTemplatesHint": "Begin met het maken van op HTML gebaseerde digitale signage-sjablonen",
+        "noResults": "Geen resultaten gevonden",
+        "loadError": "Er is een fout opgetreden bij het laden van sjablonen",
+        "redirecting": "Doorverwijzen naar redacteur...",
+        "deleted": "Websjabloon verwijderd",
+        "deleteError": "Er is een fout opgetreden tijdens het verwijderen",
+        "duplicated": "Websjabloon gedupliceerd",
+        "duplicateError": "Er is een fout opgetreden tijdens het dupliceren"
+    },
+    "toast": {
+        "created": "Websjabloon gemaakt",
+        "updated": "Websjabloon bijgewerkt",
+        "deleted": "Websjabloon verwijderd",
+        "cloned": "Websjabloon gedupliceerd",
+        "published": "Websjabloon gepubliceerd",
+        "unpublished": "Websjabloon niet gepubliceerd",
+        "assigned": "Toegewezen aan apparaten",
+        "versionRestored": "Versie hersteld"
+    },
+    "confirm": {
+        "deleteTitle": "Sjabloon verwijderen",
+        "deleteMessage": "Weet u zeker dat u de sjabloon \"{name}\" wilt verwijderen?",
+        "delete": "Weet u zeker dat u deze websjabloon wilt verwijderen?",
+        "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt. Apparaattoewijzingen die aan deze sjabloon zijn gekoppeld, worden ook verwijderd.",
+        "publish": "Weet u zeker dat u deze sjabloon wilt publiceren?",
+        "unpublish": "Weet u zeker dat u de publicatie van deze sjabloon ongedaan wilt maken?",
+        "restoreVersion": "Weet u zeker dat u deze versie wilt herstellen?"
+    },
+    "validation": {
+        "nameRequired": "Sjabloonnaam is vereist",
+        "nameTooLong": "De sjabloonnaam mag niet langer zijn dan 255 tekens",
+        "typeRequired": "Selecteer het sjabloontype"
+    },
+    "filter": {
+        "allTypes": "Alle soorten",
+        "allStatus": "Alle status",
+        "search": "Zoekopdracht..."
+    }
+}

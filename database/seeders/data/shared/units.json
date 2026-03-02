@@ -1,0 +1,77 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.01",
+    "description": "Birim tanımları - Dil bağımsız",
+    "data": [
+        {
+            "key": "unit.kg",
+            "code": "kg",
+            "type": "weight",
+            "base_multiplier": 1000,
+            "is_default": true
+        },
+        {
+            "key": "unit.gr",
+            "code": "gr",
+            "type": "weight",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.lt",
+            "code": "lt",
+            "type": "volume",
+            "base_multiplier": 1000,
+            "is_default": true
+        },
+        {
+            "key": "unit.ml",
+            "code": "ml",
+            "type": "volume",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.adet",
+            "code": "adet",
+            "type": "piece",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.paket",
+            "code": "paket",
+            "type": "package",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.kutu",
+            "code": "kutu",
+            "type": "package",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.demet",
+            "code": "demet",
+            "type": "bundle",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.koli",
+            "code": "koli",
+            "type": "package",
+            "base_multiplier": 1,
+            "is_default": true
+        },
+        {
+            "key": "unit.porsiyon",
+            "code": "porsiyon",
+            "type": "portion",
+            "base_multiplier": 1,
+            "is_default": true
+        }
+    ]
+}

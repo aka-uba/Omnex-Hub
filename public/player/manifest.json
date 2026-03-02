@@ -1,0 +1,40 @@
+{
+    "name": "Omnex Display Hub Player",
+    "short_name": "Omnex Player",
+    "description": "Digital Signage Player - PWA application for displaying content on screens",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "categories": ["business", "utilities"],
+    "lang": "tr-TR",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "../branding/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "../branding/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "../branding/icon-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "prefer_related_applications": false,
+    "launch_handler": {
+        "client_mode": "focus-existing"
+    },
+    "display_override": ["standalone", "minimal-ui"],
+    "handle_links": "preferred"
+}

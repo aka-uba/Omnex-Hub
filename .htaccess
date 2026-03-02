@@ -1,0 +1,131 @@
+# Omnex Display Hub - Apache/LiteSpeed Configuration
+# Works with any directory name (dynamic base path)
+
+# Disable MultiViews to prevent 406 errors
+Options -MultiViews +FollowSymLinks
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Block direct web access to internal/backup trees
+RewriteRule ^(backup|backups|deploy|tests)(/|$) - [F,L,NC]
+
+# Ensure proper MIME types for JavaScript modules
+<IfModule mod_mime.c>
+    AddType application/javascript .js .mjs
+    AddType text/css .css
+    AddType application/json .json
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Set RewriteBase dynamically (comment out or set to your subdirectory)
+# RewriteBase /signage/
+
+# Security: Block access to sensitive files
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.(sql|db|sqlite|log|md|env|bak|old|orig|dist)$">
+    Require all denied
+</FilesMatch>
+<FilesMatch "\.php[0-9A-Za-z._-]+$">
+    Require all denied
+</FilesMatch>
+
+# Handle OPTIONS preflight requests
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# API routing - route all /api/* requests to api/index.php
+# This rule catches any request starting with api/ that isn't a real file
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/?$ api/index.php [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.+)$ api/index.php [QSA,L]
+
+# Static files in public folder - serve directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(assets|images|fonts|branding)/(.*)$ public/$1/$2 [L]
+
+# Player static files - serve from public/player
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^player/(.+\.(js|css|json|png|jpg|ico|svg|woff|woff2))$ public/player/$1 [L]
+
+# Player index - serve index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^player/?$ public/player/index.html [L]
+RewriteRule ^player/index\.html$ public/player/index.html [L]
+
+# PWA files from public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^manifest\.json$ public/manifest.json [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^sw\.js$ public/sw.js [L]
+
+# Storage files - serve directly (for media library)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^storage/(.*)$ storage/$1 [L]
+
+# Player PWA - serve from public/player directly
+RewriteCond %{REQUEST_URI} ^(.*/)?player(/.*)?$ [NC]
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR]
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d
+RewriteRule ^ - [L]
+
+# Player PWA - SPA fallback for player routes
+RewriteCond %{REQUEST_URI} ^(.*/)?player(/.*)?$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*/)?player(/.*)?$ public/player/index.html [L]
+
+# HTML Editor - serve from public/html-editor directly
+RewriteCond %{REQUEST_URI} ^(.*/)?html-editor(/.*)?$ [NC]
+RewriteRule ^(.*/)?html-editor/(.*)$ public/html-editor/$2 [L]
+
+# HTML Editor - directory index
+RewriteCond %{REQUEST_URI} ^(.*/)?html-editor/?$ [NC]
+RewriteRule ^(.*/)?html-editor/?$ public/html-editor/index.html [L]
+
+# SPA routing - all other requests go to index.php
+# This handles all frontend routes like /login, /dashboard, /products, etc.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api
+RewriteCond %{REQUEST_URI} !^(.*/)?player [NC]
+RewriteCond %{REQUEST_URI} !^(.*/)?html-editor [NC]
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# GZIP compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/json application/javascript text/xml application/xml
+</IfModule>
+
+# Cache control
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+# PHP settings (if mod_php)
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 50M
+    php_value post_max_size 55M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# CORS headers are managed by application middleware (ApiGuard/Response)

@@ -1,0 +1,2099 @@
+/**
+ * Omnex Player - PWA Styles
+ * Digital Signage Player Stylesheet
+ *
+ * @version 1.0.0
+ */
+
+/* ==================== Variables ==================== */
+:root {
+    --player-bg: #1a1a2e;
+    --player-bg-secondary: #16213e;
+    --player-primary: #4f46e5;
+    --player-primary-light: #818cf8;
+    --player-text: #ffffff;
+    --player-text-muted: #9ca3af;
+    --player-success: #10b981;
+    --player-error: #ef4444;
+    --player-warning: #f59e0b;
+    --player-border: #374151;
+    --player-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== Reset & Base ==================== */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    width: 100vw;
+    width: 100dvw;
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    /* Support for iOS safe areas */
+    height: -webkit-fill-available;
+    /* Prevent any browser chrome */
+    overflow: hidden;
+    /* Prevent text selection */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent tap highlight */
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    width: 100%;
+    width: 100vw;
+    width: 100dvw;
+    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: 100dvh;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--player-text);
+    background: #000; /* Black background to prevent white flash */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* No padding/margin - fullscreen mode */
+    padding: 0 !important;
+    margin: 0 !important;
+    /* Prevent overscroll/bounce */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Force fullscreen - extend under notch and navigation bar */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* iOS: Extend content under safe areas */
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0) !important;
+    /* Override padding for true fullscreen */
+    padding: 0 !important;
+}
+
+/* ==================== Screens ==================== */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--player-bg);
+    z-index: 1;
+    /* Force no margins/padding */
+    margin: 0 !important;
+    padding: 0 !important;
+    /* Extend under notch/status bar */
+    padding-top: env(safe-area-inset-top, 0) !important;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Player screen should be truly fullscreen - edge to edge */
+#player-screen {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #000;
+    /* Override safe area padding for player - we want true fullscreen */
+    padding-top: 0 !important;
+}
+
+#player-screen .content-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    /* Ensure content fills viewport including under notch */
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;
+}
+
+/* Ensure content items fill the entire screen */
+#player-screen .content-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain; /* Preserve aspect ratio - no distortion */
+    background: #000;
+}
+
+/* ==================== Playlist Orientation ==================== */
+/* Portrait playlist on landscape screen - show content in portrait aspect ratio */
+@media (orientation: landscape) {
+    #player-screen .content-container.orientation-portrait {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #player-screen .content-container.orientation-portrait .content-item {
+        width: auto !important;
+        height: 100% !important;
+        max-width: 56.25%; /* 9:16 aspect ratio */
+        aspect-ratio: 9 / 16;
+        object-fit: contain;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* Landscape playlist on portrait screen - show content in landscape aspect ratio */
+@media (orientation: portrait) {
+    #player-screen .content-container.orientation-landscape {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #player-screen .content-container.orientation-landscape .content-item {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 56.25%; /* 16:9 aspect ratio */
+        aspect-ratio: 16 / 9;
+        object-fit: contain;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
+/* When playlist orientation matches screen orientation - fill entire screen */
+@media (orientation: landscape) {
+    #player-screen .content-container.orientation-landscape .content-item {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none;
+        aspect-ratio: auto;
+        left: 0;
+        transform: none;
+    }
+}
+
+@media (orientation: portrait) {
+    #player-screen .content-container.orientation-portrait .content-item {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none;
+        aspect-ratio: auto;
+        top: 0;
+        transform: none;
+    }
+}
+
+/* Manual orientation fallback (when screen orientation lock is unsupported) */
+#player-screen .content-container.force-rotate-landscape,
+#player-screen .content-container.force-rotate-portrait {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform-origin: center center;
+    overflow: hidden;
+}
+
+#player-screen .content-container.force-rotate-landscape {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+#player-screen .content-container.force-rotate-portrait {
+    transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+#player-screen .content-container.force-rotate-landscape .content-item,
+#player-screen .content-container.force-rotate-portrait .content-item {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    aspect-ratio: auto !important;
+}
+
+/* Rotated screen == landscape */
+#player-screen .content-container.force-rotate-landscape.orientation-landscape .content-item {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    aspect-ratio: auto !important;
+}
+
+#player-screen .content-container.force-rotate-landscape.orientation-portrait .content-item {
+    width: 56.25% !important;
+    height: 100% !important;
+    max-width: 56.25% !important;
+    max-height: 100% !important;
+    left: 50% !important;
+    top: 0 !important;
+    transform: translateX(-50%) !important;
+    aspect-ratio: 9 / 16 !important;
+    object-fit: contain !important;
+}
+
+/* Rotated screen == portrait */
+#player-screen .content-container.force-rotate-portrait.orientation-portrait .content-item {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    aspect-ratio: auto !important;
+}
+
+#player-screen .content-container.force-rotate-portrait.orientation-landscape .content-item {
+    width: 100% !important;
+    height: 56.25% !important;
+    max-width: 100% !important;
+    max-height: 56.25% !important;
+    left: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: contain !important;
+}
+
+/* ==================== Loading Screen ==================== */
+#loading-screen {
+    background: linear-gradient(135deg, var(--player-bg) 0%, var(--player-bg-secondary) 100%);
+}
+
+.loading-content {
+    text-align: center;
+}
+
+.loading-logo {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.brand-logo {
+    width: clamp(180px, 26vmin, 360px);
+    height: auto;
+    filter: brightness(1.14) saturate(1.12) drop-shadow(0 8px 24px rgba(129, 140, 248, 0.38));
+}
+
+/* Logo animation removed - static logo preferred for signage */
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+@keyframes logoBreath {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.96;
+    }
+    50% {
+        transform: translateY(-4px) scale(1.02);
+        opacity: 1;
+    }
+}
+
+.loading-title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--player-primary) 0%, var(--player-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.loading-message {
+    color: var(--player-text-muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--player-border);
+    border-top-color: var(--player-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==================== Registration Screen ==================== */
+#registration-screen {
+    background: linear-gradient(135deg, var(--player-bg) 0%, var(--player-bg-secondary) 100%);
+    padding: 2vmin;
+    overflow: auto;
+}
+
+.registration-content {
+    width: 100%;
+    max-width: 90vw;
+    padding: clamp(1rem, 3vmin, 3rem);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 2vmin, 2rem);
+}
+
+.registration-header {
+    margin-bottom: clamp(0.5rem, 2vmin, 2rem);
+}
+
+.registration-header svg,
+.registration-header .registration-brand-logo {
+    width: clamp(170px, 22vmin, 320px);
+    height: auto;
+}
+
+.registration-header h1 {
+    font-size: clamp(1.5rem, 4vmin, 3rem);
+    font-weight: 600;
+    margin: clamp(0.5rem, 1vmin, 1rem) 0 0.25rem;
+}
+
+.registration-header p {
+    color: var(--player-text-muted);
+    font-size: clamp(0.875rem, 2vmin, 1.5rem);
+}
+
+.sync-code-container {
+    background: var(--player-bg-secondary);
+    border: 2px solid var(--player-border);
+    border-radius: clamp(0.75rem, 2vmin, 1.5rem);
+    padding: clamp(1.5rem, 4vmin, 4rem);
+    width: 100%;
+    max-width: clamp(300px, 60vmin, 800px);
+}
+
+.sync-code-label {
+    font-size: clamp(0.875rem, 2vmin, 1.5rem);
+    color: var(--player-text-muted);
+    margin-bottom: clamp(0.5rem, 1vmin, 1rem);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.sync-code {
+    font-size: clamp(2.5rem, 10vmin, 8rem);
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    letter-spacing: clamp(0.2em, 0.3em, 0.4em);
+    color: var(--player-primary-light);
+    margin: clamp(0.25rem, 1vmin, 1rem) 0;
+    text-shadow: 0 0 clamp(10px, 3vmin, 40px) rgba(79, 70, 229, 0.5);
+    word-break: break-all;
+}
+
+.sync-code-hint {
+    font-size: clamp(0.875rem, 2vmin, 1.5rem);
+    color: var(--player-text-muted);
+    margin-top: clamp(0.5rem, 1vmin, 1rem);
+}
+
+.sync-code-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(0.25rem, 1vmin, 0.75rem);
+    margin-top: clamp(0.5rem, 2vmin, 1.5rem);
+    padding: clamp(0.5rem, 1.5vmin, 1rem) clamp(1rem, 2vmin, 2rem);
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: clamp(0.5rem, 1vmin, 1rem);
+    color: var(--player-warning);
+    font-size: clamp(0.875rem, 2vmin, 1.5rem);
+}
+
+.sync-code-timer span {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.device-info {
+    background: var(--player-bg-secondary);
+    border: 1px solid var(--player-border);
+    border-radius: clamp(0.5rem, 1.5vmin, 1rem);
+    padding: clamp(0.75rem, 2vmin, 1.5rem);
+    width: 100%;
+    max-width: clamp(280px, 50vmin, 600px);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: clamp(0.25rem, 1vmin, 0.75rem) 0;
+    border-bottom: 1px solid var(--player-border);
+    gap: 1rem;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--player-text-muted);
+    font-size: clamp(0.75rem, 1.8vmin, 1.25rem);
+    white-space: nowrap;
+}
+
+.info-value {
+    font-family: monospace;
+    font-size: clamp(0.75rem, 1.8vmin, 1.25rem);
+    text-align: right;
+    word-break: break-all;
+}
+
+.status-waiting {
+    color: var(--player-warning);
+}
+
+.status-approved {
+    color: var(--player-success);
+}
+
+.status-rejected {
+    color: var(--player-error);
+}
+
+.status-expired {
+    color: var(--player-text-muted);
+}
+
+.status-error {
+    color: var(--player-error);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.qr-container {
+    margin-top: clamp(0.5rem, 2vmin, 1.5rem);
+}
+
+.qr-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.25rem, 1vmin, 0.5rem);
+    color: var(--player-text-muted);
+}
+
+.qr-placeholder svg {
+    width: clamp(80px, 15vmin, 200px);
+    height: clamp(80px, 15vmin, 200px);
+    opacity: 0.5;
+}
+
+/* ==================== Player Screen ==================== */
+#player-screen {
+    background: #000;
+}
+
+.content-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.content-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Preserve aspect ratio - no distortion */
+    background: #000;
+}
+
+.content-item.cover {
+    object-fit: cover;
+}
+
+/* ==================== Video Controls - COMPLETELY HIDDEN ==================== */
+/* Hide ALL video controls - Chrome, Safari, Edge */
+video::-webkit-media-controls {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+video::-webkit-media-controls-panel {
+    display: none !important;
+    opacity: 0 !important;
+}
+
+video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-timeline {
+    display: none !important;
+}
+
+video::-webkit-media-controls-time-remaining-display {
+    display: none !important;
+}
+
+video::-webkit-media-controls-current-time-display {
+    display: none !important;
+}
+
+video::-webkit-media-controls-mute-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-volume-slider {
+    display: none !important;
+}
+
+video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-overlay-enclosure {
+    display: none !important;
+}
+
+/* Firefox */
+video::-moz-media-controls {
+    display: none !important;
+}
+
+/* IE/Edge */
+video::-ms-media-controls {
+    display: none !important;
+}
+
+/* General video styling for signage */
+#video-content {
+    /* No controls attribute needed in HTML, but ensure via CSS */
+    pointer-events: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    /* Hide until ready to play */
+    background: #000;
+}
+
+/* Prevent focus outline */
+#video-content:focus {
+    outline: none;
+}
+
+/* Hide video while loading/buffering - prevents flash of play button */
+#video-content.loading {
+    visibility: hidden;
+}
+
+/* Additional play button hiding for various browsers */
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Android/Chrome big play button overlay */
+video::--webkit-media-controls-overlay-enclosure {
+    display: none !important;
+}
+
+/* Samsung TV / Tizen specific */
+video::-webkit-media-controls-overlay-cast-button {
+    display: none !important;
+}
+
+/* Poster frame - hide default poster */
+video::poster {
+    display: none !important;
+}
+
+/* TV Remote/OSD overlay prevention */
+#player-screen .content-container {
+    /* Prevent TV overlays */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Iframe - hide any browser chrome and prevent interaction */
+#html-content {
+    border: none !important;
+    outline: none !important;
+    /* Disable pointer events to prevent clicking on YouTube/Vimeo controls */
+    pointer-events: none;
+}
+
+#html-content:focus {
+    outline: none !important;
+}
+
+/* For iframes that need interaction (non-video content), add a class */
+#html-content.interactive {
+    pointer-events: auto;
+}
+
+/* ==================== YouTube/Vimeo Overlay Mask ==================== */
+/* Hide YouTube/Vimeo overlay buttons by covering them with black bars */
+/* Only shown when .show-overlay-mask class is added (for video embeds) */
+
+/* Ensure container can hold pseudo-elements properly */
+.content-container.show-overlay-mask {
+    position: absolute !important;
+    overflow: hidden;
+    isolation: isolate; /* Creates new stacking context */
+}
+
+/* Ensure iframe stays below masks */
+.content-container.show-overlay-mask iframe,
+.content-container.show-overlay-mask #html-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Top bar - covers YouTube title, fullscreen button, close button */
+.content-container.show-overlay-mask::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px; /* Increased for mobile */
+    background: #000;
+    z-index: 9999; /* Higher z-index for mobile */
+    pointer-events: none;
+    -webkit-transform: translateZ(0); /* Force GPU layer on mobile */
+    transform: translateZ(0);
+}
+
+/* Bottom bar - covers YouTube logo, progress bar remnants */
+.content-container.show-overlay-mask::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px; /* Increased for mobile */
+    background: #000;
+    z-index: 9999; /* Higher z-index for mobile */
+    pointer-events: none;
+    -webkit-transform: translateZ(0); /* Force GPU layer on mobile */
+    transform: translateZ(0);
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+    .content-container.show-overlay-mask::before {
+        height: 80px; /* Larger on mobile - YouTube shows bigger UI */
+    }
+    .content-container.show-overlay-mask::after {
+        height: 70px; /* Larger on mobile */
+    }
+}
+
+/* Very small screens (phones) */
+@media (max-width: 480px) {
+    .content-container.show-overlay-mask::before {
+        height: 90px;
+    }
+    .content-container.show-overlay-mask::after {
+        height: 80px;
+    }
+}
+
+.fallback {
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--player-bg) 0%, var(--player-bg-secondary) 100%);
+}
+
+.fallback.visible {
+    display: flex;
+}
+
+.fallback-inner {
+    text-align: center;
+}
+
+.fallback-inner svg,
+.fallback-inner .fallback-logo {
+    width: clamp(190px, 24vmin, 360px);
+    height: auto;
+    margin-bottom: 0.5rem;
+    opacity: 1;
+}
+
+.fallback-inner h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.fallback-inner p {
+    color: var(--player-text-muted);
+    white-space: pre-line;
+    line-height: 1.8;
+}
+
+/* Status Bar - Hidden by default, show on activity */
+.status-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+    color: var(--player-text);
+    font-size: 0.875rem;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.status-bar.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.status-left,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.status-center {
+    flex: 1;
+    text-align: center;
+    color: var(--player-text-muted);
+}
+
+.status-icon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--player-error);
+}
+
+.status-icon.online {
+    background: var(--player-success);
+    box-shadow: 0 0 8px var(--player-success);
+}
+
+.status-icon.offline {
+    background: var(--player-error);
+}
+
+/* ==================== Error Screen ==================== */
+#error-screen {
+    background: var(--player-bg);
+}
+
+.error-content {
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-icon {
+    margin-bottom: 1.5rem;
+}
+
+.error-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.error-message {
+    color: var(--player-text-muted);
+    margin-bottom: 2rem;
+}
+
+.btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 2rem;
+    background: var(--player-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-retry:hover {
+    background: var(--player-primary-light);
+    transform: translateY(-1px);
+}
+
+.btn-retry:active {
+    transform: translateY(0);
+}
+
+/* ==================== Debug Panel ==================== */
+.debug-panel {
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    width: 400px;
+    max-height: 300px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--player-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    z-index: 1000;
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: var(--player-bg-secondary);
+    border-bottom: 1px solid var(--player-border);
+}
+
+.debug-header button {
+    background: none;
+    border: none;
+    color: var(--player-text-muted);
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+
+.debug-content {
+    padding: 0.5rem;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.debug-content pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--player-text-muted);
+}
+
+/* ==================== Message Overlay ==================== */
+.message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.message-content {
+    padding: 2rem 4rem;
+    background: var(--player-bg-secondary);
+    border-radius: 1rem;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 80%;
+}
+
+/* ==================== Responsive ==================== */
+
+/* Landscape mode - ANY width (TV, tablet, phone landscape) */
+@media (orientation: landscape) {
+    #registration-screen {
+        padding: 2vmin;
+    }
+
+    .registration-content {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        max-width: 98vw;
+        gap: 3vmin;
+    }
+
+    .registration-header {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+        text-align: center;
+    }
+
+    .sync-code-container {
+        flex: 1 1 auto;
+        max-width: 55vw;
+        min-width: 300px;
+    }
+
+    .device-info {
+        flex: 0 1 auto;
+        max-width: 30vw;
+        min-width: 200px;
+    }
+
+    .qr-container {
+        flex: 0 0 auto;
+    }
+
+    .sync-code {
+        font-size: clamp(2rem, 8vmin, 8rem);
+    }
+}
+
+/* Large landscape screens (TV, signage displays) */
+@media (min-width: 1200px) and (orientation: landscape) {
+    #registration-screen {
+        padding: 3vmin;
+    }
+
+    .registration-content {
+        gap: 4vmin;
+    }
+
+    .sync-code-container {
+        max-width: 50vw;
+    }
+
+    .device-info {
+        max-width: 35vmin;
+    }
+}
+
+/* Extra large screens (4K, large TVs) */
+@media (min-width: 1920px) {
+    .sync-code {
+        font-size: clamp(4rem, 8vmin, 10rem);
+    }
+
+    .registration-header h1 {
+        font-size: clamp(2rem, 4vmin, 4rem);
+    }
+
+    .registration-header p {
+        font-size: clamp(1rem, 2vmin, 2rem);
+    }
+}
+
+/* Portrait mode (vertical screens) */
+@media (orientation: portrait) {
+    .registration-content {
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 3vmin;
+        padding-bottom: 3vmin;
+    }
+
+    .sync-code {
+        font-size: clamp(2rem, 10vw, 6rem);
+    }
+}
+
+/* Small screens - portrait (mobile) */
+@media (max-width: 640px) and (orientation: portrait) {
+    #registration-screen {
+        padding: 6px;
+    }
+
+    .registration-content {
+        padding: 6px;
+        gap: 1rem;
+    }
+
+    .sync-code {
+        font-size: clamp(1.75rem, 12vw, 3rem);
+        letter-spacing: 0.15em;
+    }
+
+    .sync-code-container {
+        padding: 0.75rem;
+    }
+
+    .device-info {
+        padding: 0.75rem;
+    }
+
+    .debug-panel {
+        width: calc(100% - 12px);
+        right: 6px;
+        left: 6px;
+    }
+}
+
+/* Small screens - landscape (mobile landscape) */
+@media (max-height: 500px) and (orientation: landscape) {
+    #registration-screen {
+        padding: 8px;
+    }
+
+    .registration-content {
+        padding: 8px;
+        gap: 2vmin;
+    }
+
+    .registration-header {
+        display: none; /* Hide header to save space */
+    }
+
+    .sync-code {
+        font-size: clamp(1.5rem, 10vh, 3rem);
+    }
+
+    .sync-code-container {
+        padding: 0.5rem;
+    }
+
+    .device-info {
+        padding: 0.5rem;
+    }
+
+    .info-row {
+        padding: 0.25rem 0;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 400px) {
+    .sync-code {
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+    }
+
+    .loading-title {
+        font-size: 1.25rem;
+    }
+
+    .registration-header h1 {
+        font-size: 1.25rem;
+    }
+}
+
+/* ==================== Fullscreen Adjustments ==================== */
+/* In fullscreen, status bar is still hidden by default but can show on activity */
+:fullscreen .status-bar,
+:-webkit-full-screen .status-bar,
+:-moz-full-screen .status-bar {
+    /* Keep same visibility behavior - hidden by default, visible on activity */
+    opacity: 0;
+    transform: translateY(100%);
+    pointer-events: none;
+}
+
+:fullscreen .status-bar.visible,
+:-webkit-full-screen .status-bar.visible,
+:-moz-full-screen .status-bar.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* ==================== Animations ==================== */
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.registration-content > * {
+    animation: slideUp 0.5s ease forwards;
+}
+
+.registration-content > *:nth-child(1) { animation-delay: 0.1s; }
+.registration-content > *:nth-child(2) { animation-delay: 0.2s; }
+.registration-content > *:nth-child(3) { animation-delay: 0.3s; }
+.registration-content > *:nth-child(4) { animation-delay: 0.4s; }
+
+/* ==================== Transitions ==================== */
+.screen {
+    transition: opacity 0.3s ease;
+}
+
+.content-item {
+    transition: opacity 0.5s ease;
+}
+
+/* ==================== Global PWA Install Button ==================== */
+.pwa-install-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+    right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    z-index: 1500;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(10, 10, 20, 0.7);
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.pwa-install-btn.visible {
+    display: inline-flex !important;
+}
+
+.pwa-install-btn:hover,
+.pwa-install-btn:focus-visible {
+    background: rgba(79, 70, 229, 0.85);
+    border-color: rgba(129, 140, 248, 0.9);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+/* ==================== PWA Install Modal ==================== */
+.pwa-install-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.pwa-install-modal.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.pwa-install-content {
+    background: var(--player-bg-secondary);
+    border: 1px solid var(--player-border);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.pwa-install-modal.visible .pwa-install-content {
+    transform: scale(1) translateY(0);
+}
+
+.pwa-install-icon {
+    margin-bottom: 1.5rem;
+}
+
+.pwa-install-content h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, var(--player-primary) 0%, var(--player-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pwa-install-content > p {
+    color: var(--player-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.pwa-install-features {
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    color: var(--player-text);
+    font-size: 0.9rem;
+}
+
+.feature-item svg {
+    color: var(--player-success);
+    flex-shrink: 0;
+}
+
+.pwa-install-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-install {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--player-primary) 0%, var(--player-primary-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-install:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+}
+
+.btn-install:active {
+    transform: translateY(0);
+}
+
+.btn-install-apk {
+    background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+}
+
+.btn-install-apk:hover {
+    box-shadow: 0 10px 30px rgba(14, 165, 233, 0.35);
+}
+
+.btn-skip {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    color: var(--player-text-muted);
+    border: 1px solid var(--player-border);
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-skip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--player-text);
+    border-color: var(--player-text-muted);
+}
+
+/* Manual install instructions for iOS/Android */
+.manual-install-hint {
+    background: rgba(79, 70, 229, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.manual-install-hint p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.manual-install-hint strong {
+    color: var(--player-primary-light);
+}
+
+/* ==================== Toast Notifications ==================== */
+.player-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: rgba(30, 30, 46, 0.95);
+    border-radius: 12px;
+    border: 1px solid var(--player-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10000;
+    max-width: 400px;
+    backdrop-filter: blur(8px);
+}
+
+.player-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.player-toast .toast-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.player-toast .toast-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.player-toast .toast-message {
+    font-size: 14px;
+    color: var(--player-text);
+    line-height: 1.4;
+}
+
+/* Toast type colors */
+.player-toast.toast-info {
+    border-color: var(--player-primary);
+}
+.player-toast.toast-info .toast-icon {
+    color: var(--player-primary-light);
+}
+
+.player-toast.toast-success {
+    border-color: var(--player-success);
+}
+.player-toast.toast-success .toast-icon {
+    color: var(--player-success);
+}
+
+.player-toast.toast-warning {
+    border-color: var(--player-warning);
+}
+.player-toast.toast-warning .toast-icon {
+    color: var(--player-warning);
+}
+
+.player-toast.toast-error {
+    border-color: var(--player-error);
+}
+.player-toast.toast-error .toast-icon {
+    color: var(--player-error);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .player-toast {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+}
+
+/* ==================== PWA Standalone Mode - Mobile Optimized ==================== */
+/*
+ * Strategy:
+ * - Status bar and navigation bar are ALWAYS visible (standalone mode)
+ * - Content fills EXACTLY the space between system bars - NO gaps
+ * - System bar colors follow device theme (not overridden)
+ * - Works consistently on ALL Android devices
+ */
+@media all and (display-mode: standalone),
+       all and (display-mode: minimal-ui) {
+    /* Root element - use small viewport height which excludes system bars */
+    html {
+        width: 100%;
+        height: 100svh; /* Small viewport = safe area only */
+        height: -webkit-fill-available;
+        overflow: hidden !important;
+        background: #000;
+    }
+
+    /* Body fills the safe area between system bars */
+    body {
+        width: 100%;
+        height: 100svh;
+        height: -webkit-fill-available;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important; /* NO padding - content fills entire safe area */
+        background: #000;
+        /* Position fixed to prevent any scroll */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+
+    /* Screens fill the body completely */
+    .screen {
+        width: 100% !important;
+        height: 100% !important;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Player screen - edge to edge within safe area */
+    #player-screen,
+    #player-screen .content-container {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Content items fill the entire container */
+    #player-screen .content-item {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Video/images keep ratio in standalone mode to avoid stretch artifacts */
+    #player-screen video,
+    #player-screen img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+        object-position: center center !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Iframe fills completely */
+    #player-screen iframe {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* iOS PWA specific - also needs fill behavior */
+@supports (-webkit-touch-callout: none) {
+    @media all and (display-mode: standalone) {
+        html {
+            height: -webkit-fill-available;
+        }
+
+        body {
+            height: -webkit-fill-available;
+            min-height: -webkit-fill-available;
+            padding: 0 !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .screen {
+            min-height: -webkit-fill-available;
+        }
+
+        #player-screen video,
+        #player-screen img {
+            object-fit: contain !important;
+        }
+    }
+}
+
+/* Android standalone - ensure no gaps on any device */
+@media all and (display-mode: standalone) {
+    body {
+        /* Explicitly remove any safe area padding */
+        padding: 0 !important;
+        /* System bars are handled by Android itself in standalone mode */
+    }
+
+    #player-screen video,
+    #player-screen img {
+        object-fit: contain !important;
+    }
+}
+
+/* Samsung Internet / One UI specific */
+@supports (-webkit-appearance: none) and (not (-moz-appearance: none)) {
+    @media all and (display-mode: standalone) {
+        html, body {
+            height: 100svh;
+        }
+
+        #player-screen video,
+        #player-screen img {
+            object-fit: contain !important;
+        }
+    }
+}
+
+/* ==================== Print (Disable) ==================== */
+@media print {
+    body {
+        display: none;
+    }
+}
+
+/* ==================== Registration Refresh ==================== */
+#registration-screen {
+    padding: clamp(10px, 2.4vmin, 26px) !important;
+    overflow: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+#registration-screen .registration-content {
+    width: min(1200px, 100%);
+    max-width: none;
+    margin: 0 auto;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(260px, 380px);
+    grid-template-areas:
+        "header side"
+        "code side"
+        "qr side";
+    align-items: start;
+    align-content: center;
+    gap: clamp(12px, 2vmin, 24px);
+}
+
+#registration-screen .registration-header {
+    grid-area: header;
+    margin: 0;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(16, 28, 58, 0.9) 0%, rgba(12, 22, 47, 0.82) 100%);
+    border: 1px solid rgba(105, 126, 171, 0.3);
+    border-radius: 18px;
+    padding: clamp(12px, 2.1vmin, 24px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 1.2vmin, 14px);
+}
+
+#registration-screen .registration-header h1,
+#registration-screen .registration-header p {
+    text-align: center;
+}
+
+#registration-screen .sync-code-container {
+    grid-area: code;
+    width: 100%;
+    max-width: none;
+    padding: clamp(14px, 2.8vmin, 34px);
+}
+
+#registration-screen .device-info {
+    grid-area: side;
+    width: 100%;
+    max-width: none;
+    margin-top: 0;
+}
+
+#registration-screen .qr-container {
+    grid-area: qr;
+    justify-self: center;
+    margin-top: 0;
+}
+
+#registration-screen .sync-code {
+    font-size: clamp(2.2rem, 9.4vw, 6.8rem);
+    letter-spacing: clamp(0.08em, 0.7vw, 0.18em);
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    line-height: 1;
+}
+
+#registration-screen .sync-code-label,
+#registration-screen .sync-code-hint {
+    white-space: normal;
+}
+
+@media (min-width: 1360px) and (orientation: landscape) {
+    #registration-screen {
+        align-items: center;
+        justify-content: center;
+        padding: clamp(10px, 1.8vmin, 20px);
+    }
+
+    #registration-screen .registration-content {
+        width: min(1480px, 100%);
+        grid-template-columns: minmax(220px, 0.9fr) minmax(560px, 1.6fr) minmax(280px, 1fr);
+        grid-template-areas:
+            "header code side"
+            "header code qr";
+        align-items: center;
+        column-gap: clamp(18px, 2.6vmin, 36px);
+        row-gap: clamp(14px, 2.2vmin, 28px);
+    }
+
+    #registration-screen .registration-header {
+        align-self: stretch;
+        min-height: clamp(260px, 34vmin, 420px);
+    }
+
+    #registration-screen .sync-code-container {
+        min-height: clamp(320px, 38vmin, 470px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    #registration-screen .device-info {
+        align-self: start;
+    }
+
+    #registration-screen .qr-container {
+        align-self: center;
+    }
+}
+
+@media (min-width: 1100px) and (orientation: landscape) {
+    body.device-tv #registration-screen .registration-content {
+        width: min(1760px, 100%);
+        grid-template-columns: minmax(200px, 0.85fr) minmax(0, 1.45fr) minmax(240px, 1fr);
+        grid-template-areas:
+            "header code code"
+            "header side qr";
+        align-items: stretch;
+        align-content: center;
+    }
+
+    body.device-tv #registration-screen .device-info,
+    body.device-tv #registration-screen .qr-container {
+        margin: 0;
+        width: 100%;
+        background: linear-gradient(180deg, rgba(16, 28, 58, 0.9) 0%, rgba(12, 22, 47, 0.82) 100%);
+        border: 1px solid rgba(105, 126, 171, 0.3);
+        border-radius: 16px;
+        padding: clamp(10px, 1.4vmin, 14px);
+    }
+
+    body.device-tv #registration-screen .device-info {
+        align-self: stretch;
+    }
+
+    body.device-tv #registration-screen .qr-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        align-self: stretch;
+    }
+
+    body.device-tv #registration-screen #qr-code canvas,
+    body.device-tv #registration-screen #qr-code img {
+        width: clamp(120px, 18vmin, 180px) !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 980px), (orientation: portrait) {
+    #registration-screen {
+        padding: clamp(15px, 4vw, 26px) !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #registration-screen .registration-content {
+        width: min(560px, 100%);
+        margin: auto;
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "code"
+            "side"
+            "qr";
+        row-gap: clamp(10px, 2.4vmin, 18px);
+    }
+
+    #registration-screen .registration-header,
+    #registration-screen .sync-code-container,
+    #registration-screen .device-info {
+        width: 100%;
+    }
+
+    #registration-screen .qr-container {
+        justify-self: center;
+        align-self: center;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    #registration-screen .sync-code {
+        font-size: clamp(2rem, 14vw, 3.9rem);
+        letter-spacing: 0.12em;
+    }
+
+    #registration-screen .info-row {
+        gap: 0.5rem;
+    }
+}
+
+@media (min-width: 1100px) and (orientation: landscape) and (max-height: 860px) {
+    body.device-tv #registration-screen {
+        padding: clamp(8px, 1.2vmin, 14px) !important;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+
+    body.device-tv #registration-screen .registration-content {
+        width: min(1760px, 100%);
+        max-width: none;
+        min-height: 0;
+        padding: clamp(8px, 1.3vmin, 14px) clamp(12px, 2.2vmin, 28px);
+        grid-template-columns: minmax(200px, 0.85fr) minmax(0, 1.45fr) minmax(240px, 1fr);
+        grid-template-areas:
+            "header code code"
+            "header side qr";
+        align-items: stretch;
+        align-content: center;
+        column-gap: clamp(10px, 1.8vmin, 20px);
+        row-gap: clamp(8px, 1.4vmin, 14px);
+    }
+
+    body.device-tv #registration-screen .registration-header {
+        min-height: 0;
+        padding: clamp(10px, 1.8vmin, 18px);
+    }
+
+    body.device-tv #registration-screen .sync-code-container {
+        min-height: 0;
+        padding: clamp(12px, 2vmin, 20px);
+    }
+
+    body.device-tv #registration-screen .sync-code {
+        font-size: clamp(2rem, 9vh, 4.8rem);
+        letter-spacing: clamp(0.05em, 0.4vw, 0.12em);
+    }
+
+    body.device-tv #registration-screen .sync-code-hint {
+        margin-top: clamp(4px, 0.8vmin, 10px);
+    }
+
+    body.device-tv #registration-screen .sync-code-timer {
+        width: 100%;
+        justify-content: center;
+        margin-top: clamp(6px, 1vmin, 10px);
+    }
+
+    body.device-tv #registration-screen .device-info,
+    body.device-tv #registration-screen .qr-container {
+        margin: 0;
+        width: 100%;
+        background: linear-gradient(180deg, rgba(16, 28, 58, 0.9) 0%, rgba(12, 22, 47, 0.82) 100%);
+        border: 1px solid rgba(105, 126, 171, 0.3);
+        border-radius: 16px;
+        padding: clamp(10px, 1.4vmin, 14px);
+    }
+
+    body.device-tv #registration-screen .device-info {
+        margin: 0;
+        align-self: stretch;
+    }
+
+    body.device-tv #registration-screen .device-info .info-row {
+        padding: clamp(0.2rem, 0.6vmin, 0.45rem) 0;
+    }
+
+    body.device-tv #registration-screen .qr-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        align-self: stretch;
+    }
+
+    body.device-tv #registration-screen #qr-code canvas,
+    body.device-tv #registration-screen #qr-code img {
+        width: clamp(120px, 18vmin, 180px) !important;
+        height: auto !important;
+    }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+    body:not(.device-tv) #registration-screen .registration-content {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "code"
+            "side";
+    }
+
+    body:not(.device-tv) #registration-screen .registration-header,
+    body:not(.device-tv) #registration-screen .qr-container {
+        display: none;
+    }
+}
+
+/* TV profile: keep header visible, prevent vertical stacking and force side+QR row */
+body.device-tv #registration-screen {
+    padding: clamp(8px, 1.3vmin, 16px) !important;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+}
+
+body.device-tv #registration-screen .registration-content {
+    width: min(1760px, 100%);
+    max-width: none;
+    height: 100%;
+    min-height: 0;
+    padding: clamp(8px, 1.2vmin, 14px) clamp(10px, 1.8vmin, 24px);
+    grid-template-columns: minmax(190px, 0.8fr) minmax(0, 1.35fr) minmax(220px, 0.95fr);
+    grid-template-areas:
+        "header code code"
+        "header side qr";
+    align-items: stretch;
+    align-content: center;
+    column-gap: clamp(8px, 1.5vmin, 18px);
+    row-gap: clamp(8px, 1.3vmin, 14px);
+}
+
+body.device-tv #registration-screen .registration-header {
+    min-height: 0;
+    padding: clamp(10px, 1.6vmin, 16px);
+}
+
+body.device-tv #registration-screen .sync-code-container {
+    min-height: 0;
+    padding: clamp(10px, 1.8vmin, 18px);
+}
+
+body.device-tv #registration-screen .sync-code {
+    font-size: clamp(1.9rem, 7.6vh, 4.6rem);
+    letter-spacing: clamp(0.04em, 0.35vw, 0.1em);
+}
+
+body.device-tv #registration-screen .sync-code-hint {
+    margin-top: clamp(4px, 0.8vmin, 10px);
+}
+
+body.device-tv #registration-screen .sync-code-timer {
+    width: 100%;
+    justify-content: center;
+    margin-top: clamp(6px, 1vmin, 10px);
+}
+
+body.device-tv #registration-screen .device-info,
+body.device-tv #registration-screen .qr-container {
+    margin: 0;
+    width: 100%;
+    background: linear-gradient(180deg, rgba(16, 28, 58, 0.9) 0%, rgba(12, 22, 47, 0.82) 100%);
+    border: 1px solid rgba(105, 126, 171, 0.3);
+    border-radius: 16px;
+    padding: clamp(10px, 1.4vmin, 14px);
+}
+
+body.device-tv #registration-screen .device-info {
+    align-self: stretch;
+}
+
+body.device-tv #registration-screen .device-info .info-row {
+    padding: clamp(0.2rem, 0.6vmin, 0.45rem) 0;
+}
+
+body.device-tv #registration-screen .qr-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    align-self: stretch;
+}
+
+body.device-tv #registration-screen #qr-code canvas,
+body.device-tv #registration-screen #qr-code img {
+    width: clamp(116px, 16vmin, 178px) !important;
+    height: auto !important;
+}
+
+@media (max-width: 1200px) {
+    body.device-tv #registration-screen .registration-content {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "header header"
+            "code code"
+            "side qr";
+        row-gap: clamp(8px, 1.3vmin, 12px);
+    }
+}
+
+/* ==================== Floating Actions ==================== */
+.floating-install-actions {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+    right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    z-index: 1500;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.floating-install-actions .pwa-install-btn,
+.floating-install-actions .apk-install-btn {
+    position: static;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.floating-install-actions .pwa-install-btn {
+    background: rgba(37, 99, 235, 0.78);
+}
+
+.floating-install-actions .apk-install-btn {
+    background: rgba(15, 118, 110, 0.84);
+}
+
+.floating-install-actions .pwa-install-btn:hover,
+.floating-install-actions .apk-install-btn:hover,
+.floating-install-actions .pwa-install-btn:focus-visible,
+.floating-install-actions .apk-install-btn:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.9);
+    outline: none;
+}
+
+.orientation-toggle-btn {
+    position: fixed;
+    right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+    z-index: 1500;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.orientation-toggle-btn.visible {
+    display: inline-flex !important;
+}
+
+.orientation-toggle-btn.portrait svg {
+    transform: rotate(90deg);
+}
+
+.orientation-toggle-btn:hover,
+.orientation-toggle-btn:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.9);
+    outline: none;
+}

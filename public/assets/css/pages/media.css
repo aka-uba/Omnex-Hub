@@ -1,0 +1,883 @@
+/**
+ * Omnex Display Hub - Media Library Page Styles
+ * Card/List view with DataTable, hover popup, bulk selection
+ */
+
+/* ===========================================
+   MEDIA TOOLBAR
+   =========================================== */
+
+.media-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    padding-bottom: 0;
+}
+
+.media-toolbar-top {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.media-toolbar-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.media-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+}
+
+.media-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.media-toolbar-right .form-select {
+    width: auto;
+    min-width: 120px;
+    padding-right: 2.5rem;
+}
+
+.media-toolbar-right .form-select-sm {
+    padding-right: 2.25rem;
+}
+
+.media-search {
+    position: relative;
+    flex: 1;
+    max-width: 300px;
+}
+
+.media-search i {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.media-search input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.media-search input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+}
+
+.media-search input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ===========================================
+   VIEW TOGGLE (same as templates)
+   =========================================== */
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 2px;
+}
+
+.view-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.view-toggle-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+.view-toggle-btn.active {
+    background: var(--bg-primary);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.view-toggle-btn i {
+    font-size: 1.125rem;
+}
+
+/* ===========================================
+   MEDIA BREADCRUMB
+   =========================================== */
+
+.media-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.media-breadcrumb-path {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===========================================
+   MEDIA GRID
+   =========================================== */
+
+/* Ana card container - app.css'deki padding'i override et */
+.card:has(.media-toolbar) {
+    padding: 0;
+}
+
+/* Media container - Grid ve Table ortak */
+#media-container {
+    padding: var(--space-4);
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+}
+
+/* Media Table (Liste görünümü) */
+#media-table {
+    /* DataTable container */
+}
+
+/* ===========================================
+   MEDIA CARD
+   =========================================== */
+
+.media-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    position: relative;
+    cursor: pointer;
+}
+
+.media-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.media-card.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.2);
+}
+
+/* Card Checkbox */
+.media-card-checkbox {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.media-card:hover .media-card-checkbox,
+.media-card.selected .media-card-checkbox {
+    opacity: 1;
+}
+
+.media-card-checkbox.has-lock {
+    opacity: 1;
+}
+
+.media-card-checkbox .form-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+.media-card-checkbox .form-checkbox:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.media-card-checkbox .selection-lock-indicator {
+    margin-left: 6px;
+}
+
+/* Card Preview - Template card ile aynı (180px) */
+.media-card-preview {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+    padding: var(--space-3);
+}
+
+.media-card-preview img,
+.media-card-preview video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.media-card-preview video.media-video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-card-preview i {
+    font-size: 3rem;
+    color: var(--text-muted);
+}
+
+/* Card Placeholder */
+.media-card-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    padding: var(--space-4);
+    width: 100%;
+    height: 100%;
+}
+
+.media-card-placeholder i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+/* Preview button (hover'da görünür) */
+.media-preview-btn {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.media-preview-btn i {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.media-card:hover .media-preview-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.media-preview-btn:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.media-preview-btn:hover i {
+    color: white;
+}
+
+/* Card Body */
+.media-card-body {
+    padding: var(--space-4);
+}
+
+.media-card-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0 0 var(--space-1) 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.media-card-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin: 0 0 var(--space-2) 0;
+}
+
+/* Card Footer - Template card ile aynı */
+.media-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-light);
+}
+
+.media-card-footer .badge {
+    font-size: var(--text-xs);
+}
+
+.media-card-actions {
+    display: flex;
+    gap: var(--space-1);
+}
+
+/* Folder Card */
+.media-card.media-folder .media-card-preview {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.media-folder-icon {
+    font-size: 3rem;
+    color: #f59e0b;
+}
+
+/* ===========================================
+   MEDIA EMPTY STATE
+   =========================================== */
+
+.media-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12);
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.media-empty i {
+    font-size: 3rem;
+    margin-bottom: var(--space-3);
+    opacity: 0.5;
+}
+
+.media-empty p {
+    font-size: var(--text-sm);
+    margin: 0;
+}
+
+/* ===========================================
+   SKELETON LOADING
+   =========================================== */
+
+.media-card.skeleton .media-card-preview {
+    background: var(--bg-tertiary);
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+    height: 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-2);
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.w-75 {
+    width: 75%;
+}
+
+.skeleton-line.w-50 {
+    width: 50%;
+}
+
+/* @keyframes skeleton-pulse - global.css'de tanımlı */
+
+/* ===========================================
+   MEDIA TABLE PREVIEW (Liste görünümü için)
+   =========================================== */
+
+.media-table-preview {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.media-table-preview img,
+.media-table-preview video {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.media-table-preview video.media-video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-table-preview i {
+    font-size: 1.5rem;
+}
+
+.media-table-preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--text-muted);
+}
+
+.media-table-preview-placeholder i {
+    font-size: 1.5rem;
+    opacity: 0.5;
+}
+
+/* ===========================================
+   IMAGE HOVER POPUP (Liste görünümü için)
+   =========================================== */
+
+.image-hover-popup {
+    position: fixed;
+    z-index: var(--z-tooltip, 600);
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: var(--space-2);
+    max-width: 300px;
+    max-height: 400px;
+}
+
+.image-hover-popup.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.image-hover-popup img {
+    display: block;
+    max-width: 100%;
+    max-height: 380px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+/* ===========================================
+   BULK ACTIONS BAR
+   =========================================== */
+
+.bulk-actions-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    margin: var(--space-3) var(--space-4) 0;
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-lg);
+}
+
+.bulk-actions-bar.visible {
+    display: flex;
+}
+
+.bulk-actions-bar .bulk-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-primary);
+}
+
+.bulk-actions-bar .bulk-info i {
+    font-size: 1.25rem;
+}
+
+.bulk-actions-bar .bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.bulk-actions-bar .btn-clear {
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    padding: var(--space-2);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.bulk-actions-bar .btn-clear:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+}
+
+/* ===========================================
+   UPLOAD PROGRESS
+   =========================================== */
+
+.upload-progress {
+    position: fixed;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    min-width: 300px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: var(--space-4);
+    z-index: var(--z-modal, 500);
+}
+
+.upload-progress-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.upload-progress-text {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.upload-progress-bar {
+    height: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.upload-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary) 0%, #818cf8 100%);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* ===========================================
+   HIDDEN UTILITY
+   =========================================== */
+
+.hidden {
+    display: none !important;
+}
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+
+@media (max-width: 1280px) {
+    .media-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .media-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .media-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .media-toolbar-left {
+        order: 2;
+    }
+
+    .media-toolbar-right {
+        order: 1;
+        justify-content: space-between;
+    }
+
+    .media-search {
+        max-width: 100%;
+        order: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .media-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .media-card-preview {
+        height: 120px;
+    }
+
+    .media-card-body {
+        padding: 10px;
+    }
+
+    .media-card-title {
+        font-size: var(--text-sm);
+    }
+
+    .media-card-meta {
+        font-size: var(--text-xs);
+    }
+
+    /* Media container padding */
+    #media-container {
+        padding: 10px;
+    }
+
+    /* Toolbar - stack */
+    .media-toolbar {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .media-toolbar-left {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .media-search {
+        max-width: none;
+    }
+
+    .media-toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .media-toolbar-right .btn {
+        flex: 1;
+    }
+
+    .media-toolbar-right .btn span {
+        display: none;
+    }
+
+    .view-toggle {
+        flex-shrink: 0;
+    }
+
+    /* Bulk actions bar - stack */
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        margin: 0 var(--space-3);
+    }
+
+    .bulk-actions-bar .bulk-info {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bulk-actions-bar .bulk-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .bulk-actions-bar .bulk-actions .btn {
+        flex: 1;
+        min-width: calc(50% - var(--space-1));
+    }
+
+    /* Card footer - template ile aynı yatay düzen */
+    .media-card-footer {
+        margin-top: var(--space-2);
+        padding-top: var(--space-2);
+        flex-direction: row;
+        gap: var(--space-2);
+    }
+
+    .media-card-actions {
+        gap: var(--space-1);
+    }
+
+    .media-card-actions .btn-sm {
+        padding: var(--space-1) var(--space-2);
+        font-size: var(--text-xs);
+    }
+
+    /* Table preview smaller */
+    .media-table-preview {
+        width: 48px;
+        height: 48px;
+    }
+
+    /* Upload progress */
+    .upload-progress {
+        left: var(--space-3);
+        right: var(--space-3);
+        min-width: auto;
+        bottom: var(--space-3);
+    }
+}
+
+/* ===========================================
+   MEDIA PAGINATION (Grid View)
+   =========================================== */
+
+.media-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.media-pagination-info {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.media-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.media-pagination-pages {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    padding: 0 var(--space-2);
+}
+
+.media-pagination-controls .btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-pagination-controls .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .media-pagination {
+        flex-direction: column;
+        gap: var(--space-3);
+        text-align: center;
+    }
+}
+
+/* ===========================================
+   MEDIA PREVIEW MODAL INFO BOX
+   =========================================== */
+
+.media-preview-info {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+}
+
+.media-preview-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.media-preview-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.media-preview-info-label {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+}
+
+.media-preview-info-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* ===========================================
+   MEDIA SETTINGS INFO BOX
+   =========================================== */
+
+.media-settings-info {
+    background: rgba(34, 139, 230, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+}
+
+.dark .media-settings-info {
+    background: rgba(34, 139, 230, 0.15);
+}

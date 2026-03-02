@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: market-etiket-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: market_etiket
+      POSTGRES_USER: market_user
+      POSTGRES_PASSWORD: market_pass
+      TZ: Europe/Istanbul
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  app:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: market-etiket-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      OMNEX_DB_DRIVER: pgsql
+      OMNEX_DB_PROFILE: docker
+      OMNEX_DB_HOST: postgres
+      OMNEX_DB_PORT: 5432
+      OMNEX_DB_NAME: market_etiket
+      OMNEX_DB_USER: market_user
+      OMNEX_DB_PASS: market_pass
+      OMNEX_DB_SSLMODE: disable
+      OMNEX_DB_CONNECT_TIMEOUT: 5
+      OMNEX_DB_APP_NAME: market-etiket-sistemi-docker
+      OMNEX_DB_SEARCH_PATH: core,license,catalog,branch,labels,media,devices,signage,integration,audit,legacy,public
+      APP_URL: http://localhost:8081
+      OMNEX_PRODUCTION: "false"
+      TZ: Europe/Istanbul
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html
+
+volumes:
+  postgres_data:

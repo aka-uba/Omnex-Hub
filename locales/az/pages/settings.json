@@ -1,0 +1,1202 @@
+{
+    "title": "Parametrlər",
+    "subtitle": "Sistem parametrlərini konfiqurasiya edin",
+    "breadcrumb": {
+        "panel": "Panel",
+        "settings": "Parametrlər",
+        "general": "Ümumi Parametrlər",
+        "users": "İstifadəçi Parametrləri",
+        "integrations": "İnteqrasiyalar",
+        "labels": "Etiket Ölçüləri"
+    },
+    "nav": {
+        "general": "General",
+        "users": "İstifadəçilər",
+        "integrations": "İnteqrasiyalar"
+    },
+    "profile": {
+        "title": "Profil",
+        "subtitle": "Şəxsi məlumatlarınızı və hesab parametrlərinizi idarə edin",
+        "loadFailed": "İstifadəçi məlumatını yükləmək alınmadı",
+        "personalInfo": "Şəxsi məlumat",
+        "changePassword": "Parolun dəyişdirilməsi",
+        "changePasswordBtn": "Parolun dəyişdirilməsi",
+        "accountInfo": "Hesab Məlumatı",
+        "company": "Şirkət",
+        "role": "Rol",
+        "createdAt": "Hesab Yaradıldı",
+        "lastLogin": "Son Giriş",
+        "form": {
+            "firstName": "Ad",
+            "lastName": "Soyadı",
+            "email": "E-poçt",
+            "phone": "Telefon",
+            "currentPassword": "Cari Parol",
+            "newPassword": "Yeni Parol",
+            "confirmPassword": "Yeni Parol (Təsdiq et)"
+        },
+        "avatar": {
+            "title": "Profil şəkli",
+            "selectFile": "Fayl seçin",
+            "remove": "Fotonu silin"
+        },
+        "toast": {
+            "updated": "Profil yeniləndi",
+            "avatarUpdated": "Profil şəkli yeniləndi",
+            "avatarRemoved": "Profil şəkli silindi",
+            "passwordChanged": "Parol uğurla dəyişdirildi"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "Super Admin",
+        "Admin": "Admin",
+        "Manager": "menecer",
+        "Editor": "redaktor",
+        "Viewer": "İzləyici"
+    },
+    "users": {
+        "title": "İstifadəçilər",
+        "subtitle": "İstifadəçiləri idarə edin və redaktə edin",
+        "addUser": "İstifadəçi əlavə et",
+        "editUser": "İstifadəçini redaktə et",
+        "deleteUser": "İstifadəçini silin",
+        "noUsers": "Hələ heç bir istifadəçi tapılmadı",
+        "table": {
+            "user": "İstifadəçi",
+            "email": "E-poçt",
+            "role": "Rol",
+            "status": "Vəziyyət"
+        },
+        "status": {
+            "active": "Aktiv",
+            "inactive": "Qeyri-aktiv"
+        },
+        "fields": {
+            "firstName": "Ad",
+            "lastName": "Soyadı",
+            "email": "E-poçt",
+            "password": "parol",
+            "role": "Rol"
+        },
+        "placeholders": {
+            "selectRole": "Rol seçin"
+        },
+        "roles": {
+            "admin": "Admin",
+            "editor": "redaktor",
+            "viewer": "İzləyici"
+        },
+        "deleteConfirm": "Bu istifadəçini silmək istədiyinizə əminsiniz?",
+        "toast": {
+            "created": "İstifadəçi yaradılmışdır",
+            "updated": "İstifadəçi yeniləndi",
+            "deleted": "İstifadəçi silindi"
+        }
+    },
+    "saveChanges": "Dəyişiklikləri Saxla",
+    "tabs": {
+        "general": "General",
+        "branding": "Brendləşmə",
+        "email": "E-poçt / SMTP",
+        "barcode": "Barkod"
+    },
+    "general": {
+        "title": "Ümumi Parametrlər",
+        "subtitle": "Sistem miqyasında konfiqurasiya parametrləri",
+        "sections": {
+            "company": "Şirkət Məlumatı",
+            "system": "Sistem Parametrləri",
+            "locale": "Regional Parametrlər",
+            "appearance": "Görünüş"
+        },
+        "fields": {
+            "companyName": "Şirkət Adı",
+            "companyPhone": "Telefon",
+            "companyAddress": "Ünvan",
+            "timezone": "Saat qurşağı",
+            "language": "Dil",
+            "currency": "Valyuta",
+            "dateFormat": "Tarix Format",
+            "theme": "Mövzu"
+        },
+        "placeholders": {
+            "companyName": "Şirkət adı",
+            "companyPhone": "+90 xxx xxx xx xx",
+            "companyAddress": "Şirkət ünvanı"
+        },
+        "languages": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "currencies": {
+            "TRY": "Türk Lirəsi (₺)",
+            "USD": "ABŞ Dolları ($)",
+            "EUR": "Avro (€)",
+            "GBP": "Britaniya funtu (£)",
+            "RUB": "Rusiya rublu (₽)",
+            "AZN": "Azərbaycan Manatı (₼)"
+        },
+        "themes": {
+            "light": "İşıq",
+            "dark": "Qaranlıq",
+            "auto": "Avtomatik"
+        }
+    },
+    "branding": {
+        "title": "Sistem Brend Aktivləri",
+        "description": "Sistemin defolt brendinq aktivləri burada göstərilir. Bu aktivlər yalnız oxunur və yalnız ictimai/brendinq qovluğundan tərtibatçı tərəfindən əl ilə dəyişdirilə bilər. Şirkət əsaslı aktivlər üçün Şirkət İdarəetmə səhifəsindən istifadə edin.",
+        "logoLight": "Loqo (Yüngül Tema)",
+        "logoDark": "Loqo (Qaranlıq Tema)",
+        "favicon": "Favikon",
+        "pwaIcon": "PWA İkonu",
+        "file": "Fayl"
+    },
+    "email": {
+        "smtp": {
+            "title": "SMTP Parametrləri",
+            "testButton": "Test E-poçtu göndərin",
+            "testing": "Göndərilir...",
+            "fields": {
+                "host": "SMTP Serveri",
+                "port": "Liman",
+                "username": "İstifadəçi adı",
+                "password": "parol",
+                "encryption": "Şifrələmə",
+                "fromName": "Adından",
+                "fromEmail": "E-poçtdan",
+                "testEmail": "Test E-poçt ünvanı"
+            },
+            "placeholders": {
+                "host": "smtp.example.com",
+                "port": "587",
+                "username": "user@example.com",
+                "password": null,
+                "fromName": "Omnex Display Hub",
+                "fromEmail": "noreply@example.com",
+                "testEmail": "test@example.com"
+            },
+            "hints": {
+                "testEmail": "Boş qalsa, hesabınızdakı e-poçt ünvanına göndəriləcək"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "SSL",
+                "none": "Heç biri"
+            }
+        },
+        "templates": {
+            "title": "E-poçt Şablonları",
+            "comingSoon": "E-poçt şablonunun redaktə funksiyası tezliklə əlavə olunacaq",
+            "welcome": {
+                "title": "Xoş gəlmisiniz E-poçt",
+                "description": "Yeni istifadəçi qeydiyyatı zamanı göndərilib"
+            },
+            "passwordReset": {
+                "title": "Parolun Sıfırlanması",
+                "description": "Parol sıfırlama sorğularında göndərilir"
+            },
+            "errorNotification": {
+                "title": "Səhv bildirişi",
+                "description": "Sistem xətaları üçün göndərilib"
+            }
+        }
+    },
+    "integrations": {
+        "title": "İnteqrasiyalar",
+        "subtitle": "Xarici sistem inteqrasiyalarını konfiqurasiya edin",
+        "configure": "Konfiqurasiya edin",
+        "tabs": {
+            "esl": "ESL Sistemləri",
+            "erp": "ERP",
+            "api": "API",
+            "import": "Fayl İdxalı",
+            "payment": "Ödəniş sistemi",
+            "mqtt": "MQTT Broker"
+        },
+        "import": {
+            "loading": "Yüklənir...",
+            "settingsTitle": "İdxal Parametrləri",
+            "settingsDescription": "ERP və xarici sistemlərdən fayl əsaslı məhsul idxalı parametrlərini konfiqurasiya edin.",
+            "enabled": "Fayl İdxalı Aktiv",
+            "autoImport": "Avtomatik İdxal",
+            "autoImportHint": "Aktiv edildikdə, idxal qovluğundakı fayllar müəyyən fasilələrlə avtomatik idxal edilir.",
+            "checkInterval": "Yoxlama Fasiləsi",
+            "minutes": "dəqiqə",
+            "maxFileSize": "Maksimum Fayl Ölçüsü",
+            "allowedFormats": "İcazə Verilən Formatlar",
+            "importOptions": "İdxal Seçimləri",
+            "updateExisting": "Mövcud məhsulları yenilə (SKU uyğunluğu)",
+            "createNew": "Yeni məhsullar yarat",
+            "skipErrors": "Xətalı sətirləri keç, digərləri ilə davam et",
+            "triggerRender": "İdxaldan sonra avtomatik render işlət",
+            "importDirectory": "İdxal Qovluğu",
+            "importDirectoryHint": "ERP faylları bu qovluğa göndərilməlidir. Avtomatik idxal bu qovluğu yoxlayır.",
+            "lastAutoImport": "Son Avtomatik İdxal",
+            "testImport": "Fayl ilə Test Et",
+            "redirectingToImport": "Məhsul idxal səhifəsinə yönləndirilir...",
+            "settingsSaved": "İdxal parametrləri yadda saxlanıldı",
+            "settingsSaveError": "İdxal parametrləri yadda saxlanıla bilmədi",
+            "statusActive": "Aktiv",
+            "statusAutoActive": "Avtomatik Aktiv",
+            "statusInactive": "Deaktiv",
+            "apiDocTitle": "ERP Fayl Göndərmə API",
+            "apiDocDescription": "ERP sistemləri aşağıdakı API nöqtəsini istifadə edərək idxal faylı göndərə bilər.",
+            "apiEndpoint": "Yükləmə Nöqtəsi",
+            "apiAuth": "Autentifikasiya",
+            "apiAuthHint": "API sekmesindeki API açarınızı istifadə edin.",
+            "apiAuthAlt": "Alternativ başlıq:",
+            "apiExample": "cURL Nümunələri",
+            "apiExampleCsv": "CSV fayl göndərmə (Linux/Mac):",
+            "apiExampleJson": "JSON fayl göndərmə (alternativ başlıq):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "Uğurlu Cavab (200)",
+            "apiResponseErrors": "Xəta Cavabları",
+            "apiErrorDesc": "Təsvir",
+            "apiError401": "Yanlış və ya çatışmayan API açarı",
+            "apiError400": "Dəstəklənməyən format, ölçü aşımı və ya fayl çatışmır",
+            "apiError403": "Fayl idxalı bu şirkət üçün aktiv deyil",
+            "apiErrorDup": "Eyni fayl əvvəllər yüklənib (hash uyğunluğu)",
+            "apiFormats": "Dəstəklənən Formatlar",
+            "apiFormatsHint": "Fayllar format aşkarlanması ilə avtomatik olaraq təhlil edilir. Sahə uyğunlaşdırması SmartFieldMapper ilə avtomatik aparılır.",
+            "apiFieldMapping": "Sahə Uyğunlaşdırması",
+            "apiFieldMappingDesc": "Faylınızdakı sütun başlıqları avtomatik olaraq məhsul sahələrinə uyğunlaşdırılır. Aşağıda ümumi nümunələr:",
+            "apiFieldTarget": "Hədəf Sahə",
+            "apiFieldSample": "Tanınan Mənbə Sütun Adları",
+            "apiFieldMappingAuto": "SmartFieldMapper Türk, İngilis və ümumi ERP sahə adlarını avtomatik tanıyır. Standart uyğunlaşdırmalar parametrlərdə konfiqurasiya edilə bilər.",
+            "historyTitle": "İdxal Tarixçəsi",
+            "historyLoading": "Tarixçə yüklənir...",
+            "historyEmpty": "Hələ idxal tarixçəsi tapılmadı.",
+            "historyFile": "Fayl",
+            "historySource": "Mənbə",
+            "historyStatus": "Status",
+            "historyTotal": "Cəmi",
+            "historyInserted": "Əlavə",
+            "historyUpdated": "Yenilənən",
+            "historyFailed": "Uğursuz",
+            "historyDate": "Tarix",
+            "sourceAuto": "Avtomatik",
+            "sourceManual": "Əl ilə",
+            "pendingFilesTitle": "İdxal Qovluğundakı Fayllar",
+            "pendingFilesDesc": "Şirkət idxal qovluğunda gözləyən fayllar. Manual idxal başlatmaq üçün fayl seçə bilərsiniz.",
+            "pendingFilesEmpty": "İdxal qovluğunda gözləyən fayl yoxdur.",
+            "alreadyImported": "Artıq İdxal Edilib",
+            "importFile": "İdxal Et",
+            "fileFormat": "Format",
+            "fileSize": "Ölçü",
+            "fileModified": "Dəyişdirilmə",
+            "fileAction": "Əməliyyat",
+            "defaultImportOptions": "Standart İdxal Seçimləri",
+            "defaultImportOptionsHint": "Bu seçimlər fayl idxal edilərkən standart olaraq istifadə olunur. Hər idxal zamanı dəyişdirilə bilər.",
+            "importModalTitle": "Fayl İdxalı",
+            "importModalOptions": "İdxal Seçimləri",
+            "importModalDefaultsHint": "Seçimlər parametrlərdəki standart dəyərlərlə əvvəlcədən işarələnib. Bu idxal üçün dəyişdirə bilərsiniz.",
+            "savedMappingsWillBeUsed": "{count} saxlanmış sahə uyğunlaşması istifadə olunacaq",
+            "noSavedMappingsAutoDetect": "Saxlanmış uyğunlaşma yoxdur, avtomatik aşkarlama istifadə olunacaq",
+            "startImport": "İdxala Başla",
+            "importConfirmTitle": "İdxal Təsdiqi",
+            "importConfirmMessage": "\"{filename}\" faylı idxal ediləcək. Davam etmək istəyirsiniz?",
+            "importing": "İdxal edilir...",
+            "importError": "İdxal əməliyyatı uğursuz oldu",
+            "importErrors": "Xətalar",
+            "importResultTitle": "İdxal Nəticəsi",
+            "mappingSource": "Uyğunlaşdırma Mənbəyi",
+            "mappingSaved": "Saxlanmış Uyğunlaşdırmalar",
+            "mappingAuto": "Avtomatik Aşkarlama",
+            "configureMappings": "Sahə Uyğunlaşdırması",
+            "configureMappingsTitle": "Standart Sahə Uyğunlaşdırması",
+            "configureMappingsDesc": "İdxal fayllarındakı sütun başlıqlarının hansı məhsul sahələrinə uyğun gəldiyini müəyyən edin. Avtomatik aşkarlama üçün nümunə fayl yükləyə bilərsiniz.",
+            "configureMappingsHint": "Mənbə sütun adlarını fayl başlıqlarınıza görə daxil edin. Boş sahələr SmartFieldMapper ilə avtomatik uyğunlaşdırılmağa çalışılacaq.",
+            "mappingSourcePlaceholder": "Mənbə sütun adı (məs: STOK_KODU)",
+            "uploadSampleFile": "Nümunə Fayl Yüklə",
+            "autoDetectedMappings": "{count} sahə avtomatik uyğunlaşdırıldı ({total} sütundan)",
+            "noAutoDetect": "Avtomatik aşkarlama uğursuz oldu. Zəhmət olmasa əl ilə daxil edin.",
+            "sampleFileFailed": "Nümunə fayl təhlil edilə bilmədi",
+            "mappingsSaved": "{count} sahə uyğunlaşdırması saxlandı",
+            "savedMappings": "{count} sahə uyğunlaşdırması saxlanıb",
+            "noMapping": "-- Eşləşdirmə Yox --",
+            "noPreviewData": "Önizləmə məlumatı tapılmadı",
+            "mappingDragDrop": "Nümunə faylınızı bura sürükləyin və ya seçin",
+            "mappingFileHint": "Faylınız analiz ediləcək və sütun başlıqları avtomatik aşkar ediləcək.",
+            "mappingGridTitle": "Sahə Eşləşdirməsi",
+            "mappingPreviewTitle": "Məlumat Önizləməsi",
+            "fields": {
+                "sku": "SKU / Stok Kodu",
+                "name": "Məhsul Adı",
+                "barcode": "Barkod",
+                "slug": "Slug",
+                "kunyeNo": "Şəhadətnamə No",
+                "category": "Kateqoriya",
+                "subcategory": "Alt Kateqoriya",
+                "brand": "Marka",
+                "origin": "Mənşə",
+                "productionType": "İstehsal Növü",
+                "description": "Təsvir",
+                "currentPrice": "Satış Qiyməti",
+                "previousPrice": "Əvvəlki Qiymət",
+                "priceValidUntil": "Qiymət Keçərliliyi",
+                "priceUpdatedAt": "Qiymət Yeniləmə",
+                "previousPriceUpdatedAt": "Əvvəlki Qiymət Yeniləmə",
+                "vatRate": "ƏDV Dərəcəsi",
+                "discountPercent": "Endirim %",
+                "campaignText": "Kampaniya Mətni",
+                "unit": "Vahid",
+                "stock": "Stok",
+                "weight": "Çəki",
+                "shelfLocation": "Rəf Yeri",
+                "supplierCode": "Təchizatçı Kodu",
+                "validFrom": "Keçərlilik Başlanğıcı",
+                "validUntil": "Keçərlilik Sonu",
+                "status": "Status",
+                "isFeatured": "Seçilmiş",
+                "imageUrl": "Şəkil URL",
+                "images": "Şəkillər",
+                "videos": "Videolar",
+                "videoUrl": "Video URL",
+                "storageInfo": "Saxlama Məlumatı",
+                "group": "Qrup",
+                "erpId": "ERP ID"
+            },
+            "status": {
+                "pending": "Gözləyir",
+                "processing": "İşlənir",
+                "completed": "Tamamlandı",
+                "failed": "Uğursuz",
+                "skipped": "Keçildi"
+            }
+        },
+        "debug": {
+            "tooltip": "API Debug - Səhm siyahısı cavabını sınayın",
+            "modalTitle": "TAMSOFT API Debug - StokListesi",
+            "loading": "Yüklənir...",
+            "title": "TAMSOFT Parametrləri",
+            "defaultDepo": "Defolt Anbar",
+            "lastSync": "Son Sinxronizasiya",
+            "neverSynced": "Heç vaxt sinxronlaşdırılmayıb",
+            "rawApiResponse": "Raw API Cavab (cURL)",
+            "responseSize": "Cavab ölçüsü",
+            "jsonParse": "JSON təhlili",
+            "parseSuccess": "Uğur",
+            "parseFailed": "Uğursuz oldu",
+            "isArray": "Arraydir",
+            "yes": "Bəli",
+            "no": "yox",
+            "elementCount": "Element sayı",
+            "numericArray": "Rəqəmsal massiv",
+            "firstKeys": "İlk 10 açar",
+            "doubleJsonDetected": "İkiqat JSON Aşkarlandı!",
+            "rawResponse": "Raw Response (İlk 500 simvol)",
+            "firstItem": "Birinci maddə",
+            "firstItemUnwrapped": "İlk element (açıldıqdan sonra)",
+            "depoCount": "Anbar sayı",
+            "debugError": "Sazlama xətası: {error}",
+            "debugRequestFailed": "Sazlama sorğusu alınmadı",
+            "apiNoResponse": "API cavab vermədi"
+        },
+        "depotMapping": {
+            "newBranches": "{count} yeni filial yaradıldı",
+            "existingMappings": "{count} mövcud xəritələr",
+            "mapped": "{count} anbar → xəritələşdirilmiş filiallar ({details})"
+        },
+        "companyOverride": "Şirkət Parametrləri",
+        "systemDefault": "Sistem Defolt",
+        "hanshow": {
+            "title": "Hanshow ESL",
+            "description": "Hanshow elektron rəf etiketi inteqrasiyası (ESL-Working v2.5.3 API)",
+            "loading": "Yüklənir...",
+            "active": "Aktiv",
+            "inactive": "Qeyri-aktiv",
+            "connectionStatus": "Bağlantı statusu yoxlanılır...",
+            "fields": {
+                "eslworkingUrl": "ESL-İş API URL",
+                "userId": "İstifadəçi ID",
+                "callbackUrl": "Geri zəng URL",
+                "defaultPriority": "Defolt Prioritet",
+                "syncInterval": "Sinxronizasiya intervalı (san)",
+                "ledColor": "LED Rəngi",
+                "maxRetryAttempts": "Maksimum Yenidən Sınaq Cəhdləri",
+                "options": "Seçimlər",
+                "ledFlashOnUpdate": "Yeniləmə zamanı yanıb-sönən LED",
+                "autoRetry": "Avtomatik təkrar cəhd",
+                "enabled": "İnteqrasiya aktivdir"
+            },
+            "hints": {
+                "eslworkingUrl": "Hanshow ESL-Working xidmətinin ünvanı",
+                "callbackUrl": "Async geri zəng URL"
+            },
+            "ledColors": {
+                "green": "Yaşıl",
+                "blue": "Mavi",
+                "red": "Qırmızı",
+                "yellow": "Sarı",
+                "white": "Ağ"
+            },
+            "buttons": {
+                "testConnection": "Test Bağlantısı",
+                "save": "Saxla",
+                "testing": "Test edilir...",
+                "saving": "Yadda saxlanılır..."
+            },
+            "connection": {
+                "online": "ESL-İş Bağlantısı Aktivdir",
+                "offline": "ESL-İş bağlantısı oflayn",
+                "responseTime": "Cavab müddəti: {time}ms",
+                "connectedGateways": "Qoşulmuş Şlüzlər ({count})",
+                "startCommand": "ESL-İş Başlama Komandası"
+            },
+            "connectionSuccess": "ESL-İş bağlantısı uğurlu oldu ({time}ms) - {count} AP-lər qoşuldu",
+            "connectionFailed": "ESL-İş bağlantısı uğursuz oldu: {error}",
+            "testFailed": "Bağlantı testi alınmadı: {error}",
+            "testConnection": "Test Bağlantısı",
+            "saveSuccess": "Hanshow parametrləri yadda saxlanıldı",
+            "saveFailed": "Parametrləri saxlamaq alınmadı: {error}",
+            "toast": {
+                "testSuccess": "ESL-İş bağlantısı uğurlu oldu ({time}ms) - {count} AP-lər qoşuldu",
+                "testFailed": "ESL-İş bağlantısı uğursuz oldu: {error}",
+                "saved": "Hanshow parametrləri yadda saxlanıldı",
+                "saveFailed": "Parametrləri saxlamaq alınmadı: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "PavoDisplay",
+            "description": "PavoDisplay Android elektron qiymət etiketi inteqrasiyası (HTTP-SERVER)",
+            "active": "Aktiv",
+            "integrated": "PavoDisplay inteqrasiyası daxili və aktivdir",
+            "deviceManagement": "Cihazın idarə edilməsi üçün {link} səhifəsinə daxil olun.",
+            "devicesLink": "Cihazlar"
+        },
+        "hal": {
+            "title": "HAL Qeydiyyat Sistemi",
+            "description": "Türkiyə Respublikası Ticarət Nazirliyi HAL Qeydiyyat Sistemi (HKS) qeydiyyat sorğusu inteqrasiyası",
+            "loading": "Yüklənir...",
+            "active": "Aktiv",
+            "inactive": "Qeyri-aktiv",
+            "configured": "Konfiqurasiya edilmişdir",
+            "notConfigured": "Konfiqurasiya olunmayıb",
+            "connectionStatus": "Bağlantı statusu yoxlanılır...",
+            "connectionConfigured": "HAL parametrləri konfiqurasiya edilmişdir",
+            "connectionNotConfigured": "HAL parametrləri konfiqurasiya olunmayıb",
+            "enterCredentials": "Qeydiyyat sorğusu üçün HAL istifadəçi etimadnaməsini daxil edin",
+            "credentialsRequired": "HAL istifadəçi etimadnaməsi tələb olunur",
+            "responseTime": "Cavab vaxtı",
+            "fields": {
+                "username": "İstifadəçi adı",
+                "password": "parol",
+                "servicePassword": "Xidmət parolu",
+                "tcVergiNo": "TC ID / Vergi No",
+                "sifatId": "Bildiriş Başlığı",
+                "sifat2Id": "İkinci Şəxs Sifəti",
+                "enabled": "İnteqrasiya aktivdir"
+            },
+            "hints": {
+                "username": "İstifadəçi adınız HKS sistemində qeydiyyatdan keçib",
+                "password": "HKS istifadəçi parolunuz",
+                "servicePassword": "HKS veb xidməti parolu",
+                "tcVergiNo": "Sorğu etmək istədiyiniz TC ID və ya Vergi nömrəsi (isteğe bağlı)",
+                "sifatId": "HAL sistemində qeydiyyatdan keçmiş biznes adını seçin",
+                "sifat2Id": "İkinci şəxs sifətini seçin (isteğe bağlı)",
+                "howToGet": "HAL istifadəçi məlumatlarınız yoxdursa, hal.gov.tr ​​saytından və ya Elektron Hökumət vasitəsilə qeydiyyatdan keçə bilərsiniz."
+            },
+            "sifatOptions": {
+                "select": "Seçin...",
+                "sanayici": "İstehsalçı",
+                "ihracat": "İxrac",
+                "ithalat": "İdxal",
+                "uretici": "İstehsalçı",
+                "komisyoncu": "komissar",
+                "tuccarHalIci": "Tacir (HAL daxilində)",
+                "market": "Bazar",
+                "manav": "tərəvəzçi",
+                "depoTasnif": "Anbar/Çeşidləmə və Qablaşdırma",
+                "ureticiOrgutu": "İstehsalçı təşkilatı",
+                "pazarci": "Bazar Satıcısı",
+                "otel": "Otel",
+                "lokanta": "Restoran",
+                "yurt": "Yataqxana",
+                "yemekFabrikasi": "Qida fabriki",
+                "hastane": "Xəstəxana",
+                "tuccarHalDisi": "Tacir (HAL xaricində)"
+            },
+            "buttons": {
+                "testConnection": "Test Bağlantısı",
+                "save": "Saxla",
+                "testing": "Test edilir...",
+                "saving": "Yadda saxlanılır..."
+            },
+            "connection": {
+                "online": "HKS Bağlantısı Aktivdir",
+                "offline": "HKS Bağlantısı Oflayn",
+                "responseTime": "Cavab müddəti: {time}ms"
+            },
+            "toast": {
+                "connectionSuccess": "HKS bağlantısı uğurlu oldu",
+                "connectionFailed": "HKS bağlantısı uğursuz oldu",
+                "testSuccess": "HKS bağlantısı uğurlu oldu",
+                "testFailed": "HKS bağlantısı uğursuz oldu: {error}",
+                "saved": "HAL parametrləri yadda saxlanıldı",
+                "saveFailed": "Parametrləri saxlamaq alınmadı",
+                "servicePasswordMissing": "Xidmət parolu daxil edilmədi - bəzi funksiyalar məhdud ola bilər"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "HAL parametrləri konfiqurasiya olunmayıb. Zəhmət olmasa parametrləri yadda saxlayın.",
+                "MISSING_CREDENTIALS": "İstifadəçi adı və ya parol yoxdur",
+                "SOAP_NOT_AVAILABLE": "PHP SOAP uzantısı quraşdırılmayıb. Server administratorunuzla əlaqə saxlayın.",
+                "SOAP_CONNECTION_FAILED": "HAL serverinə qoşulmaq mümkün olmadı. Server əlçatan olmaya bilər və ya şəbəkə problemi ola bilər.",
+                "AUTH_ERROR": "HAL identifikasiyası xətası: {detail}",
+                "UNEXPECTED_RESPONSE": "HAL serverindən gözlənilməz cavab alındı",
+                "SOAP_FAULT": "SOAP protokol xətası: {detail}",
+                "CONNECTION_ERROR": "Bağlantı xətası: {detail}",
+                "HAL_ERROR_1": "Əməliyyat uğursuz oldu. HAL xidməti sorğunu emal edə bilmədi.",
+                "HAL_ERROR_11": "İstifadəçi etimadnamələri səhvdir. İstifadəçi adı və ya parol səhvdir.",
+                "HAL_ERROR_13": "Doğrulama uğursuz oldu. İstifadəçi adı və ya parol səhvdir.",
+                "HAL_ERROR_UNEXPECTED": "Gözlənilməz xəta baş verdi. Daha sonra yenidən cəhd edin.",
+                "HAL_ERROR_GENERIC": "HAL xidməti xətası qaytardı (Kod: {code})"
+            },
+            "infoBox": {
+                "title": "HAL Qeydiyyat Sistemi haqqında",
+                "description": "HAL Qeydiyyat Sistemi tərəvəz və meyvələri istehsaldan istehlaka qədər izləyən rəsmi sistemdir. Qeydiyyat sorğusu funksiyası ilə siz məhsulun mənşəyinə, istehsalçı məlumatına və əməliyyat tarixçəsinə baxa bilərsiniz.",
+                "apiInfo": "Bu inteqrasiya HAL SOAP Veb Xidmətlərindən (BildirimService) istifadə edir.",
+                "registerLink": "HKS üçün qeydiyyatdan keçmək üçün hal.gov.tr ​​saytına daxil olun."
+            }
+        },
+        "tamsoft": {
+            "title": "TAMSOFT ERP",
+            "description": "TAMSOFT ERP sistem inteqrasiyası. Məhsul, ehtiyat və qiymət məlumatlarını sinxronlaşdırın.",
+            "loading": "Yüklənir...",
+            "active": "Aktiv",
+            "inactive": "Qeyri-aktiv",
+            "connectionStatus": "Bağlantı statusu yoxlanılır...",
+            "connectionSuccess": "TAMSOFT ERP bağlantısı uğurlu oldu",
+            "connectionFailed": "TAMSOFT ERP bağlantısı uğursuz oldu",
+            "lastSync": "Son Sinxronizasiya",
+            "fields": {
+                "apiUrl": "API URL",
+                "username": "İstifadəçi adı",
+                "password": "parol",
+                "defaultDepo": "Defolt Anbar",
+                "syncInterval": "Sinxronizasiya intervalı (dəq)",
+                "autoSync": "Avtomatik sinxronizasiya",
+                "onlyStockPositive": "Yalnız stokda olan əşyalar",
+                "onlyEcommerce": "Yalnız e-ticarət məhsulları",
+                "singleBarcode": "Tək barkoddan istifadə edin"
+            },
+            "hints": {
+                "apiUrl": "TAMSOFT Veb Xidmətinin URL ünvanı",
+                "username": "TAMSOFT istifadəçi adınız",
+                "defaultDepo": "Defolt anbar seçin. Anbar siyahısını yükləmək üçün əlaqə testini işə salın.",
+                "loadDepos": "Əvvəlcə əlaqə testini həyata keçirin",
+                "syncInterval": "Avtomatik sinxronizasiya intervalı (dəqiqə)"
+            },
+            "buttons": {
+                "loadDepolar": "Anbarları yükləyin",
+                "syncNow": "İndi Sinxronlaşdırın"
+            },
+            "sync": {
+                "title": "TAMSOFT Sinxronizasiyası",
+                "start": "Sinxronizasiya edin",
+                "syncing": "Sinxronizasiya edilir...",
+                "syncingAll": "Bütün anbarlar sinxronlaşdırılır...",
+                "allDepots": "Bütün Anbarlar",
+                "noDepoWarning": "Zəhmət olmasa əvvəlcə \"Anbarları Yüklə\" ilə anbar seçin.",
+                "depoHint": "Məhsulları çıxarmaq və ya bütün anbarları sinxronlaşdırmaq üçün anbar seçin",
+                "selectAndSave": "Seçin və Saxlayın",
+                "infoTitle": "Sinxronizasiya məlumatı",
+                "infoNew": "Yeni məhsullar avtomatik əlavə olunur",
+                "infoUpdate": "Mövcud məhsulların qiyməti və anbar məlumatları yenilənir",
+                "infoSafe": "Yerli olaraq dəyişdirilmiş şəkillər qorunur",
+                "infoAllDepots": "\"Bütün Anbarlar\" seçilərsə, məhsullar hər anbardan ardıcıl olaraq çıxarılır",
+                "fullSync": "Tam Sinxronizasiya"
+            },
+            "toast": {
+                "connectionSuccess": "TAMSOFT bağlantısı uğurlu oldu",
+                "connectionFailed": "TAMSOFT bağlantısı uğursuz oldu",
+                "saved": "TAMSOFT parametrləri yadda saxlanıldı",
+                "saveFailed": "Parametrləri saxlamaq alınmadı",
+                "depoLoaded": "anbarlar yüklənir",
+                "depoLoadFailed": "Anbar siyahısını yükləmək alınmadı",
+                "syncSuccess": "Sinxronizasiya tamamlandı: {inserted} əlavə edildi, {updated} yeniləndi, {failed} alınmadı",
+                "syncAllSuccess": "{depo_count} anbar sinxronlaşdırıldı: {inserted} əlavə edildi, {updated} yeniləndi, {failed} alınmadı",
+                "syncFailed": "Sinxronizasiya uğursuz oldu"
+            },
+            "debug": {
+                "tooltip": "API Debug - Səhm siyahısı cavabını sınayın",
+                "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "Ödəniş sistemi",
+            "adminOnly": "Bu parametrlər yalnız SuperAdmin tərəfindən dəyişdirilə bilər.",
+            "selectProvider": "Ödəniş təminatçısını seçin",
+            "connectionStatus": "Bağlantı statusu yoxlanılır...",
+            "loading": "Yüklənir...",
+            "providers": {
+                "iyzico": {
+                    "name": "Iyzico",
+                    "description": "Türkiyənin qabaqcıl ödəniş infrastrukturu"
+                },
+                "paynet": {
+                    "name": "Paynet",
+                    "description": "Təhlükəsiz virtual POS həlli"
+                }
+            },
+            "providerStatus": {
+                "active": "Aktiv",
+                "inactive": "Qeyri-aktiv",
+                "configured": "Konfiqurasiya edilmişdir",
+                "notConfigured": "Konfiqurasiya olunmayıb",
+                "test": "Test",
+                "live": "Canlı"
+            },
+            "statusBadge": {
+                "sandbox": "Sandbox (Sınaq)",
+                "production": "Aktiv (Canlı)",
+                "inactive": "Qeyri-aktiv"
+            },
+            "fields": {
+                "apiKey": "API Açarı",
+                "secretKey": "Gizli Açar",
+                "publishableKey": "Nəşr edilə bilən açar",
+                "environment": "Ətraf mühit",
+                "testMode": "Test rejimi",
+                "apiUrl": "API URL",
+                "callbackUrl": "Geri zəng URL",
+                "currency": "Valyuta",
+                "installmentEnabled": "Taksit-ödəniş aktivdir",
+                "maxInstallments": "Maksimum taksitlər:",
+                "statusActive": "Ödəniş sistemi aktivdir",
+                "iyzicoSettings": "Iyzico Parametrləri",
+                "paynetSettings": "Paynet Parametrləri",
+                "installmentSettings": "Taksit Parametrləri",
+                "installmentActive": "Taksit aktivdir",
+                "maxInstallment": "Maksimum taksit:",
+                "status": "Vəziyyət",
+                "iyzicoActive": "Iyzico aktivdir",
+                "paynetActive": "Paynet aktivdir"
+            },
+            "hints": {
+                "apiKey": "API açarı Iyzico panelindən əldə edilmişdir",
+                "secretKey": "Paneldən əldə edilən gizli açar",
+                "publishableKey": "Yayımlana bilən açar Paynet panelindən əldə edilmişdir",
+                "environment": "Test üçün sandbox seçin, canlı əməliyyatlar üçün istehsal",
+                "testMode": "Test rejimində real əməliyyatlar yoxdur",
+                "apiUrl": "Paynet API server ünvanı",
+                "callbackUrl": "3D Secure qayıdış URL-si (avtomatik)",
+                "iyzicoMerchant": "Iyzico tacir panelindən əldə edilmişdir",
+                "paynetMerchant": "Paynet tacir panelindən əldə edilən açıq açar",
+                "secretKeyHint": "Gizli açar (API sorğuları üçün)",
+                "testModeHint": "Test rejimində real ödəniş yoxdur",
+                "callbackReadonly": "3D Secure qayıdış ünvanı (yalnız oxumaq üçün)"
+            },
+            "placeholders": {
+                "apiKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "secretKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (mövcud)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "Sandbox (Sınaq)",
+                "production": "İstehsal (Canlı)",
+                "testMode": "Test rejimi",
+                "liveMode": "Canlı rejim"
+            },
+            "currencies": {
+                "TRY": "TRY - Türk Lirəsi",
+                "USD": "USD - ABŞ dolları",
+                "EUR": "Avro - Avro"
+            },
+            "testing": "Test edilir...",
+            "buttons": {
+                "testConnection": "Test Bağlantısı",
+                "save": "Saxla",
+                "showHide": "Göstər/Gizlət",
+                "testing": "Test edilir...",
+                "saving": "Yadda saxlanılır..."
+            },
+            "connectionSuccess": "{provider} bağlantı uğurlu ({env} rejimi)",
+            "connectionFailed": "{provider} bağlantısı uğursuz oldu: {error}",
+            "connectionTestFailed": "Bağlantı testi alınmadı: {error}",
+            "saveSuccess": "{provider} ödəniş parametrləri yadda saxlanıldı",
+            "saveFailed": "Parametrləri saxlamaq alınmadı: {error}",
+            "connection": {
+                "configured": "Iyzico bağlantısı konfiqurasiya edildi",
+                "notConfigured": "Iyzico bağlantısı konfiqurasiya olunmayıb",
+                "missingKeys": "API açarları yoxdur"
+            },
+            "toast": {
+                "testSuccess": "{provider} bağlantısı uğurlu - {environment} rejimi",
+                "testFailed": "{provider} bağlantısı uğursuz oldu: {error}",
+                "saved": "{provider} ödəniş parametrləri yadda saxlanıldı",
+                "saveFailed": "Parametrləri saxlamaq alınmadı: {error}",
+                "apiKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün API Açarı tələb olunur",
+                "secretKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün Gizli Açar tələb olunur",
+                "publishableKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün dərc edilə bilən açar tələb olunur"
+            },
+            "validation": {
+                "apiKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün API Açarı tələb olunur",
+                "secretKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün Gizli Açar tələb olunur",
+                "publishableKeyRequired": "Ödəniş sistemini aktivləşdirmək üçün dərc edilə bilən açar tələb olunur"
+            }
+        },
+        "licensePlans": {
+            "title": "Lisenziya Planları",
+            "description": "Müştərilərə təklif olunan lisenziya planları",
+            "loading": "Yüklənir...",
+            "empty": "Hələ heç bir lisenziya planı müəyyən edilməyib",
+            "recommended": "Tövsiyə olunur",
+            "enterprise": "Müəssisə",
+            "inactive": "Qeyri-aktiv",
+            "months": "ay",
+            "addPlan": "Yeni Plan",
+            "editPlan": "Planı redaktə edin",
+            "notFound": "Plan tapılmadı",
+            "created": "Plan yaradıldı",
+            "updated": "Plan yeniləndi",
+            "deleted": "Plan silindi",
+            "limits": {
+                "users": "İstifadəçilər",
+                "devices": "Cihazlar",
+                "products": "Məhsullar",
+                "templates": "Şablonlar",
+                "storage": "Saxlama",
+                "branches": "Filiallar"
+            },
+            "form": {
+                "name": "Plan Adı",
+                "slug": "Slug",
+                "slugPlaceholder": "plan adı",
+                "description": "Təsvir",
+                "price": "Qiymət",
+                "currency": "Valyuta",
+                "duration": "Müddət (Aylar)",
+                "maxUsers": "Maks. İstifadəçilər",
+                "maxDevices": "Maks. Cihazlar",
+                "maxProducts": "Maks. Məhsullar",
+                "maxTemplates": "Maks. Şablonlar",
+                "maxBranches": "Maks. Filiallar",
+                "storageLimit": "Yaddaş Limiti (MB)",
+                "features": "Xüsusiyyətlər",
+                "featuresHint": "Hər sətirə bir xüsusiyyət yazın",
+                "isPopular": "Tövsiyə olunan Plan",
+                "isEnterprise": "Müəssisə",
+                "isActive": "Aktiv",
+                "sortOrder": "Sırala",
+                "unlimited": "Limitsiz üçün 0 daxil edin",
+                "unlimitedZero": "Limitsiz üçün 0 daxil edin"
+            },
+            "deleteConfirm": {
+                "title": "Planı silin",
+                "message": "{name} planını silmək istədiyinizə əminsiniz?"
+            },
+            "validation": {
+                "nameRequired": "Planın adı tələb olunur"
+            },
+            "features": {
+                "esl_support": "ESL Dəstəyi",
+                "basic_templates": "Əsas Şablonlar",
+                "email_support": "E-poçt dəstəyi",
+                "signage_support": "Rəqəmsal İşarə Dəstəyi",
+                "advanced_templates": "Qabaqcıl Şablonlar",
+                "priority_support": "Prioritet Dəstək",
+                "api_access": "API Girişi",
+                "custom_branding": "Fərdi Brendləşdirmə",
+                "multi_location": "Çox Yer",
+                "dedicated_support": "Xüsusi Dəstək",
+                "sla_guarantee": "SLA Zəmanəti",
+                "custom_integration": "Fərdi inteqrasiya",
+                "white_label": "Ağ Etiket",
+                "unlimited_users": "Limitsiz İstifadəçilər",
+                "unlimited_devices": "Limitsiz Cihazlar",
+                "analytics": "Analitik Hesabatlar",
+                "export_reports": "Hesabat Eksport",
+                "bulk_import": "Toplu idxal",
+                "scheduler": "Planlayıcı",
+                "notifications": "Bildirişlər"
+            }
+        },
+        "paymentInfo": {
+            "title": "Ödəniş inteqrasiyası haqqında",
+            "features": {
+                "title": "Dəstəklənən Xüsusiyyətlər",
+                "singlePayment": "Tək ödəniş",
+                "installment": "Taksitlə ödəniş (2-12 taksit)",
+                "secure3d": "3D Secure təhlükəsiz ödəniş",
+                "refund": "Geri qaytarma və ləğv əməliyyatları",
+                "cardSaving": "Kart qənaəti (isteğe bağlı)",
+                "items": {
+                    "singlePayment": "Kredit kartı ilə tək ödəniş",
+                    "installment": "Taksitlə ödəniş (2-12 taksit)",
+                    "secure3d": "3D Secure təhlükəsiz ödəniş",
+                    "refund": "Geri qaytarma və ləğv əməliyyatları",
+                    "bkmExpress": "BKM Express inteqrasiyası"
+                }
+            },
+            "cards": {
+                "title": "Dəstəklənən Kartlar"
+            },
+            "testCard": {
+                "title": "Test Kartı (Iyzico)",
+                "cardNo": "Kart nömrəsi:",
+                "expiry": "İstifadə müddəti:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "Test Kartı Məlumatı (Sandbox)",
+                    "cardNo": "Kart nömrəsi:",
+                    "expiry": "İstifadə müddəti:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "API Sənədləri",
+                "link": "Iyzico API Sənədləri",
+                "iyzicoLink": "Iyzico API Sənədləri",
+                "paynetLink": "Paynet API Sənədləri"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "ERP İnteqrasiyası",
+                "description": "SAP, Oracle, Dynamics, Logo, Netsis",
+                "fields": {
+                    "type": "ERP növü",
+                    "endpoint": "API son nöqtəsi",
+                    "username": "İstifadəçi adı",
+                    "password": "parol",
+                    "syncInterval": "Sinxronizasiya intervalı (dəq)"
+                },
+                "types": {
+                    "sap": "SAP",
+                    "oracle": "Oracle",
+                    "dynamics": "Microsoft Dynamics",
+                    "logo": "Logo",
+                    "netsis": "Netsis",
+                    "other": "Digər"
+                }
+            },
+            "pos": {
+                "title": "POS inteqrasiyası",
+                "description": "Wolvox, Sentez, Nebim",
+                "fields": {
+                    "type": "POS növü",
+                    "endpoint": "API son nöqtəsi",
+                    "apiKey": "API Açarı",
+                    "storeId": "Mağaza ID"
+                },
+                "types": {
+                    "wolvox": "Volvox",
+                    "sentez": "Sentez",
+                    "nebim": "Nəbim",
+                    "other": "Digər"
+                }
+            },
+            "wms": {
+                "title": "WMS inteqrasiyası",
+                "description": "Anbar idarəetmə sistemi",
+                "fields": {
+                    "endpoint": "API son nöqtəsi",
+                    "apiKey": "API Açarı",
+                    "warehouseId": "Anbar ID",
+                    "stockSync": "Fond sinxronizasiyası",
+                    "active": "Aktiv"
+                }
+            },
+            "api": {
+                "title": "API Girişi",
+                "description": "Xarici API inteqrasiyası",
+                "fields": {
+                    "apiKey": "API Açarı",
+                    "rateLimit": "Qiymət Limiti (sorğu/dəq)",
+                    "webhookUrl": "Webhook URL"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.example.com/api",
+                    "webhookUrl": "https://your-app.com/webhook"
+                },
+                "docs": {
+                    "title": "API Sənədləri",
+                    "subtitle": "API istifadəsi üçün sürətli başlanğıc",
+                    "auth": "Doğrulama",
+                    "exampleRequest": "Nümunə sorğu"
+                }
+            }
+        },
+        "toast": {
+            "saved": "İnteqrasiya parametrləri yadda saxlanıldı",
+            "testSuccess": "Bağlantı sınağı uğurlu oldu",
+            "testFailed": "Bağlantı testi alınmadı",
+            "apiKeyGenerated": "Yeni API açarı yaradıldı"
+        },
+        "messages": {
+            "connectionSuccess": "Bağlantı uğurlu",
+            "connectionFailed": "Bağlantı uğursuz oldu",
+            "testSuccess": "Bağlantı sınağı uğurlu oldu",
+            "testFailed": "Bağlantı testi alınmadı",
+            "saved": "Parametrlər yadda saxlanıldı",
+            "settingsSaved": "Parametrlər yadda saxlanıldı",
+            "saveFailed": "Parametrləri saxlamaq alınmadı",
+            "settingsSaveError": "Parametrləri saxlamaq alınmadı",
+            "unknownError": "Naməlum xəta baş verdi",
+            "invalidIntegrationType": "Yanlış inteqrasiya növü",
+            "apiKeyCopied": "API açarı buferə kopyalandı",
+            "apiKeyGenerated": "Yeni API açarı yaradıldı",
+            "settingsLoadFailed": "Parametrləri yükləmək alınmadı",
+            "paymentConfigured": "{providers} konfiqurasiya edildi. Bağlantı testini həyata keçirin.",
+            "noPaymentConfigured": "Hələ heç bir ödəniş provayderi konfiqurasiya edilməyib"
+        },
+        "mqtt": {
+            "title": "MQTT Broker Parametrləri",
+            "description": "MQTT rejimində işləyən ESL cihazları üçün broker bağlantı parametrləri",
+            "brokerUrl": "Broker URL",
+            "brokerUrlPlaceholder": "localhost və ya IP ünvanı",
+            "brokerPort": "Port",
+            "useTls": "TLS İstifadə Et",
+            "useTlsHelp": "Şifrəli bağlantı üçün aktivləşdirin (port 8883)",
+            "username": "İstifadəçi Adı",
+            "usernamePlaceholder": "İsteğe bağlı",
+            "password": "Şifrə",
+            "passwordPlaceholder": "İsteğe bağlı",
+            "topicPrefix": "Topic Prefix",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "Provayder",
+            "providers": {
+                "mosquitto": "Mosquitto (Lokal)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "Xüsusi"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "Avtomatik yaradılır",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "İsteğe bağlı - Sign doğrulama üçün",
+            "contentServerUrl": "Məzmun Server URL",
+            "contentServerUrlPlaceholder": "Avtomatik doldurulur",
+            "reportServerUrl": "Hesabat Server URL",
+            "reportServerUrlPlaceholder": "Avtomatik doldurulur",
+            "status": "Vəziyyət",
+            "statuses": {
+                "active": "Aktiv",
+                "testing": "Test",
+                "disabled": "Deaktiv"
+            },
+            "testConnection": "Bağlantını Test Et",
+            "testing": "Test edilir...",
+            "connectionSuccess": "Broker bağlantısı uğurlu ({time}ms)",
+            "connectionFailed": "Broker bağlantısı uğursuz",
+            "saved": "MQTT parametrləri yadda saxlanıldı",
+            "saveFailed": "MQTT parametrləri yadda saxlanıla bilmədi",
+            "loading": "Yüklənir...",
+            "notConfigured": "Quraşdırılmayıb",
+            "configured": "Quraşdırılıb",
+            "lastConnected": "Son Bağlantı",
+            "never": "Heç bağlanılmayıb",
+            "save": "Yadda Saxla",
+            "infoTitle": "MQTT Haqqında",
+            "infoText": "MQTT, IoT cihazları üçün yüngül mesajlaşma protokoludur. CLIENT rejimində işləyən ESL cihazları MQTT broker vasitəsilə əmr alır və vəziyyət bildirir.",
+            "setupSteps": "Quraşdırma Addımları",
+            "step1": "Mosquitto və ya başqa bir MQTT broker qurun",
+            "step2": "Broker URL və port məlumatlarını daxil edin",
+            "step3": "Bağlantını test edin",
+            "step4": "Cihazları BLE ilə MQTT rejiminə quraşdırın"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "Çəki məhsulunun ştrix kodu",
+            "description": "Çəkili məhsullar üçün barkod parametrləri. Bayraq kodu + miqyas kodu = 7 rəqəmli barkod.",
+            "flagCode": "Bayraq Kodu",
+            "flagCodeHint": "Şkalada istifadə olunan 2 rəqəmli bayraq kodu (20-29)",
+            "barcodeFormat": "Barkod Format",
+            "formatHint": "Dizaynlarda istifadə ediləcək barkod formatı",
+            "preview": "Önizləmə",
+            "scaleCode": "Ölçek Kodu",
+            "resultBarcode": "Yaradılmış Barkod",
+            "previewHint": "Nümunə: Bayraq kodu (27) + Skala kodu (09337) = 7 rəqəmli barkod (2709337)"
+        },
+        "info": {
+            "title": "Barkod məlumatı",
+            "howItWorks": "Necə işləyir?",
+            "description": "Çəkili məhsullarda ştrix-kod bayraq kodu və tərəzi kodu birləşməsindən ibarətdir. Tərəzidə çəkildikdə, çəki məlumatı əlavə edilməklə tam ştrix kod yaradılır.",
+            "flag": "bayraq",
+            "scaleCode": "Ölçek Kodu",
+            "result": "Nəticə",
+            "note": "Qeyd: Şkaladan tam barkod formatı: 27XXXXX QQ qqq + Yoxlama Rəqəmi (QQ=kg, qqqq=qram)"
+        }
+    },
+    "labels": {
+        "title": "Etiket Ölçüləri",
+        "subtitle": "Çap üçün etiket ölçülərini idarə edin",
+        "addNew": "Yeni əlavə et",
+        "listTitle": "Etiket Ölçüləri Siyahısı",
+        "noData": "Heç bir etiket ölçüsü tapılmadı",
+        "infoTitle": "Etiket Ölçüləri Haqqında",
+        "infoText": "Sistem standart ölçüləri redaktə edilə və ya silinə bilməz. Siz öz fərdi ölçülərinizi əlavə edə və idarə edə bilərsiniz. Əlavə etdiyiniz ölçülər məhsulun çap ekranında görünəcək.",
+        "system": "Sistem",
+        "columns": {
+            "name": "ad",
+            "dimensions": "Ölçülər",
+            "inchDimensions": "düym",
+            "status": "Vəziyyət"
+        },
+        "status": {
+            "active": "Aktiv",
+            "inactive": "Qeyri-aktiv"
+        },
+        "form": {
+            "name": "Ad (İstəyə görə)",
+            "nameHint": "Boş qalsa, ölçülərdən avtomatik yaradılacaq",
+            "width": "Genişlik",
+            "height": "Hündürlük",
+            "unit": "Vahid",
+            "active": "Aktiv",
+            "activeHint": "Aktiv olmayan ölçülər çap siyahısında görünmür"
+        },
+        "placeholders": {
+            "name": "Avtomatik yaradıldı"
+        },
+        "validation": {
+            "dimensionsRequired": "Etibarlı eni və hündürlüyü daxil edin"
+        },
+        "addTitle": "Yeni Etiket Ölçüsü",
+        "editTitle": "Etiket ölçüsünü redaktə edin",
+        "editSystemTitle": "Sistem Etiket Ölçüsü",
+        "systemEditInfo": "Bu sistemin standart ölçüsüdür. Siz yalnız aktiv/qeyri-aktiv statusu dəyişə bilərsiniz.",
+        "deleteTitle": "Etiket ölçüsünü silin",
+        "deleteConfirm": "Etiket ölçüsü \"{name}\" silinəcək. Davam etmək istəyirsiniz?",
+        "toast": {
+            "created": "Etiket ölçüsü əlavə edildi",
+            "updated": "Etiket ölçüsü yeniləndi",
+            "deleted": "Etiket ölçüsü silindi",
+            "loadFailed": "Etiket ölçülərini yükləmək alınmadı",
+            "saveFailed": "Əməliyyat uğursuz oldu",
+            "statusChanged": "Etiket ölçüsü statusu yeniləndi"
+        },
+        "units": {
+            "mm": "mm",
+            "cm": "sm",
+            "inch": "düym"
+        }
+    },
+    "toast": {
+        "saved": "Parametrlər yadda saxlanıldı",
+        "saveFailed": "Parametrləri saxlamaq alınmadı",
+        "smtpSuccess": "SMTP bağlantısı uğurlu oldu!",
+        "smtpFailed": "SMTP bağlantısı uğursuz oldu"
+    },
+    "gateway": {
+        "title": "Gateway Parametrləri",
+        "subtitle": "Lokal şəbəkə cihazları üçün şlüzlərin idarə edilməsi",
+        "newGateway": "Yeni Gateway",
+        "systemTitle": "Gateway Sistemi",
+        "systemDescription": "Siz şlüz sistemini aktivləşdirə və ya söndürə bilərsiniz. Qeyri-aktiv olduqda, məzmun cihazlara göndərilməyəcək.",
+        "statusActive": "Aktiv",
+        "statusInactive": "Qeyri-aktiv",
+        "runtime": {
+            "title": "Gateway Runtime Parametrləri",
+            "description": "Siz bu bölmədən İşçi/Şlüz vaxt aşımı, sorğu keçirə və geri çəkilmə dəyərlərini yenidən sınaya bilərsiniz.",
+            "retryBaseDelay": "Yenidən cəhd etməyə başlayın (san)",
+            "retryMaxDelay": "Yenidən cəhd edin Maksimum (san)",
+            "retryMultiplier": "Multiplikatoru yenidən cəhd edin",
+            "heartbeatTimeout": "Ürək döyüntüsü vaxtı (san)",
+            "commandTimeout": "Komandanın vaxtı (san)",
+            "pollInterval": "Gateway Sorğu (ms)",
+            "scopeCompany": "Əhatə dairəsi: Şirkət qəbulu. İşçi və server göndərmə axınları bu dəyərlərdən istifadə edir.",
+            "scopeUser": "Əhatə dairəsi: İstifadəçi parametrləri. İşçi axınında əks olunması üçün şirkət daxilində Admin/SuperAdmin ilə yadda saxlayın."
+        },
+        "neverConnected": "Heç vaxt qoşulmayıb",
+        "lastSeen": "Son görüldü",
+        "devices": "Cihazlar",
+        "device": "Cihaz",
+        "pendingCommands": "Gözləyən əmrlər",
+        "details": "Təfərrüatlar",
+        "credentials": "Etibarnamələr",
+        "createTitle": "Yeni Gateway yaradın",
+        "credentialsTitle": "Gateway Etibarnamələri",
+        "credentialsWarning": "Bu məlumat yalnız bir dəfə göstəriləcək. Zəhmət olmasa onu təhlükəsiz yerdə saxlayın.",
+        "credentialsSecretHidden": "Bu şlüz əvvəllər yaradılmışdır. Təhlükəsizlik səbəbləri ilə məxfi açar yalnız yaradılarkən göstərilir.",
+        "copyConfig": "Konfiqurasiyanı kopyalayın",
+        "hidden": "[GİZLİ]",
+        "statusInfo": "Gateway Status",
+        "statusLabel": "Vəziyyət",
+        "lastHeartbeat": "Son Ürək döyüntüsü",
+        "never": "Heç vaxt",
+        "connectedDevices": "Qoşulmuş Cihazlar",
+        "noDevices": "Qoşulmuş cihaz yoxdur",
+        "deleteTitle": "Gateway silin",
+        "deleteConfirm": "\"{name}\" şlüz silinəcək. Davam etmək istəyirsiniz?",
+        "status": {
+            "online": "Onlayn",
+            "error": "Xəta",
+            "offline": "Oflayn"
+        },
+        "form": {
+            "name": "Gateway Adı",
+            "namePlaceholder": "Misal: Mağaza Gateway",
+            "description": "Təsvir",
+            "descriptionPlaceholder": "Gateway haqqında qısa təsvir",
+            "pollingInterval": "Səsvermə Aralığı (san)",
+            "commandTimeout": "Komandanın vaxtı (san)"
+        },
+        "empty": {
+            "title": "Heç bir Gateway Tapılmadı",
+            "description": "Hələ heç bir şlüz əlavə edilməyib. Yeni bir şlüz yaratmaqla başlayın.",
+            "createFirst": "İlk Gateway yaradın"
+        },
+        "toast": {
+            "enabled": "Gateway sistemi aktivləşdirildi",
+            "disabled": "Gateway sistemi deaktiv edilib",
+            "saveFailed": "Şlüz statusunu saxlamaq alınmadı",
+            "loadFailed": "Şlüzləri yükləmək alınmadı",
+            "nameRequired": "Şlüz adı tələb olunur",
+            "created": "Gateway yaradılmışdır",
+            "configCopied": "Konfiqurasiya kopyalandı",
+            "detailsFailed": "Şlüz detallarını yükləmək alınmadı",
+            "deleted": "Şlüz silindi",
+            "deleteFailed": "Şlüzü silmək alınmadı",
+            "createFailed": "Şlüz yaratmaq alınmadı: {error}",
+            "savedUserLevel": "Şirkət quraşdırma icazəsi tapılmadı. Dəyişiklik istifadəçi səviyyəsində saxlanıldı.",
+            "runtimeSavedCompany": "Gateway işləmə vaxtı parametrləri şirkət səviyyəsində saxlanıldı.",
+            "runtimeSavedUser": "Şirkət quraşdırma icazəsi tapılmadı. Parametrlər istifadəçi səviyyəsində saxlanılır.",
+            "runtimeSaveFailed": "İcra vaxtı parametrlərini yadda saxlamaq alınmadı"
+        },
+        "defaultImage": {
+            "title": "Defolt Şəkil",
+            "description": "Cihaz yaddaşı təmizləndikdə göstəriləcək standart şəkli təyin edin. Ekran ölçüsünə görə müxtəlif şəkillər təyin edə bilərsiniz.",
+            "upload": "Şəkil Yüklə",
+            "uploadTitle": "Defolt Şəkil yükləyin",
+            "uploadInfo": "Cihaz yaddaşı təmizləndikdə bu şəkil avtomatik yüklənəcək. Ekran ölçüsünə uyğun bir şəkil seçmək tövsiyə olunur.",
+            "gateway": "Gateway",
+            "general": "General",
+            "noGateways": "Əvvəlcə şlüz əlavə etməlisiniz",
+            "selectGateway": "Şluz seçin...",
+            "gatewayHint": "Bu şəkil seçilmiş şlüzün cihazlarında göstəriləcək",
+            "imageType": "Şəkil növü",
+            "typeHint": "Onun hansı ekran ölçüsü/oriyentasiyası üçün istifadə olunacağını seçin",
+            "file": "Şəkil Faylı",
+            "dropzone": "Çək və buraxın və ya klikləyin",
+            "formats": "JPG və ya PNG, maksimum 5MB",
+            "selectFile": "Zəhmət olmasa şəkil seçin",
+            "empty": "Defolt şəkil hələ əlavə edilməyib",
+            "uploaded": "Defolt şəkil yükləndi",
+            "uploadFailed": "Şəkli yükləmək alınmadı: {error}",
+            "deleteTitle": "Şəkili silin",
+            "deleteConfirm": "Bu defolt şəkli silmək istədiyinizə əminsiniz?",
+            "deleted": "Defolt şəkil silindi",
+            "deleteFailed": "Şəkli silmək alınmadı",
+            "types": {
+                "default": "Ümumi Defolt (Bütün cihazlar)",
+                "portrait": "Portret ekranları",
+                "landscape": "Landşaft ekranları"
+            }
+        }
+    },
+    "time": {
+        "justNow": "Sadəcə indi",
+        "minutesAgo": "{count} dəqiqə əvvəl",
+        "hoursAgo": "{count} saat əvvəl",
+        "daysAgo": "{count} gün əvvəl"
+    },
+    "messages": {
+        "unknownError": "Naməlum xəta baş verdi",
+        "loadFailed": "Datanı yükləmək alınmadı",
+        "saveFailed": "Saxlama əməliyyatı alınmadı"
+    }
+}

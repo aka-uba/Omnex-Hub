@@ -1,0 +1,31 @@
+# VvvebJs HTML Editor - htaccess
+# Bu dizindeki dosyaları doğrudan sun, SPA routing yapma
+
+# DirectoryIndex ayarı - editor.html varsayılan sayfa
+DirectoryIndex editor.html index.html
+
+# Rewrite engine
+RewriteEngine On
+
+# Bu dizindeki istekleri olduğu gibi sun, yönlendirme yapma
+RewriteRule ^ - [L]
+
+# MIME types
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/css .css
+    AddType text/html .html
+    AddType application/json .json
+</IfModule>
+
+# Cache kontrolü - development için
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|html)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# CORS bu dizinde genisletilmemeli.
+# API tarafindaki kontrollu CORS politikasi kullanilir.

@@ -1,0 +1,150 @@
+{
+    "title": "Medienbibliothek",
+    "subtitle": {
+        "default": "Verwalten Sie Bild- und Videodateien",
+        "directory": "Verzeichnis",
+        "notSelected": "Nicht ausgewählt"
+    },
+    "breadcrumb": {
+        "panel": "Panel",
+        "media": "Medienbibliothek"
+    },
+    "toolbar": {
+        "upload": "Hochladen",
+        "browse": "Verzeichnis durchsuchen",
+        "library": "Bibliothek",
+        "browseMode": "Zum Verzeichnis-Explorer-Modus wechseln",
+        "search": "Dateien suchen...",
+        "parentFolder": "Übergeordneter Ordner",
+        "gridView": "Rasteransicht",
+        "listView": "Listenansicht",
+        "scanSamples": "Öffentliche Bibliothek scannen"
+    },
+    "filter": {
+        "all": "Alle Dateien",
+        "images": "Bilder",
+        "videos": "Videos",
+        "documents": "Dokumente"
+    },
+    "filters": {
+        "advancedFilters": "Erweiterte Filter",
+        "apply": "Anwenden",
+        "applied": "Filter angewendet",
+        "searchPlaceholder": "Dateiname suchen...",
+        "sizeRange": "Dateigröße",
+        "minSize": "Min (KB)",
+        "maxSize": "Max (KB)"
+    },
+    "type": {
+        "image": "Bild",
+        "video": "Video",
+        "document": "Dokument",
+        "folder": "Ordner"
+    },
+    "bulk": {
+        "selected": "Dateien ausgewählt",
+        "delete": "Löschen",
+        "import": "Importieren",
+        "clear": "Auswahl löschen"
+    },
+    "actions": {
+        "preview": "Vorschau",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "import": "Importieren",
+        "download": "Herunterladen"
+    },
+    "table": {
+        "name": "Dateiname",
+        "type": "Typ",
+        "size": "Größe",
+        "date": "Datum"
+    },
+    "upload": {
+        "uploading": "Wird hochgeladen..."
+    },
+    "settings": {
+        "title": "Bibliothekseinstellungen",
+        "fields": {
+            "defaultPath": "Standard-Verzeichnispfad",
+            "maxFileSize": "Maximale Dateigröße (MB)",
+            "allowedTypes": "Erlaubte Dateitypen"
+        },
+        "hints": {
+            "defaultPath": "Verzeichnis-Explorer startet von diesem Pfad"
+        },
+        "scan": {
+            "title": "Verzeichnis scannen",
+            "description": "Dateien in Datenbank importieren",
+            "button": "Scannen"
+        },
+        "fileTypes": {
+            "images": "Bilder",
+            "videos": "Videos",
+            "documents": "Dokumente"
+        }
+    },
+    "preview": {
+        "title": "Dateivorschau",
+        "fields": {
+            "fileName": "Dateiname",
+            "size": "Größe",
+            "type": "Typ",
+            "date": "Datum",
+            "path": "Dateipfad"
+        },
+        "actions": {
+            "import": "In Bibliothek importieren",
+            "download": "Herunterladen",
+            "delete": "Löschen"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Datei löschen",
+            "confirm": "Sind Sie sicher, dass Sie diese Datei löschen möchten?"
+        },
+        "bulk": {
+            "title": "Dateien löschen",
+            "confirm": "Sind Sie sicher, dass Sie {count} Dateien löschen möchten?"
+        }
+    },
+    "empty": {
+        "title": "Keine Dateien gefunden",
+        "uploadHint": "Klicken Sie auf die Schaltfläche Hochladen, um Dateien hochzuladen",
+        "browseHint": "Öffnen Sie einen Ordner, um Verzeichnisinhalte anzuzeigen"
+    },
+    "modal": {
+        "close": "Schließen",
+        "cancel": "Abbrechen",
+        "delete": "Löschen"
+    },
+    "toast": {
+        "uploaded": "Datei hochgeladen",
+        "uploadFailed": "Dateien konnten nicht hochgeladen werden",
+        "deleted": "Datei gelöscht",
+        "imported": "Datei in Bibliothek importiert",
+        "importFailed": "Datei konnte nicht hinzugefügt werden",
+        "scanned": "Verzeichnisscan abgeschlossen",
+        "samplesScanned": "{imported} Dateien importiert, {skipped} Dateien existieren bereits (insgesamt {total} Dateien gefunden)",
+        "copied": "Kopiert",
+        "settingsSaved": "Einstellungen gespeichert",
+        "pathRequired": "Verzeichnispfad eingeben",
+        "bulkImported": "{count} Dateien importiert"
+    },
+    "messages": {
+        "enterPath": "Bitte geben Sie den Verzeichnispfad ein",
+        "scanFailed": "Verzeichnisscan fehlgeschlagen",
+        "importFailed": "Import fehlgeschlagen",
+        "deleteFailed": "Löschvorgang fehlgeschlagen",
+        "loadFailed": "Dateien konnten nicht geladen werden",
+        "setDirectoryPath": "Bitte legen Sie zuerst den Verzeichnispfad in den Einstellungen fest",
+        "uploadFailed": "Upload fehlgeschlagen"
+    },
+    "pagination": {
+        "items": "Elemente",
+        "page": "Seite",
+        "previous": "Vorherige",
+        "next": "Nächste"
+    }
+}

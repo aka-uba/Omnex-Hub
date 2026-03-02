@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "omnex",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["-S", "0.0.0.0:8091", "-t", ".", "_router.php"],
+      "port": 8091,
+      "url": "http://localhost:8091/public/index.html#/login"
+    },
+    {
+      "name": "fiyatgor-preview",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["-S", "0.0.0.0:8092", "-t", "tasarımlar/fiyatgor-decompiled/assets/www"],
+      "port": 8092,
+      "url": "http://localhost:8092/index.html"
+    }
+  ]
+}

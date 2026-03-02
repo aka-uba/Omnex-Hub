@@ -1,0 +1,30 @@
+{
+    "title": "Über",
+    "subtitle": "Plattforminformationen und Versionshistorie",
+    "breadcrumb": {
+        "panel": "Panel"
+    },
+    "features": {
+        "multiDevice": "Multi-Geräte-Unterstützung",
+        "multiDeviceDesc": "ESL, TV, Tablet und alle digitalen Displays auf einer einzigen Plattform",
+        "multiLanguage": "Mehrsprachige Struktur",
+        "multiLanguageDesc": "Globale Nutzung mit 7 Sprachunterstützung",
+        "security": "Sichere Aktivierung",
+        "securityDesc": "Kontrollierte Geräteintegration und Autorisierung",
+        "templates": "Erweiterte Vorlagen",
+        "templatesDesc": "Drag-and-Drop-Design-Editor"
+    },
+    "changelog": {
+        "title": "Versionshistorie",
+        "expand": "Erweitern",
+        "collapse": "Einklappen",
+        "noContent": "Versionshistorie nicht gefunden"
+    },
+    "footer": {
+        "allRightsReserved": "Alle Rechte vorbehalten",
+        "developedBy": "Entwickler"
+    },
+    "messages": {
+        "loading": "Wird geladen..."
+    }
+}

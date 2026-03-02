@@ -1,0 +1,86 @@
+/**
+ * Omnex Display Hub - Application CSS Variables
+ *
+ * This file contains app-specific CSS variable extensions for the theme system.
+ * These variables are used by LayoutManager.js for the sidebar/header themes.
+ *
+ * Layout styles have been moved to their respective files:
+ * - layouts/sidebar.css - Sidebar layout styles
+ * - layouts/header.css - Header layout styles
+ * - layouts/content.css - Content area and footer styles
+ * - layouts/topnavigation.css - Top navigation layout styles
+ */
+
+/* ============================================
+   SIDEBAR VARIABLE EXTENSIONS
+   These extend the base variables in global.css for sidebar-specific use
+   ============================================ */
+
+:root {
+    /* Sidebar-specific variables (not in global.css) */
+    --sidebar-bg: var(--bg-primary);
+    --sidebar-text: var(--text-primary);
+    --sidebar-icon: var(--text-secondary);
+    --sidebar-hover: rgba(0, 0, 0, 0.05);
+    --sidebar-active: rgba(34, 139, 230, 0.1);
+    --sidebar-active-text: var(--color-primary);
+    --sidebar-border: var(--border-color);
+    --sidebar-border-width: 1px;
+    --sidebar-border-color: var(--border-color);
+    --sidebar-divider: rgba(0, 0, 0, 0.08);
+    --sidebar-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+    --sidebar-scrollbar-track: transparent;
+    --sidebar-group-title: rgba(0, 0, 0, 0.5);
+
+    /* Header-specific variables (not in global.css) */
+    --header-bg: var(--bg-primary);
+    --header-text: var(--text-primary);
+    --header-hover: rgba(0, 0, 0, 0.06);
+    --header-active: rgba(34, 139, 230, 0.12);
+    --header-active-text: #1971c2;
+    --header-border: var(--border-color);
+    --header-border-width: 1px;
+    --header-border-color: var(--border-color);
+
+    /* Top Navigation */
+    --top-nav-height: var(--header-height);
+    --top-nav-bg: var(--bg-primary);
+
+    /* Z-index extension */
+    --z-configurator: 1050;
+}
+
+/* Dark Mode Overrides for Sidebar/Header */
+.dark,
+[data-theme="dark"] {
+    --sidebar-bg: #080c12;
+    --sidebar-text: #e6edf3;
+    --sidebar-icon: #8b949e;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
+    --sidebar-active: rgba(56, 139, 253, 0.15);
+    --sidebar-active-text: #58a6ff;
+    --sidebar-border: #21262d;
+    --sidebar-border-color: #21262d;
+    --sidebar-divider: rgba(255, 255, 255, 0.08);
+    --sidebar-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --sidebar-group-title: rgba(255, 255, 255, 0.5);
+
+    --header-bg: #080c12;
+    --header-text: #e6edf3;
+    --header-hover: rgba(255, 255, 255, 0.06);
+    --header-active: rgba(56, 139, 253, 0.15);
+    --header-active-text: #58a6ff;
+    --header-border: #21262d;
+    --header-border-color: #21262d;
+
+    --top-nav-bg: #080c12;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+    --sidebar-position: right;
+}
+
+[dir="ltr"] {
+    --sidebar-position: left;
+}

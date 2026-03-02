@@ -1,0 +1,30 @@
+{
+    "title": "À propos",
+    "subtitle": "Informations sur la plateforme et historique des versions",
+    "breadcrumb": {
+        "panel": "Panneau"
+    },
+    "features": {
+        "multiDevice": "Support multi-appareils",
+        "multiDeviceDesc": "ESL, TV, tablette et tous les affichages numériques sur une seule plateforme",
+        "multiLanguage": "Structure multilingue",
+        "multiLanguageDesc": "Utilisation mondiale avec support de 7 langues",
+        "security": "Activation sécurisée",
+        "securityDesc": "Intégration et autorisation contrôlées des appareils",
+        "templates": "Modèles avancés",
+        "templatesDesc": "Éditeur de conception glisser-déposer"
+    },
+    "changelog": {
+        "title": "Historique des versions",
+        "expand": "Développer",
+        "collapse": "Réduire",
+        "noContent": "Historique des versions introuvable"
+    },
+    "footer": {
+        "allRightsReserved": "Tous droits réservés",
+        "developedBy": "Développeur"
+    },
+    "messages": {
+        "loading": "Chargement..."
+    }
+}

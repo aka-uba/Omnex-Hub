@@ -1,0 +1,390 @@
+{
+    "title": "Digitale bewegwijzering",
+    "subtitle": "Beheer digitale signage-inhoud",
+    "playlists": {
+        "title": "Afspeellijsten",
+        "subtitle": "Beheer afspeellijsten",
+        "addPlaylist": "Nieuwe afspeellijst",
+        "editPlaylist": "Bewerk afspeellijst",
+        "deletePlaylist": "Afspeellijst verwijderen",
+        "deleteConfirm": "Weet je zeker dat je deze afspeellijst wilt verwijderen?",
+        "detail": "Afspeellijstdetails",
+        "empty": "Er zijn nog geen afspeellijsten gemaakt",
+        "selectMedia": "Selecteer Media",
+        "itemCount": "artikelen",
+        "columns": {
+            "orientation": "Schermoriëntatie",
+            "template": "Sjabloon",
+            "layoutType": "Indelingstype",
+            "assignedDevice": "Toegewezen apparaat",
+            "devicesCount": "Apparaten ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - Toegewezen apparaten",
+            "noDevices": "Geen toegewezen apparaten gevonden",
+            "removeDevice": "Verwijderen",
+            "removeConfirm": "Wil je dit apparaat verwijderen uit de toewijzing van afspeellijsten?",
+            "removed": "Apparaattoewijzing verwijderd"
+        },
+        "orientations": {
+            "landscape": "Landschap (1920x1080)",
+            "portrait": "Portret (1080x1920)"
+        },
+        "layouts": {
+            "full": "Volledig scherm",
+            "grid2": "Raster met 2 kolommen",
+            "grid3": "Raster met 3 kolommen",
+            "grid4": "Raster met 4 kolommen",
+            "hybrid": "Hybride (hoofd + zijkant)"
+        },
+        "mediaTypes": {
+            "image": "Afbeelding",
+            "video": "Video",
+            "template": "Sjabloon",
+            "webpage": "Web",
+            "stream": "Stream"
+        },
+        "templatePreview": "Sjabloonvoorbeeld",
+        "noTemplateSelected": "Geen sjabloon geselecteerd",
+        "transitions": {
+            "none": "Geen",
+            "fade": "Vervagen",
+            "slideLeft": "Schuif naar links",
+            "slideRight": "Schuif naar rechts",
+            "slideUp": "Schuif omhoog",
+            "slideDown": "Schuif naar beneden",
+            "zoom": "Zoom",
+            "crossfade": "Overvloeien"
+        },
+        "form": {
+            "fields": {
+                "name": "Naam van afspeellijst",
+                "description": "Beschrijving",
+                "duration": "Duur (sec)",
+                "transition": "Overgangseffect",
+                "transitionDuration": "Overgangsduur",
+                "loop": "Lus",
+                "orientation": "Schermoriëntatie",
+                "template": "Sjabloon",
+                "layoutType": "Indelingstype"
+            },
+            "infoTitle": "Lijstinformatie",
+            "itemsTitle": "Lijst inhoud",
+            "addItem": "Inhoud toevoegen",
+            "createDesc": "Maak een nieuwe afspeellijst",
+            "editDesc": "Bewerk de afspeellijst",
+            "namePlaceholder": "Voorbeeld: campagneafbeeldingen",
+            "descPlaceholder": "Korte beschrijving van de lijst",
+            "durationHint": "Standaard weergaveduur voor elke inhoud",
+            "selectTemplate": "Sjabloon selecteren...",
+            "noPreview": "Geen voorbeeld",
+            "noItems": "Nog geen inhoud toegevoegd",
+            "noItemsHint": "Gebruik de knop hierboven om inhoud toe te voegen",
+            "emptyMedia": "Mediabibliotheek is leeg",
+            "uploadMedia": "Media uploaden",
+            "tabMedia": "Media",
+            "tabTemplates": "Sjablonen",
+            "tabWebpage": "Webpagina",
+            "tabStream": "Livestream",
+            "webpageTitle": "Webpagina toevoegen",
+            "webpageHint": "Voer de URL in van de webpagina die u wilt weergeven. De pagina wordt weergegeven in een iframe.",
+            "webpageUrl": "Webpagina-URL",
+            "webpageName": "Weergavenaam",
+            "webpageNamePlaceholder": "Voorbeeld: weer",
+            "addWebpage": "Webpagina toevoegen",
+            "webpageWarning": "Opmerking: sommige websites kunnen de weergave in iframe (X-Frame-Options) blokkeren. In dit geval kan de pagina niet worden weergegeven.",
+            "webpageUrlRequired": "Voer een URL in",
+            "webpageUrlInvalid": "URL moet beginnen met http:// of https://",
+            "webpageAlreadyAdded": "Deze URL is al toegevoegd",
+            "webpageAdded": "Webpagina toegevoegd",
+            "streamTitle": "Livestream toevoegen",
+            "streamHint": "Voer de HLS (m3u8), RTSP of andere stream-URL in. Wordt afgespeeld via hls.js op apparaten.",
+            "streamUrl": "Stream-URL",
+            "streamName": "Streamnaam",
+            "streamNamePlaceholder": "Bijv.: Camera 1, TV-uitzending",
+            "streamDurationHint": "0 = onbeperkt (doorlopende stream)",
+            "streamMuted": "Audio",
+            "streamMutedYes": "Gedempt",
+            "streamMutedNo": "Geluid aan",
+            "streamAdd": "Stream toevoegen",
+            "streamFormats": "Ondersteunde formaten: HLS (.m3u8), MP4, WebM. RTSP wordt niet direct ondersteund, moet worden geconverteerd naar HLS.",
+            "streamUrlRequired": "Voer een stream-URL in",
+            "streamUrlInvalid": "Ongeldig URL-formaat",
+            "streamAlreadyAdded": "Deze stream is al toegevoegd",
+            "streamAdded": "Livestream toegevoegd",
+            "emptyTemplates": "Geen sjablonen gevonden",
+            "emptyTemplatesHint": "Maak signage- of tv-sjablonen",
+            "createTemplate": "Sjabloon maken",
+            "seconds": "sec",
+            "loop": "Lus",
+            "loopHint": "Start de video opnieuw wanneer deze eindigt",
+            "loopCountHint": "Hoe vaak herhalen",
+            "soundOn": "Geluid aan",
+            "soundOff": "Geluid uit",
+            "durationHintVideo": "Indien leeg gelaten, wordt de video op zijn eigen duur afgespeeld",
+            "durationHintImage": "Weergaveduur (seconden)",
+            "itemsHint": "Duur: Indien leeg gelaten, wordt de video op zijn eigen duur afgespeeld. Loop: Indien ingeschakeld, herhaalt de inhoud het opgegeven aantal keren en gaat naar de volgende wanneer de duur is verstreken.",
+            "editItem": "Artikel bewerken",
+            "itemName": "Naam",
+            "itemUpdated": "Artikel bijgewerkt",
+            "duration": "Duur",
+            "autoForVideo": "Auto",
+            "loopVideo": "Videolus",
+            "loopCount": "Herhaal telling",
+            "selectDevice": "Selecteer Apparaat",
+            "selectDevices": "Selecteer Apparaten",
+            "selectedDevices": "Geselecteerde apparaten",
+            "assignToMultiple": "U kunt meerdere apparaten toewijzen",
+            "selectDevicePlaceholder": "Selecteer apparaat...",
+            "noDevices": "Geen geschikte apparaten gevonden. Voeg eerst een bewegwijzeringsapparaat toe.",
+            "willBeAssigned": "afspeellijst wordt toegewezen aan het geselecteerde apparaat.",
+            "selectDeviceRequired": "Selecteer een apparaat",
+            "confirmUnassign": "Geen apparaten geselecteerd. Deze afspeellijst wordt van alle apparaten verwijderd. Doorgaan?",
+            "currentlyAssigned": "Momenteel toegewezen aan {device} apparaat",
+            "currentlyAssignedCount": "Momenteel toegewezen aan {count} apparaten",
+            "aDevice": "een apparaat"
+        },
+        "assignToDevice": "Toewijzen aan apparaat",
+        "toast": {
+            "created": "Afspeellijst gemaakt",
+            "updated": "Afspeellijst bijgewerkt",
+            "deleted": "Afspeellijst verwijderd",
+            "mediaAdded": "Media toegevoegd",
+            "assigned": "Afspeellijst toegewezen aan apparaat",
+            "assignedCount": "{count} apparaten toegewezen",
+            "assignFailedCount": "{count} apparaattoewijzingen zijn mislukt"
+        },
+        "commands": {
+            "start": "Begin met uitzenden",
+            "stop": "Uitzending stoppen",
+            "refresh": "Apparaat vernieuwen",
+            "reboot": "Apparaat opnieuw opstarten",
+            "device": "Apparaat",
+            "send": "Versturen",
+            "sentCount": "{count} opdrachten verzonden naar apparaten",
+            "failedCount": "{count} opdrachten konden niet worden verzonden",
+            "confirmMessage": "De opdracht '{command}' wordt verzonden naar <strong>{device}</strong>.",
+            "sent": "Commando verzonden: {device}",
+            "failed": "Kan opdracht niet verzenden"
+        },
+        "actions": {
+            "startBroadcast": "Begin met uitzenden",
+            "stopBroadcast": "Uitzending stoppen",
+            "refreshDevice": "Apparaat vernieuwen"
+        }
+    },
+    "schedules": {
+        "title": "Schema's",
+        "subtitle": "Beheer uitzendschema's",
+        "addSchedule": "Nieuw schema",
+        "editSchedule": "Schema bewerken",
+        "deleteSchedule": "Schema verwijderen",
+        "deleteConfirm": "Weet u zeker dat u het schema \"{name}\" wilt verwijderen?",
+        "empty": "Er zijn nog geen schema's gemaakt",
+        "historyFeature": "Geschiedenisfunctie binnenkort beschikbaar",
+        "searchPlaceholder": "Zoek schema...",
+        "emptyText": "Schema niet gevonden",
+        "columns": {
+            "preview": "Voorbeeld",
+            "name": "Schemanaam",
+            "playlist": "Afspeellijst",
+            "devices": "Apparaten",
+            "deviceCount": "{count} apparaten",
+            "startDate": "Begin",
+            "endDate": "Einde",
+            "continuous": "Continu",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Actief",
+            "scheduled": "Gepland",
+            "inactive": "Inactief",
+            "completed": "Voltooid"
+        },
+        "actions": {
+            "history": "Geschiedenis",
+            "view": "Weergave",
+            "edit": "Bewerking",
+            "delete": "Verwijderen"
+        },
+        "newSchedule": "Nieuw schema",
+        "createDesc": "Maak een nieuw schema",
+        "editDesc": "Schema-instellingen bewerken",
+        "scheduleInfo": "Schema-informatie",
+        "targetDevices": "Doelapparaten",
+        "selectedCount": "{count} geselecteerd",
+        "searchDevice": "Apparaat zoeken...",
+        "noMatch": "Geen overeenkomst gevonden",
+        "noTvDevices": "Geen tv/signage-apparaten gevonden",
+        "locationNotSpecified": "Locatie niet gespecificeerd",
+        "form": {
+            "fields": {
+                "name": "Schemanaam",
+                "playlist": "Afspeellijst",
+                "startDate": "Startdatum",
+                "endDate": "Einddatum",
+                "startTime": "Begintijd",
+                "endTime": "Eindtijd",
+                "repeat": "Herhalen",
+                "weekdays": "Dagen",
+                "status": "Status",
+                "devices": "Apparaten",
+                "priority": "Prioriteit"
+            },
+            "placeholders": {
+                "name": "Voorbeeld: Weekendcampagne",
+                "selectPlaylist": "Selecteer Lijst"
+            },
+            "hints": {
+                "endDate": "Als het leeg blijft, wordt het continu afgespeeld",
+                "priority": "Hogere waarde = hogere prioriteit"
+            },
+            "repeat": {
+                "none": "Geen herhaling",
+                "daily": "Dagelijks",
+                "weekly": "Wekelijks",
+                "monthly": "Maandelijks"
+            },
+            "weekdays": {
+                "mon": "ma",
+                "tue": "di",
+                "wed": "wo",
+                "thu": "Do",
+                "fri": "Vr",
+                "sat": "Zat",
+                "sun": "Zon"
+            },
+            "status": {
+                "active": "Actief",
+                "scheduled": "Gepland",
+                "inactive": "Inactief"
+            }
+        },
+        "toast": {
+            "created": "Schema gemaakt",
+            "updated": "Schema bijgewerkt",
+            "deleted": "Schema verwijderd",
+            "loadFailed": "Kan het schema niet laden",
+            "requiredFields": "Vul de verplichte velden in",
+            "selectDevice": "U moet minimaal één apparaat selecteren",
+            "saveFailed": "Fout bij opslaan"
+        }
+    },
+    "template": {
+        "title": "Schermsjablonen",
+        "subtitle": "Beheer tv- en signage-schermindelingen",
+        "addTemplate": "Sjabloon toevoegen",
+        "editTemplate": "Sjabloon bewerken",
+        "types": {
+            "signage": "Bewegwijzering",
+            "tv": "TV",
+            "label": "Label"
+        },
+        "layoutTypes": {
+            "full": "Volledig scherm",
+            "grid2": "Splitsing in 2 kolommen",
+            "grid3": "Splitsing in 3 kolommen",
+            "grid4": "Splitsing in 4 kolommen",
+            "hybrid": "Hybride"
+        },
+        "slots": {
+            "main": "Hoofdgebied",
+            "slot1": "Gebied 1",
+            "slot2": "Gebied 2",
+            "slot3": "Gebied 3",
+            "slot4": "Gebied 4",
+            "sidebar": "Zijbalk",
+            "banner": "Onderste banner"
+        },
+        "preview": "Voorbeeld",
+        "previewDescription": "Hoe de sjabloon op het scherm verschijnt"
+    },
+    "deviceTree": {
+        "title": "Apparaatstatus",
+        "subtitle": "Hiërarchisch overzicht van alle signage-apparaten",
+        "expandAll": "Alles uitklappen",
+        "collapseAll": "Alles inklappen",
+        "summary": {
+            "total": "Totaal",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Waarschuwing",
+            "devices": "apparaten"
+        },
+        "filter": {
+            "search": "Apparaat, IP of vestiging zoeken...",
+            "all": "Alles",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Waarschuwingen"
+        },
+        "columns": {
+            "name": "Naam",
+            "status": "Status",
+            "playlist": "Nu afspelend",
+            "lastSeen": "Laatst gezien",
+            "actions": "Acties"
+        },
+        "node": {
+            "devices": "{count} apparaten",
+            "unassigned": "Niet-toegewezen apparaten",
+            "noBranch": "Geen vestiging"
+        },
+        "commands": {
+            "start": "Starten",
+            "stop": "Stoppen",
+            "refresh": "Vernieuwen",
+            "reboot": "Herstarten",
+            "startAll": "Alles starten",
+            "stopAll": "Alles stoppen",
+            "refreshAll": "Alles vernieuwen",
+            "confirmCascade": "Het commando \"{command}\" wordt naar {count} apparaten gestuurd. Doorgaan?",
+            "sending": "Commando's worden verzonden...",
+            "progress": "{sent}/{total} verzonden",
+            "resultSuccess": "{success} succesvol",
+            "resultFailed": "{failed} mislukt",
+            "resultSummary": "Commandoresultaat"
+        },
+        "toast": {
+            "started": "Uitzending gestart: {device}",
+            "stopped": "Uitzending gestopt: {device}",
+            "refreshed": "Apparaat vernieuwd: {device}",
+            "rebooted": "Opnieuw opstarten: {device}",
+            "failed": "Opdracht mislukt: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Tablet",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "zojuist",
+            "secondsAgo": "{n}s geleden",
+            "minutesAgo": "{n}min geleden",
+            "hoursAgo": "{n}u geleden",
+            "daysAgo": "{n}d geleden",
+            "never": "Nooit"
+        },
+        "empty": "Geen signage-apparaten gevonden",
+        "emptyHint": "Voeg een tv- of signage-apparaat toe vanaf de apparatenpagina",
+        "autoRefresh": "Auto-vernieuwen: {seconds}s",
+        "refreshing": "Vernieuwen...",
+        "noPlaylist": "Geen afspeellijst toegewezen",
+        "loading": "Apparaatboom laden..."
+    },
+    "player": {
+        "title": "PWA-speler",
+        "syncCode": "Synchronisatiecode",
+        "enterSyncCode": "Voer de synchronisatiecode in",
+        "connecting": "Verbinden...",
+        "connected": "Aangesloten",
+        "disconnected": "Verbinding verbroken",
+        "nowPlaying": "Nu aan het spelen",
+        "nextItem": "Volgende",
+        "rotation": "Rotatieduur",
+        "seconds": "seconden"
+    }
+}

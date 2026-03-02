@@ -1,0 +1,141 @@
+{
+    "title": "Şube Yönetimi",
+    "subtitle": "Şirket şubelerini ve bölgelerini yönetin",
+
+    "allBranches": "Tüm Şubeler",
+    "selectBranch": "Şube Seç",
+    "masterData": "Ana Veri",
+    "activeBranch": "Aktif Şube",
+
+    "types": {
+        "region": "Bölge",
+        "store": "Mağaza",
+        "warehouse": "Depo",
+        "online": "Online"
+    },
+
+    "list": {
+        "title": "Şubeler",
+        "empty": "Henüz şube eklenmemiş",
+        "search": "Şube ara...",
+        "addBranch": "Şube Ekle",
+        "addRegion": "Bölge Ekle"
+    },
+
+    "form": {
+        "create": "Yeni Şube",
+        "edit": "Şube Düzenle",
+        "createRegion": "Yeni Bölge",
+        "editRegion": "Bölge Düzenle",
+
+        "code": "Şube Kodu",
+        "codeHint": "Benzersiz şube kodu (örneğin: IST-01)",
+        "regionCode": "Bölge Kodu",
+        "regionCodeHint": "Benzersiz bölge kodu (örneğin: MARMARA)",
+        "externalCode": "Harici Kod",
+        "externalCodeHint": "ERP veya dış sistem kodu",
+        "name": "Şube Adı",
+        "regionName": "Bölge Adı",
+        "type": "Şube Tipi",
+        "parentRegion": "Üst Bölge",
+        "noParent": "Üst bölge yok",
+
+        "contact": "İletişim Bilgileri",
+        "address": "Adres",
+        "city": "Şehir",
+        "district": "İlçe",
+        "postalCode": "Posta Kodu",
+        "country": "Ülke",
+        "phone": "Telefon",
+        "email": "E-posta",
+
+        "location": "Konum Bilgileri",
+        "latitude": "Enlem",
+        "longitude": "Boylam",
+
+        "settings": "Ayarlar",
+        "manager": "Şube Müdürü",
+        "timezone": "Saat Dilimi",
+        "currency": "Para Birimi",
+        "isActive": "Aktif",
+        "isVirtual": "Sanal Şube",
+        "sortOrder": "Sıralama",
+        "requiredFields": "Kod ve ad alanları zorunludur"
+    },
+
+    "overrides": {
+        "title": "Şube Fiyatları",
+        "subtitle": "Şube bazlı fiyat ve kampanya ayarları",
+        "noOverrides": "Bu şube için özel fiyat ayarı bulunmuyor",
+        "addOverride": "Fiyat Ekle",
+        "editOverride": "Fiyat Düzenle",
+        "removeOverride": "Özel Fiyatı Kaldır",
+        "inheritMaster": "Ana veriden devral",
+        "customPrice": "Özel Fiyat",
+        "discount": "İndirim",
+        "campaign": "Kampanya",
+        "validFrom": "Geçerlilik Başlangıcı",
+        "validUntil": "Geçerlilik Bitişi",
+        "isActive": "Aktif"
+    },
+
+    "access": {
+        "title": "Kullanıcı Erişimleri",
+        "subtitle": "Şubeye erişebilen kullanıcıları yönetin",
+        "noAccess": "Henüz kullanıcı erişimi tanımlanmamış",
+        "addAccess": "Erişim Ekle",
+        "editAccess": "Erişim Düzenle",
+        "removeAccess": "Erişimi Kaldır",
+        "user": "Kullanıcı",
+        "accessLevel": "Erişim Seviyesi",
+        "isDefault": "Varsayılan Şube",
+        "expiresAt": "Bitiş Tarihi",
+        "noExpiry": "Süre sınırı yok"
+    },
+
+    "import": {
+        "title": "Şube Verisi İçe Aktar",
+        "subtitle": "Fiyat ve stok verilerini içe aktarın",
+        "selectBranch": "Hedef şube seçin",
+        "updateMode": "Güncelleme Modu",
+        "updateModeHint": "Mevcut kayıtları nasıl güncelleyelim?",
+        "modes": {
+            "upsert": "Ekle/Güncelle",
+            "update": "Sadece Güncelle",
+            "insert": "Sadece Ekle"
+        }
+    },
+
+    "messages": {
+        "created": "Şube oluşturuldu",
+        "updated": "Şube güncellendi",
+        "deleted": "Şube silindi",
+        "saveError": "Şube kaydedilemedi",
+        "deleteError": "Şube silinemedi",
+        "fetchError": "Şubeler yüklenemedi",
+        "overrideCreated": "Şube fiyatı eklendi",
+        "overrideUpdated": "Şube fiyatı güncellendi",
+        "overrideRemoved": "Şube fiyatı kaldırıldı",
+        "accessGranted": "Erişim verildi",
+        "accessRevoked": "Erişim kaldırıldı",
+        "branchChanged": "Aktif şube değiştirildi",
+        "limitReached": "Şube limiti aşıldı",
+        "regionLimitReached": "Bölge limiti aşıldı"
+    },
+
+    "confirm": {
+        "deleteTitle": "Silme Onayı",
+        "delete": "Bu şubeyi silmek istediğinize emin misiniz?",
+        "deleteWarning": "Bu işlem geri alınamaz. Şubeye bağlı tüm veriler de silinecektir.",
+        "removeOverride": "Bu ürün için şube fiyatını kaldırmak istediğinize emin misiniz?",
+        "removeAccess": "Bu kullanıcının şube erişimini kaldırmak istediğinize emin misiniz?"
+    },
+
+    "actions": {
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "edit": "Düzenle",
+        "view": "Görüntüle"
+    }
+}

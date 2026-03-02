@@ -1,0 +1,164 @@
+{
+    "title": "Веб‑шаблоны",
+    "subtitle": "Управляйте HTML‑шаблонами для digital signage",
+    "breadcrumb": {
+        "panel": "Панель",
+        "webTemplates": "Веб‑шаблоны",
+        "editor": "Редактор",
+        "new": "Новый веб‑шаблон",
+        "edit": "Редактировать"
+    },
+    "list": {
+        "title": "Веб‑шаблоны",
+        "subtitle": "Создавайте HTML‑шаблоны с помощью VvvebJs",
+        "newTemplate": "Новый веб‑шаблон",
+        "empty": "Веб‑шаблоны ещё не созданы",
+        "emptyHint": "Начните создавать HTML‑шаблоны для digital signage",
+        "searchPlaceholder": "Поиск шаблона...",
+        "total": "Всего шаблонов: {count}"
+    },
+    "filters": {
+        "status": "Статус",
+        "type": "Тип",
+        "all": "Все",
+        "search": "Поиск",
+        "searchPlaceholder": "Поиск шаблона..."
+    },
+    "table": {
+        "name": "Название шаблона",
+        "type": "Тип",
+        "status": "Статус",
+        "dimensions": "Размеры",
+        "devices": "Количество устройств",
+        "createdAt": "Создано",
+        "updatedAt": "Обновлено",
+        "preview": "Предпросмотр"
+    },
+    "form": {
+        "name": "Название шаблона",
+        "description": "Описание",
+        "type": "Тип шаблона",
+        "status": "Статус",
+        "width": "Ширина",
+        "height": "Высота",
+        "orientation": "Ориентация",
+        "category": "Категория",
+        "tags": "Теги",
+        "placeholders": {
+            "name": "Введите название шаблона",
+            "description": "Описание шаблона (необязательно)",
+            "tags": "Теги (через запятую)"
+        }
+    },
+    "types": {
+        "signage": "Digital signage",
+        "webpage": "Веб‑страница",
+        "dashboard": "Дашборд",
+        "menu": "Меню‑борд"
+    },
+    "status": {
+        "draft": "Черновик",
+        "published": "Опубликовано",
+        "archived": "В архиве"
+    },
+    "orientations": {
+        "landscape": "Альбомная",
+        "portrait": "Портретная"
+    },
+    "actions": {
+        "new": "Новый шаблон",
+        "edit": "Редактировать",
+        "delete": "Удалить",
+        "duplicate": "Дублировать",
+        "clone": "Клонировать",
+        "preview": "Предпросмотр",
+        "publish": "Опубликовать",
+        "unpublish": "Снять с публикации",
+        "assignDevices": "Назначить устройства",
+        "viewVersions": "Просмотреть версии",
+        "retry": "Повторить",
+        "createFirst": "Создать первый шаблон",
+        "cancel": "Отмена"
+    },
+    "editor": {
+        "title": "Редактор веб‑шаблонов",
+        "newTitle": "Новый веб‑шаблон",
+        "editTitle": "Редактировать веб‑шаблон",
+        "subtitle": "Проектируйте HTML‑шаблоны для digital signage",
+        "loading": "Загрузка редактора...",
+        "loadError": "Не удалось загрузить редактор",
+        "redirecting": "Перенаправляем в редактор..."
+    },
+    "widgets": {
+        "title": "Виджеты Omnex",
+        "productCard": "Карточка товара",
+        "priceList": "Прайс‑лист",
+        "ticker": "Бегущая строка",
+        "clock": "Часы",
+        "countdown": "Обратный отсчёт",
+        "qrcode": "QR Kod",
+        "weather": "Погода",
+        "news": "Лента новостей"
+    },
+    "assignment": {
+        "title": "Назначение устройств",
+        "selectDevices": "Выберите устройства",
+        "noDevices": "Устройства ещё не назначены",
+        "assignedDevices": "Назначенные устройства",
+        "priority": "Приоритет",
+        "schedule": "Расписание",
+        "startDate": "Дата начала",
+        "endDate": "Дата окончания"
+    },
+    "versions": {
+        "title": "История версий",
+        "current": "Текущая",
+        "version": "Версия",
+        "createdAt": "Создано",
+        "createdBy": "Автор",
+        "notes": "Заметки",
+        "restore": "Восстановить",
+        "compare": "Сравнить"
+    },
+    "messages": {
+        "loading": "Загрузка...",
+        "noTemplates": "Веб‑шаблонов пока нет",
+        "noTemplatesHint": "Начните создавать HTML‑шаблоны для digital signage",
+        "noResults": "Ничего не найдено",
+        "loadError": "Ошибка при загрузке шаблонов",
+        "redirecting": "Перенаправляем в редактор...",
+        "deleted": "Веб‑шаблон удалён",
+        "deleteError": "Произошла ошибка при удалении",
+        "duplicated": "Веб‑шаблон продублирован",
+        "duplicateError": "Произошла ошибка при дублировании"
+    },
+    "toast": {
+        "created": "Веб‑шаблон создан",
+        "updated": "Веб‑шаблон обновлён",
+        "deleted": "Веб‑шаблон удалён",
+        "cloned": "Веб‑шаблон клонирован",
+        "published": "Веб‑шаблон опубликован",
+        "unpublished": "Веб‑шаблон снят с публикации",
+        "assigned": "Назначено устройствам",
+        "versionRestored": "Версия восстановлена"
+    },
+    "confirm": {
+        "deleteTitle": "Удалить шаблон",
+        "deleteMessage": "Вы уверены, что хотите удалить шаблон «{name}»?",
+        "delete": "Вы уверены, что хотите удалить этот веб‑шаблон?",
+        "deleteWarning": "Эту операцию нельзя отменить. Назначения устройств, связанные с шаблоном, также будут удалены.",
+        "publish": "Опубликовать этот шаблон?",
+        "unpublish": "Снять этот шаблон с публикации?",
+        "restoreVersion": "Восстановить эту версию?"
+    },
+    "validation": {
+        "nameRequired": "Название шаблона обязательно",
+        "nameTooLong": "Название шаблона не может превышать 255 символов",
+        "typeRequired": "Выберите тип шаблона"
+    },
+    "filter": {
+        "allTypes": "Все типы",
+        "allStatus": "Все статусы",
+        "search": "Поиск..."
+    }
+}

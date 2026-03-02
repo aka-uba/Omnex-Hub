@@ -1,0 +1,23 @@
+Omnex Display Hub
+Version: 1.0.0-beta.15
+Build: 2026.01.13.2
+Release Date: 2026-01-13
+
+---
+
+Version History:
+- 1.0.0-beta.15 (2026-01-13): i18n System - Multi-language support with page-based translations
+- 1.0.0-beta.14 (2026-01-13): Bulk Delete & Import Mapping improvements
+- 1.0.0-beta.13 (2026-01-13): Responsive layout fixes
+- 1.0.0-beta.12 (2026-01-13): Import/Export system with SmartFieldMapper
+- 1.0.0-beta.11 (2026-01-13): Production Types, WordPress-like Media Library Picker
+- 1.0.0-beta.10 (2026-01-12): Avatar system for users
+- 1.0.0-beta.9 (2026-01-12): Multi-tenant Company Selector, User Dropdown redesign
+- 1.0.0-beta.8 (2026-01-12): Production Mode, Security fixes, Logger utility
+- 1.0.0-beta.7 (2026-01-12): Security audit - SQL injection, path traversal, password hashing fixes
+- 1.0.0-beta.6 (2026-01-11): Page Header system - consistent headers across all pages
+- 1.0.0-beta.5 (2026-01-11): DataTable component, Dynamic API URLs, Media library improvements
+- 1.0.0-beta.4 (2026-01-11): CSS restructure - Tailwind CDN replaced with custom modular CSS
+- 1.0.0-beta.3 (2026-01-11): Product Import, Device Groups, Audit Log, all pages completed
+- 1.0.0-beta.2 (2026-01-10): API endpoints, pages, AuthMiddleware fix
+- 1.0.0-beta (2026-01-10): Initial beta release

@@ -1,0 +1,61 @@
+{
+    "name": "Omnex Display Hub",
+    "short_name": "Omnex Hub",
+    "description": "Dijital Etiket ve Signage Yonetim Platformu",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#228be6",
+    "orientation": "any",
+    "scope": "./",
+    "lang": "tr",
+    "icons": [
+        {
+            "src": "branding/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "branding/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "branding/icon-maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "branding/pwa.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "url": "./#/dashboard",
+            "icons": [{"src": "branding/favicon.png", "sizes": "96x96", "type": "image/png"}]
+        },
+        {
+            "name": "Urunler",
+            "short_name": "Urunler",
+            "url": "./#/products",
+            "icons": [{"src": "branding/favicon.png", "sizes": "96x96", "type": "image/png"}]
+        },
+        {
+            "name": "Cihazlar",
+            "short_name": "Cihazlar",
+            "url": "./#/devices",
+            "icons": [{"src": "branding/favicon.png", "sizes": "96x96", "type": "image/png"}]
+        }
+    ],
+    "categories": ["business", "productivity"],
+    "prefer_related_applications": false,
+    "related_applications": []
+}

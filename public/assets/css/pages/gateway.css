@@ -1,0 +1,830 @@
+/**
+ * Gateway Settings Styles
+ */
+
+/* Gateway Toggle Wrapper */
+.gateway-toggle-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.gateway-toggle-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.gateway-toggle-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark, #1a6fb5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.gateway-toggle-text h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.gateway-toggle-text p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.gateway-toggle-control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 28px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--color-success, #40c057);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px rgba(64, 192, 87, 0.2);
+}
+
+/* Gateway Status Badge */
+.gateway-status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+}
+
+.gateway-status-badge.active {
+    background: rgba(64, 192, 87, 0.15);
+    color: var(--color-success, #40c057);
+}
+
+.gateway-status-badge.inactive {
+    background: rgba(134, 142, 150, 0.15);
+    color: var(--text-muted);
+}
+
+/* Dış card - padding kaldır (card-body'de var) */
+.runtime-settings-header {
+    margin-bottom: 1rem;
+}
+
+.runtime-settings-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.runtime-settings-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2f9e44, #2b8a3e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.runtime-settings-text h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.runtime-settings-text p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.runtime-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.runtime-settings-note {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.runtime-settings-note.warning {
+    color: var(--color-warning-dark, #d69e00);
+}
+
+.runtime-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.card:has(#gateways-container),
+.card:has(#gateways-loading) {
+    padding: 0;
+    border-radius: 10px;
+}
+
+/* Gateway Grid */
+.gateway-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Gateway Card */
+.gateway-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-radius: 10px !important;
+}
+
+.gateway-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.gateway-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.gateway-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark, #1a6fb5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.gateway-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.gateway-desc {
+    font-size: 0.875rem;
+    margin: 0 0 1rem 0;
+    line-height: 1.4;
+}
+
+/* Gateway Meta */
+.gateway-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.meta-item i {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+/* Gateway Actions */
+.gateway-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.gateway-actions .btn {
+    flex: 1;
+    min-width: 100px;
+}
+
+.gateway-actions .btn-delete {
+    flex: 0;
+    min-width: auto;
+}
+
+/* Credentials Box */
+.credentials-box {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.credential-item {
+    margin-bottom: 1rem;
+}
+
+.credential-item:last-child {
+    margin-bottom: 0;
+}
+
+.credential-item label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.credential-value {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.credential-value code {
+    flex: 1;
+    padding: 0.5rem;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    word-break: break-all;
+}
+
+/* Config Preview */
+.config-preview {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    max-height: 200px;
+}
+
+/* Details Modal */
+.gateway-details .detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.gateway-details .detail-section h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.detail-item span {
+    font-weight: 500;
+}
+
+/* Form Row */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* Alert */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert i {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.alert-warning {
+    background: rgba(250, 176, 5, 0.1);
+    border: 1px solid rgba(250, 176, 5, 0.3);
+    color: var(--color-warning-dark, #d69e00);
+}
+
+.alert-info {
+    background: rgba(34, 139, 230, 0.1);
+    border: 1px solid rgba(34, 139, 230, 0.3);
+    color: var(--color-primary);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem;
+}
+
+.empty-state i {
+    opacity: 0.3;
+}
+
+/* =====================================================
+   DEFAULT IMAGE SECTION
+   ===================================================== */
+
+/* Default Image Wrapper */
+.default-image-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.default-image-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.default-image-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fab005, #f59f00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.default-image-text h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.default-image-text p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.default-image-actions {
+    flex-shrink: 0;
+}
+
+/* Default Images Preview */
+.default-images-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.default-images-empty i {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 0.5rem;
+}
+
+.default-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.default-image-item {
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.default-image-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.default-image-thumb {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.default-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.default-image-meta {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.default-image-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.default-image-size {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.default-image-gateway {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: var(--color-primary);
+    padding: 0.25rem 0.5rem;
+    background: rgba(34, 139, 230, 0.1);
+    border-radius: 4px;
+    margin-top: 0.25rem;
+}
+
+.default-image-gateway i {
+    font-size: 0.875rem;
+}
+
+.default-image-item .btn-delete-default-image {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 6px;
+}
+
+.default-image-item:hover .btn-delete-default-image {
+    opacity: 1;
+}
+
+/* File Upload Zone */
+.file-upload-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-upload-zone:hover,
+.file-upload-zone.drag-over {
+    border-color: var(--color-primary);
+    background: rgba(34, 139, 230, 0.05);
+}
+
+.file-upload-content i {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+}
+
+.file-upload-content p {
+    margin: 0;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.file-upload-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-upload-preview img {
+    width: 80px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    /* Gateway Toggle - Mobile */
+    .gateway-toggle-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .gateway-toggle-info {
+        width: 100%;
+    }
+
+    .gateway-toggle-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .gateway-toggle-text h3 {
+        font-size: 1rem;
+    }
+
+    .gateway-toggle-text p {
+        font-size: 0.8125rem;
+    }
+
+    .gateway-toggle-control {
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .runtime-settings-info {
+        width: 100%;
+    }
+
+    .runtime-settings-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .runtime-settings-text h3 {
+        font-size: 1rem;
+    }
+
+    .runtime-settings-text p {
+        font-size: 0.8125rem;
+    }
+
+    .runtime-settings-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .runtime-settings-actions {
+        justify-content: stretch;
+    }
+
+    .runtime-settings-actions .btn {
+        width: 100%;
+    }
+
+    .gateway-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .gateway-actions {
+        flex-direction: column;
+    }
+
+    .gateway-actions .btn {
+        width: 100%;
+    }
+
+    /* Gateway card - diğer sayfalarla tutarlı */
+    .gateway-card {
+        padding: 0;
+    }
+
+    .gateway-card .card-body {
+        padding: var(--space-4);
+    }
+
+    .gateway-header {
+        margin-bottom: var(--space-3);
+    }
+
+    .gateway-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+        border-radius: 10px;
+    }
+
+    .gateway-name {
+        font-size: 1rem;
+        margin-bottom: var(--space-1);
+    }
+
+    .gateway-desc {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-3);
+    }
+
+    /* Gateway meta compact */
+    .gateway-meta {
+        padding: var(--space-2);
+        gap: var(--space-1);
+        margin-bottom: var(--space-3);
+    }
+
+    .meta-item {
+        font-size: var(--text-xs);
+        gap: var(--space-1);
+    }
+
+    .meta-item i {
+        font-size: 0.875rem;
+    }
+
+    /* Gateway actions compact */
+    .gateway-actions {
+        padding-top: var(--space-3);
+        gap: var(--space-2);
+    }
+
+    .gateway-actions .btn {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-sm);
+    }
+
+    /* Credentials box compact */
+    .credentials-box {
+        padding: var(--space-3);
+    }
+
+    .credential-item {
+        margin-bottom: var(--space-3);
+    }
+
+    .credential-item label {
+        font-size: 10px;
+    }
+
+    .credential-value code {
+        padding: var(--space-2);
+        font-size: var(--text-xs);
+    }
+
+    /* Config preview compact */
+    .config-preview {
+        padding: var(--space-3);
+        font-size: 10px;
+        max-height: 150px;
+    }
+
+    /* Alert compact */
+    .alert {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-sm);
+    }
+
+    .alert i {
+        font-size: 1rem;
+    }
+
+    /* Empty state compact */
+    .empty-state {
+        padding: var(--space-6);
+    }
+
+    /* Details modal compact */
+    .gateway-details .detail-section {
+        margin-bottom: var(--space-4);
+    }
+
+    .gateway-details .detail-section h4 {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-2);
+    }
+
+    .detail-item label {
+        font-size: 10px;
+    }
+
+    .detail-item span {
+        font-size: var(--text-sm);
+    }
+
+    /* Default Image - Mobile */
+    .default-image-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .default-image-info {
+        width: 100%;
+    }
+
+    .default-image-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .default-image-text h3 {
+        font-size: 1rem;
+    }
+
+    .default-image-text p {
+        font-size: 0.8125rem;
+    }
+
+    .default-image-actions {
+        width: 100%;
+    }
+
+    .default-image-actions .btn {
+        width: 100%;
+    }
+
+    .default-images-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .file-upload-zone {
+        padding: 1.5rem;
+    }
+
+    .file-upload-content i {
+        font-size: 2rem;
+    }
+}

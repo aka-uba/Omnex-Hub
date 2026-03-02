@@ -1,0 +1,150 @@
+{
+    "title": "Mediabibliotheek",
+    "subtitle": {
+        "default": "Beheer afbeeldings- en videobestanden",
+        "directory": "Directory",
+        "notSelected": "Niet geselecteerd"
+    },
+    "breadcrumb": {
+        "panel": "Paneel",
+        "media": "Mediabibliotheek"
+    },
+    "toolbar": {
+        "upload": "Uploaden",
+        "browse": "Blader door de map",
+        "library": "Bibliotheek",
+        "browseMode": "Schakel over naar de mapverkennermodus",
+        "search": "Bestanden zoeken...",
+        "parentFolder": "Bovenliggende map",
+        "gridView": "Rasterweergave",
+        "listView": "Lijstweergave",
+        "scanSamples": "Openbare bibliotheek scannen"
+    },
+    "filter": {
+        "all": "Alle bestanden",
+        "images": "Afbeeldingen",
+        "videos": "Video's",
+        "documents": "Documenten"
+    },
+    "filters": {
+        "advancedFilters": "Geavanceerde filters",
+        "apply": "Toepassen",
+        "applied": "Filters toegepast",
+        "searchPlaceholder": "Bestandsnaam zoeken...",
+        "sizeRange": "Bestandsgrootte",
+        "minSize": "Min (kB)",
+        "maxSize": "Maximaal (kB)"
+    },
+    "type": {
+        "image": "Afbeelding",
+        "video": "Video",
+        "document": "Document",
+        "folder": "Map"
+    },
+    "bulk": {
+        "selected": "bestanden geselecteerd",
+        "delete": "Verwijderen",
+        "import": "Importeren",
+        "clear": "Selectie wissen"
+    },
+    "actions": {
+        "preview": "Voorbeeld",
+        "edit": "Bewerking",
+        "delete": "Verwijderen",
+        "import": "Importeren",
+        "download": "Downloaden"
+    },
+    "table": {
+        "name": "Bestandsnaam",
+        "type": "Type",
+        "size": "Maat",
+        "date": "Datum"
+    },
+    "upload": {
+        "uploading": "Uploaden..."
+    },
+    "settings": {
+        "title": "Bibliotheekinstellingen",
+        "fields": {
+            "defaultPath": "Standaard directorypad",
+            "maxFileSize": "Maximale bestandsgrootte (MB)",
+            "allowedTypes": "Toegestane bestandstypen"
+        },
+        "hints": {
+            "defaultPath": "Directoryverkenner start vanaf dit pad"
+        },
+        "scan": {
+            "title": "Directory scannen",
+            "description": "Importeer bestanden naar de database",
+            "button": "Scannen"
+        },
+        "fileTypes": {
+            "images": "Afbeeldingen",
+            "videos": "Video's",
+            "documents": "Documenten"
+        }
+    },
+    "preview": {
+        "title": "Bestandsvoorbeeld",
+        "fields": {
+            "fileName": "Bestandsnaam",
+            "size": "Maat",
+            "type": "Type",
+            "date": "Datum",
+            "path": "Bestandspad"
+        },
+        "actions": {
+            "import": "Importeren naar bibliotheek",
+            "download": "Downloaden",
+            "delete": "Verwijderen"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Bestand verwijderen",
+            "confirm": "Weet u zeker dat u dit bestand wilt verwijderen?"
+        },
+        "bulk": {
+            "title": "Bestanden verwijderen",
+            "confirm": "Weet u zeker dat u {count} bestanden wilt verwijderen?"
+        }
+    },
+    "empty": {
+        "title": "Geen bestanden gevonden",
+        "uploadHint": "Klik op de knop Uploaden om bestanden te uploaden",
+        "browseHint": "Open een map om de mapinhoud te bekijken"
+    },
+    "modal": {
+        "close": "Dichtbij",
+        "cancel": "Annuleren",
+        "delete": "Verwijderen"
+    },
+    "toast": {
+        "uploaded": "Bestand geüpload",
+        "uploadFailed": "Kan bestanden niet uploaden",
+        "deleted": "Bestand verwijderd",
+        "imported": "Bestand geïmporteerd in bibliotheek",
+        "importFailed": "Kan bestand niet toevoegen",
+        "scanned": "Directoryscan voltooid",
+        "samplesScanned": "{imported} bestanden geïmporteerd, {skipped} bestanden bestaan ​​al (totaal {total} bestanden gevonden)",
+        "copied": "Gekopieerd",
+        "settingsSaved": "Instellingen opgeslagen",
+        "pathRequired": "Voer het mappad in",
+        "bulkImported": "{count} bestanden geïmporteerd"
+    },
+    "messages": {
+        "enterPath": "Voer het mappad in",
+        "scanFailed": "Directoryscan mislukt",
+        "importFailed": "Importeren is mislukt",
+        "deleteFailed": "Verwijderbewerking is mislukt",
+        "loadFailed": "Kan bestanden niet laden",
+        "setDirectoryPath": "Stel eerst het mappad in de instellingen in",
+        "uploadFailed": "Kan niet uploaden"
+    },
+    "pagination": {
+        "items": "artikelen",
+        "page": "Pagina",
+        "previous": "Vorig",
+        "next": "Volgende"
+    }
+}

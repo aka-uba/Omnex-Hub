@@ -1,0 +1,40 @@
+# API Directory - Route ALL requests to index.php (except standalone files)
+Options -MultiViews -Indexes +FollowSymLinks
+
+# Disable automatic trailing slash redirect for directories
+DirectorySlash Off
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Handle OPTIONS preflight first
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Don't rewrite if already requesting index.php
+RewriteCond %{REQUEST_URI} /index\.php$ [NC]
+RewriteRule ^ - [L]
+
+# Allow direct access to serve.php (standalone media file server)
+RewriteCond %{REQUEST_URI} /media/serve\.php$ [NC]
+RewriteRule ^ - [L]
+
+# Allow direct access to thumbnail.php (image thumbnail generator)
+RewriteCond %{REQUEST_URI} /media/thumbnail\.php$ [NC]
+RewriteRule ^ - [L]
+
+# Allow direct access to proxy/fetch.php (web page proxy for iframe)
+RewriteCond %{REQUEST_URI} /proxy/fetch\.php$ [NC]
+RewriteRule ^ - [L]
+
+# Route EVERYTHING else to index.php (including existing PHP files in subdirectories)
+# This ensures all API routing goes through the main router
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# CORS headers for API
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-CSRF-Token, X-Active-Company"
+    Header always set Access-Control-Max-Age "3600"
+</IfModule>

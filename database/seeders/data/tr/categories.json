@@ -1,0 +1,1089 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.01.tr",
+    "locale": "tr",
+    "description": "Türkçe kategori verileri - Hiyerarşik yapı",
+    "generated_at": "2026-01-25 17:00:00",
+    "data": [
+        {
+            "key": "demo.category.meyve",
+            "name": "Meyve",
+            "slug": "meyve",
+            "parent_key": null,
+            "sort_order": 0,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.orman-meyvesi",
+            "name": "Orman Meyvesi",
+            "slug": "orman-meyvesi",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 1,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sert-meyve",
+            "name": "Sert Meyve",
+            "slug": "sert-meyve",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 2,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tropikal",
+            "name": "Tropikal",
+            "slug": "tropikal",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 3,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tropikal-yerli",
+            "name": "Tropikal (Yerli)",
+            "slug": "tropikal-yerli",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 4,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.turuncgil",
+            "name": "Turunçgil",
+            "slug": "turuncgil",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 5,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yaz-meyvesi",
+            "name": "Yaz Meyvesi",
+            "slug": "yaz-meyvesi",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 6,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yumusak-meyve",
+            "name": "Yumuşak Meyve",
+            "slug": "yumusak-meyve",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 7,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cekirdekli",
+            "name": "Çekirdekli",
+            "slug": "cekirdekli",
+            "parent_key": "demo.category.meyve",
+            "sort_order": 8,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sebze",
+            "name": "Sebze",
+            "slug": "sebze",
+            "parent_key": null,
+            "sort_order": 10,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.aci-biber",
+            "name": "Acı Biber",
+            "slug": "aci-biber",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 11,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.baklagil",
+            "name": "Baklagil",
+            "slug": "baklagil",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 12,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.biber",
+            "name": "Biber",
+            "slug": "biber",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 13,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.brassica",
+            "name": "Brassica",
+            "slug": "brassica",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 14,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.domates",
+            "name": "Domates",
+            "slug": "domates",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 15,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.govde-sebze",
+            "name": "Gövde Sebze",
+            "slug": "govde-sebze",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 16,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kabak",
+            "name": "Kabak",
+            "slug": "kabak",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 17,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kok-sebze",
+            "name": "Kök Sebze",
+            "slug": "kok-sebze",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 18,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.lahana",
+            "name": "Lahana",
+            "slug": "lahana",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 19,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.mantar",
+            "name": "Mantar",
+            "slug": "mantar",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 20,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.misir",
+            "name": "Mısır",
+            "slug": "misir",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 21,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.patlican",
+            "name": "Patlıcan",
+            "slug": "patlican",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 22,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.salatalik",
+            "name": "Salatalık",
+            "slug": "salatalik",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 23,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sap-sebze",
+            "name": "Sap Sebze",
+            "slug": "sap-sebze",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 24,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sogan",
+            "name": "Soğan",
+            "slug": "sogan",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 25,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yaprakli",
+            "name": "Yapraklı",
+            "slug": "yaprakli",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 26,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yesillik",
+            "name": "Yeşillik",
+            "slug": "yesillik",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 27,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cicek-sebze",
+            "name": "Çiçek Sebze",
+            "slug": "cicek-sebze",
+            "parent_key": "demo.category.sebze",
+            "sort_order": 28,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.bakliyat",
+            "name": "Bakliyat",
+            "slug": "bakliyat",
+            "parent_key": null,
+            "sort_order": 30,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yerli-bakliyat",
+            "name": "Yerli",
+            "slug": "yerli-bakliyat",
+            "parent_key": "demo.category.bakliyat",
+            "sort_order": 31,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.ithal-bakliyat",
+            "name": "İthal",
+            "slug": "ithal-bakliyat",
+            "parent_key": "demo.category.bakliyat",
+            "sort_order": 32,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pirinc",
+            "name": "Pirinç",
+            "slug": "pirinc",
+            "parent_key": "demo.category.bakliyat",
+            "sort_order": 33,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tahil",
+            "name": "Tahıl",
+            "slug": "tahil",
+            "parent_key": "demo.category.bakliyat",
+            "sort_order": 34,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.un",
+            "name": "Un",
+            "slug": "un",
+            "parent_key": "demo.category.bakliyat",
+            "sort_order": 35,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.et-urunleri",
+            "name": "Et Ürünleri",
+            "slug": "et-urunleri",
+            "parent_key": null,
+            "sort_order": 40,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kirmizi-et",
+            "name": "Kırmızı Et",
+            "slug": "kirmizi-et",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 41,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.beyaz-et",
+            "name": "Beyaz Et",
+            "slug": "beyaz-et",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 42,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kuzu",
+            "name": "Kuzu",
+            "slug": "kuzu",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 43,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kemikli-et",
+            "name": "Kemikli Et",
+            "slug": "kemikli-et",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 44,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sakatat",
+            "name": "Sakatat",
+            "slug": "sakatat",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 45,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kumes-hayvani",
+            "name": "Kümes Hayvanı",
+            "slug": "kumes-hayvani",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 46,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.islenmis-et",
+            "name": "İşlenmiş Et",
+            "slug": "islenmis-et",
+            "parent_key": "demo.category.et-urunleri",
+            "sort_order": 47,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.deniz-urunleri",
+            "name": "Deniz Ürünleri",
+            "slug": "deniz-urunleri",
+            "parent_key": null,
+            "sort_order": 50,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.balik",
+            "name": "Balık",
+            "slug": "balik",
+            "parent_key": "demo.category.deniz-urunleri",
+            "sort_order": 51,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kabuklu",
+            "name": "Kabuklu",
+            "slug": "kabuklu",
+            "parent_key": "demo.category.deniz-urunleri",
+            "sort_order": 52,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yumusakca",
+            "name": "Yumuşakça",
+            "slug": "yumusakca",
+            "parent_key": "demo.category.deniz-urunleri",
+            "sort_order": 53,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sut-urunleri",
+            "name": "Süt Ürünleri",
+            "slug": "sut-urunleri",
+            "parent_key": null,
+            "sort_order": 60,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sut",
+            "name": "Süt",
+            "slug": "sut",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 61,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.peynir",
+            "name": "Peynir",
+            "slug": "peynir",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 62,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yogurt",
+            "name": "Yoğurt",
+            "slug": "yogurt",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 63,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.krema",
+            "name": "Krema",
+            "slug": "krema",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 64,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yumurta",
+            "name": "Yumurta",
+            "slug": "yumurta",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 65,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tereyagi",
+            "name": "Tereyağı",
+            "slug": "tereyagi",
+            "parent_key": "demo.category.sut-urunleri",
+            "sort_order": 66,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sarkuteri",
+            "name": "Şarküteri",
+            "slug": "sarkuteri",
+            "parent_key": null,
+            "sort_order": 70,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.zeytin",
+            "name": "Zeytin",
+            "slug": "zeytin",
+            "parent_key": "demo.category.sarkuteri",
+            "sort_order": 71,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sosis-sucuk",
+            "name": "Sosis & Sucuk",
+            "slug": "sosis-sucuk",
+            "parent_key": "demo.category.sarkuteri",
+            "sort_order": 72,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.salami",
+            "name": "Salam",
+            "slug": "salami",
+            "parent_key": "demo.category.sarkuteri",
+            "sort_order": 73,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pastirma",
+            "name": "Pastırma",
+            "slug": "pastirma",
+            "parent_key": "demo.category.sarkuteri",
+            "sort_order": 74,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.firin-urunleri",
+            "name": "Fırın Ürünleri",
+            "slug": "firin-urunleri",
+            "parent_key": null,
+            "sort_order": 80,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.ekmek",
+            "name": "Ekmek",
+            "slug": "ekmek",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 81,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pogaca",
+            "name": "Poğaça",
+            "slug": "pogaca",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 82,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.borek",
+            "name": "Börek",
+            "slug": "borek",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 83,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pasta",
+            "name": "Pasta",
+            "slug": "pasta",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 84,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kek",
+            "name": "Kek",
+            "slug": "kek",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 85,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kurabiye",
+            "name": "Kurabiye",
+            "slug": "kurabiye",
+            "parent_key": "demo.category.firin-urunleri",
+            "sort_order": 86,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.baharat",
+            "name": "Baharat",
+            "slug": "baharat",
+            "parent_key": null,
+            "sort_order": 90,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.toz-baharat",
+            "name": "Toz Baharat",
+            "slug": "toz-baharat",
+            "parent_key": "demo.category.baharat",
+            "sort_order": 91,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tane-baharat",
+            "name": "Tane Baharat",
+            "slug": "tane-baharat",
+            "parent_key": "demo.category.baharat",
+            "sort_order": 92,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.baharat-karisimi",
+            "name": "Baharat Karışımı",
+            "slug": "baharat-karisimi",
+            "parent_key": "demo.category.baharat",
+            "sort_order": 93,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tuz",
+            "name": "Tuz",
+            "slug": "tuz",
+            "parent_key": "demo.category.baharat",
+            "sort_order": 94,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kuruyemis",
+            "name": "Kuruyemiş",
+            "slug": "kuruyemis",
+            "parent_key": null,
+            "sort_order": 100,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cig-kuruyemis",
+            "name": "Çiğ",
+            "slug": "cig-kuruyemis",
+            "parent_key": "demo.category.kuruyemis",
+            "sort_order": 101,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kavrulmus-kuruyemis",
+            "name": "Kavrulmuş",
+            "slug": "kavrulmus-kuruyemis",
+            "parent_key": "demo.category.kuruyemis",
+            "sort_order": 102,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kuru-meyve",
+            "name": "Kuru Meyve",
+            "slug": "kuru-meyve",
+            "parent_key": "demo.category.kuruyemis",
+            "sort_order": 103,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cerez",
+            "name": "Çerez",
+            "slug": "cerez",
+            "parent_key": "demo.category.kuruyemis",
+            "sort_order": 104,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tatli",
+            "name": "Tatlı",
+            "slug": "tatli",
+            "parent_key": null,
+            "sort_order": 110,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.serbetli-tatli",
+            "name": "Şerbetli",
+            "slug": "serbetli-tatli",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 111,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sutlu-tatli",
+            "name": "Sütlü Tatlı",
+            "slug": "sutlu-tatli",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 112,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.helva",
+            "name": "Helva",
+            "slug": "helva",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 113,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.lokum",
+            "name": "Lokum",
+            "slug": "lokum",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 114,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cikolata",
+            "name": "Çikolata",
+            "slug": "cikolata",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 115,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.dondurma",
+            "name": "Dondurma",
+            "slug": "dondurma",
+            "parent_key": "demo.category.tatli",
+            "sort_order": 116,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.icecek",
+            "name": "İçecek",
+            "slug": "icecek",
+            "parent_key": null,
+            "sort_order": 120,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.su-soda",
+            "name": "Su & Soda",
+            "slug": "su-soda",
+            "parent_key": "demo.category.icecek",
+            "sort_order": 121,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.meyve-suyu",
+            "name": "Meyve Suyu",
+            "slug": "meyve-suyu",
+            "parent_key": "demo.category.icecek",
+            "sort_order": 122,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.gazli-icecek",
+            "name": "Gazlı İçecek",
+            "slug": "gazli-icecek",
+            "parent_key": "demo.category.icecek",
+            "sort_order": 123,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.cay",
+            "name": "Çay",
+            "slug": "cay",
+            "parent_key": "demo.category.icecek",
+            "sort_order": 124,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kahve",
+            "name": "Kahve",
+            "slug": "kahve",
+            "parent_key": "demo.category.icecek",
+            "sort_order": 125,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.kahvaltilik",
+            "name": "Kahvaltılık",
+            "slug": "kahvaltilik",
+            "parent_key": null,
+            "sort_order": 130,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.bal",
+            "name": "Bal",
+            "slug": "bal",
+            "parent_key": "demo.category.kahvaltilik",
+            "sort_order": 131,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.recel",
+            "name": "Reçel",
+            "slug": "recel",
+            "parent_key": "demo.category.kahvaltilik",
+            "sort_order": 132,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.pekmez",
+            "name": "Pekmez",
+            "slug": "pekmez",
+            "parent_key": "demo.category.kahvaltilik",
+            "sort_order": 133,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.tahin",
+            "name": "Tahin",
+            "slug": "tahin",
+            "parent_key": "demo.category.kahvaltilik",
+            "sort_order": 134,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sos-cesni",
+            "name": "Sos & Çeşni",
+            "slug": "sos-cesni",
+            "parent_key": null,
+            "sort_order": 140,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.ketcap-mayonez",
+            "name": "Ketçap & Mayonez",
+            "slug": "ketcap-mayonez",
+            "parent_key": "demo.category.sos-cesni",
+            "sort_order": 141,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.salca",
+            "name": "Salça",
+            "slug": "salca",
+            "parent_key": "demo.category.sos-cesni",
+            "sort_order": 142,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.sirke",
+            "name": "Sirke",
+            "slug": "sirke",
+            "parent_key": "demo.category.sos-cesni",
+            "sort_order": 143,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.yag",
+            "name": "Yağ",
+            "slug": "yag",
+            "parent_key": "demo.category.sos-cesni",
+            "sort_order": 144,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.hazir-yemek",
+            "name": "Hazır Yemek",
+            "slug": "hazir-yemek",
+            "parent_key": null,
+            "sort_order": 150,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.geleneksel-yemek",
+            "name": "Geleneksel",
+            "slug": "geleneksel-yemek",
+            "parent_key": "demo.category.hazir-yemek",
+            "sort_order": 151,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.dunya-mutfagi",
+            "name": "Dünya Mutfağı",
+            "slug": "dunya-mutfagi",
+            "parent_key": "demo.category.hazir-yemek",
+            "sort_order": 152,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.salata",
+            "name": "Salata",
+            "slug": "salata",
+            "parent_key": "demo.category.hazir-yemek",
+            "sort_order": 153,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.meze",
+            "name": "Meze",
+            "slug": "meze",
+            "parent_key": "demo.category.hazir-yemek",
+            "sort_order": 154,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.donuk",
+            "name": "Donuk",
+            "slug": "donuk",
+            "parent_key": null,
+            "sort_order": 160,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.donuk-sebze",
+            "name": "Donuk Sebze",
+            "slug": "donuk-sebze",
+            "parent_key": "demo.category.donuk",
+            "sort_order": 161,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.donuk-meyve",
+            "name": "Donuk Meyve",
+            "slug": "donuk-meyve",
+            "parent_key": "demo.category.donuk",
+            "sort_order": 162,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.donuk-et",
+            "name": "Donuk Et",
+            "slug": "donuk-et",
+            "parent_key": "demo.category.donuk",
+            "sort_order": 163,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.category.donuk-hamur",
+            "name": "Donuk Hamur",
+            "slug": "donuk-hamur",
+            "parent_key": "demo.category.donuk",
+            "sort_order": 164,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        }
+    ]
+}

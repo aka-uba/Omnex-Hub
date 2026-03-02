@@ -1,0 +1,325 @@
+{
+    "title": "Dashboard",
+    "subtitle": "Overview",
+    "breadcrumb": {
+        "panel": "Panel",
+        "analytics": "Analytics & Reports"
+    },
+    "welcome": "Welcome, {name}",
+    "welcomeDefault": "User",
+    "header": {
+        "systemAnalytics": "System Analytics",
+        "downloadReport": "Download Report",
+        "refresh": "Refresh"
+    },
+    "stats": {
+        "totalProducts": "Total Products",
+        "updatedIn24h": "Updated in last 24 hours",
+        "inLast30Days": "In last 30 days",
+        "inThisPeriod": "In this period",
+        "activeDevices": "Active Devices",
+        "online": "Online",
+        "offline": "Offline",
+        "labelUpdates": "Label Updates",
+        "licenseStatus": "License Status",
+        "critical": "Critical",
+        "licensesExpiring": "{count} Licenses Expiring",
+        "allLicensesActive": "All Licenses Active",
+        "storage": "Storage",
+        "unlimited": "Unlimited",
+        "unlimitedStorage": "Unlimited Storage",
+        "used": "Used",
+        "remaining": "Remaining",
+        "errorRate": "Error Rate",
+        "belowIndustryAvg": "Below industry average"
+    },
+    "gateways": {
+        "noDevices": "No registered devices yet",
+        "addDevice": "Add Device",
+        "onlineDevices": "Online Devices",
+        "deviceActive": "{count} devices active",
+        "offlineDevices": "Offline Devices",
+        "deviceOffline": "{count} devices offline",
+        "waitingConnection": "Waiting for connection",
+        "allOnline": "All online",
+        "totalDevices": "Total Devices",
+        "registeredDevices": "{count} registered devices",
+        "manage": "Manage",
+        "deviceGroups": "Device Groups",
+        "devices": "{count} devices"
+    },
+    "widgets": {
+        "products": {
+            "title": "Total Products",
+            "subtitle": "Number of registered products"
+        },
+        "devices": {
+            "title": "Devices",
+            "online": "Online",
+            "offline": "Offline",
+            "pending": "Pending"
+        },
+        "templates": {
+            "title": "Templates",
+            "subtitle": "Number of active templates"
+        },
+        "users": {
+            "title": "Users",
+            "subtitle": "Number of active users"
+        },
+        "queue": {
+            "title": "Queue",
+            "pending": "Pending"
+        },
+        "sync": {
+            "title": "Synchronization",
+            "today": "Today",
+            "success": "Successful",
+            "pending": "Pending",
+            "failed": "Failed"
+        }
+    },
+    "recentActivity": {
+        "title": "Recent Activities",
+        "empty": "No activity records yet",
+        "emptyHint": "System transactions will be listed here",
+        "viewAll": "View All",
+        "exportAll": "EXPORT ALL RECORDS"
+    },
+    "quickActions": {
+        "title": "Quick Actions",
+        "addProduct": "Add Product",
+        "addDevice": "Add Device",
+        "createTemplate": "Create Template",
+        "importProducts": "Import Products"
+    },
+    "charts": {
+        "productsByCategory": "Products by Category",
+        "deviceStatus": "Device Status",
+        "syncActivity": "Synchronization Activity",
+        "labelSync": "Label Synchronization",
+        "labelUpdates": "Label Updates",
+        "loading": "Loading chart data...",
+        "loadingDays": "Loading last {days} days of data...",
+        "noData": "No data found",
+        "noChartData": "No chart data found",
+        "loadError": "Failed to load chart data",
+        "onlineDevices": "Online",
+        "offlineDevices": "Offline",
+        "barTooltip": "{date}: {online} online, {offline} offline",
+        "totalUpdates": "Total Updates",
+        "dailyAverage": "Daily Average",
+        "updates": "updates",
+        "noDevices": "No registered devices yet"
+    },
+    "period": {
+        "last7Days": "Last 7 Days",
+        "last30Days": "Last 30 Days",
+        "last90Days": "Last 90 Days",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "daysAgo": "{count} days ago"
+    },
+    "activity": {
+        "titles": {
+            "login": "User Login",
+            "logout": "User Logout",
+            "create": "New Record",
+            "update": "Update",
+            "delete": "Deletion",
+            "sync": "Synchronization",
+            "import": "Import",
+            "export": "Export",
+            "send": "Send",
+            "error": "Error",
+            "system": "System Operation",
+            "bulkPriceUpdate": "Bulk Price Update",
+            "deviceSync": "Device Synchronization",
+            "productImport": "Product Import",
+            "connectionWarning": "Connection Warning"
+        },
+        "resources": {
+            "products": "product",
+            "devices": "device",
+            "templates": "template",
+            "users": "user",
+            "companies": "company",
+            "categories": "category",
+            "media": "media",
+            "playlists": "playlist",
+            "schedules": "schedule"
+        },
+        "descriptions": {
+            "login": "{user} signed in",
+            "logout": "{user} signed out",
+            "create": "{user} created new {resource}",
+            "update": "{user} updated {resource}",
+            "delete": "{user} deleted {resource}",
+            "import": "{user} imported {resource}",
+            "send": "{user} sent content to device",
+            "export": "{user} exported data",
+            "sync": "{user} performed synchronization"
+        },
+        "messages": {
+            "productCreated": "{count} new products added",
+            "productUpdated": "{count} products updated",
+            "productDeleted": "{count} products deleted",
+            "deviceCreated": "New device added",
+            "deviceUpdated": "Device updated",
+            "syncCompleted": "Synchronization completed",
+            "importCompleted": "{count} records imported",
+            "bulkPriceUpdate": "Price update performed for {count} products.",
+            "allDevicesSynced": "All ESL devices successfully synchronized.",
+            "productsImportedFromERP": "{count} new products imported from ERP system.",
+            "gatewayConnectionIssue": "{gateway} connection temporarily interrupted and re-established."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Device Status",
+            "online": "Online",
+            "offline": "Offline",
+            "offlineDevices": "Offline Devices",
+            "noOffline": "All devices online",
+            "lastSeen": "Last seen",
+            "viewAll": "View All",
+            "noDevices": "No devices yet"
+        },
+        "recentActivities": {
+            "title": "Recent Activities",
+            "viewAll": "View All",
+            "empty": "No activities yet"
+        },
+        "renderQueue": {
+            "title": "Render Queue",
+            "successRate": "Success Rate",
+            "avgTime": "Avg. Time",
+            "pending": "Pending",
+            "priorityDistribution": "Priority Distribution",
+            "urgent": "Urgent",
+            "high": "High",
+            "normal": "Normal",
+            "low": "Low",
+            "detail": "Detail",
+            "noData": "No queue data",
+            "seconds": "sec"
+        },
+        "products": {
+            "title": "Products",
+            "total": "Total Products",
+            "deviceAssigned": "Assigned to Device",
+            "templateAssigned": "Assigned to Template",
+            "categories": "Categories",
+            "lastUpdated": "Last Updated",
+            "viewAll": "View All"
+        },
+        "templates": {
+            "title": "Templates",
+            "total": "Total Templates",
+            "system": "System Templates",
+            "byType": "By Type",
+            "label": "Label",
+            "signage": "Signage",
+            "tv": "TV",
+            "poster": "Poster",
+            "manage": "Manage"
+        },
+        "media": {
+            "title": "Media Library",
+            "totalFiles": "Total Files",
+            "shared": "Shared",
+            "companyOnly": "Company Only",
+            "storageUsage": "Storage Usage",
+            "browse": "Browse"
+        },
+        "detailedDevice": {
+            "title": "Detailed Device Information",
+            "byType": "By Type",
+            "byBranch": "By Branch",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android TV",
+            "tablet": "Tablet",
+            "webDisplay": "Web Display",
+            "pwaPlayer": "PWA Player",
+            "manage": "Manage",
+            "noBranch": "No branch information"
+        },
+        "signage": {
+            "title": "Digital Signage",
+            "connectedDevices": "Connected Devices",
+            "totalPlaylists": "Total Playlists",
+            "active": "Active",
+            "inactive": "Inactive",
+            "playlistItems": "Playlist Items",
+            "assignedDevices": "Assigned Devices",
+            "manage": "Manage",
+            "noData": "No signage data"
+        },
+        "companyLicense": {
+            "title": "Company & License",
+            "company": "Company",
+            "license": "License",
+            "branches": "Branches",
+            "users": "Users",
+            "activeSessions": "active sessions",
+            "eslLimit": "ESL Limit",
+            "tvLimit": "TV Limit",
+            "deviceLimit": "Device Limit",
+            "storageLimit": "Storage",
+            "daysRemaining": "{count} days remaining",
+            "expired": "Expired",
+            "unlimited": "Unlimited",
+            "noLimit": "No Limit",
+            "noLicense": "No license information",
+            "noCompany": "No company information"
+        },
+        "integrations": {
+            "title": "Integrations",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "HAL Badge",
+            "hanshow": "Hanshow ESL",
+            "payment": "Payment System",
+            "active": "Active",
+            "configured": "Configured",
+            "notConfigured": "Not Configured",
+            "disabled": "Disabled",
+            "lastSync": "Last sync"
+        }
+    },
+    "toast": {
+        "refreshed": "Dashboard updated",
+        "refreshError": "Error occurred while updating dashboard",
+        "reportPreparing": "Preparing report...",
+        "reportDownloaded": "Report successfully downloaded",
+        "reportError": "Failed to download report",
+        "downloading": "Downloading...",
+        "activityPreparing": "Preparing activity records...",
+        "activityExported": "{count} activity records exported",
+        "activityExportError": "Failed to export activity records",
+        "noActivityToExport": "No activity records found to export",
+        "loadError": "An error occurred while loading data"
+    },
+    "export": {
+        "headers": {
+            "date": "Date",
+            "user": "User",
+            "action": "Action",
+            "resource": "Resource",
+            "details": "Details",
+            "ipAddress": "IP Address",
+            "metric": "Metric",
+            "value": "Value",
+            "totalProduct": "Total Products",
+            "totalDevice": "Total Devices",
+            "onlineDevice": "Online Devices",
+            "labelUpdate": "Label Updates",
+            "todayUpdates": "Today's Updates",
+            "templateCount": "Template Count",
+            "categoryCount": "Category Count",
+            "errorRate": "Error Rate"
+        },
+        "system": "System"
+    }
+}

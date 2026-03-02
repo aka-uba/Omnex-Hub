@@ -1,0 +1,205 @@
+﻿# PostgreSQL SQL Uyumluluk Envanteri
+
+- Tarih: 26 Subat 2026
+- Kapsam: `api`, `core`, `services`, `workers`, `database` (canli kod)
+- Not: Bu dosya ilk snapshot'tur. Adim 2 sonrasi guncel durum:
+- `docs/POSTGRESQL_SQL_UYUMLULUK_GUNCEL_DURUM_2026-02-26.md`
+
+## datetime('now')
+- Eslesme satiri: 229
+- Dosya sayisi: 84
+- Dosya dagilimi:
+  - database\migrations\009_create_system.sql (12)
+  - api\esl\approve.php (8)
+  - services\RenderCacheService.php (8)
+  - database\migrations\021_esl_pwa_updates.sql (7)
+  - database\migrations\060_create_web_templates.sql (7)
+  - database\seeds\system_templates.sql (6)
+  - database\migrations\042_create_payment_system.sql (6)
+  - api\gateway\heartbeat.php (6)
+  - database\migrations\040_hanshow_esl_integration.sql (5)
+  - database\migrations\006_create_devices.sql (5)
+  - database\migrations\008_create_integrations.sql (5)
+  - database\migrations\032_create_gateways.sql (5)
+  - database\migrations\098_stream_mode_support.sql (5)
+  - api\notifications\mark-read.php (5)
+  - database\migrations\060_tamsoft_integration.sql (4)
+  - database\migrations\002_create_users.sql (4)
+  - database\migrations\007_create_signage.sql (4)
+  - database\migrations\003_create_products.sql (4)
+  - database\migrations\093_create_bundles.sql (4)
+  - database\migrations\005_create_media.sql (4)
+  - database\migrations\044_render_queue_system.sql (3)
+  - api\audit-logs\archive.php (3)
+  - api\devices\assign-playlist.php (3)
+  - services\BranchService.php (3)
+  - database\migrations\046_render_cache_system.sql (3)
+  - api\esl\content.php (3)
+  - api\playlists\assign-devices.php (3)
+  - services\NotificationService.php (3)
+  - api\esl\alert.php (3)
+  - database\migrations\095_bundle_branch_overrides.sql (3)
+  - api\esl\register.php (2)
+  - database\migrations\050_integration_settings_unique_constraint.sql (2)
+  - database\migrations\051_company_storage_usage.sql (2)
+  - database\migrations\051_integration_settings_audit.sql (2)
+  - api\esl\reject.php (2)
+  - api\auth\reset-password.php (2)
+  - database\migrations\041_add_integrations_menu.sql (2)
+  - database\migrations\049_create_integration_settings.sql (2)
+  - database\migrations\065_tamsoft_depo_mapping.sql (2)
+  - database\migrations\094_bundle_price_history.sql (2)
+  - database\migrations\010_create_playlist_items.sql (2)
+  - database\migrations\004_create_templates.sql (2)
+  - database\migrations\100_per_device_type_pricing.sql (2)
+  - services\TamsoftGateway.php (2)
+  - database\migrations\057_create_product_hal_data.sql (2)
+  - database\migrations\066_normalize_media_paths.php (2)
+  - database\migrations\011_create_categories.sql (2)
+  - services\HanshowGateway.php (2)
+  - database\migrations\017_add_production_type_and_price_dates.sql (2)
+  - api\gateway\command-result.php (2)
+  - database\migrations\045_create_label_sizes.sql (2)
+  - database\migrations\070_create_branches.sql (2)
+  - api\player\register.php (2)
+  - api\esl\pending.php (2)
+  - database\migrations\049_integration_settings_isolation.sql (2)
+  - database\migrations\082_cleanup_licenses_table.sql (2)
+  - database\migrations\058_create_product_branch_hal_overrides.sql (2)
+  - database\migrations\096_esl_mqtt_support.sql (2)
+  - database\migrations\071_create_product_branch_overrides.sql (2)
+  - database\migrations\001_create_companies.sql (2)
+  - services\StorageService.php (2)
+  - database\migrations\074_create_branch_import_logs.sql (1)
+  - api\player\heartbeat.php (1)
+  - api\esl\mqtt\register.php (1)
+  - database\migrations\073_create_user_branch_access.sql (1)
+  - api\devices\send-command.php (1)
+  - database\migrations\052_product_renders.sql (1)
+  - api\player\verify.php (1)
+  - core\Auth.php (1)
+  - database\migrations\072_create_branch_price_history.sql (1)
+  - api\notifications\index.php (1)
+  - core\Database.php (1)
+  - api\esl\log.php (1)
+  - api\devices\control.php (1)
+  - database\migrations\092_create_hal_distribution_tables.sql (1)
+  - workers\RenderQueueWorker.php (1)
+  - api\notifications\unread-count.php (1)
+  - api\esl\ping.php (1)
+  - api\system\status.php (1)
+  - database\migrations\081_assign_default_plan_to_licenses.sql (1)
+  - database\migrations\015_fix_schema_issues.sql (1)
+  - database\migrations\099_stream_access_logs_fix.sql (1)
+  - api\categories\delete.php (1)
+  - services\MqttBrokerService.php (1)
+- Ornek satirlar:
+  - workers\RenderQueueWorker.php:887:                     completed_at = datetime('now')
+  - services\BranchService.php:44:             AND (expires_at IS NULL OR expires_at > datetime('now'))",
+  - services\BranchService.php:85:             AND (uba.expires_at IS NULL OR uba.expires_at > datetime('now'))
+  - services\BranchService.php:106:             AND (uba.expires_at IS NULL OR uba.expires_at > datetime('now'))",
+  - api\audit-logs\archive.php:54:                      SET archived_at = datetime('now'),
+  - api\audit-logs\archive.php:81:                      SET archived_at = datetime('now'),
+  - api\audit-logs\archive.php:99:                      SET archived_at = datetime('now'),
+  - database\migrations\003_create_products.sql:39:    created_at TEXT DEFAULT (datetime('now')),
+  - database\migrations\003_create_products.sql:40:    updated_at TEXT DEFAULT (datetime('now')),
+  - database\migrations\003_create_products.sql:57:    changed_at TEXT NOT NULL DEFAULT (datetime('now')),
+  - database\migrations\003_create_products.sql:59:    created_at TEXT DEFAULT (datetime('now')),
+  - database\migrations\001_create_companies.sql:17:    created_at TEXT DEFAULT (datetime('now')),
+
+## strftime(
+- Eslesme satiri: 7
+- Dosya sayisi: 3
+- Dosya dagilimi:
+  - api\system\status.php (3)
+  - api\gateway\heartbeat.php (2)
+  - api\render-queue\analytics.php (2)
+- Ornek satirlar:
+  - api\gateway\heartbeat.php:138:            CAST(strftime('%s', 'now') AS INTEGER) -
+  - api\gateway\heartbeat.php:139:            CAST(strftime('%s', COALESCE(sent_at, created_at)) AS INTEGER)
+  - api\system\status.php:232:        "SELECT COUNT(*) as count FROM audit_logs WHERE strftime('%Y-%m', created_at) = ?",
+  - api\system\status.php:252:        "SELECT strftime('%H', created_at) as hour, COUNT(*) as count
+  - api\system\status.php:282:        "SELECT strftime('%H:%M', created_at) as minute, COUNT(*) as count
+  - api\render-queue\analytics.php:305:        strftime('%Y-%m-%d %H:00', created_at) as hour,
+  - api\render-queue\analytics.php:311:     GROUP BY strftime('%Y-%m-%d %H:00', created_at)
+
+## INSERT OR IGNORE
+- Eslesme satiri: 16
+- Dosya sayisi: 11
+- Dosya dagilimi:
+  - database\migrations\049_integration_settings_isolation.sql (4)
+  - database\migrations\042_create_payment_system.sql (2)
+  - database\migrations\044_render_queue_system.sql (2)
+  - database\migrations\041_add_integrations_menu.sql (1)
+  - core\Security.php (1)
+  - database\migrations\040_hanshow_esl_integration.sql (1)
+  - database\migrations\081_assign_default_plan_to_licenses.sql (1)
+  - database\migrations\045_create_label_sizes.sql (1)
+  - database\migrations\099_stream_access_logs_fix.sql (1)
+  - database\migrations\060_create_web_templates.sql (1)
+  - database\migrations\050_integration_settings_unique_constraint.sql (1)
+- Ornek satirlar:
+  - core\Security.php:328:                "INSERT OR IGNORE INTO rate_limits (key_name, count, window_start) VALUES (?, 1, ?)",
+  - database\migrations\040_hanshow_esl_integration.sql:146:INSERT OR IGNORE INTO hanshow_settings (id, company_id, eslworking_url, user_id)
+  - database\migrations\044_render_queue_system.sql:123:INSERT OR IGNORE INTO render_priority_weights (priority, weight, max_concurrent, timeout_seconds, description) VALUES
+  - database\migrations\044_render_queue_system.sql:143:INSERT OR IGNORE INTO render_retry_policies (id, error_type, max_retries, base_delay_seconds, max_delay_seconds, backoff_multiplier, description) VALUES
+  - database\migrations\042_create_payment_system.sql:121:INSERT OR IGNORE INTO payment_settings (id, provider, is_active, is_test_mode, api_url)
+  - database\migrations\042_create_payment_system.sql:131:INSERT OR IGNORE INTO license_plans (id, name, slug, description, price_monthly, price_yearly, esl_limit, tv_limit, user_limit, storage_limit, features, sort_order)
+  - database\migrations\041_add_integrations_menu.sql:6:INSERT OR IGNORE INTO menu_items (id, company_id, parent_id, location, label, href, icon, order_index, roles, visible, created_at, updated_at)
+  - database\migrations\045_create_label_sizes.sql:26:INSERT OR IGNORE INTO label_sizes (id, company_id, name, width, height, unit, is_default, sort_order) VALUES
+  - database\migrations\050_integration_settings_unique_constraint.sql:31:INSERT OR IGNORE INTO integration_settings_new
+  - database\migrations\049_integration_settings_isolation.sql:33:INSERT OR IGNORE INTO hanshow_settings_new
+  - database\migrations\049_integration_settings_isolation.sql:55:INSERT OR IGNORE INTO hanshow_settings (id, company_id, scope, eslworking_url, user_id, enabled)
+  - database\migrations\049_integration_settings_isolation.sql:89:INSERT OR IGNORE INTO integration_settings (id, company_id, scope, integration_type, config_json, is_active)
+
+## PRAGMA
+- Eslesme satiri: 5
+- Dosya sayisi: 3
+- Dosya dagilimi:
+  - core\Database.php (3)
+  - api\products\update.php (1)
+  - api\products\store.php (1)
+- Ornek satirlar:
+  - core\Database.php:32:            $this->pdo->exec('PRAGMA foreign_keys = ON');
+  - core\Database.php:33:            $this->pdo->exec('PRAGMA journal_mode = WAL');
+  - core\Database.php:34:            $this->pdo->exec('PRAGMA synchronous = NORMAL');
+  - api\products\update.php:34:    $productColumns = $db->fetchAll("PRAGMA table_info(products)");
+  - api\products\store.php:98:    $columns = $db->fetchAll("PRAGMA table_info(products)");
+
+## sqlite_master
+- Eslesme satiri: 1
+- Dosya sayisi: 1
+- Dosya dagilimi:
+  - api\companies\index.php (1)
+- Ornek satirlar:
+  - api\companies\index.php:16:    $tableCheck = $db->fetch("SELECT name FROM sqlite_master WHERE type='table' AND name='branches'");
+
+## GROUP_CONCAT
+- Eslesme satiri: 2
+- Dosya sayisi: 1
+- Dosya dagilimi:
+  - api\users\index.php (2)
+- Ornek satirlar:
+  - api\users\index.php:64:            (SELECT GROUP_CONCAT(b.name, ', ')
+  - api\users\index.php:68:            (SELECT GROUP_CONCAT(uba.branch_id, ',')
+
+## json_extract
+- Eslesme satiri: 1
+- Dosya sayisi: 1
+- Dosya dagilimi:
+  - api\render-cache\check.php (1)
+- Ornek satirlar:
+  - api\render-cache\check.php:27:    // Bozuk JSON kayitlarinda SQL json_extract hatasi almamak icin
+
+## AUTOINCREMENT
+- Eslesme satiri: 3
+- Dosya sayisi: 3
+- Dosya dagilimi:
+  - database\migrations\099_stream_access_logs_fix.sql (1)
+  - core\Database.php (1)
+  - database\migrations\098_stream_mode_support.sql (1)
+- Ornek satirlar:
+  - core\Database.php:276:                id INTEGER PRIMARY KEY AUTOINCREMENT,
+  - database\migrations\099_stream_access_logs_fix.sql:10:    id INTEGER PRIMARY KEY AUTOINCREMENT,
+  - database\migrations\098_stream_mode_support.sql:67:    id INTEGER PRIMARY KEY AUTOINCREMENT,
+

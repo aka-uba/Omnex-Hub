@@ -1,0 +1,1301 @@
+/**
+ * Omnex Display Hub - Top Navigation Layout
+ * Required by LayoutManager.js for layout: 'top'
+ */
+
+/* ===========================================
+   TOP NAVIGATION BASE
+   =========================================== */
+
+.top-nav {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: var(--header-height, var(--top-nav-height));
+    background: var(--header-bg, var(--top-nav-bg));
+    border-bottom: var(--header-border-width, 1px) solid var(--header-border-color, var(--border-color));
+    z-index: var(--z-header);
+    color: var(--header-text, var(--text-primary));
+    transition: transform 0.3s ease;
+}
+
+/* Header scroll behaviors */
+.top-nav.header-hidden {
+    transform: translateY(-100%);
+}
+
+.top-nav.header-show-on-hover:hover {
+    transform: translateY(0);
+}
+
+/* Hidden header hover zone */
+.top-nav.header-show-on-hover::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: transparent;
+}
+
+.top-nav .header-btn {
+    width: 36px;
+    height: 36px;
+    color: var(--header-text, var(--text-secondary));
+}
+
+/* ===========================================
+   TOP NAVIGATION CONTAINER
+   =========================================== */
+
+.top-nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.top-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--header-text, var(--brand-primary));
+}
+
+.top-nav-logo img,
+.top-nav-logo svg,
+.top-nav-logo-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+/* Hide logo text in top nav - only show icon */
+.top-nav-logo span {
+    display: none;
+}
+
+/* ===========================================
+   TOP NAVIGATION MENU
+   =========================================== */
+
+.top-nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.top-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--header-text, var(--text-secondary));
+    opacity: 0.85;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.top-nav-item:hover {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+    color: var(--header-text, var(--text-primary));
+    opacity: 1;
+}
+
+.top-nav-item.active {
+    background: var(--header-active, rgba(34, 139, 230, 0.15));
+    color: var(--header-active-text, var(--brand-primary));
+    opacity: 1;
+}
+
+.top-nav-item i {
+    font-size: 1.125rem;
+}
+
+/* ===========================================
+   TOP NAVIGATION RIGHT
+   =========================================== */
+
+.top-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.top-nav-right .header-btn {
+    color: var(--header-text, var(--text-secondary));
+    opacity: 0.8;
+}
+
+.top-nav-right .header-btn:hover {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+    opacity: 1;
+}
+
+.top-nav-right .user-menu {
+    color: var(--header-text, var(--text-primary));
+    padding: 4px;
+    border-radius: var(--radius-md);
+}
+
+.top-nav-right .user-menu:hover {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .user-menu .user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+}
+
+.top-nav-right .user-menu .user-info {
+    display: none;
+}
+
+.top-nav-right .user-menu .user-name {
+    display: none;
+}
+
+.top-nav-right .user-menu .ti-chevron-down {
+    display: none;
+}
+
+/* Show user info on larger screens */
+@media (min-width: 1200px) {
+    .top-nav-right .user-menu {
+        gap: 8px;
+        padding: 6px 10px;
+    }
+
+    .top-nav-right .user-menu .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .top-nav-right .user-menu .user-info .user-name {
+        display: block;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--header-text, var(--text-primary));
+        line-height: 1.2;
+    }
+
+    .top-nav-right .user-menu .user-info .user-role {
+        font-size: 0.6875rem;
+        color: var(--header-text, var(--text-muted));
+        opacity: 0.7;
+        line-height: 1.2;
+    }
+
+    .top-nav-right .user-menu .ti-chevron-down {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--header-text, var(--text-muted));
+        opacity: 0.6;
+    }
+}
+
+/* ===========================================
+   TOP NAVIGATION MOBILE
+   =========================================== */
+
+.top-nav-mobile-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--header-text, var(--text-secondary));
+    cursor: pointer;
+}
+
+/* ===========================================
+   TOP LAYOUT CONTENT
+   =========================================== */
+
+.layout-top {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+.layout-top .main-content,
+.layout-top .page-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100%;
+    max-width: 100%;
+}
+
+.layout-top .page-content,
+.layout-top .top-layout-content {
+    flex: 1;
+}
+
+.top-layout-content {
+    flex: 1;
+    padding: var(--content-padding-top) var(--content-padding-right) var(--content-padding-bottom) var(--content-padding-left);
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+/* ===========================================
+   TOP NAVIGATION DROPDOWN
+   =========================================== */
+
+.top-nav-dropdown {
+    position: relative;
+}
+
+.top-nav-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--header-text, var(--text-secondary));
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+}
+
+.top-nav-dropdown-trigger:hover {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+    color: var(--header-text, var(--text-primary));
+    opacity: 1;
+}
+
+.top-nav-dropdown-trigger.active,
+.top-nav-dropdown.has-active .top-nav-dropdown-trigger {
+    background: var(--header-active, rgba(0, 0, 0, 0.08));
+    color: var(--header-active-text, var(--color-primary));
+    opacity: 1;
+}
+
+.top-nav-dropdown-trigger i {
+    font-size: 1rem;
+}
+
+.top-nav-dropdown-arrow {
+    font-size: 0.75rem !important;
+    transition: transform 0.3s ease;
+    margin-left: 2px;
+}
+
+.top-nav-dropdown.open .top-nav-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.top-nav-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    min-width: 220px;
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border: 1px solid var(--header-dropdown-border, var(--border-color));
+    border-radius: var(--radius-xl);
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.top-nav-dropdown.open .top-nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Dropdown Header */
+.top-nav-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-bottom: 1px solid var(--header-dropdown-border, var(--border-color));
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--header-dropdown-text, var(--color-primary));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.top-nav-dropdown-header i {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+/* Dropdown Items Container */
+.top-nav-dropdown-items {
+    padding: var(--space-2);
+}
+
+/* Dropdown Item */
+.top-nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--header-dropdown-text, var(--text-secondary));
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+    position: relative;
+    opacity: 0.85;
+}
+
+.top-nav-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+    opacity: 1;
+}
+
+.top-nav-dropdown-item.active {
+    background: var(--header-dropdown-active, var(--color-primary-light));
+    color: var(--header-dropdown-text, var(--color-primary));
+    opacity: 1;
+}
+
+.top-nav-dropdown-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--header-dropdown-text, var(--color-primary));
+    border-radius: var(--radius-full);
+}
+
+/* Dropdown Item Icon */
+.top-nav-dropdown-item-icon {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--header-dropdown-icon-bg, var(--color-primary-light));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.top-nav-dropdown-item:hover .top-nav-dropdown-item-icon {
+    background: var(--header-dropdown-hover, var(--color-primary-light));
+    transform: scale(1.05);
+}
+
+.top-nav-dropdown-item.active .top-nav-dropdown-item-icon {
+    background: var(--header-dropdown-active, var(--color-primary));
+    color: var(--header-dropdown-text, #ffffff);
+}
+
+/* Dropdown Badge */
+.top-nav-dropdown-badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-radius: var(--radius-full);
+}
+
+/* ===========================================
+   TOP NAVIGATION USER DROPDOWN
+   =========================================== */
+
+.top-nav-right .user-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 240px;
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border: 1px solid var(--header-dropdown-border, var(--border-color));
+    border-radius: var(--radius-xl);
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: var(--z-dropdown);
+    overflow: hidden;
+}
+
+.top-nav-right .user-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.top-nav-right .user-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-bottom: 1px solid var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .user-dropdown-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .user-dropdown-email {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+.top-nav-right .user-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .user-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .user-dropdown-item-icon {
+    background: var(--header-dropdown-icon-bg, var(--color-primary-light));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .user-dropdown-item:hover .user-dropdown-item-icon {
+    background: var(--header-dropdown-hover, var(--color-primary-light));
+}
+
+.top-nav-right .user-dropdown-footer {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-top: 1px solid var(--header-dropdown-border, var(--border-color));
+}
+
+/* ===========================================
+   RESPONSIVE - TOP NAVIGATION
+   =========================================== */
+
+@media (max-width: 1024px) {
+    .top-nav-menu {
+        position: fixed;
+        top: var(--top-nav-height);
+        left: 0;
+        right: 0;
+        background: var(--header-bg, var(--bg-primary));
+        border-bottom: 1px solid var(--border-color);
+        flex-direction: column;
+        padding: 16px;
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all var(--transition-normal);
+        z-index: var(--z-header);
+    }
+
+    .top-nav-menu.open {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .top-nav-item {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .top-nav-mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .top-nav-right .header-search {
+        display: none;
+    }
+
+    /* Mobile: Dropdowns as accordion */
+    .top-nav-dropdown {
+        width: 100%;
+    }
+
+    .top-nav-dropdown-trigger {
+        width: 100%;
+        justify-content: flex-start;
+        border-radius: 0;
+    }
+
+    .top-nav-dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        background: var(--header-dropdown-bg, var(--bg-secondary));
+        margin: 0;
+        border-radius: 0;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transition: max-height 0.3s ease;
+    }
+
+    .top-nav-dropdown.open .top-nav-dropdown-menu {
+        max-height: 500px;
+    }
+
+    .top-nav-dropdown-header {
+        display: none;
+    }
+
+    .top-nav-dropdown-item {
+        padding-left: 2.5rem;
+    }
+}
+
+/* ===========================================
+   TOP NAVIGATION - HEADER BUTTON OVERRIDES
+   Override hardcoded purple/indigo from header.css
+   =========================================== */
+
+.top-nav-right .header-btn {
+    color: var(--header-text, var(--text-secondary));
+    background: var(--header-hover, var(--bg-secondary));
+    border-color: transparent;
+}
+
+.top-nav-right .header-btn::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .header-btn:hover {
+    color: var(--header-text, var(--text-primary));
+    background: var(--header-hover, var(--bg-primary));
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.top-nav-right .header-btn:hover::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.15));
+}
+
+.top-nav-right .header-btn:active {
+    box-shadow: none;
+}
+
+.top-nav-right .header-btn.active {
+    background: var(--header-active, rgba(255, 255, 255, 0.15));
+    color: var(--header-active-text, var(--header-text, #fff));
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.top-nav-right .header-btn.active::before {
+    background: var(--header-active, rgba(255, 255, 255, 0.1));
+}
+
+/* ===========================================
+   TOP NAVIGATION - NOTIFICATION BUTTON OVERRIDES
+   Override hardcoded indigo from notifications.css
+   =========================================== */
+
+.top-nav-right .notification-dropdown-btn {
+    color: var(--header-text, var(--text-secondary));
+    background: var(--header-hover, var(--bg-secondary));
+    border-color: transparent;
+}
+
+.top-nav-right .notification-dropdown-btn::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .notification-dropdown-btn:hover {
+    color: var(--header-text, var(--text-primary));
+    background: var(--header-hover, var(--bg-primary));
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.top-nav-right .notification-dropdown-btn:hover::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.15));
+}
+
+.top-nav-right .notification-dropdown-btn:active {
+    box-shadow: none;
+}
+
+/* ===========================================
+   TOP NAVIGATION - NOTIFICATION DROPDOWN OVERRIDES
+   Override hardcoded notification panel styles
+   =========================================== */
+
+.top-nav-right .notification-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+.top-nav-right .notification-dropdown::before {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-left-color: var(--header-dropdown-border, var(--border-color));
+    border-top-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .notification-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-bottom-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .notification-dropdown-title {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .notification-mark-all-read {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .notification-dropdown-item {
+    border-bottom-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .notification-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+}
+
+.top-nav-right .notification-dropdown-item.unread {
+    background: var(--header-dropdown-hover, rgba(34, 139, 230, 0.05));
+}
+
+.top-nav-right .notification-dropdown-item.unread:hover {
+    background: var(--header-dropdown-hover, rgba(34, 139, 230, 0.1));
+}
+
+.top-nav-right .notification-dropdown-item.unread::after {
+    background: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .notification-item-title {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .notification-item-message {
+    color: var(--header-dropdown-text, var(--text-secondary));
+    opacity: 0.7;
+}
+
+.top-nav-right .notification-item-time {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.5;
+}
+
+.top-nav-right .notification-dropdown-footer {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-top-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .notification-dropdown-footer a {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .notification-dropdown-footer a:hover {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .notification-dropdown-empty {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.6;
+}
+
+.top-nav-right .notification-dropdown-empty .empty-title {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .notification-dropdown-empty .empty-subtitle {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.5;
+}
+
+.top-nav-right .notification-group-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    color: var(--header-dropdown-text, var(--text-muted));
+    border-bottom-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .notification-dropdown-list {
+    scrollbar-color: var(--header-dropdown-border, rgba(128,128,128,0.3)) transparent;
+}
+
+/* Note: Notification type icon colors (info=blue, success=green, warning=yellow, error=red)
+   are intentionally NOT overridden - they use !important in notifications.css and should
+   remain consistent regardless of header theme */
+
+/* ===========================================
+   TOP NAVIGATION - HEADER DROPDOWN OVERRIDES
+   Override hardcoded purple/indigo dropdown styles from header.css
+   =========================================== */
+
+.layout-top .header-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+.layout-top .header-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.layout-top .header-dropdown-title {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.layout-top .header-dropdown-title i {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-footer a {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-footer a:hover {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.layout-top .header-dropdown-item::before {
+    background: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.layout-top .header-dropdown-item:hover i {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.layout-top .header-dropdown-item:hover .header-dropdown-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.1));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+/* ===========================================
+   TOP NAVIGATION - USER MENU & DROPDOWN OVERRIDES
+   =========================================== */
+
+/* User avatar in header bar */
+.top-nav-right .user-menu .user-avatar {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+.top-nav-right .user-menu:hover .user-avatar {
+    box-shadow: none;
+}
+
+.top-nav-right .user-menu:hover {
+    background: var(--header-hover, var(--bg-secondary));
+}
+
+.top-nav-right .user-menu .user-name {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .user-menu .user-role {
+    color: var(--header-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+.top-nav-right .user-menu .ti-chevron-down {
+    color: var(--header-text, var(--text-muted));
+}
+
+/* User dropdown panel */
+.top-nav-right .user-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+/* User dropdown header - override indigo gradient */
+.top-nav-right .user-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-bottom-color: var(--header-dropdown-border, var(--border-color));
+}
+
+/* User dropdown avatar - override indigo gradient */
+.top-nav-right .user-dropdown-avatar {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .user-dropdown-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .user-dropdown-email {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* User dropdown items */
+.top-nav-right .user-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+/* Override indigo gradient hover */
+.top-nav-right .user-dropdown-item:hover {
+    color: var(--header-dropdown-text, var(--text-primary));
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+}
+
+/* Override indigo gradient icon bg */
+.top-nav-right .user-dropdown-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+/* Override indigo gradient hover icon */
+.top-nav-right .user-dropdown-item:hover .user-dropdown-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.1));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+/* User dropdown footer */
+.top-nav-right .user-dropdown-footer {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-top-color: var(--header-dropdown-border, var(--border-color));
+}
+
+/* Logout button - KEEP RED, but override gradient to flat */
+.top-nav-right .user-dropdown-logout-btn {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.top-nav-right .user-dropdown-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* User dropdown divider */
+.top-nav-right .user-dropdown-divider {
+    background: linear-gradient(90deg, transparent 0%, var(--header-dropdown-border, var(--border-color)) 50%, transparent 100%);
+}
+
+/* ===========================================
+   TOP NAVIGATION - LANGUAGE SELECTOR OVERRIDES
+   =========================================== */
+
+.top-nav-right .language-selector-btn {
+    color: var(--header-text, var(--text-secondary));
+}
+
+.top-nav-right .language-selector-btn::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .language-selector-btn:hover {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .language-selector-icon {
+    color: var(--header-text, var(--text-secondary));
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .language-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+.top-nav-right .language-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .language-dropdown-title {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .language-dropdown-icon {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .language-dropdown-current {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .language-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .language-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .language-dropdown-item.active {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .language-dropdown-item .ti-check {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .language-dropdown-item-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+/* FIX 2A: Language code text - invisible on colored header */
+.top-nav-right .language-selector-btn .language-code {
+    color: var(--header-text, var(--text-primary));
+}
+
+/* FIX 2B: Language chevron - invisible on colored header */
+.top-nav-right .language-selector-btn .ti-chevron-down {
+    color: var(--header-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 3A: Language button hover background */
+.top-nav-right .language-selector-btn:hover {
+    background: var(--header-hover, var(--bg-secondary));
+}
+
+/* FIX 1D: Language icon hover - override scale from header.css */
+.top-nav-right .language-selector-btn:hover .language-selector-icon {
+    background: var(--header-active, rgba(255, 255, 255, 0.15));
+    transform: none;
+}
+
+/* FIX 4A: Flag emoji container in dropdown */
+.top-nav-right .language-item-flag {
+    background: var(--header-dropdown-hover, var(--bg-secondary));
+}
+
+/* FIX 4B: Language dropdown label text */
+.top-nav-right .language-dropdown-label {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX: Dropdown item hover flag */
+.top-nav-right .language-dropdown-item:hover .language-item-flag {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+}
+
+/* FIX: Language item name & native text */
+.top-nav-right .language-item-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .language-item-native {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* ===========================================
+   TOP NAVIGATION - COMPANY SELECTOR OVERRIDES
+   =========================================== */
+
+.top-nav-right .company-selector-btn {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .company-selector-btn::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .company-selector-avatar {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+.top-nav-right .company-selector-btn:hover .company-selector-avatar {
+    box-shadow: none;
+}
+
+.top-nav-right .company-selector-btn .company-name {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .company-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+.top-nav-right .company-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .company-dropdown-avatar {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-dropdown-active-name {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-dropdown-label {
+    color: var(--header-dropdown-text, var(--text-muted));
+}
+
+.top-nav-right .company-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .company-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .company-dropdown-item.active {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-dropdown-item:hover .company-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.1));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-dropdown-item .ti-check {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .company-item-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .company-item-code {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 3B: Company button hover background */
+.top-nav-right .company-selector-btn:hover {
+    background: var(--header-hover, var(--bg-secondary));
+}
+
+/* FIX 1E: Company avatar hover - override scale(1.05) from header.css */
+.top-nav-right .company-selector-btn:hover .company-selector-avatar {
+    transform: none;
+    box-shadow: none;
+}
+
+/* FIX 6A: Company chevron - invisible on colored header */
+.top-nav-right .company-selector-btn .ti-chevron-down {
+    color: var(--header-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 5A: Company dropdown header name - unreadable */
+.top-nav-right .company-dropdown-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+/* FIX 5B: Company dropdown header code - unreadable */
+.top-nav-right .company-dropdown-code {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* ===========================================
+   TOP NAVIGATION - BRANCH SELECTOR OVERRIDES
+   =========================================== */
+
+.top-nav-right .branch-selector-btn {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .branch-selector-btn::before {
+    background: var(--header-hover, rgba(128, 128, 128, 0.1));
+}
+
+.top-nav-right .branch-selector-avatar {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: none;
+    color: #ffffff;
+}
+
+.top-nav-right .branch-selector-btn:hover .branch-selector-avatar {
+    box-shadow: none;
+}
+
+.top-nav-right .branch-selector-btn .branch-name {
+    color: var(--header-text, var(--text-primary));
+}
+
+.top-nav-right .branch-dropdown {
+    background: var(--header-dropdown-bg, var(--bg-primary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+    box-shadow: var(--header-dropdown-shadow, 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 8px 16px -6px rgba(0, 0, 0, 0.1));
+}
+
+.top-nav-right .branch-dropdown-header {
+    background: var(--header-dropdown-header-bg, var(--bg-secondary));
+    border-color: var(--header-dropdown-border, var(--border-color));
+}
+
+.top-nav-right .branch-dropdown-avatar {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-dropdown-active-name {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-dropdown-label {
+    color: var(--header-dropdown-text, var(--text-muted));
+}
+
+.top-nav-right .branch-dropdown-item {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .branch-dropdown-item:hover {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .branch-dropdown-item.active {
+    background: var(--header-dropdown-hover, var(--bg-tertiary));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+/* Branch region items - override green to use header theme */
+.top-nav-right .branch-dropdown-item.region {
+    color: var(--header-dropdown-text, var(--text-secondary));
+}
+
+.top-nav-right .branch-dropdown-item.region i {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.06));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-dropdown-item:hover .branch-item-icon {
+    background: var(--header-dropdown-icon-bg, rgba(0, 0, 0, 0.1));
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-dropdown-item .ti-check {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+.top-nav-right .branch-item-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+.top-nav-right .branch-item-code {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 3C: Branch button hover background */
+.top-nav-right .branch-selector-btn:hover {
+    background: var(--header-hover, var(--bg-secondary));
+}
+
+/* FIX 3D: Branch avatar hover - override scale(1.05) from header.css */
+.top-nav-right .branch-selector-btn:hover .branch-selector-avatar {
+    transform: none;
+    box-shadow: none;
+}
+
+/* FIX 6B: Branch chevron - invisible on colored header */
+.top-nav-right .branch-selector-btn .ti-chevron-down {
+    color: var(--header-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 5C: Branch dropdown header name - unreadable */
+.top-nav-right .branch-dropdown-name {
+    color: var(--header-dropdown-text, var(--text-primary));
+}
+
+/* FIX 5D: Branch dropdown header type - unreadable */
+.top-nav-right .branch-dropdown-type {
+    color: var(--header-dropdown-text, var(--text-muted));
+    opacity: 0.7;
+}
+
+/* FIX 5E: Branch dropdown active name */
+.top-nav-right .branch-dropdown-active-name {
+    color: var(--header-dropdown-icon-color, var(--color-primary));
+}
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+
+.footer {
+    padding: 16px 24px;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    margin-top: auto;
+    flex-shrink: 0;
+}

@@ -1,0 +1,234 @@
+/* ========================================
+   Log Management Page Styles
+   ======================================== */
+
+/* Stats Grid - uses setup-wizard classes from setup-wizard.css */
+/* No extra stats styles needed - reuses .setup-status-grid, .setup-status-card etc. */
+
+/* Log File Icon in DataTable */
+.log-file-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.log-file-icon.blue { background: rgba(34, 139, 230, 0.15); color: #228be6; }
+.log-file-icon.rose { background: rgba(250, 82, 82, 0.15); color: #fa5252; }
+.log-file-icon.teal { background: rgba(32, 201, 151, 0.15); color: #20c997; }
+.log-file-icon.gray { background: rgba(134, 142, 150, 0.15); color: #868e96; }
+.log-file-icon.amber { background: rgba(250, 176, 5, 0.15); color: #fab005; }
+.log-file-icon.purple { background: rgba(190, 75, 219, 0.15); color: #be4bdb; }
+.log-file-icon.indigo { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+
+/* Viewer Tab Close Button */
+.log-tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+}
+
+.log-tab-close:hover {
+    background: rgba(250, 82, 82, 0.15);
+    color: #fa5252;
+}
+
+/* Log Level Badges in Table */
+.badge-critical { background: #c92a2a; color: #fff; }
+.badge-error { background: #fa5252; color: #fff; }
+.badge-audit { background: #7950f2; color: #fff; }
+.badge-debug { background: #868e96; color: #fff; }
+.badge-unknown { background: #adb5bd; color: #fff; }
+
+/* Log Viewer */
+.log-viewer-lines {
+    background: var(--bg-secondary, #f8f9fa);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 600px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.log-line-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--border-color-light, rgba(0,0,0,0.05));
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.log-line-row:hover {
+    background: rgba(34, 139, 230, 0.05);
+}
+
+.log-line-row.level-critical { border-left: 3px solid #c92a2a; }
+.log-line-row.level-error { border-left: 3px solid #fa5252; }
+.log-line-row.level-warning { border-left: 3px solid #fab005; }
+.log-line-row.level-info { border-left: 3px solid #228be6; }
+.log-line-row.level-debug { border-left: 3px solid #868e96; }
+.log-line-row.level-audit { border-left: 3px solid #7950f2; }
+.log-line-row.level-unknown { border-left: 3px solid #adb5bd; }
+
+.log-line-num {
+    color: var(--text-muted, #868e96);
+    min-width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.log-ts {
+    color: var(--text-secondary, #495057);
+    flex-shrink: 0;
+    min-width: 140px;
+}
+
+.log-level-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: center;
+}
+
+.log-level-badge.level-critical { background: #c92a2a; color: #fff; }
+.log-level-badge.level-error { background: #fa5252; color: #fff; }
+.log-level-badge.level-warning { background: #fab005; color: #fff; }
+.log-level-badge.level-info { background: #228be6; color: #fff; }
+.log-level-badge.level-debug { background: #868e96; color: #fff; }
+.log-level-badge.level-audit { background: #7950f2; color: #fff; }
+.log-level-badge.level-unknown { background: #adb5bd; color: #fff; }
+
+.log-msg {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-primary);
+}
+
+/* Log Detail Code Block */
+.log-code-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 16px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}
+
+/* Viewer Pagination */
+.log-viewer-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Card title with icon (for notification settings cards) */
+.log-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.log-card-title i {
+    font-size: 1.125rem;
+    color: var(--color-primary);
+}
+
+/* Dark Mode Overrides */
+.dark .log-viewer-lines {
+    background: #1a1b2e;
+}
+
+.dark .log-line-row {
+    border-bottom-color: rgba(255,255,255,0.05);
+}
+
+.dark .log-line-row:hover {
+    background: rgba(34, 139, 230, 0.1);
+}
+
+.dark .log-ts {
+    color: #a0aec0;
+}
+
+.dark .log-msg {
+    color: #e2e8f0;
+}
+
+.dark .log-line-num {
+    color: #718096;
+}
+
+.dark .notification-setting-item {
+    border-bottom-color: rgba(255,255,255,0.06);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .log-viewer-pagination {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .log-line-row {
+        font-size: 11px;
+    }
+
+    .log-ts {
+        display: none;
+    }
+
+    .log-level-badge {
+        min-width: 45px;
+        font-size: 9px;
+    }
+}

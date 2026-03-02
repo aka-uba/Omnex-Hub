@@ -1,0 +1,164 @@
+{
+    "title": "Web-Vorlagen",
+    "subtitle": "Verwalten Sie HTML-basierte Digital-Signage-Vorlagen",
+    "breadcrumb": {
+        "panel": "Panel",
+        "webTemplates": "Web-Vorlagen",
+        "editor": "Editor",
+        "new": "Neue Web-Vorlage",
+        "edit": "Bearbeiten"
+    },
+    "list": {
+        "title": "Web-Vorlagen",
+        "subtitle": "Erstellen Sie HTML-basierte Vorlagen mit VvvebJs",
+        "newTemplate": "Neue Web-Vorlage",
+        "empty": "Noch keine Web-Vorlagen erstellt",
+        "emptyHint": "Beginnen Sie mit der Erstellung von HTML-basierten Digital-Signage-Vorlagen",
+        "searchPlaceholder": "Vorlage suchen...",
+        "total": "Gesamt {count} Vorlagen"
+    },
+    "filters": {
+        "status": "Status",
+        "type": "Typ",
+        "all": "Alle",
+        "search": "Suchen",
+        "searchPlaceholder": "Vorlage suchen..."
+    },
+    "table": {
+        "name": "Vorlagenname",
+        "type": "Typ",
+        "status": "Status",
+        "dimensions": "Abmessungen",
+        "devices": "Geräteanzahl",
+        "createdAt": "Erstellt",
+        "updatedAt": "Aktualisiert",
+        "preview": "Vorschau"
+    },
+    "form": {
+        "name": "Vorlagenname",
+        "description": "Beschreibung",
+        "type": "Vorlagentyp",
+        "status": "Status",
+        "width": "Breite",
+        "height": "Höhe",
+        "orientation": "Ausrichtung",
+        "category": "Kategorie",
+        "tags": "Tags",
+        "placeholders": {
+            "name": "Vorlagenname eingeben",
+            "description": "Vorlagenbeschreibung (optional)",
+            "tags": "Tags (kommagetrennt)"
+        }
+    },
+    "types": {
+        "signage": "Digital Signage",
+        "webpage": "Webseite",
+        "dashboard": "Dashboard",
+        "menu": "Menütafel"
+    },
+    "status": {
+        "draft": "Entwurf",
+        "published": "Veröffentlicht",
+        "archived": "Archiviert"
+    },
+    "orientations": {
+        "landscape": "Querformat",
+        "portrait": "Hochformat"
+    },
+    "actions": {
+        "new": "Neue Vorlage",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "duplicate": "Duplizieren",
+        "clone": "Klonen",
+        "preview": "Vorschau",
+        "publish": "Veröffentlichen",
+        "unpublish": "Veröffentlichung aufheben",
+        "assignDevices": "Geräte zuweisen",
+        "viewVersions": "Versionen anzeigen",
+        "retry": "Wiederholen",
+        "createFirst": "Erste Vorlage erstellen",
+        "cancel": "Abbrechen"
+    },
+    "editor": {
+        "title": "Web-Vorlagen-Editor",
+        "newTitle": "Neue Web-Vorlage",
+        "editTitle": "Web-Vorlage bearbeiten",
+        "subtitle": "HTML-basiertes Digital Signage gestalten",
+        "loading": "Editor wird geladen...",
+        "loadError": "Editor konnte nicht geladen werden",
+        "redirecting": "Weiterleitung zum Editor..."
+    },
+    "widgets": {
+        "title": "Omnex Widgets",
+        "productCard": "Produktkarte",
+        "priceList": "Preisliste",
+        "ticker": "Ticker",
+        "clock": "Uhr",
+        "countdown": "Countdown",
+        "qrcode": "QR-Code",
+        "weather": "Wetter",
+        "news": "Nachrichtenfeed"
+    },
+    "assignment": {
+        "title": "Gerätezuweisung",
+        "selectDevices": "Geräte auswählen",
+        "noDevices": "Noch keine Geräte zugewiesen",
+        "assignedDevices": "Zugewiesene Geräte",
+        "priority": "Priorität",
+        "schedule": "Zeitplan",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum"
+    },
+    "versions": {
+        "title": "Versionshistorie",
+        "current": "Aktuell",
+        "version": "Version",
+        "createdAt": "Erstellt",
+        "createdBy": "Erstellt von",
+        "notes": "Notizen",
+        "restore": "Wiederherstellen",
+        "compare": "Vergleichen"
+    },
+    "messages": {
+        "loading": "Wird geladen...",
+        "noTemplates": "Noch keine Web-Vorlagen",
+        "noTemplatesHint": "Beginnen Sie mit der Erstellung von HTML-basierten Digital-Signage-Vorlagen",
+        "noResults": "Keine Ergebnisse gefunden",
+        "loadError": "Fehler beim Laden der Vorlagen",
+        "redirecting": "Weiterleitung zum Editor...",
+        "deleted": "Web-Vorlage gelöscht",
+        "deleteError": "Fehler beim Löschen",
+        "duplicated": "Web-Vorlage dupliziert",
+        "duplicateError": "Fehler beim Duplizieren"
+    },
+    "toast": {
+        "created": "Web-Vorlage erstellt",
+        "updated": "Web-Vorlage aktualisiert",
+        "deleted": "Web-Vorlage gelöscht",
+        "cloned": "Web-Vorlage dupliziert",
+        "published": "Web-Vorlage veröffentlicht",
+        "unpublished": "Web-Vorlage-Veröffentlichung aufgehoben",
+        "assigned": "Geräten zugewiesen",
+        "versionRestored": "Version wiederhergestellt"
+    },
+    "confirm": {
+        "deleteTitle": "Vorlage löschen",
+        "deleteMessage": "Sind Sie sicher, dass Sie die Vorlage \"{name}\" löschen möchten?",
+        "delete": "Sind Sie sicher, dass Sie diese Web-Vorlage löschen möchten?",
+        "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Mit dieser Vorlage verknüpfte Gerätezuweisungen werden ebenfalls gelöscht.",
+        "publish": "Sind Sie sicher, dass Sie diese Vorlage veröffentlichen möchten?",
+        "unpublish": "Sind Sie sicher, dass Sie die Veröffentlichung dieser Vorlage aufheben möchten?",
+        "restoreVersion": "Sind Sie sicher, dass Sie diese Version wiederherstellen möchten?"
+    },
+    "validation": {
+        "nameRequired": "Vorlagenname ist erforderlich",
+        "nameTooLong": "Vorlagenname darf maximal 255 Zeichen lang sein",
+        "typeRequired": "Bitte wählen Sie einen Vorlagentyp aus"
+    },
+    "filter": {
+        "allTypes": "Alle Typen",
+        "allStatus": "Alle Status",
+        "search": "Suchen..."
+    }
+}

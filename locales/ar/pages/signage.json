@@ -1,0 +1,389 @@
+{
+    "title": "اللافتات الرقمية",
+    "subtitle": "إدارة محتوى اللافتات الرقمية",
+    "playlists": {
+        "title": "قوائم التشغيل",
+        "subtitle": "إدارة قوائم التشغيل",
+        "addPlaylist": "قائمة تشغيل جديدة",
+        "editPlaylist": "تحرير قائمة التشغيل",
+        "deletePlaylist": "حذف قائمة التشغيل",
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف قائمة التشغيل هذه؟",
+        "detail": "تفاصيل قائمة التشغيل",
+        "empty": "لم يتم إنشاء قوائم تشغيل حتى الآن",
+        "selectMedia": "حدد الوسائط",
+        "itemCount": "أغراض",
+        "columns": {
+            "orientation": "اتجاه الشاشة",
+            "template": "نموذج",
+            "layoutType": "نوع التخطيط",
+            "assignedDevice": "الجهاز المخصص",
+            "devicesCount": "الأجهزة ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - الأجهزة المخصصة",
+            "noDevices": "لم يتم العثور على الأجهزة المخصصة",
+            "removeDevice": "يزيل",
+            "removeConfirm": "هل تريد إزالة هذا الجهاز من مهمة قائمة التشغيل؟",
+            "removed": "تمت إزالة تعيين الجهاز"
+        },
+        "orientations": {
+            "landscape": "أفقي (1920 × 1080)",
+            "portrait": "صورة شخصية (1080 × 1920)"
+        },
+        "layouts": {
+            "full": "شاشة كاملة",
+            "grid2": "2-شبكة العمود",
+            "grid3": "3-شبكة العمود",
+            "grid4": "4-شبكة العمود",
+            "hybrid": "هجين (رئيسي + جانبي)"
+        },
+        "mediaTypes": {
+            "image": "صورة",
+            "video": "فيديو",
+            "template": "نموذج",
+            "webpage": "ويب",
+            "stream": "بث مباشر"
+        },
+        "templatePreview": "معاينة القالب",
+        "noTemplateSelected": "لم يتم تحديد أي قالب",
+        "transitions": {
+            "none": "لا أحد",
+            "fade": "يختفي",
+            "slideLeft": "حرك لليسار",
+            "slideRight": "حرك لليمين",
+            "slideUp": "الانزلاق لأعلى",
+            "slideDown": "تنزلق للأسفل",
+            "zoom": "تكبير"
+        },
+        "form": {
+            "fields": {
+                "name": "اسم قائمة التشغيل",
+                "description": "وصف",
+                "duration": "المدة (ثانية)",
+                "transition": "تأثير الانتقال",
+                "transitionDuration": "مدة الانتقال",
+                "loop": "حلقة",
+                "orientation": "اتجاه الشاشة",
+                "template": "نموذج",
+                "layoutType": "نوع التخطيط"
+            },
+            "infoTitle": "معلومات القائمة",
+            "itemsTitle": "محتويات القائمة",
+            "addItem": "أضف محتوى",
+            "createDesc": "قم بإنشاء قائمة تشغيل جديدة",
+            "editDesc": "تحرير قائمة التشغيل",
+            "namePlaceholder": "مثال: صور الحملة",
+            "descPlaceholder": "وصف موجز عن القائمة",
+            "durationHint": "مدة العرض الافتراضية لكل محتوى",
+            "selectTemplate": "تحديد القالب...",
+            "noPreview": "لا معاينة",
+            "noItems": "لم تتم إضافة أي محتوى حتى الآن",
+            "noItemsHint": "استخدم الزر أعلاه لإضافة محتوى",
+            "emptyMedia": "مكتبة الوسائط فارغة",
+            "uploadMedia": "تحميل الوسائط",
+            "tabMedia": "وسائط",
+            "tabTemplates": "قوالب",
+            "tabWebpage": "صفحة على الإنترنت",
+            "tabStream": "بث مباشر",
+            "webpageTitle": "إضافة صفحة ويب",
+            "webpageHint": "أدخل عنوان URL لصفحة الويب التي تريد عرضها. سيتم عرض الصفحة في إطار iframe.",
+            "webpageUrl": "عنوان URL لصفحة الويب",
+            "webpageName": "اسم العرض",
+            "webpageNamePlaceholder": "مثال: الطقس",
+            "addWebpage": "إضافة صفحة ويب",
+            "webpageWarning": "ملاحظة: قد تمنع بعض مواقع الويب العرض في iframe (خيارات الإطار X). في هذه الحالة، لا يمكن عرض الصفحة.",
+            "webpageUrlRequired": "الرجاء إدخال عنوان URL",
+            "webpageUrlInvalid": "يجب أن يبدأ عنوان URL بـ http:// أو https://",
+            "webpageAlreadyAdded": "تمت إضافة عنوان URL هذا بالفعل",
+            "webpageAdded": "تمت إضافة صفحة ويب",
+            "streamTitle": "إضافة بث مباشر",
+            "streamHint": "أدخل عنوان URL للبث HLS (m3u8) أو RTSP أو غيره. سيتم تشغيله عبر hls.js على الأجهزة.",
+            "streamUrl": "عنوان URL للبث",
+            "streamName": "اسم البث",
+            "streamNamePlaceholder": "مثال: كاميرا 1، بث تلفزيوني",
+            "streamDurationHint": "0 = غير محدد (بث مستمر)",
+            "streamMuted": "الصوت",
+            "streamMutedYes": "صامت",
+            "streamMutedNo": "مع صوت",
+            "streamAdd": "إضافة البث",
+            "streamFormats": "الصيغ المدعومة: HLS (.m3u8)، MP4، WebM. RTSP غير مدعوم مباشرة، يجب تحويله إلى HLS.",
+            "streamUrlRequired": "الرجاء إدخال عنوان URL للبث",
+            "streamUrlInvalid": "تنسيق URL غير صالح",
+            "streamAlreadyAdded": "هذا البث مضاف بالفعل",
+            "streamAdded": "تمت إضافة البث المباشر",
+            "emptyTemplates": "لم يتم العثور على قوالب",
+            "emptyTemplatesHint": "إنشاء لافتات أو قوالب التلفزيون",
+            "createTemplate": "إنشاء قالب",
+            "seconds": "ثانية",
+            "loop": "حلقة",
+            "loopHint": "أعد تشغيل الفيديو عندما ينتهي",
+            "loopCountHint": "كم مرة للتكرار",
+            "soundOn": "تشغيل الصوت",
+            "soundOff": "إيقاف الصوت",
+            "durationHintVideo": "إذا تركت فارغة، يتم تشغيل الفيديو في مدته الخاصة",
+            "durationHintImage": "مدة العرض (ثواني)",
+            "itemsHint": "المدة: إذا تركت فارغة، فسيتم تشغيل الفيديو بالمدة الخاصة به. التكرار: في حالة التمكين، يتكرر المحتوى لعدد محدد من المرات، وينتقل إلى المرة التالية عند انتهاء المدة.",
+            "editItem": "تحرير العنصر",
+            "itemName": "اسم",
+            "itemUpdated": "تم تحديث العنصر",
+            "duration": "مدة",
+            "autoForVideo": "آلي",
+            "loopVideo": "حلقة الفيديو",
+            "loopCount": "كرر العد",
+            "selectDevice": "حدد الجهاز",
+            "selectDevices": "حدد الأجهزة",
+            "selectedDevices": "الأجهزة المحددة",
+            "assignToMultiple": "يمكنك التعيين لأجهزة متعددة",
+            "selectDevicePlaceholder": "حدد الجهاز...",
+            "noDevices": "لم يتم العثور على الأجهزة المناسبة. قم أولاً بإضافة جهاز لافتات.",
+            "willBeAssigned": "سيتم تعيين قائمة التشغيل للجهاز المحدد.",
+            "selectDeviceRequired": "الرجاء تحديد جهاز",
+            "confirmUnassign": "لم يتم تحديد أي أجهزة. ستتم إزالة قائمة التشغيل هذه من جميع الأجهزة. يكمل؟",
+            "currentlyAssigned": "تم تعيينه حاليًا لجهاز {device}",
+            "currentlyAssignedCount": "تم تعيينه حاليًا لـ {count} من الأجهزة",
+            "aDevice": "جهاز"
+        },
+        "assignToDevice": "تعيين للجهاز",
+        "toast": {
+            "created": "تم إنشاء قائمة التشغيل",
+            "updated": "تم تحديث قائمة التشغيل",
+            "deleted": "تم حذف قائمة التشغيل",
+            "mediaAdded": "تمت إضافة الوسائط",
+            "assigned": "قائمة التشغيل المخصصة للجهاز",
+            "assignedCount": "{count} الأجهزة المخصصة",
+            "assignFailedCount": "{count} فشلت عمليات تعيين الجهاز"
+        },
+        "commands": {
+            "start": "ابدأ البث",
+            "stop": "إيقاف البث",
+            "refresh": "تحديث الجهاز",
+            "reboot": "إعادة تشغيل الجهاز",
+            "device": "جهاز",
+            "send": "يرسل",
+            "sentCount": "{count} الأوامر المرسلة إلى الأجهزة",
+            "failedCount": "فشل إرسال الأوامر {count}",
+            "confirmMessage": "سيتم إرسال الأمر \"{command}\" إلى <strong>{device}</strong>.",
+            "sent": "تم إرسال الأمر: {device}",
+            "failed": "فشل في إرسال الأمر"
+        },
+        "actions": {
+            "startBroadcast": "ابدأ البث",
+            "stopBroadcast": "إيقاف البث",
+            "refreshDevice": "تحديث الجهاز"
+        }
+    },
+    "schedules": {
+        "title": "الجداول الزمنية",
+        "subtitle": "إدارة جداول البث",
+        "addSchedule": "جدول جديد",
+        "editSchedule": "تحرير الجدول الزمني",
+        "deleteSchedule": "حذف الجدول الزمني",
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف الجدول \"{name}\"؟",
+        "empty": "لم يتم إنشاء جداول بعد",
+        "historyFeature": "ميزة التاريخ قريبا",
+        "searchPlaceholder": "جدول البحث...",
+        "emptyText": "لم يتم العثور على الجدول الزمني",
+        "columns": {
+            "preview": "معاينة",
+            "name": "اسم الجدول الزمني",
+            "playlist": "قائمة التشغيل",
+            "devices": "الأجهزة",
+            "deviceCount": "{count} الأجهزة",
+            "startDate": "يبدأ",
+            "endDate": "نهاية",
+            "continuous": "مستمر",
+            "status": "حالة"
+        },
+        "status": {
+            "active": "نشيط",
+            "scheduled": "المقرر",
+            "inactive": "غير نشط",
+            "completed": "مكتمل"
+        },
+        "actions": {
+            "history": "تاريخ",
+            "view": "منظر",
+            "edit": "يحرر",
+            "delete": "يمسح"
+        },
+        "newSchedule": "جدول جديد",
+        "createDesc": "إنشاء جدول زمني جديد",
+        "editDesc": "تحرير إعدادات الجدول الزمني",
+        "scheduleInfo": "معلومات الجدول الزمني",
+        "targetDevices": "الأجهزة المستهدفة",
+        "selectedCount": "تم تحديد {count}",
+        "searchDevice": "جهاز البحث...",
+        "noMatch": "لم يتم العثور على تطابق",
+        "noTvDevices": "لم يتم العثور على أجهزة تلفزيون/لافتات",
+        "locationNotSpecified": "الموقع غير محدد",
+        "form": {
+            "fields": {
+                "name": "اسم الجدول الزمني",
+                "playlist": "قائمة التشغيل",
+                "startDate": "تاريخ البدء",
+                "endDate": "تاريخ الانتهاء",
+                "startTime": "وقت البدء",
+                "endTime": "وقت النهاية",
+                "repeat": "يكرر",
+                "weekdays": "أيام",
+                "status": "حالة",
+                "devices": "الأجهزة",
+                "priority": "أولوية"
+            },
+            "placeholders": {
+                "name": "مثال: حملة عطلة نهاية الأسبوع",
+                "selectPlaylist": "حدد القائمة"
+            },
+            "hints": {
+                "endDate": "إذا تركت فارغة، يلعب بشكل مستمر",
+                "priority": "القيمة الأعلى = الأولوية الأعلى"
+            },
+            "repeat": {
+                "none": "لا تكرار",
+                "daily": "يوميًا",
+                "weekly": "أسبوعي",
+                "monthly": "شهريا"
+            },
+            "weekdays": {
+                "mon": "الاثنين",
+                "tue": "الثلاثاء",
+                "wed": "تزوج",
+                "thu": "الخميس",
+                "fri": "الجمعة",
+                "sat": "قعد",
+                "sun": "شمس"
+            },
+            "status": {
+                "active": "نشيط",
+                "scheduled": "المقرر",
+                "inactive": "غير نشط"
+            }
+        },
+        "toast": {
+            "created": "تم إنشاء الجدول الزمني",
+            "updated": "تم تحديث الجدول الزمني",
+            "deleted": "تم حذف الجدول الزمني",
+            "loadFailed": "فشل تحميل الجدول الزمني",
+            "requiredFields": "يرجى ملء الحقول المطلوبة",
+            "selectDevice": "يجب عليك تحديد جهاز واحد على الأقل",
+            "saveFailed": "خطأ في الحفظ"
+        }
+    },
+    "template": {
+        "title": "قوالب الشاشة",
+        "subtitle": "إدارة تخطيطات شاشة التلفزيون واللافتات",
+        "addTemplate": "إضافة قالب",
+        "editTemplate": "تحرير القالب",
+        "types": {
+            "signage": "لافتات",
+            "tv": "تلفزيون",
+            "label": "ملصق"
+        },
+        "layoutTypes": {
+            "full": "شاشة كاملة",
+            "grid2": "2-تقسيم العمود",
+            "grid3": "3-تقسيم العمود",
+            "grid4": "4-تقسيم الأعمدة",
+            "hybrid": "هجين"
+        },
+        "slots": {
+            "main": "المنطقة الرئيسية",
+            "slot1": "المنطقة 1",
+            "slot2": "المنطقة 2",
+            "slot3": "المنطقة 3",
+            "slot4": "المنطقة 4",
+            "sidebar": "الشريط الجانبي",
+            "banner": "لافتة سفلية"
+        },
+        "preview": "معاينة",
+        "previewDescription": "كيف سيظهر القالب على الشاشة"
+    },
+    "deviceTree": {
+        "title": "حالة الأجهزة",
+        "subtitle": "عرض هرمي لجميع أجهزة اللافتات الرقمية",
+        "expandAll": "توسيع الكل",
+        "collapseAll": "طي الكل",
+        "summary": {
+            "total": "الإجمالي",
+            "online": "متصل",
+            "offline": "غير متصل",
+            "warning": "تحذير",
+            "devices": "أجهزة"
+        },
+        "filter": {
+            "search": "البحث عن جهاز أو IP أو فرع...",
+            "all": "الكل",
+            "online": "متصل",
+            "offline": "غير متصل",
+            "warning": "تحذيرات"
+        },
+        "columns": {
+            "name": "الاسم",
+            "status": "الحالة",
+            "playlist": "قيد التشغيل",
+            "lastSeen": "آخر ظهور",
+            "actions": "الإجراءات"
+        },
+        "node": {
+            "devices": "{count} أجهزة",
+            "unassigned": "أجهزة غير مخصصة",
+            "noBranch": "بدون فرع"
+        },
+        "commands": {
+            "start": "تشغيل",
+            "stop": "إيقاف",
+            "refresh": "تحديث",
+            "reboot": "إعادة تشغيل",
+            "startAll": "تشغيل الكل",
+            "stopAll": "إيقاف الكل",
+            "refreshAll": "تحديث الكل",
+            "confirmCascade": "سيتم إرسال الأمر \"{command}\" إلى {count} أجهزة. هل تريد المتابعة؟",
+            "sending": "جارٍ إرسال الأوامر...",
+            "progress": "تم إرسال {sent}/{total}",
+            "resultSuccess": "{success} ناجح",
+            "resultFailed": "{failed} فاشل",
+            "resultSummary": "نتيجة الأمر"
+        },
+        "toast": {
+            "started": "بدأ البث: {device}",
+            "stopped": "توقف البث: {device}",
+            "refreshed": "تم تحديث الجهاز: {device}",
+            "rebooted": "جاري إعادة التشغيل: {device}",
+            "failed": "فشل الأمر: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "جهاز لوحي",
+            "streaming": "بث مباشر"
+        },
+        "time": {
+            "justNow": "الآن",
+            "secondsAgo": "قبل {n} ثانية",
+            "minutesAgo": "قبل {n} دقيقة",
+            "hoursAgo": "قبل {n} ساعة",
+            "daysAgo": "قبل {n} يوم",
+            "never": "أبداً"
+        },
+        "empty": "لم يتم العثور على أجهزة لافتات",
+        "emptyHint": "أضف جهاز تلفزيون أو لافتة من صفحة الأجهزة",
+        "autoRefresh": "تحديث تلقائي: {seconds} ثانية",
+        "refreshing": "جارٍ التحديث...",
+        "noPlaylist": "لم يتم تعيين قائمة تشغيل",
+        "loading": "جارٍ تحميل شجرة الأجهزة..."
+    },
+    "player": {
+        "title": "مشغل بي دبليو ايه",
+        "syncCode": "رمز المزامنة",
+        "enterSyncCode": "أدخل رمز المزامنة",
+        "connecting": "جارٍ الاتصال...",
+        "connected": "متصل",
+        "disconnected": "غير متصل",
+        "nowPlaying": "التشغيل الآن",
+        "nextItem": "التالي",
+        "rotation": "مدة التناوب",
+        "seconds": "ثواني"
+    }
+}

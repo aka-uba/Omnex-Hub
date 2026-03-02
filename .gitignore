@@ -1,0 +1,156 @@
+# ========================================
+# Omnex Display Hub - .gitignore
+# ========================================
+
+# ---- Environment & Secrets ----
+.env.local
+.jwt_secret
+.production
+
+# ---- Database Files ----
+omnex.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- Backup & Archive Directories ----
+backup/
+backups/
+
+# ---- Design Files ----
+tasarımlar/
+
+# ---- External Libraries ----
+kutuphane/
+
+# ---- Android Player (separate project) ----
+android-player/
+android-player.zip
+
+# ---- ESL Research Files ----
+esl-research/
+
+# ---- Downloads (APK binaries) ----
+downloads/
+
+# ---- Web Builder - INCLUDED (used in project) ----
+
+# ---- ADB / Android Config ----
+.adb-home/
+.android-adb/
+.android-adb-home/
+.android-user-home/
+.home/
+
+# ---- Temp Files ----
+.tmp/
+Yeni klasör/
+nul
+_nul
+
+# ---- Claude AI Config (keep CLAUDE.md only) ----
+.claude/memory/
+.claude/plans/
+.claude/settings.json
+
+# ---- Storage (runtime data - keep only gitkeep and wsdl) ----
+storage/cache/
+storage/companies/
+storage/avatars/
+storage/renders/
+storage/logs/
+storage/exports/
+storage/media/
+storage/templates/portrait/
+storage/templates/landscape/
+storage/public/samples/
+storage/*.ab
+storage/*.py
+storage/*.php
+storage/*.txt
+
+# ---- Log Files ----
+*.log
+*.err.log
+app.log
+media_debug.log
+translate_*.log
+
+# ---- Debug & Test Scripts (root level) ----
+_*.php
+temp_*.php
+test_*.php
+scan_ports.php
+verify_jwt.php
+run-migration.php
+run-migrations.php
+run_migration.php
+run_payment_migration.php
+
+# ---- Temp/Analysis Documents ----
+Yeni Metin Belgesi.txt
+DATABASE_CAPACITY_ANALYSIS.md
+HARDCODED_METIN_ANALIZI.md
+market_etiket_sistemi_hata_temizleme_ve_cloud_uyum_plani.md
+
+# ---- VBS Scripts ----
+*.vbs
+
+# ---- Deploy (production build copy) ----
+deploy/
+
+# ---- Local Gateway Manager (separate project) ----
+local-gateway-manager/
+
+# ---- Gateway Agent ----
+gateway/
+
+# ---- HTML Editor - INCLUDED (used in project) ----
+
+# ---- Old SQLite Migrations ----
+database/migrations/
+
+# ---- Node Modules ----
+node_modules/
+
+# ---- OS Files ----
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# ---- IDE Files ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---- Models (empty) ----
+models/
+
+# ---- Tests (development only) ----
+tests/
+
+# ---- Docker (keep config, exclude data) ----
+
+# ---- Executables & Binaries ----
+*.exe
+*.zip
+*.apk
+*.jar
+*.tar.gz
+
+# ---- Claude Temp Files ----
+**/tmpclaude-*
+
+# ---- Backup PHP files ----
+*.phpDEG
+*.php1
+*.bak
+
+# ---- Misc unnecessary root files ----
+"docs/
+
+# ---- PHP temp ----
+*.cache
+*.json.bak

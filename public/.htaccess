@@ -1,0 +1,71 @@
+# Omnex Display Hub - Public .htaccess
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Set index.php as default (for cache control headers)
+DirectoryIndex index.php index.html
+
+# ============================================
+# DISABLE ALL CACHING FOR DEVELOPMENT
+# ============================================
+# Force no-cache for all files on localhost/development
+<IfModule mod_headers.c>
+    # Disable caching for JS files
+    <FilesMatch "\.(js)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for CSS files
+    <FilesMatch "\.(css)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for HTML/PHP files
+    <FilesMatch "\.(html|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    # Disable caching for JSON files (locales)
+    <FilesMatch "\.(json)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# Disable expires module completely
+<IfModule mod_expires.c>
+    ExpiresActive Off
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Disable multiviews (causes 406 errors)
+Options -MultiViews
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Ensure proper MIME types
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/css .css
+    AddType application/json .json
+</IfModule>
+
+# Gzip compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>

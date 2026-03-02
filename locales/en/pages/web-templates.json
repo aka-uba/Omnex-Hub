@@ -1,0 +1,164 @@
+{
+    "title": "Web Templates",
+    "subtitle": "Manage HTML-based digital signage templates",
+    "breadcrumb": {
+        "panel": "Panel",
+        "webTemplates": "Web Templates",
+        "editor": "Editor",
+        "new": "New Web Template",
+        "edit": "Edit"
+    },
+    "list": {
+        "title": "Web Templates",
+        "subtitle": "Create HTML-based templates with VvvebJs",
+        "newTemplate": "New Web Template",
+        "empty": "No web templates created yet",
+        "emptyHint": "Start creating HTML-based digital signage templates",
+        "searchPlaceholder": "Search template...",
+        "total": "Total {count} templates"
+    },
+    "filters": {
+        "status": "Status",
+        "type": "Type",
+        "all": "All",
+        "search": "Search",
+        "searchPlaceholder": "Search template..."
+    },
+    "table": {
+        "name": "Template Name",
+        "type": "Type",
+        "status": "Status",
+        "dimensions": "Dimensions",
+        "devices": "Device Count",
+        "createdAt": "Created",
+        "updatedAt": "Updated",
+        "preview": "Preview"
+    },
+    "form": {
+        "name": "Template Name",
+        "description": "Description",
+        "type": "Template Type",
+        "status": "Status",
+        "width": "Width",
+        "height": "Height",
+        "orientation": "Orientation",
+        "category": "Category",
+        "tags": "Tags",
+        "placeholders": {
+            "name": "Enter template name",
+            "description": "Template description (optional)",
+            "tags": "Tags (comma separated)"
+        }
+    },
+    "types": {
+        "signage": "Digital Signage",
+        "webpage": "Web Page",
+        "dashboard": "Dashboard",
+        "menu": "Menu Board"
+    },
+    "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+    },
+    "orientations": {
+        "landscape": "Landscape",
+        "portrait": "Portrait"
+    },
+    "actions": {
+        "new": "New Template",
+        "edit": "Edit",
+        "delete": "Delete",
+        "duplicate": "Duplicate",
+        "clone": "Clone",
+        "preview": "Preview",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "assignDevices": "Assign Devices",
+        "viewVersions": "View Versions",
+        "retry": "Retry",
+        "createFirst": "Create First Template",
+        "cancel": "Cancel"
+    },
+    "editor": {
+        "title": "Web Template Editor",
+        "newTitle": "New Web Template",
+        "editTitle": "Edit Web Template",
+        "subtitle": "Design HTML-based digital signage",
+        "loading": "Loading editor...",
+        "loadError": "Failed to load editor",
+        "redirecting": "Redirecting to editor..."
+    },
+    "widgets": {
+        "title": "Omnex Widgets",
+        "productCard": "Product Card",
+        "priceList": "Price List",
+        "ticker": "Ticker",
+        "clock": "Clock",
+        "countdown": "Countdown",
+        "qrcode": "QR Code",
+        "weather": "Weather",
+        "news": "News Feed"
+    },
+    "assignment": {
+        "title": "Device Assignment",
+        "selectDevices": "Select Devices",
+        "noDevices": "No devices assigned yet",
+        "assignedDevices": "Assigned Devices",
+        "priority": "Priority",
+        "schedule": "Schedule",
+        "startDate": "Start Date",
+        "endDate": "End Date"
+    },
+    "versions": {
+        "title": "Version History",
+        "current": "Current",
+        "version": "Version",
+        "createdAt": "Created",
+        "createdBy": "Created By",
+        "notes": "Notes",
+        "restore": "Restore",
+        "compare": "Compare"
+    },
+    "messages": {
+        "loading": "Loading...",
+        "noTemplates": "No web templates yet",
+        "noTemplatesHint": "Start creating HTML-based digital signage templates",
+        "noResults": "No results found",
+        "loadError": "Error occurred while loading templates",
+        "redirecting": "Redirecting to editor...",
+        "deleted": "Web template deleted",
+        "deleteError": "Error occurred during deletion",
+        "duplicated": "Web template duplicated",
+        "duplicateError": "Error occurred during duplication"
+    },
+    "toast": {
+        "created": "Web template created",
+        "updated": "Web template updated",
+        "deleted": "Web template deleted",
+        "cloned": "Web template duplicated",
+        "published": "Web template published",
+        "unpublished": "Web template unpublished",
+        "assigned": "Assigned to devices",
+        "versionRestored": "Version restored"
+    },
+    "confirm": {
+        "deleteTitle": "Delete Template",
+        "deleteMessage": "Are you sure you want to delete the template \"{name}\"?",
+        "delete": "Are you sure you want to delete this web template?",
+        "deleteWarning": "This action cannot be undone. Device assignments linked to this template will also be deleted.",
+        "publish": "Are you sure you want to publish this template?",
+        "unpublish": "Are you sure you want to unpublish this template?",
+        "restoreVersion": "Are you sure you want to restore this version?"
+    },
+    "validation": {
+        "nameRequired": "Template name is required",
+        "nameTooLong": "Template name cannot exceed 255 characters",
+        "typeRequired": "Please select template type"
+    },
+    "filter": {
+        "allTypes": "All Types",
+        "allStatus": "All Status",
+        "search": "Search..."
+    }
+}

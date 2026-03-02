@@ -1,0 +1,94 @@
+{
+    "title": "Künyə Paylama Mərkəzi",
+    "subtitle": "HAL bildirişlərindən künyə paylaması edin",
+    "breadcrumb": {
+        "panel": "Panel",
+        "products": "Məhsullar",
+        "distribution": "Künyə Paylama"
+    },
+    "steps": {
+        "query": "Bildiriş Sorğusu",
+        "select": "Sənəd Seçimi",
+        "assign": "Məhsul Uyğunlaşdırma",
+        "result": "Nəticə"
+    },
+    "form": {
+        "startDate": "Başlanğıc Tarixi",
+        "endDate": "Bitmə Tarixi",
+        "sifat": "Sifət",
+        "onlyRemaining": "Yalnız qalan miqdarı > 0",
+        "query": "Sorğula",
+        "querying": "Sorğulanır..."
+    },
+    "belge": {
+        "title": "Sənəd No",
+        "plaka": "Nömrə lövhəsi",
+        "items": "məhsul",
+        "selectAll": "Hamısını Seç",
+        "totalMiktar": "Ümumi Miqdar",
+        "totalKalan": "Ümumi Qalan",
+        "noSelection": "Ən azı bir künyə seçin"
+    },
+    "assign": {
+        "halProduct": "HAL Məhsul",
+        "systemProduct": "Sistem Məhsulu",
+        "type": "Paylama Növü",
+        "full": "Tək (Tam)",
+        "split": "İkili (Bölünmüş)",
+        "miktar": "Miqdar",
+        "kalan": "Qalan",
+        "birim": "Vahid",
+        "search": "Məhsul axtar...",
+        "autoMatch": "Avtomatik Uyğunlaşdır",
+        "distribute": "Payla",
+        "distributing": "Paylanır...",
+        "noMatch": "Uyğunluq tapılmadı",
+        "selectProduct": "Məhsul Seç",
+        "matched": "Uyğunlaşdırıldı",
+        "splitMiktar1": "1-ci hissə miqdarı",
+        "splitMiktar2": "2-ci hissə miqdarı",
+        "nextStep": "Uyğunlaşdırmaya Keç",
+        "prevStep": "Geri",
+        "belgeNo": "Sənəd No",
+        "bildirimTarihi": "Bildiriş Tarixi",
+        "searchHint": "Ad, SKU və ya barkod ilə axtarın. Türk simvollarına duyarsız axtarış dəstəklənir."
+    },
+    "result": {
+        "title": "Paylama Nəticəsi",
+        "success": "{count} künyə uğurla paylandı",
+        "skipped": "{count} künyə atlandı",
+        "error": "{count} künyə xəta verdi",
+        "viewProducts": "Məhsullara Bax",
+        "newDistribution": "Yeni Paylama"
+    },
+    "errors": {
+        "noCredentials": "HAL ayarları konfiqurasiya edilməyib",
+        "noResults": "Göstərilən meyarlarda bildiriş tapılmadı",
+        "fetchFailed": "Bildiriş sorğusu uğursuz oldu",
+        "distributeFailed": "Paylama zamanı xəta baş verdi",
+        "noSelection": "Ən azı bir künyə seçin",
+        "noProduct": "Bütün məhsul uyğunlaşdırmalarını tamamlayın",
+        "dateRequired": "Başlanğıc və bitmə tarixi tələb olunur",
+        "dateRange": "Tarix aralığı ən çox 31 gün ola bilər"
+    },
+    "sifat": [
+        "Seçin",
+        "Sənayeçi",
+        "İxracatçı",
+        "İdxalatçı",
+        "İstehsalçı",
+        "Komisyonçu",
+        "Tacir",
+        "Market",
+        "Manav",
+        "Anbar/Çeşidləmə",
+        "İstehsalçı Təşkilatı",
+        "Bazarçı",
+        "Otel",
+        "Restoran",
+        "Yataqxana",
+        "Yemək Fabriki",
+        "Xəstəxana",
+        "Tacir (Hal xarici)"
+    ]
+}

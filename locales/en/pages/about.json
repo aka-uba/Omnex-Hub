@@ -1,0 +1,30 @@
+{
+    "title": "About",
+    "subtitle": "Platform information and version history",
+    "breadcrumb": {
+        "panel": "Panel"
+    },
+    "features": {
+        "multiDevice": "Multi-Device Support",
+        "multiDeviceDesc": "ESL, TV, tablet and all digital displays on a single platform",
+        "multiLanguage": "Multi-Language Structure",
+        "multiLanguageDesc": "Global usage with 7 language support",
+        "security": "Secure Activation",
+        "securityDesc": "Controlled device integration and authorization",
+        "templates": "Advanced Templates",
+        "templatesDesc": "Drag-and-drop design editor"
+    },
+    "changelog": {
+        "title": "Version History",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "noContent": "Version history not found"
+    },
+    "footer": {
+        "allRightsReserved": "All rights reserved",
+        "developedBy": "Developer"
+    },
+    "messages": {
+        "loading": "Loading..."
+    }
+}

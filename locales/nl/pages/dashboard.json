@@ -1,0 +1,325 @@
+{
+    "title": "Dashboard",
+    "subtitle": "Overzicht",
+    "breadcrumb": {
+        "panel": "Paneel",
+        "analytics": "Analyses en rapporten"
+    },
+    "welcome": "Welkom, {name}",
+    "welcomeDefault": "Gebruiker",
+    "header": {
+        "systemAnalytics": "Systeemanalyse",
+        "downloadReport": "Rapport downloaden",
+        "refresh": "Vernieuwen"
+    },
+    "stats": {
+        "totalProducts": "Totaal producten",
+        "updatedIn24h": "Bijgewerkt in de afgelopen 24 uur",
+        "inLast30Days": "In de afgelopen 30 dagen",
+        "inThisPeriod": "In deze periode",
+        "activeDevices": "Actieve apparaten",
+        "online": "Online",
+        "offline": "Offline",
+        "labelUpdates": "Label-updates",
+        "licenseStatus": "Licentiestatus",
+        "critical": "Kritisch",
+        "licensesExpiring": "{count} Licenties verlopen",
+        "allLicensesActive": "Alle licenties actief",
+        "storage": "Opslag",
+        "unlimited": "Onbeperkt",
+        "unlimitedStorage": "Onbeperkte opslag",
+        "used": "Gebruikt",
+        "remaining": "Overig",
+        "errorRate": "Foutpercentage",
+        "belowIndustryAvg": "Onder het sectorgemiddelde"
+    },
+    "gateways": {
+        "noDevices": "Nog geen geregistreerde apparaten",
+        "addDevice": "Apparaat toevoegen",
+        "onlineDevices": "Online-apparaten",
+        "deviceActive": "{count} apparaten actief",
+        "offlineDevices": "Offline-apparaten",
+        "deviceOffline": "{count} apparaten offline",
+        "waitingConnection": "Wachten op verbinding",
+        "allOnline": "Allemaal online",
+        "totalDevices": "Totaal aantal apparaten",
+        "registeredDevices": "{count} geregistreerde apparaten",
+        "manage": "Beheren",
+        "deviceGroups": "Apparaatgroepen",
+        "devices": "{count} apparaten"
+    },
+    "widgets": {
+        "products": {
+            "title": "Totaal producten",
+            "subtitle": "Aantal geregistreerde producten"
+        },
+        "devices": {
+            "title": "Apparaten",
+            "online": "Online",
+            "offline": "Offline",
+            "pending": "In behandeling"
+        },
+        "templates": {
+            "title": "Sjablonen",
+            "subtitle": "Aantal actieve sjablonen"
+        },
+        "users": {
+            "title": "Gebruikers",
+            "subtitle": "Aantal actieve gebruikers"
+        },
+        "queue": {
+            "title": "Wachtrij",
+            "pending": "In behandeling"
+        },
+        "sync": {
+            "title": "Synchronisatie",
+            "today": "Vandaag",
+            "success": "Succesvol",
+            "pending": "In behandeling",
+            "failed": "Mislukt"
+        }
+    },
+    "recentActivity": {
+        "title": "Recente activiteiten",
+        "empty": "Er zijn nog geen activiteitengegevens",
+        "emptyHint": "Systeemtransacties worden hier vermeld",
+        "viewAll": "Bekijk alles",
+        "exportAll": "EXPORTEER ALLE RECORDS"
+    },
+    "quickActions": {
+        "title": "Snelle acties",
+        "addProduct": "Product toevoegen",
+        "addDevice": "Apparaat toevoegen",
+        "createTemplate": "Sjabloon maken",
+        "importProducts": "Producten importeren"
+    },
+    "charts": {
+        "productsByCategory": "Producten per categorie",
+        "deviceStatus": "Apparaatstatus",
+        "syncActivity": "Synchronisatie-activiteit",
+        "labelSync": "Synchronisatie van labels",
+        "labelUpdates": "Label-updates",
+        "loading": "Diagramgegevens laden...",
+        "loadingDays": "Gegevens van de afgelopen {days} dagen worden geladen...",
+        "noData": "Geen gegevens gevonden",
+        "noChartData": "Geen grafiekgegevens gevonden",
+        "loadError": "Kan diagramgegevens niet laden",
+        "onlineDevices": "Online",
+        "offlineDevices": "Offline",
+        "barTooltip": "{date}: {online} online, {offline} offline",
+        "totalUpdates": "Totaal aantal updates",
+        "dailyAverage": "Dagelijks gemiddelde",
+        "updates": "updates",
+        "noDevices": "Nog geen geregistreerde apparaten"
+    },
+    "period": {
+        "last7Days": "Laatste 7 dagen",
+        "last30Days": "Laatste 30 dagen",
+        "last90Days": "Afgelopen 90 dagen",
+        "today": "Vandaag",
+        "yesterday": "Gisteren",
+        "daysAgo": "{count} dagen geleden"
+    },
+    "activity": {
+        "titles": {
+            "login": "Gebruiker inloggen",
+            "logout": "Gebruiker uitloggen",
+            "create": "Nieuw record",
+            "update": "Update",
+            "delete": "Verwijdering",
+            "sync": "Synchronisatie",
+            "import": "Importeren",
+            "export": "Exporteren",
+            "send": "Versturen",
+            "error": "Fout",
+            "system": "Systeembediening",
+            "bulkPriceUpdate": "Bulkprijsupdate",
+            "deviceSync": "Synchronisatie van apparaten",
+            "productImport": "Productimport",
+            "connectionWarning": "Verbindingswaarschuwing"
+        },
+        "resources": {
+            "products": "product",
+            "devices": "apparaat",
+            "templates": "sjabloon",
+            "users": "gebruiker",
+            "companies": "bedrijf",
+            "categories": "categorie",
+            "media": "media",
+            "playlists": "afspeellijst",
+            "schedules": "schema"
+        },
+        "descriptions": {
+            "login": "{user} aangemeld",
+            "logout": "{user} is afgemeld",
+            "create": "{user} heeft nieuwe {resource} gemaakt",
+            "update": "{user} bijgewerkt {resource}",
+            "delete": "{user} verwijderd {resource}",
+            "import": "{user} geïmporteerd {resource}",
+            "send": "{user} heeft inhoud naar apparaat verzonden",
+            "export": "{user} heeft gegevens geëxporteerd",
+            "sync": "{user} heeft synchronisatie uitgevoerd"
+        },
+        "messages": {
+            "productCreated": "{count} nieuwe producten toegevoegd",
+            "productUpdated": "{count} producten bijgewerkt",
+            "productDeleted": "{count} producten verwijderd",
+            "deviceCreated": "Nieuw apparaat toegevoegd",
+            "deviceUpdated": "Apparaat bijgewerkt",
+            "syncCompleted": "Synchronisatie voltooid",
+            "importCompleted": "{count} records geïmporteerd",
+            "bulkPriceUpdate": "Prijsupdate uitgevoerd voor {count} producten.",
+            "allDevicesSynced": "Alle ESL-apparaten zijn succesvol gesynchroniseerd.",
+            "productsImportedFromERP": "{count} nieuwe producten geïmporteerd uit ERP-systeem.",
+            "gatewayConnectionIssue": "{gateway} verbinding tijdelijk onderbroken en opnieuw tot stand gebracht."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Apparaatstatus",
+            "online": "Online",
+            "offline": "Offline",
+            "offlineDevices": "Offline-apparaten",
+            "noOffline": "Alle apparaten online",
+            "lastSeen": "Laatst gezien",
+            "viewAll": "Bekijk alles",
+            "noDevices": "Nog geen apparaten"
+        },
+        "recentActivities": {
+            "title": "Recente activiteiten",
+            "viewAll": "Bekijk alles",
+            "empty": "Nog geen activiteiten"
+        },
+        "renderQueue": {
+            "title": "Renderwachtrij",
+            "successRate": "Succespercentage",
+            "avgTime": "Gem. Tijd",
+            "pending": "In behandeling",
+            "priorityDistribution": "Prioritaire distributie",
+            "urgent": "Dringend",
+            "high": "Hoog",
+            "normal": "Normaal",
+            "low": "Laag",
+            "detail": "Detail",
+            "noData": "Geen wachtrijgegevens",
+            "seconds": "sec"
+        },
+        "products": {
+            "title": "Producten",
+            "total": "Totaal producten",
+            "deviceAssigned": "Toegewezen aan apparaat",
+            "templateAssigned": "Toegewezen aan sjabloon",
+            "categories": "Categorieën",
+            "lastUpdated": "Laatst bijgewerkt",
+            "viewAll": "Bekijk alles"
+        },
+        "templates": {
+            "title": "Sjablonen",
+            "total": "Totaal sjablonen",
+            "system": "Systeemsjablonen",
+            "byType": "Op soort",
+            "label": "Label",
+            "signage": "Bewegwijzering",
+            "tv": "TV",
+            "poster": "Poster",
+            "manage": "Beheren"
+        },
+        "media": {
+            "title": "Mediabibliotheek",
+            "totalFiles": "Totaal aantal bestanden",
+            "shared": "Gedeeld",
+            "companyOnly": "Alleen bedrijf",
+            "storageUsage": "Opslaggebruik",
+            "browse": "Blader"
+        },
+        "detailedDevice": {
+            "title": "Gedetailleerde apparaatinformatie",
+            "byType": "Op type",
+            "byBranch": "Per filiaal",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android-TV",
+            "tablet": "Tablet",
+            "webDisplay": "Webweergave",
+            "pwaPlayer": "PWA-speler",
+            "manage": "Beheren",
+            "noBranch": "Geen filiaalinformatie"
+        },
+        "signage": {
+            "title": "Digitale bewegwijzering",
+            "connectedDevices": "Verbonden apparaten",
+            "totalPlaylists": "Totaal aantal afspeellijsten",
+            "active": "Actief",
+            "inactive": "Inactief",
+            "playlistItems": "Afspeellijstitems",
+            "assignedDevices": "Toegewezen apparaten",
+            "manage": "Beheren",
+            "noData": "Geen bewegwijzeringsgegevens"
+        },
+        "companyLicense": {
+            "title": "Bedrijf en licentie",
+            "company": "Bedrijf",
+            "license": "Licentie",
+            "branches": "Takken",
+            "users": "Gebruikers",
+            "activeSessions": "actieve sessies",
+            "eslLimit": "ESL-limiet",
+            "tvLimit": "TV-limiet",
+            "deviceLimit": "Apparaatlimiet",
+            "storageLimit": "Opslag",
+            "daysRemaining": "Nog {count} dagen resterend",
+            "expired": "Verlopen",
+            "unlimited": "Onbeperkt",
+            "noLimit": "Geen limiet",
+            "noLicense": "Geen licentie-informatie",
+            "noCompany": "Geen bedrijfsinformatie"
+        },
+        "integrations": {
+            "title": "Integraties",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "HAL-badge",
+            "hanshow": "Hanshow ESL",
+            "payment": "Betalingssysteem",
+            "active": "Actief",
+            "configured": "Geconfigureerd",
+            "notConfigured": "Niet geconfigureerd",
+            "disabled": "Gehandicapt",
+            "lastSync": "Laatste synchronisatie"
+        }
+    },
+    "toast": {
+        "refreshed": "Dashboard bijgewerkt",
+        "refreshError": "Er is een fout opgetreden tijdens het updaten van het dashboard",
+        "reportPreparing": "Rapport voorbereiden...",
+        "reportDownloaded": "Rapport succesvol gedownload",
+        "reportError": "Kan rapport niet downloaden",
+        "downloading": "Downloaden...",
+        "activityPreparing": "Activiteitenverslagen voorbereiden...",
+        "activityExported": "{count} activiteitsrecords geëxporteerd",
+        "activityExportError": "Kan activiteitsrecords niet exporteren",
+        "noActivityToExport": "Er zijn geen activiteitenrecords gevonden om te exporteren",
+        "loadError": "Er is een fout opgetreden tijdens het laden van gegevens"
+    },
+    "export": {
+        "headers": {
+            "date": "Datum",
+            "user": "Gebruiker",
+            "action": "Actie",
+            "resource": "Bron",
+            "details": "Details",
+            "ipAddress": "IP-adres",
+            "metric": "Metrisch",
+            "value": "Waarde",
+            "totalProduct": "Totaal producten",
+            "totalDevice": "Totaal aantal apparaten",
+            "onlineDevice": "Online-apparaten",
+            "labelUpdate": "Label-updates",
+            "todayUpdates": "De updates van vandaag",
+            "templateCount": "Sjabloontelling",
+            "categoryCount": "Categorietelling",
+            "errorRate": "Foutpercentage"
+        },
+        "system": "Systeem"
+    }
+}

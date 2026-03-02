@@ -1,0 +1,30 @@
+{
+    "title": "عن",
+    "subtitle": "معلومات النظام الأساسي وتاريخ الإصدار",
+    "breadcrumb": {
+        "panel": "لوحة"
+    },
+    "features": {
+        "multiDevice": "دعم الأجهزة المتعددة",
+        "multiDeviceDesc": "ESL والتلفزيون والكمبيوتر اللوحي وجميع شاشات العرض الرقمية على منصة واحدة",
+        "multiLanguage": "هيكل متعدد اللغات",
+        "multiLanguageDesc": "الاستخدام العالمي مع دعم 7 لغات",
+        "security": "التنشيط الآمن",
+        "securityDesc": "تكامل الأجهزة الخاضعة للرقابة والترخيص",
+        "templates": "قوالب متقدمة",
+        "templatesDesc": "محرر تصميم السحب والإفلات"
+    },
+    "changelog": {
+        "title": "تاريخ الإصدار",
+        "expand": "يوسع",
+        "collapse": "ينهار",
+        "noContent": "لم يتم العثور على سجل الإصدار"
+    },
+    "footer": {
+        "allRightsReserved": "جميع الحقوق محفوظة",
+        "developedBy": "المطور"
+    },
+    "messages": {
+        "loading": "تحميل..."
+    }
+}

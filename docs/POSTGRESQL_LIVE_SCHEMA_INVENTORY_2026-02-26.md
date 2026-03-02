@@ -1,0 +1,2755 @@
+# PostgreSQL Canli Sema Envanteri
+
+- Tarih: 26 Subat 2026
+- Kaynak: `database/omnex.db` (canli tablo durumu)
+- Not: Bu dokuman migration dosyalarindan degil, dogrudan canli SQLite semasindan uretilmistir.
+
+## Ozet
+- Toplam tablo: 89
+- Toplam satir (tum tablolar): 8871
+- `company_id` kolonu olan tablo sayisi: 52
+- PK tipi agirlik: text/uuid-benzeri=84, integer=3
+
+## Modul Bazli Dagilim (Canli)
+- core: tablo=9, satir=264
+- catalog: tablo=11, satir=799
+- labels: tablo=10, satir=1799
+- media: tablo=3, satir=1812
+- devices: tablo=20, satir=1887
+- signage: tablo=11, satir=11
+- integration: tablo=11, satir=159
+- license: tablo=5, satir=8
+- branch: tablo=3, satir=14
+- audit: tablo=5, satir=2118
+- unmapped: tablo=1, satir=0
+
+## Unmapped Tablolar
+- settings_backup (0)
+
+## Tablo Detaylari
+### audit_logs
+- Modul: audit
+- Satir: 2057
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - action | TEXT | notnull=1 | default=NULL | pk=0
+  - entity_type | TEXT | notnull=0 | default=NULL | pk=0
+  - entity_id | TEXT | notnull=0 | default=NULL | pk=0
+  - old_values | TEXT | notnull=0 | default=NULL | pk=0
+  - new_values | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - archived_at | TEXT | notnull=0 | default=NULL | pk=0
+  - archived_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_audit_logs_active | unique=0 | cols=(company_id, archived_at, created_at)
+  - idx_audit_logs_company_archived | unique=0 | cols=(company_id, archived_at)
+  - idx_audit_logs_archived | unique=0 | cols=(archived_at)
+  - idx_audit_logs_company_created | unique=0 | cols=(company_id, created_at)
+  - idx_audit_logs_entity_type | unique=0 | cols=(entity_type)
+  - idx_audit_logs_action_created | unique=0 | cols=(action, created_at)
+  - sqlite_autoindex_audit_logs_1 | unique=1 | cols=(id)
+
+### branch_import_logs
+- Modul: branch
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=0 | default=NULL | pk=0
+  - import_type | TEXT | notnull=1 | default=NULL | pk=0
+  - import_mode | TEXT | notnull=1 | default=NULL | pk=0
+  - source_type | TEXT | notnull=0 | default=NULL | pk=0
+  - source_name | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - total_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - processed_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - inserted_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - updated_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - skipped_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - failed_rows | INTEGER | notnull=0 | default=0 | pk=0
+  - changes_log | TEXT | notnull=0 | default=NULL | pk=0
+  - errors_log | TEXT | notnull=0 | default=NULL | pk=0
+  - warnings_log | TEXT | notnull=0 | default=NULL | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bil_date | unique=0 | cols=(created_at)
+  - idx_bil_status | unique=0 | cols=(status)
+  - idx_bil_branch | unique=0 | cols=(branch_id)
+  - idx_bil_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_branch_import_logs_1 | unique=1 | cols=(id)
+
+### branch_price_history
+- Modul: catalog
+- Satir: 7
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - old_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_price | REAL | notnull=0 | default=NULL | pk=0
+  - price_type | TEXT | notnull=0 | default='current' | pk=0
+  - change_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - change_source | TEXT | notnull=0 | default=NULL | pk=0
+  - change_percent | REAL | notnull=0 | default=NULL | pk=0
+  - changed_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - changed_by | TEXT | notnull=0 | default=NULL | pk=0
+  - metadata | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - changed_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bph_reason | unique=0 | cols=(change_reason)
+  - idx_bph_product_date | unique=0 | cols=(product_id, changed_at)
+  - idx_bph_branch_date | unique=0 | cols=(branch_id, changed_at)
+  - idx_bph_product_branch | unique=0 | cols=(product_id, branch_id)
+  - sqlite_autoindex_branch_price_history_1 | unique=1 | cols=(id)
+
+### branches
+- Modul: branch
+- Satir: 12
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - code | TEXT | notnull=1 | default=NULL | pk=0
+  - external_code | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - type | TEXT | notnull=0 | default='store' | pk=0
+  - address | TEXT | notnull=0 | default=NULL | pk=0
+  - city | TEXT | notnull=0 | default=NULL | pk=0
+  - district | TEXT | notnull=0 | default=NULL | pk=0
+  - postal_code | TEXT | notnull=0 | default=NULL | pk=0
+  - country | TEXT | notnull=0 | default='TR' | pk=0
+  - phone | TEXT | notnull=0 | default=NULL | pk=0
+  - email | TEXT | notnull=0 | default=NULL | pk=0
+  - latitude | REAL | notnull=0 | default=NULL | pk=0
+  - longitude | REAL | notnull=0 | default=NULL | pk=0
+  - manager_user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - timezone | TEXT | notnull=0 | default='Europe/Istanbul' | pk=0
+  - currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - is_virtual | INTEGER | notnull=0 | default=0 | pk=0
+  - settings | TEXT | notnull=0 | default=NULL | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - manager_user_id -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - parent_id -> branches.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_branches_company_type_parent | unique=0 | cols=(company_id, type, parent_id)
+  - idx_branches_active | unique=0 | cols=(company_id, is_active)
+  - idx_branches_external_code | unique=0 | cols=(company_id, external_code)
+  - idx_branches_type | unique=0 | cols=(type)
+  - idx_branches_parent | unique=0 | cols=(parent_id)
+  - idx_branches_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_branches_2 | unique=1 | cols=(company_id, code)
+  - sqlite_autoindex_branches_1 | unique=1 | cols=(id)
+
+### bundle_branch_overrides
+- Modul: catalog
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - bundle_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - final_price | REAL | notnull=0 | default=NULL | pk=0
+  - previous_final_price | REAL | notnull=0 | default=NULL | pk=0
+  - discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - total_price | REAL | notnull=0 | default=NULL | pk=0
+  - price_override | INTEGER | notnull=0 | default=0 | pk=0
+  - price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - previous_price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - price_valid_from | TEXT | notnull=0 | default=NULL | pk=0
+  - price_valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - is_available | INTEGER | notnull=0 | default=1 | pk=0
+  - availability_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - source | TEXT | notnull=0 | default='manual' | pk=0
+  - source_reference | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_by | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_at | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - deleted_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - updated_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - bundle_id -> bundles.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bbo_active | unique=0 | cols=(bundle_id, branch_id, deleted_at)
+  - idx_bbo_deleted | unique=0 | cols=(deleted_at)
+  - idx_bbo_available | unique=0 | cols=(branch_id, is_available)
+  - idx_bbo_source | unique=0 | cols=(source)
+  - idx_bbo_branch | unique=0 | cols=(branch_id)
+  - idx_bbo_bundle | unique=0 | cols=(bundle_id)
+  - sqlite_autoindex_bundle_branch_overrides_2 | unique=1 | cols=(bundle_id, branch_id)
+  - sqlite_autoindex_bundle_branch_overrides_1 | unique=1 | cols=(id)
+
+### bundle_branch_price_history
+- Modul: catalog
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - bundle_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - old_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_price | REAL | notnull=0 | default=NULL | pk=0
+  - old_total_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_total_price | REAL | notnull=0 | default=NULL | pk=0
+  - old_discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - new_discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - change_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - change_percent | REAL | notnull=0 | default=NULL | pk=0
+  - changed_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - changed_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - changed_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - bundle_id -> bundles.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bbph_bundle_date | unique=0 | cols=(bundle_id, changed_at)
+  - idx_bbph_branch_date | unique=0 | cols=(branch_id, changed_at)
+  - idx_bbph_bundle_branch | unique=0 | cols=(bundle_id, branch_id)
+  - sqlite_autoindex_bundle_branch_price_history_1 | unique=1 | cols=(id)
+
+### bundle_items
+- Modul: catalog
+- Satir: 3
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - bundle_id | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - quantity | INTEGER | notnull=0 | default=1 | pk=0
+  - unit_price | REAL | notnull=0 | default=0 | pk=0
+  - custom_price | REAL | notnull=0 | default=NULL | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - notes | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+  - bundle_id -> bundles.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bundle_items_unique | unique=1 | cols=(bundle_id, product_id)
+  - idx_bundle_items_product | unique=0 | cols=(product_id)
+  - idx_bundle_items_bundle | unique=0 | cols=(bundle_id)
+  - sqlite_autoindex_bundle_items_1 | unique=1 | cols=(id)
+
+### bundle_price_history
+- Modul: catalog
+- Satir: 1
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - bundle_id | TEXT | notnull=1 | default=NULL | pk=0
+  - old_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_price | REAL | notnull=1 | default=NULL | pk=0
+  - old_total_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_total_price | REAL | notnull=0 | default=NULL | pk=0
+  - old_discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - new_discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - changed_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - source | TEXT | notnull=0 | default='manual' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - bundle_id -> bundles.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bundle_price_history_date | unique=0 | cols=(changed_at)
+  - idx_bundle_price_history_bundle | unique=0 | cols=(bundle_id)
+  - sqlite_autoindex_bundle_price_history_1 | unique=1 | cols=(id)
+
+### bundles
+- Modul: catalog
+- Satir: 1
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - type | TEXT | notnull=1 | default='package' | pk=0
+  - image_url | TEXT | notnull=0 | default=NULL | pk=0
+  - images | TEXT | notnull=0 | default=NULL | pk=0
+  - videos | TEXT | notnull=0 | default=NULL | pk=0
+  - video_url | TEXT | notnull=0 | default=NULL | pk=0
+  - cover_image_index | INTEGER | notnull=0 | default=0 | pk=0
+  - barcode | TEXT | notnull=0 | default=NULL | pk=0
+  - sku | TEXT | notnull=0 | default=NULL | pk=0
+  - total_price | REAL | notnull=0 | default=0 | pk=0
+  - discount_percent | REAL | notnull=0 | default=0 | pk=0
+  - final_price | REAL | notnull=0 | default=0 | pk=0
+  - price_override | INTEGER | notnull=0 | default=0 | pk=0
+  - currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - price_valid_from | TEXT | notnull=0 | default=NULL | pk=0
+  - price_valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - valid_from | TEXT | notnull=0 | default=NULL | pk=0
+  - valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - item_count | INTEGER | notnull=0 | default=0 | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - tags | TEXT | notnull=0 | default=NULL | pk=0
+  - extra_data | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - previous_final_price | REAL | notnull=0 | default=NULL | pk=0
+  - price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - previous_price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_bundles_sku | unique=0 | cols=(company_id, sku)
+  - idx_bundles_slug | unique=0 | cols=(company_id, slug)
+  - idx_bundles_status | unique=0 | cols=(status)
+  - idx_bundles_type | unique=0 | cols=(type)
+  - idx_bundles_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_bundles_1 | unique=1 | cols=(id)
+
+### categories
+- Modul: catalog
+- Satir: 251
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - color | TEXT | notnull=0 | default="#228be6" | pk=0
+  - icon | TEXT | notnull=0 | default=NULL | pk=0
+  - image_url | TEXT | notnull=0 | default=NULL | pk=0
+  - product_count | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default="active" | pk=0
+  - is_demo | INTEGER | notnull=0 | default=0 | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_categories_is_demo | unique=0 | cols=(is_demo)
+  - sqlite_autoindex_categories_1 | unique=1 | cols=(id)
+
+### companies
+- Modul: core
+- Satir: 2
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=1 | default=NULL | pk=0
+  - domain | TEXT | notnull=0 | default=NULL | pk=0
+  - subdomain | TEXT | notnull=0 | default=NULL | pk=0
+  - logo | TEXT | notnull=0 | default=NULL | pk=0
+  - pwa_icon | TEXT | notnull=0 | default=NULL | pk=0
+  - favicon | TEXT | notnull=0 | default=NULL | pk=0
+  - primary_color | TEXT | notnull=0 | default='#228be6' | pk=0
+  - secondary_color | TEXT | notnull=0 | default='#495057' | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - settings | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - code | TEXT | notnull=0 | default=NULL | pk=0
+  - email | TEXT | notnull=0 | default=NULL | pk=0
+  - phone | TEXT | notnull=0 | default=NULL | pk=0
+  - address | TEXT | notnull=0 | default=NULL | pk=0
+  - storage_limit | INTEGER | notnull=0 | default=1073741824 | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_companies_storage_limit | unique=0 | cols=(storage_limit)
+  - idx_companies_code | unique=0 | cols=(code)
+  - idx_companies_domain | unique=0 | cols=(domain)
+  - idx_companies_status | unique=0 | cols=(status)
+  - idx_companies_slug | unique=0 | cols=(slug)
+  - sqlite_autoindex_companies_2 | unique=1 | cols=(slug)
+  - sqlite_autoindex_companies_1 | unique=1 | cols=(id)
+
+### company_storage_usage
+- Modul: media
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - media_bytes | INTEGER | notnull=0 | default=0 | pk=0
+  - templates_bytes | INTEGER | notnull=0 | default=0 | pk=0
+  - renders_bytes | INTEGER | notnull=0 | default=0 | pk=0
+  - total_bytes | INTEGER | notnull=0 | default=0 | pk=0
+  - last_calculated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_storage_total | unique=0 | cols=(total_bytes)
+  - idx_storage_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_company_storage_usage_2 | unique=1 | cols=(company_id)
+  - sqlite_autoindex_company_storage_usage_1 | unique=1 | cols=(id)
+
+### device_alerts
+- Modul: devices
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - alert_type | TEXT | notnull=1 | default=NULL | pk=0
+  - severity | TEXT | notnull=0 | default='medium' | pk=0
+  - title | TEXT | notnull=1 | default=NULL | pk=0
+  - message | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_alerts_device | unique=0 | cols=(device_id)
+  - sqlite_autoindex_device_alerts_1 | unique=1 | cols=(id)
+
+### device_commands
+- Modul: devices
+- Satir: 147
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - command | TEXT | notnull=1 | default=NULL | pk=0
+  - parameters | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - priority | INTEGER | notnull=0 | default=0 | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - executed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - result | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_commands_status | unique=0 | cols=(status)
+  - idx_device_commands_device | unique=0 | cols=(device_id)
+  - sqlite_autoindex_device_commands_1 | unique=1 | cols=(id)
+
+### device_content_assignments
+- Modul: devices
+- Satir: 22
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - content_type | TEXT | notnull=1 | default=NULL | pk=0
+  - content_id | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_dca_active | unique=0 | cols=(content_type, status, device_id)
+  - idx_dca_one_active_playlist_per_device | unique=1 | cols=(device_id)
+  - sqlite_autoindex_device_content_assignments_1 | unique=1 | cols=(id)
+
+### device_group_members
+- Modul: devices
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - group_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - created_at | DATETIME | notnull=0 | default=CURRENT_TIMESTAMP | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+  - group_id -> device_groups.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_group_members_device | unique=0 | cols=(device_id)
+  - idx_device_group_members_group | unique=0 | cols=(group_id)
+  - sqlite_autoindex_device_group_members_2 | unique=1 | cols=(group_id, device_id)
+  - sqlite_autoindex_device_group_members_1 | unique=1 | cols=(id)
+
+### device_groups
+- Modul: devices
+- Satir: 3
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - store_name | TEXT | notnull=0 | default=NULL | pk=0
+  - store_code | TEXT | notnull=0 | default=NULL | pk=0
+  - device_count | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - parent_id -> device_groups.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_groups_parent | unique=0 | cols=(parent_id)
+  - idx_device_groups_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_device_groups_1 | unique=1 | cols=(id)
+
+### device_heartbeats
+- Modul: devices
+- Satir: 1349
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default=NULL | pk=0
+  - current_item | TEXT | notnull=0 | default=NULL | pk=0
+  - battery_level | INTEGER | notnull=0 | default=NULL | pk=0
+  - signal_strength | INTEGER | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - memory_usage | INTEGER | notnull=0 | default=NULL | pk=0
+  - cpu_usage | INTEGER | notnull=0 | default=NULL | pk=0
+  - storage_free | INTEGER | notnull=0 | default=NULL | pk=0
+  - temperature | REAL | notnull=0 | default=NULL | pk=0
+  - uptime | INTEGER | notnull=0 | default=NULL | pk=0
+  - errors | TEXT | notnull=0 | default=NULL | pk=0
+  - metadata | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_heartbeats_device_status | unique=0 | cols=(device_id, status)
+  - idx_device_heartbeats_created | unique=0 | cols=(created_at)
+  - idx_device_heartbeats_device | unique=0 | cols=(device_id)
+  - sqlite_autoindex_device_heartbeats_1 | unique=1 | cols=(id)
+
+### device_logs
+- Modul: devices
+- Satir: 244
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - action | TEXT | notnull=1 | default=NULL | pk=0
+  - content_type | TEXT | notnull=0 | default=NULL | pk=0
+  - content_id | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=1 | default=NULL | pk=0
+  - request_data | TEXT | notnull=0 | default=NULL | pk=0
+  - response_data | TEXT | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - duration_ms | INTEGER | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_logs_created | unique=0 | cols=(created_at)
+  - idx_device_logs_status | unique=0 | cols=(status)
+  - idx_device_logs_device | unique=0 | cols=(device_id)
+  - sqlite_autoindex_device_logs_1 | unique=1 | cols=(id)
+
+### device_sync_requests
+- Modul: devices
+- Satir: 86
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - sync_code | TEXT | notnull=0 | default=NULL | pk=0
+  - serial_number | TEXT | notnull=0 | default=NULL | pk=0
+  - firmware | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_type | TEXT | notnull=0 | default=NULL | pk=0
+  - resolution | TEXT | notnull=0 | default=NULL | pk=0
+  - manufacturer | TEXT | notnull=0 | default=NULL | pk=0
+  - store_code | TEXT | notnull=0 | default=NULL | pk=0
+  - mac_address | TEXT | notnull=0 | default=NULL | pk=0
+  - fingerprint | TEXT | notnull=0 | default=NULL | pk=0
+  - os | TEXT | notnull=0 | default=NULL | pk=0
+  - browser | TEXT | notnull=0 | default=NULL | pk=0
+  - timezone | TEXT | notnull=0 | default=NULL | pk=0
+  - language | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_resolution | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - request_count | INTEGER | notnull=0 | default=1 | pk=0
+  - last_request_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+  - approved_by | TEXT | notnull=0 | default=NULL | pk=0
+  - approved_at | TEXT | notnull=0 | default=NULL | pk=0
+  - rejection_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - device_id | TEXT | notnull=0 | default=NULL | pk=0
+  - device_type | TEXT | notnull=0 | default=NULL | pk=0
+  - brand | TEXT | notnull=0 | default=NULL | pk=0
+  - model | TEXT | notnull=0 | default=NULL | pk=0
+  - os_version | TEXT | notnull=0 | default=NULL | pk=0
+  - browser_version | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_diagonal | REAL | notnull=0 | default=NULL | pk=0
+  - screen_width | INTEGER | notnull=0 | default=NULL | pk=0
+  - screen_height | INTEGER | notnull=0 | default=NULL | pk=0
+  - pixel_ratio | REAL | notnull=0 | default=NULL | pk=0
+  - color_depth | INTEGER | notnull=0 | default=NULL | pk=0
+  - cpu_cores | INTEGER | notnull=0 | default=NULL | pk=0
+  - device_memory | REAL | notnull=0 | default=NULL | pk=0
+  - touch_support | INTEGER | notnull=0 | default=0 | pk=0
+  - connection_type | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_sync_requests_brand | unique=0 | cols=(brand)
+  - idx_sync_requests_device_type | unique=0 | cols=(device_type)
+  - idx_sync_requests_status | unique=0 | cols=(status)
+  - idx_sync_requests_sync_code | unique=0 | cols=(sync_code)
+  - sqlite_autoindex_device_sync_requests_2 | unique=1 | cols=(sync_code)
+  - sqlite_autoindex_device_sync_requests_1 | unique=1 | cols=(id)
+
+### device_tokens
+- Modul: devices
+- Satir: 4
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - token | TEXT | notnull=1 | default=NULL | pk=0
+  - token_type | TEXT | notnull=0 | default='device' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+  - last_used_at | TEXT | notnull=0 | default=NULL | pk=0
+  - is_revoked | INTEGER | notnull=0 | default=0 | pk=0
+  - revoked_at | TEXT | notnull=0 | default=NULL | pk=0
+  - revoked_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - token_hash | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_device_tokens_hash | unique=0 | cols=(token_hash)
+  - idx_device_tokens_token | unique=0 | cols=(token)
+  - idx_device_tokens_device | unique=0 | cols=(device_id)
+  - sqlite_autoindex_device_tokens_2 | unique=1 | cols=(token)
+  - sqlite_autoindex_device_tokens_1 | unique=1 | cols=(id)
+
+### devices
+- Modul: devices
+- Satir: 15
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - group_id | TEXT | notnull=0 | default=NULL | pk=0
+  - store_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - type | TEXT | notnull=1 | default=NULL | pk=0
+  - mac_address | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - device_id | TEXT | notnull=0 | default=NULL | pk=0
+  - model | TEXT | notnull=0 | default=NULL | pk=0
+  - manufacturer | TEXT | notnull=0 | default=NULL | pk=0
+  - firmware_version | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_width | INTEGER | notnull=0 | default=NULL | pk=0
+  - screen_height | INTEGER | notnull=0 | default=NULL | pk=0
+  - orientation | TEXT | notnull=0 | default='landscape' | pk=0
+  - current_template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - current_content | TEXT | notnull=0 | default=NULL | pk=0
+  - last_sync | TEXT | notnull=0 | default=NULL | pk=0
+  - last_online | TEXT | notnull=0 | default=NULL | pk=0
+  - last_seen | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='offline' | pk=0
+  - battery_level | INTEGER | notnull=0 | default=NULL | pk=0
+  - signal_strength | INTEGER | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - metadata | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - device_token | TEXT | notnull=0 | default=NULL | pk=0
+  - token_expires_at | TEXT | notnull=0 | default=NULL | pk=0
+  - sync_code | TEXT | notnull=0 | default=NULL | pk=0
+  - sync_code_expires_at | TEXT | notnull=0 | default=NULL | pk=0
+  - fingerprint | TEXT | notnull=0 | default=NULL | pk=0
+  - os_info | TEXT | notnull=0 | default=NULL | pk=0
+  - browser_info | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_resolution | TEXT | notnull=0 | default=NULL | pk=0
+  - timezone | TEXT | notnull=0 | default=NULL | pk=0
+  - language | TEXT | notnull=0 | default=NULL | pk=0
+  - last_heartbeat | TEXT | notnull=0 | default=NULL | pk=0
+  - approval_status | TEXT | notnull=0 | default='approved' | pk=0
+  - approved_by | TEXT | notnull=0 | default=NULL | pk=0
+  - approved_at | TEXT | notnull=0 | default=NULL | pk=0
+  - location | TEXT | notnull=0 | default=NULL | pk=0
+  - device_type_detail | TEXT | notnull=0 | default=NULL | pk=0
+  - brand | TEXT | notnull=0 | default=NULL | pk=0
+  - model_name | TEXT | notnull=0 | default=NULL | pk=0
+  - os_version | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_diagonal | REAL | notnull=0 | default=NULL | pk=0
+  - cpu_cores | INTEGER | notnull=0 | default=NULL | pk=0
+  - device_memory | REAL | notnull=0 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=0 | default=NULL | pk=0
+  - playlist_cache | TEXT | notnull=0 | default=NULL | pk=0
+  - current_playlist_id | TEXT | notnull=0 | default=NULL | pk=0
+  - current_playlist_index | INTEGER | notnull=0 | default=NULL | pk=0
+  - playlist_total_items | INTEGER | notnull=0 | default=NULL | pk=0
+  - communication_mode | TEXT | notnull=0 | default='http-server' | pk=0
+  - mqtt_client_id | TEXT | notnull=0 | default=NULL | pk=0
+  - mqtt_topic | TEXT | notnull=0 | default=NULL | pk=0
+  - stream_mode | INTEGER | notnull=0 | default=0 | pk=0
+  - stream_token | TEXT | notnull=0 | default=NULL | pk=0
+  - device_profile | TEXT | notnull=0 | default=NULL | pk=0
+  - last_stream_request_at | TEXT | notnull=0 | default=NULL | pk=0
+  - adapter_id | TEXT | notnull=0 | default=NULL | pk=0
+  - capabilities | TEXT | notnull=0 | default=NULL | pk=0
+  - device_brand | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - current_template_id -> templates.id (on_update=NO ACTION, on_delete=SET NULL)
+  - group_id -> device_groups.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=SET NULL)
+- Indexler:
+  - idx_devices_brand | unique=0 | cols=(device_brand)
+  - idx_devices_adapter | unique=0 | cols=(adapter_id)
+  - idx_devices_stream_token | unique=1 | cols=(stream_token)
+  - idx_devices_company_type_status | unique=0 | cols=(company_id, type, status)
+  - idx_devices_branch_type_status | unique=0 | cols=(branch_id, type, status)
+  - idx_devices_mqtt_client | unique=0 | cols=(mqtt_client_id)
+  - idx_devices_comm_mode | unique=0 | cols=(communication_mode)
+  - idx_devices_current_playlist | unique=0 | cols=(current_playlist_id)
+  - idx_devices_company_branch | unique=0 | cols=(company_id, branch_id)
+  - idx_devices_branch | unique=0 | cols=(branch_id)
+  - idx_devices_approval_status | unique=0 | cols=(approval_status)
+  - idx_devices_fingerprint | unique=0 | cols=(fingerprint)
+  - idx_devices_device_token | unique=0 | cols=(device_token)
+  - idx_devices_sync_code | unique=0 | cols=(sync_code)
+  - idx_devices_status | unique=0 | cols=(status)
+  - idx_devices_type | unique=0 | cols=(type)
+  - idx_devices_group | unique=0 | cols=(group_id)
+  - idx_devices_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_devices_1 | unique=1 | cols=(id)
+
+### firmware_updates
+- Modul: devices
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - device_type | TEXT | notnull=1 | default="esl" | pk=0
+  - version | TEXT | notnull=1 | default=NULL | pk=0
+  - url | TEXT | notnull=1 | default=NULL | pk=0
+  - notes | TEXT | notnull=0 | default=NULL | pk=0
+  - min_version | TEXT | notnull=0 | default=NULL | pk=0
+  - max_version | TEXT | notnull=0 | default=NULL | pk=0
+  - file_size | INTEGER | notnull=0 | default=NULL | pk=0
+  - checksum | TEXT | notnull=0 | default=NULL | pk=0
+  - is_mandatory | INTEGER | notnull=0 | default=0 | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - released_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=CURRENT_TIMESTAMP | pk=0
+  - updated_at | TEXT | notnull=0 | default=CURRENT_TIMESTAMP | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_firmware_updates_released | unique=0 | cols=(released_at)
+  - idx_firmware_updates_active | unique=0 | cols=(is_active)
+  - idx_firmware_updates_version | unique=0 | cols=(version)
+  - idx_firmware_updates_device_type | unique=0 | cols=(device_type)
+  - sqlite_autoindex_firmware_updates_1 | unique=1 | cols=(id)
+
+### gateway_commands
+- Modul: devices
+- Satir: 2
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - gateway_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=0 | default=NULL | pk=0
+  - command | TEXT | notnull=1 | default=NULL | pk=0
+  - parameters | TEXT | notnull=0 | default=NULL | pk=0
+  - priority | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - result | TEXT | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - sent_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=SET NULL)
+  - gateway_id -> gateways.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_gateway_commands_pending | unique=0 | cols=(gateway_id, status)
+  - idx_gateway_commands_status | unique=0 | cols=(status)
+  - idx_gateway_commands_gateway | unique=0 | cols=(gateway_id)
+  - sqlite_autoindex_gateway_commands_1 | unique=1 | cols=(id)
+
+### gateway_devices
+- Modul: devices
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - gateway_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - local_ip | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - last_seen | TEXT | notnull=0 | default=NULL | pk=0
+  - last_error | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+  - gateway_id -> gateways.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_gateway_devices_device | unique=0 | cols=(device_id)
+  - idx_gateway_devices_gateway | unique=0 | cols=(gateway_id)
+  - sqlite_autoindex_gateway_devices_2 | unique=1 | cols=(gateway_id, device_id)
+  - sqlite_autoindex_gateway_devices_1 | unique=1 | cols=(id)
+
+### gateways
+- Modul: devices
+- Satir: 1
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - api_key | TEXT | notnull=1 | default=NULL | pk=0
+  - api_secret | TEXT | notnull=1 | default=NULL | pk=0
+  - local_ip | TEXT | notnull=0 | default=NULL | pk=0
+  - public_ip | TEXT | notnull=0 | default=NULL | pk=0
+  - hostname | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='offline' | pk=0
+  - last_heartbeat | TEXT | notnull=0 | default=NULL | pk=0
+  - last_error | TEXT | notnull=0 | default=NULL | pk=0
+  - config | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_gateways_api_key | unique=0 | cols=(api_key)
+  - idx_gateways_status | unique=0 | cols=(status)
+  - idx_gateways_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_gateways_2 | unique=1 | cols=(api_key)
+  - sqlite_autoindex_gateways_1 | unique=1 | cols=(id)
+
+### hal_distribution_logs
+- Modul: integration
+- Satir: 6
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - kunye_no | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - belge_no | TEXT | notnull=0 | default=NULL | pk=0
+  - distribution_type | TEXT | notnull=0 | default='full' | pk=0
+  - assigned_miktar | REAL | notnull=0 | default=NULL | pk=0
+  - kalan_miktar | REAL | notnull=0 | default=NULL | pk=0
+  - sifat_id | INTEGER | notnull=0 | default=NULL | pk=0
+  - bildirim_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_adi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_cinsi | TEXT | notnull=0 | default=NULL | pk=0
+  - distributed_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_hal_dist_kunye | unique=0 | cols=(kunye_no)
+  - idx_hal_dist_product | unique=0 | cols=(product_id)
+  - idx_hal_dist_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_hal_distribution_logs_1 | unique=1 | cols=(id)
+
+### hanshow_aps
+- Modul: devices
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - ap_id | INTEGER | notnull=1 | default=NULL | pk=0
+  - mac_address | TEXT | notnull=1 | default=NULL | pk=0
+  - sequence | INTEGER | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=0 | default=NULL | pk=0
+  - location | TEXT | notnull=0 | default=NULL | pk=0
+  - allow_bind_v1esl | BOOLEAN | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='unknown' | pk=0
+  - last_seen_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_hanshow_aps_mac | unique=0 | cols=(mac_address)
+  - idx_hanshow_aps_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_hanshow_aps_3 | unique=1 | cols=(company_id, mac_address)
+  - sqlite_autoindex_hanshow_aps_2 | unique=1 | cols=(company_id, ap_id)
+  - sqlite_autoindex_hanshow_aps_1 | unique=1 | cols=(id)
+
+### hanshow_esls
+- Modul: devices
+- Satir: 1
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - esl_id | TEXT | notnull=1 | default=NULL | pk=0
+  - firmware_id | INTEGER | notnull=0 | default=NULL | pk=0
+  - model_name | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_width | INTEGER | notnull=0 | default=NULL | pk=0
+  - screen_height | INTEGER | notnull=0 | default=NULL | pk=0
+  - screen_color | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_type | TEXT | notnull=0 | default=NULL | pk=0
+  - max_pages | INTEGER | notnull=0 | default=1 | pk=0
+  - has_led | BOOLEAN | notnull=0 | default=0 | pk=0
+  - has_magnet | BOOLEAN | notnull=0 | default=0 | pk=0
+  - current_template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - current_product_id | TEXT | notnull=0 | default=NULL | pk=0
+  - last_sync_at | TEXT | notnull=0 | default=NULL | pk=0
+  - last_heartbeat_at | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='unknown' | pk=0
+  - battery_level | INTEGER | notnull=0 | default=NULL | pk=0
+  - ap_mac | TEXT | notnull=0 | default=NULL | pk=0
+  - sales_no | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - current_product_id -> products.id (on_update=NO ACTION, on_delete=SET NULL)
+  - current_template_id -> templates.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_hanshow_esls_product | unique=0 | cols=(current_product_id)
+  - idx_hanshow_esls_status | unique=0 | cols=(status)
+  - idx_hanshow_esls_esl_id | unique=0 | cols=(esl_id)
+  - idx_hanshow_esls_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_hanshow_esls_2 | unique=1 | cols=(esl_id)
+  - sqlite_autoindex_hanshow_esls_1 | unique=1 | cols=(id)
+
+### hanshow_firmwares
+- Modul: devices
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | INTEGER | notnull=0 | default=NULL | pk=1
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - magnet | BOOLEAN | notnull=0 | default=0 | pk=0
+  - led | BOOLEAN | notnull=0 | default=0 | pk=0
+  - mpd | BOOLEAN | notnull=0 | default=0 | pk=0
+  - generation | INTEGER | notnull=0 | default=NULL | pk=0
+  - heartbeat | BOOLEAN | notnull=0 | default=1 | pk=0
+  - direction | INTEGER | notnull=0 | default=0 | pk=0
+  - battery | TEXT | notnull=0 | default=NULL | pk=0
+  - freezer | BOOLEAN | notnull=0 | default=0 | pk=0
+  - dpi | INTEGER | notnull=0 | default=NULL | pk=0
+  - ic | TEXT | notnull=0 | default=NULL | pk=0
+  - display_mode | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_type | TEXT | notnull=0 | default=NULL | pk=0
+  - resolution_x | INTEGER | notnull=0 | default=NULL | pk=0
+  - resolution_y | INTEGER | notnull=0 | default=NULL | pk=0
+  - screen_color | TEXT | notnull=0 | default=NULL | pk=0
+  - screen_size | TEXT | notnull=0 | default=NULL | pk=0
+  - refresh_time | INTEGER | notnull=0 | default=NULL | pk=0
+  - flash_size | INTEGER | notnull=0 | default=NULL | pk=0
+  - max_package | INTEGER | notnull=0 | default=NULL | pk=0
+  - osd_version | INTEGER | notnull=0 | default=NULL | pk=0
+  - max_page_num | INTEGER | notnull=0 | default=NULL | pk=0
+  - esl_model | TEXT | notnull=0 | default=NULL | pk=0
+  - mix_mode | BOOLEAN | notnull=0 | default=0 | pk=0
+  - screen_model | TEXT | notnull=0 | default=NULL | pk=0
+  - cached_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - yok
+
+### hanshow_queue
+- Modul: devices
+- Satir: 11
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - esl_id | TEXT | notnull=1 | default=NULL | pk=0
+  - session_id | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=0 | default=NULL | pk=0
+  - template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - content_type | TEXT | notnull=0 | default=NULL | pk=0
+  - content_data | TEXT | notnull=0 | default=NULL | pk=0
+  - priority | INTEGER | notnull=0 | default=10 | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - attempts | INTEGER | notnull=0 | default=0 | pk=0
+  - max_attempts | INTEGER | notnull=0 | default=3 | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - callback_data | TEXT | notnull=0 | default=NULL | pk=0
+  - rf_power | INTEGER | notnull=0 | default=NULL | pk=0
+  - retry_count | INTEGER | notnull=0 | default=NULL | pk=0
+  - ap_id | INTEGER | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - processed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - template_id -> templates.id (on_update=NO ACTION, on_delete=SET NULL)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_hanshow_queue_created | unique=0 | cols=(created_at)
+  - idx_hanshow_queue_session | unique=0 | cols=(session_id)
+  - idx_hanshow_queue_esl | unique=0 | cols=(esl_id)
+  - idx_hanshow_queue_status | unique=0 | cols=(status)
+  - idx_hanshow_queue_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_hanshow_queue_2 | unique=1 | cols=(session_id)
+  - sqlite_autoindex_hanshow_queue_1 | unique=1 | cols=(id)
+
+### hanshow_settings
+- Modul: devices
+- Satir: 1
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - eslworking_url | TEXT | notnull=0 | default='http://127.0.0.1:9000' | pk=0
+  - user_id | TEXT | notnull=0 | default='default' | pk=0
+  - callback_url | TEXT | notnull=0 | default=NULL | pk=0
+  - default_priority | INTEGER | notnull=0 | default=10 | pk=0
+  - sync_interval | INTEGER | notnull=0 | default=60 | pk=0
+  - auto_retry | BOOLEAN | notnull=0 | default=1 | pk=0
+  - max_retry_attempts | INTEGER | notnull=0 | default=3 | pk=0
+  - led_flash_on_update | BOOLEAN | notnull=0 | default=1 | pk=0
+  - led_color | TEXT | notnull=0 | default='green' | pk=0
+  - enabled | BOOLEAN | notnull=0 | default=1 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - scope | TEXT | notnull=0 | default='company' | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_hanshow_settings_company_scope | unique=0 | cols=(company_id, scope)
+  - idx_hanshow_settings_scope | unique=0 | cols=(scope)
+  - sqlite_autoindex_hanshow_settings_2 | unique=1 | cols=(company_id)
+  - sqlite_autoindex_hanshow_settings_1 | unique=1 | cols=(id)
+
+### import_mappings
+- Modul: integration
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - format | TEXT | notnull=0 | default='auto' | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - config | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_import_mappings_1 | unique=1 | cols=(id)
+
+### integration_settings
+- Modul: integration
+- Satir: 5
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - integration_type | TEXT | notnull=1 | default=NULL | pk=0
+  - scope | TEXT | notnull=1 | default='company' | pk=0
+  - config_json | TEXT | notnull=0 | default=NULL | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_integration_settings_active | unique=0 | cols=(is_active)
+  - idx_integration_settings_lookup | unique=0 | cols=(integration_type, scope, company_id)
+  - idx_integration_settings_scope | unique=0 | cols=(scope)
+  - idx_integration_settings_type | unique=0 | cols=(integration_type)
+  - idx_integration_settings_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_integration_settings_2 | unique=1 | cols=(integration_type, scope, company_id)
+  - sqlite_autoindex_integration_settings_1 | unique=1 | cols=(id)
+
+### integration_settings_audit
+- Modul: integration
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - integration_settings_id | TEXT | notnull=1 | default=NULL | pk=0
+  - integration_type | TEXT | notnull=1 | default=NULL | pk=0
+  - scope | TEXT | notnull=1 | default=NULL | pk=0
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - action | TEXT | notnull=1 | default=NULL | pk=0
+  - old_config | TEXT | notnull=0 | default=NULL | pk=0
+  - new_config | TEXT | notnull=0 | default=NULL | pk=0
+  - old_is_active | INTEGER | notnull=0 | default=NULL | pk=0
+  - new_is_active | INTEGER | notnull=0 | default=NULL | pk=0
+  - changed_fields | TEXT | notnull=0 | default=NULL | pk=0
+  - change_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - changed_by | TEXT | notnull=1 | default=NULL | pk=0
+  - changed_by_name | TEXT | notnull=0 | default=NULL | pk=0
+  - changed_by_role | TEXT | notnull=0 | default=NULL | pk=0
+  - changed_at | TEXT | notnull=1 | default=datetime('now') | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - integration_settings_id -> integration_settings.id (on_update=NO ACTION, on_delete=SET NULL)
+- Indexler:
+  - idx_audit_action | unique=0 | cols=(action)
+  - idx_audit_changed_at | unique=0 | cols=(changed_at)
+  - idx_audit_changed_by | unique=0 | cols=(changed_by)
+  - idx_audit_company_id | unique=0 | cols=(company_id)
+  - idx_audit_integration_type | unique=0 | cols=(integration_type)
+  - idx_audit_settings_id | unique=0 | cols=(integration_settings_id)
+  - sqlite_autoindex_integration_settings_audit_1 | unique=1 | cols=(id)
+
+### integrations
+- Modul: integration
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - type | TEXT | notnull=1 | default=NULL | pk=0
+  - config | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='inactive' | pk=0
+  - last_sync | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - sqlite_autoindex_integrations_1 | unique=1 | cols=(id)
+
+### label_sizes
+- Modul: labels
+- Satir: 61
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - width | REAL | notnull=1 | default=NULL | pk=0
+  - height | REAL | notnull=1 | default=NULL | pk=0
+  - unit | TEXT | notnull=0 | default='mm' | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=NO ACTION)
+- Indexler:
+  - idx_label_sizes_sort | unique=0 | cols=(sort_order)
+  - idx_label_sizes_active | unique=0 | cols=(is_active)
+  - idx_label_sizes_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_label_sizes_1 | unique=1 | cols=(id)
+
+### layout_configs
+- Modul: core
+- Satir: 4
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - scope | TEXT | notnull=1 | default='default' | pk=0
+  - scope_id | TEXT | notnull=0 | default=NULL | pk=0
+  - config | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_layout_configs_1 | unique=1 | cols=(id)
+
+### license_device_pricing
+- Modul: license
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - license_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_category | TEXT | notnull=1 | default=NULL | pk=0
+  - device_count | INTEGER | notnull=0 | default=0 | pk=0
+  - unit_price | REAL | notnull=0 | default=0 | pk=0
+  - currency | TEXT | notnull=0 | default='USD' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - license_id -> licenses.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_ldp_category | unique=0 | cols=(device_category)
+  - idx_ldp_license | unique=0 | cols=(license_id)
+  - sqlite_autoindex_license_device_pricing_2 | unique=1 | cols=(license_id, device_category)
+  - sqlite_autoindex_license_device_pricing_1 | unique=1 | cols=(id)
+
+### license_plans
+- Modul: license
+- Satir: 4
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - plan_type | TEXT | notnull=1 | default='subscription' | pk=0
+  - duration_months | INTEGER | notnull=0 | default=12 | pk=0
+  - price | REAL | notnull=1 | default=NULL | pk=0
+  - currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - max_users | INTEGER | notnull=0 | default=5 | pk=0
+  - max_devices | INTEGER | notnull=0 | default=10 | pk=0
+  - max_products | INTEGER | notnull=0 | default=1000 | pk=0
+  - max_templates | INTEGER | notnull=0 | default=50 | pk=0
+  - features | TEXT | notnull=0 | default=NULL | pk=0
+  - is_popular | INTEGER | notnull=0 | default=0 | pk=0
+  - is_enterprise | INTEGER | notnull=0 | default=0 | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - max_branches | INTEGER | notnull=0 | default=-1 | pk=0
+  - max_storage | INTEGER | notnull=0 | default=-1 | pk=0
+  - is_unlimited | INTEGER | notnull=0 | default=0 | pk=0
+  - device_categories | TEXT | notnull=0 | default=NULL | pk=0
+  - default_device_pricing | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_license_plans_is_active | unique=0 | cols=(is_active)
+  - idx_license_plans_plan_type | unique=0 | cols=(plan_type)
+  - idx_license_plans_is_unlimited | unique=0 | cols=(is_unlimited)
+  - idx_license_plans_type | unique=0 | cols=(plan_type)
+  - idx_license_plans_status | unique=0 | cols=(status)
+  - idx_license_plans_slug | unique=0 | cols=(slug)
+  - sqlite_autoindex_license_plans_2 | unique=1 | cols=(slug)
+  - sqlite_autoindex_license_plans_1 | unique=1 | cols=(id)
+
+### licenses
+- Modul: license
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - license_key | TEXT | notnull=1 | default=NULL | pk=0
+  - plan_id | TEXT | notnull=0 | default=NULL | pk=0
+  - valid_from | TEXT | notnull=1 | default=NULL | pk=0
+  - valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - auto_renew | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - features | TEXT | notnull=0 | default=NULL | pk=0
+  - external_id | TEXT | notnull=0 | default=NULL | pk=0
+  - last_validated | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - pricing_mode | TEXT | notnull=0 | default='flat' | pk=0
+  - exchange_rate | REAL | notnull=0 | default=1.0 | pk=0
+  - base_currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - total_monthly_price | REAL | notnull=0 | default=0 | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+  - plan_id -> license_plans.id (on_update=NO ACTION, on_delete=NO ACTION)
+- Indexler:
+  - idx_licenses_company_status | unique=0 | cols=(company_id, status)
+  - idx_licenses_plan_id | unique=0 | cols=(plan_id)
+  - idx_licenses_valid_until | unique=0 | cols=(valid_until)
+  - idx_licenses_status | unique=0 | cols=(status)
+  - idx_licenses_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_licenses_3 | unique=1 | cols=(license_key)
+  - sqlite_autoindex_licenses_2 | unique=1 | cols=(company_id)
+  - sqlite_autoindex_licenses_1 | unique=1 | cols=(id)
+
+### media
+- Modul: media
+- Satir: 1792
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - folder_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - original_name | TEXT | notnull=1 | default=NULL | pk=0
+  - file_path | TEXT | notnull=1 | default=NULL | pk=0
+  - file_type | TEXT | notnull=1 | default=NULL | pk=0
+  - mime_type | TEXT | notnull=1 | default=NULL | pk=0
+  - file_size | INTEGER | notnull=1 | default=NULL | pk=0
+  - width | INTEGER | notnull=0 | default=NULL | pk=0
+  - height | INTEGER | notnull=0 | default=NULL | pk=0
+  - duration | INTEGER | notnull=0 | default=NULL | pk=0
+  - thumbnail | TEXT | notnull=0 | default=NULL | pk=0
+  - alt_text | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - tags | TEXT | notnull=0 | default=NULL | pk=0
+  - metadata | TEXT | notnull=0 | default=NULL | pk=0
+  - source | TEXT | notnull=0 | default='upload' | pk=0
+  - source_url | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - uploaded_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - is_public | INTEGER | notnull=0 | default=0 | pk=0
+  - scope | TEXT | notnull=0 | default="company" | pk=0
+  - media_type | TEXT | notnull=0 | default='image' | pk=0
+- Foreign keys:
+  - uploaded_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - folder_id -> media_folders.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_media_company_type | unique=0 | cols=(company_id, media_type)
+  - idx_media_company_scope | unique=0 | cols=(company_id, scope)
+  - idx_media_is_public | unique=0 | cols=(is_public)
+  - idx_media_scope | unique=0 | cols=(scope)
+  - idx_media_status | unique=0 | cols=(status)
+  - idx_media_type | unique=0 | cols=(file_type)
+  - idx_media_folder | unique=0 | cols=(folder_id)
+  - idx_media_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_media_1 | unique=1 | cols=(id)
+
+### media_folders
+- Modul: media
+- Satir: 18
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - path | TEXT | notnull=1 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - parent_id -> media_folders.id (on_update=NO ACTION, on_delete=CASCADE)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_media_folders_parent | unique=0 | cols=(parent_id)
+  - idx_media_folders_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_media_folders_1 | unique=1 | cols=(id)
+
+### menu_items
+- Modul: core
+- Satir: 8
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - location | TEXT | notnull=0 | default='sidebar' | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - label | TEXT | notnull=0 | default=NULL | pk=0
+  - href | TEXT | notnull=0 | default=NULL | pk=0
+  - icon | TEXT | notnull=0 | default=NULL | pk=0
+  - order_index | INTEGER | notnull=0 | default=0 | pk=0
+  - roles | TEXT | notnull=0 | default='["SuperAdmin","Admin","Editor","Viewer"]' | pk=0
+  - visible | INTEGER | notnull=0 | default=1 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_menu_items_1 | unique=1 | cols=(id)
+
+### migrations
+- Modul: core
+- Satir: 105
+- company_id: yok
+- Kolonlar:
+  - id | INTEGER | notnull=0 | default=NULL | pk=1
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - executed_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_migrations_1 | unique=1 | cols=(name)
+
+### mqtt_settings
+- Modul: devices
+- Satir: 1
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - broker_url | TEXT | notnull=1 | default='' | pk=0
+  - broker_port | INTEGER | notnull=0 | default=1883 | pk=0
+  - use_tls | INTEGER | notnull=0 | default=0 | pk=0
+  - username | TEXT | notnull=0 | default='' | pk=0
+  - password | TEXT | notnull=0 | default='' | pk=0
+  - topic_prefix | TEXT | notnull=0 | default='omnex/esl' | pk=0
+  - provider | TEXT | notnull=0 | default='mosquitto' | pk=0
+  - app_id | TEXT | notnull=0 | default='' | pk=0
+  - app_secret | TEXT | notnull=0 | default='' | pk=0
+  - content_server_url | TEXT | notnull=0 | default='' | pk=0
+  - report_server_url | TEXT | notnull=0 | default='' | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - last_connected | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_mqtt_settings_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_mqtt_settings_1 | unique=1 | cols=(id)
+
+### notification_recipients
+- Modul: audit
+- Satir: 5
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - notification_id | TEXT | notnull=1 | default=NULL | pk=0
+  - user_id | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='sent' | pk=0
+  - read_at | TEXT | notnull=0 | default=NULL | pk=0
+  - archived_at | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - notification_id -> notifications.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_notification_recipients_status | unique=0 | cols=(status)
+  - idx_notification_recipients_user | unique=0 | cols=(user_id)
+  - sqlite_autoindex_notification_recipients_1 | unique=1 | cols=(id)
+
+### notification_settings
+- Modul: audit
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - sound | INTEGER | notnull=0 | default=1 | pk=0
+  - desktop | INTEGER | notnull=0 | default=0 | pk=0
+  - types | TEXT | notnull=0 | default=NULL | pk=0
+  - email_digest | TEXT | notnull=0 | default='none' | pk=0
+  - dnd_enabled | INTEGER | notnull=0 | default=0 | pk=0
+  - dnd_start | TEXT | notnull=0 | default=NULL | pk=0
+  - dnd_end | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_notification_settings_2 | unique=1 | cols=(user_id)
+  - sqlite_autoindex_notification_settings_1 | unique=1 | cols=(id)
+
+### notifications
+- Modul: audit
+- Satir: 55
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - title | TEXT | notnull=1 | default=NULL | pk=0
+  - message | TEXT | notnull=0 | default=NULL | pk=0
+  - type | TEXT | notnull=0 | default='info' | pk=0
+  - target_type | TEXT | notnull=0 | default='all' | pk=0
+  - target_id | TEXT | notnull=0 | default=NULL | pk=0
+  - action_url | TEXT | notnull=0 | default=NULL | pk=0
+  - priority | TEXT | notnull=0 | default='normal' | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - icon | TEXT | notnull=0 | default=NULL | pk=0
+  - link | TEXT | notnull=0 | default=NULL | pk=0
+  - channels | TEXT | notnull=0 | default='["web"]' | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_notifications_type | unique=0 | cols=(type)
+  - idx_notifications_expires | unique=0 | cols=(expires_at)
+  - sqlite_autoindex_notifications_1 | unique=1 | cols=(id)
+
+### payment_settings
+- Modul: license
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - provider | TEXT | notnull=1 | default='iyzico' | pk=0
+  - environment | TEXT | notnull=1 | default='sandbox' | pk=0
+  - api_key | TEXT | notnull=0 | default=NULL | pk=0
+  - secret_key | TEXT | notnull=0 | default=NULL | pk=0
+  - merchant_id | TEXT | notnull=0 | default=NULL | pk=0
+  - callback_url | TEXT | notnull=0 | default=NULL | pk=0
+  - success_url | TEXT | notnull=0 | default=NULL | pk=0
+  - failure_url | TEXT | notnull=0 | default=NULL | pk=0
+  - currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - installment_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - max_installments | INTEGER | notnull=0 | default=12 | pk=0
+  - commission_rate | REAL | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - is_active | INTEGER | notnull=0 | default=0 | pk=0
+  - is_test_mode | INTEGER | notnull=0 | default=1 | pk=0
+  - publishable_key | TEXT | notnull=0 | default=NULL | pk=0
+  - api_url | TEXT | notnull=0 | default=NULL | pk=0
+  - settings_json | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_payment_settings_provider | unique=0 | cols=(provider)
+  - idx_payment_settings_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_payment_settings_1 | unique=1 | cols=(id)
+
+### payment_transactions
+- Modul: license
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - license_id | TEXT | notnull=0 | default=NULL | pk=0
+  - transaction_type | TEXT | notnull=1 | default='license_purchase' | pk=0
+  - amount | REAL | notnull=1 | default=NULL | pk=0
+  - currency | TEXT | notnull=0 | default='TRY' | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - provider | TEXT | notnull=1 | default='iyzico' | pk=0
+  - provider_transaction_id | TEXT | notnull=0 | default=NULL | pk=0
+  - provider_payment_id | TEXT | notnull=0 | default=NULL | pk=0
+  - basket_id | TEXT | notnull=0 | default=NULL | pk=0
+  - conversation_id | TEXT | notnull=0 | default=NULL | pk=0
+  - card_type | TEXT | notnull=0 | default=NULL | pk=0
+  - card_association | TEXT | notnull=0 | default=NULL | pk=0
+  - card_family | TEXT | notnull=0 | default=NULL | pk=0
+  - card_last_four | TEXT | notnull=0 | default=NULL | pk=0
+  - installment | INTEGER | notnull=0 | default=1 | pk=0
+  - paid_price | REAL | notnull=0 | default=NULL | pk=0
+  - merchant_commission | REAL | notnull=0 | default=0 | pk=0
+  - iyzico_commission | REAL | notnull=0 | default=0 | pk=0
+  - buyer_email | TEXT | notnull=0 | default=NULL | pk=0
+  - buyer_name | TEXT | notnull=0 | default=NULL | pk=0
+  - buyer_phone | TEXT | notnull=0 | default=NULL | pk=0
+  - buyer_address | TEXT | notnull=0 | default=NULL | pk=0
+  - buyer_city | TEXT | notnull=0 | default=NULL | pk=0
+  - buyer_country | TEXT | notnull=0 | default='Turkey' | pk=0
+  - buyer_ip | TEXT | notnull=0 | default=NULL | pk=0
+  - billing_address | TEXT | notnull=0 | default=NULL | pk=0
+  - billing_city | TEXT | notnull=0 | default=NULL | pk=0
+  - billing_country | TEXT | notnull=0 | default='Turkey' | pk=0
+  - error_code | TEXT | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - error_group | TEXT | notnull=0 | default=NULL | pk=0
+  - raw_request | TEXT | notnull=0 | default=NULL | pk=0
+  - raw_response | TEXT | notnull=0 | default=NULL | pk=0
+  - callback_data | TEXT | notnull=0 | default=NULL | pk=0
+  - metadata | TEXT | notnull=0 | default=NULL | pk=0
+  - paid_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - reference_no | TEXT | notnull=0 | default=NULL | pk=0
+  - plan_id | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - license_id -> licenses.id (on_update=NO ACTION, on_delete=SET NULL)
+  - user_id -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_payment_transactions_plan_id | unique=0 | cols=(plan_id)
+  - idx_payment_transactions_reference | unique=0 | cols=(reference_no)
+  - idx_payment_transactions_company | unique=0 | cols=(company_id)
+  - idx_payment_transactions_status | unique=0 | cols=(status)
+  - idx_payment_transactions_license | unique=0 | cols=(license_id)
+  - idx_payment_trans_created | unique=0 | cols=(created_at)
+  - idx_payment_trans_basket | unique=0 | cols=(basket_id)
+  - idx_payment_trans_provider_id | unique=0 | cols=(provider_transaction_id)
+  - idx_payment_trans_status | unique=0 | cols=(status)
+  - idx_payment_trans_license | unique=0 | cols=(license_id)
+  - idx_payment_trans_user | unique=0 | cols=(user_id)
+  - idx_payment_trans_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_payment_transactions_1 | unique=1 | cols=(id)
+
+### permissions
+- Modul: core
+- Satir: 19
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - role | TEXT | notnull=1 | default=NULL | pk=0
+  - resource | TEXT | notnull=1 | default=NULL | pk=0
+  - actions | TEXT | notnull=1 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_permissions_role_resource | unique=1 | cols=(role, resource)
+  - sqlite_autoindex_permissions_1 | unique=1 | cols=(id)
+
+### playlist_items
+- Modul: signage
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - playlist_id | TEXT | notnull=1 | default=NULL | pk=0
+  - media_id | TEXT | notnull=0 | default=NULL | pk=0
+  - template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - duration | INTEGER | notnull=0 | default=10 | pk=0
+  - transition | TEXT | notnull=0 | default='fade' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - muted | INTEGER | notnull=0 | default=1 | pk=0
+- Foreign keys:
+  - playlist_id -> playlists.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - sqlite_autoindex_playlist_items_1 | unique=1 | cols=(id)
+
+### playlists
+- Modul: signage
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - duration | INTEGER | notnull=0 | default=0 | pk=0
+  - item_count | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - orientation | TEXT | notnull=0 | default='landscape' | pk=0
+  - template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - layout_type | TEXT | notnull=0 | default=NULL | pk=0
+  - items | TEXT | notnull=0 | default='[]' | pk=0
+  - default_duration | INTEGER | notnull=0 | default=10 | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - transition | TEXT | notnull=0 | default='none' | pk=0
+  - transition_duration | INTEGER | notnull=0 | default=500 | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_playlists_company | unique=0 | cols=(company_id)
+  - idx_playlists_orientation | unique=0 | cols=(orientation)
+  - idx_playlists_template | unique=0 | cols=(template_id)
+  - sqlite_autoindex_playlists_1 | unique=1 | cols=(id)
+
+### price_history
+- Modul: catalog
+- Satir: 209
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - old_price | REAL | notnull=0 | default=NULL | pk=0
+  - new_price | REAL | notnull=1 | default=NULL | pk=0
+  - changed_at | TEXT | notnull=1 | default=datetime('now') | pk=0
+  - source | TEXT | notnull=0 | default='manual' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_price_history_changed | unique=0 | cols=(changed_at)
+  - idx_price_history_product | unique=0 | cols=(product_id)
+  - sqlite_autoindex_price_history_1 | unique=1 | cols=(id)
+
+### product_branch_hal_overrides
+- Modul: integration
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - hal_data_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - kunye_no | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_sahibi | TEXT | notnull=0 | default=NULL | pk=0
+  - tuketim_yeri | TEXT | notnull=0 | default=NULL | pk=0
+  - tuketim_bildirim_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - alis_fiyati | REAL | notnull=0 | default=NULL | pk=0
+  - miktar | TEXT | notnull=0 | default=NULL | pk=0
+  - source | TEXT | notnull=0 | default='manual' | pk=0
+  - source_reference | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_by | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_at | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_by | TEXT | notnull=0 | default=NULL | pk=0
+  - uretim_sekli | TEXT | notnull=0 | default=NULL | pk=0
+  - uretim_sekli_source | TEXT | notnull=0 | default=NULL | pk=0
+  - kalan_miktar | TEXT | notnull=0 | default=NULL | pk=0
+  - birim | TEXT | notnull=0 | default=NULL | pk=0
+  - bildirim_turu | TEXT | notnull=0 | default=NULL | pk=0
+  - uretici_tc_vergi_no | TEXT | notnull=0 | default=NULL | pk=0
+  - belge_no | TEXT | notnull=0 | default=NULL | pk=0
+  - analiz_status | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - hal_data_id -> product_hal_data.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_branch_hal_overrides_active | unique=0 | cols=(hal_data_id, branch_id, deleted_at)
+  - idx_branch_hal_overrides_branch | unique=0 | cols=(branch_id)
+  - idx_branch_hal_overrides_hal_data | unique=0 | cols=(hal_data_id)
+  - sqlite_autoindex_product_branch_hal_overrides_2 | unique=1 | cols=(hal_data_id, branch_id)
+  - sqlite_autoindex_product_branch_hal_overrides_1 | unique=1 | cols=(id)
+
+### product_branch_overrides
+- Modul: catalog
+- Satir: 2
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - override_scope | TEXT | notnull=0 | default='price' | pk=0
+  - current_price | REAL | notnull=0 | default=NULL | pk=0
+  - previous_price | REAL | notnull=0 | default=NULL | pk=0
+  - price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - price_valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - discount_amount | REAL | notnull=0 | default=NULL | pk=0
+  - campaign_text | TEXT | notnull=0 | default=NULL | pk=0
+  - campaign_start | TEXT | notnull=0 | default=NULL | pk=0
+  - campaign_end | TEXT | notnull=0 | default=NULL | pk=0
+  - kunye_no | TEXT | notnull=0 | default=NULL | pk=0
+  - kunye_data | TEXT | notnull=0 | default=NULL | pk=0
+  - stock_quantity | INTEGER | notnull=0 | default=NULL | pk=0
+  - min_stock_level | INTEGER | notnull=0 | default=NULL | pk=0
+  - max_stock_level | INTEGER | notnull=0 | default=NULL | pk=0
+  - reorder_point | INTEGER | notnull=0 | default=NULL | pk=0
+  - shelf_location | TEXT | notnull=0 | default=NULL | pk=0
+  - aisle | TEXT | notnull=0 | default=NULL | pk=0
+  - shelf_number | TEXT | notnull=0 | default=NULL | pk=0
+  - is_available | INTEGER | notnull=0 | default=1 | pk=0
+  - availability_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - source | TEXT | notnull=0 | default='manual' | pk=0
+  - source_reference | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_by | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_at | TEXT | notnull=0 | default=NULL | pk=0
+  - deleted_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - deleted_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - updated_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_pbo_active | unique=0 | cols=(product_id, branch_id, deleted_at)
+  - idx_pbo_deleted | unique=0 | cols=(deleted_at)
+  - idx_pbo_campaign | unique=0 | cols=(branch_id, campaign_start, campaign_end)
+  - idx_pbo_available | unique=0 | cols=(branch_id, is_available)
+  - idx_pbo_source | unique=0 | cols=(source)
+  - idx_pbo_scope | unique=0 | cols=(override_scope)
+  - idx_pbo_branch | unique=0 | cols=(branch_id)
+  - idx_pbo_product | unique=0 | cols=(product_id)
+  - sqlite_autoindex_product_branch_overrides_2 | unique=1 | cols=(product_id, branch_id)
+  - sqlite_autoindex_product_branch_overrides_1 | unique=1 | cols=(id)
+
+### product_hal_data
+- Modul: integration
+- Satir: 128
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - kunye_no | TEXT | notnull=1 | default=NULL | pk=0
+  - uretici_adi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_adi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_cinsi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_turu | TEXT | notnull=0 | default=NULL | pk=0
+  - ilk_bildirim_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - uretim_yeri | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_sahibi | TEXT | notnull=0 | default=NULL | pk=0
+  - tuketim_bildirim_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - tuketim_yeri | TEXT | notnull=0 | default=NULL | pk=0
+  - gumruk_kapisi | TEXT | notnull=0 | default=NULL | pk=0
+  - uretim_ithal_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - miktar | TEXT | notnull=0 | default=NULL | pk=0
+  - alis_fiyati | REAL | notnull=0 | default=NULL | pk=0
+  - isletme_adi | TEXT | notnull=0 | default=NULL | pk=0
+  - diger_bilgiler | TEXT | notnull=0 | default=NULL | pk=0
+  - sertifikasyon_kurulusu | TEXT | notnull=0 | default=NULL | pk=0
+  - sertifika_no | TEXT | notnull=0 | default=NULL | pk=0
+  - gecmis_bildirimler | TEXT | notnull=0 | default=NULL | pk=0
+  - hal_sorgu_tarihi | TEXT | notnull=0 | default=NULL | pk=0
+  - hal_raw_data | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - uretim_sekli | TEXT | notnull=0 | default=NULL | pk=0
+  - uretim_sekli_source | TEXT | notnull=0 | default='user_selected' | pk=0
+  - kalan_miktar | TEXT | notnull=0 | default=NULL | pk=0
+  - birim | TEXT | notnull=0 | default=NULL | pk=0
+  - birim_id | TEXT | notnull=0 | default=NULL | pk=0
+  - bildirim_turu | TEXT | notnull=0 | default=NULL | pk=0
+  - uretici_tc_vergi_no | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_sahibi_tc_vergi_no | TEXT | notnull=0 | default=NULL | pk=0
+  - bildirimci_tc_vergi_no | TEXT | notnull=0 | default=NULL | pk=0
+  - arac_plaka_no | TEXT | notnull=0 | default=NULL | pk=0
+  - belge_no | TEXT | notnull=0 | default=NULL | pk=0
+  - belge_tipi | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_cins_kod_no | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_kod_no | TEXT | notnull=0 | default=NULL | pk=0
+  - malin_turu_kod_no | TEXT | notnull=0 | default=NULL | pk=0
+  - gidecek_isyeri_id | TEXT | notnull=0 | default=NULL | pk=0
+  - gidecek_yer_turu_id | TEXT | notnull=0 | default=NULL | pk=0
+  - analiz_status | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_product_hal_data_kunye | unique=0 | cols=(kunye_no)
+  - idx_product_hal_data_company | unique=0 | cols=(company_id)
+  - idx_product_hal_data_product | unique=0 | cols=(product_id)
+  - sqlite_autoindex_product_hal_data_2 | unique=1 | cols=(product_id)
+  - sqlite_autoindex_product_hal_data_1 | unique=1 | cols=(id)
+
+### product_renders
+- Modul: labels
+- Satir: 4
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - template_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_type | TEXT | notnull=0 | default='default' | pk=0
+  - locale | TEXT | notnull=0 | default='tr' | pk=0
+  - file_path | TEXT | notnull=1 | default=NULL | pk=0
+  - file_size | INTEGER | notnull=0 | default=0 | pk=0
+  - product_version | INTEGER | notnull=0 | default=1 | pk=0
+  - template_version | INTEGER | notnull=0 | default=1 | pk=0
+  - render_hash | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - template_id -> templates.id (on_update=NO ACTION, on_delete=SET NULL)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=CASCADE)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_renders_versions | unique=0 | cols=(product_id, product_version, template_version)
+  - idx_renders_unique | unique=1 | cols=(product_id, template_id, device_type, locale)
+  - idx_renders_template | unique=0 | cols=(template_id)
+  - idx_renders_company | unique=0 | cols=(company_id)
+  - idx_renders_product | unique=0 | cols=(product_id)
+  - sqlite_autoindex_product_renders_1 | unique=1 | cols=(id)
+
+### production_types
+- Modul: catalog
+- Satir: 7
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - color | TEXT | notnull=0 | default='#228be6' | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - is_demo | INTEGER | notnull=0 | default=0 | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_production_types_is_demo | unique=0 | cols=(is_demo)
+  - sqlite_autoindex_production_types_1 | unique=1 | cols=(id)
+
+### products
+- Modul: catalog
+- Satir: 318
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - sku | TEXT | notnull=1 | default=NULL | pk=0
+  - barcode | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - subcategory | TEXT | notnull=0 | default=NULL | pk=0
+  - brand | TEXT | notnull=0 | default=NULL | pk=0
+  - origin | TEXT | notnull=0 | default=NULL | pk=0
+  - unit | TEXT | notnull=0 | default='adet' | pk=0
+  - current_price | REAL | notnull=1 | default=0 | pk=0
+  - previous_price | REAL | notnull=0 | default=NULL | pk=0
+  - price_valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - vat_rate | REAL | notnull=0 | default=20 | pk=0
+  - discount_percent | REAL | notnull=0 | default=NULL | pk=0
+  - campaign_text | TEXT | notnull=0 | default=NULL | pk=0
+  - weight | REAL | notnull=0 | default=NULL | pk=0
+  - stock | INTEGER | notnull=0 | default=0 | pk=0
+  - image_url | TEXT | notnull=0 | default=NULL | pk=0
+  - kunye_no | TEXT | notnull=0 | default=NULL | pk=0
+  - kunye_data | TEXT | notnull=0 | default=NULL | pk=0
+  - shelf_location | TEXT | notnull=0 | default=NULL | pk=0
+  - supplier_code | TEXT | notnull=0 | default=NULL | pk=0
+  - default_image_id | TEXT | notnull=0 | default=NULL | pk=0
+  - default_video_id | TEXT | notnull=0 | default=NULL | pk=0
+  - erp_id | TEXT | notnull=0 | default=NULL | pk=0
+  - erp_data | TEXT | notnull=0 | default=NULL | pk=0
+  - extra_data | TEXT | notnull=0 | default=NULL | pk=0
+  - is_featured | INTEGER | notnull=0 | default=0 | pk=0
+  - valid_from | TEXT | notnull=0 | default=NULL | pk=0
+  - valid_until | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - images | TEXT | notnull=0 | default=NULL | pk=0
+  - videos | TEXT | notnull=0 | default=NULL | pk=0
+  - cover_image_index | INTEGER | notnull=0 | default=0 | pk=0
+  - video_url | TEXT | notnull=0 | default=NULL | pk=0
+  - assigned_device_id | TEXT | notnull=0 | default=NULL | pk=0
+  - assigned_template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - version | INTEGER | notnull=0 | default=1 | pk=0
+  - last_rendered_at | TEXT | notnull=0 | default=NULL | pk=0
+  - render_status | TEXT | notnull=0 | default='pending' | pk=0
+  - group | TEXT | notnull=0 | default=NULL | pk=0
+  - production_type | TEXT | notnull=0 | default=NULL | pk=0
+  - is_demo | INTEGER | notnull=0 | default=0 | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+  - price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - previous_price_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - storage_info | TEXT | notnull=0 | default=NULL | pk=0
+  - erp_image_url | TEXT | notnull=0 | default=NULL | pk=0
+  - erp_product_id | TEXT | notnull=0 | default=NULL | pk=0
+  - erp_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - vat_updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_products_vat_updated_at | unique=0 | cols=(vat_updated_at)
+  - idx_products_erp_product_id | unique=0 | cols=(erp_product_id)
+  - idx_products_is_demo | unique=0 | cols=(is_demo)
+  - idx_products_group | unique=0 | cols=(group)
+  - idx_products_assigned_template | unique=0 | cols=(assigned_template_id)
+  - idx_products_assigned_device | unique=0 | cols=(assigned_device_id)
+  - idx_products_company_sku | unique=1 | cols=(company_id, sku)
+  - idx_products_status | unique=0 | cols=(status)
+  - idx_products_category | unique=0 | cols=(category)
+  - idx_products_barcode | unique=0 | cols=(barcode)
+  - idx_products_sku | unique=0 | cols=(sku)
+  - idx_products_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_products_1 | unique=1 | cols=(id)
+
+### rate_limits
+- Modul: core
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - key_name | TEXT | notnull=1 | default=NULL | pk=1
+  - count | INTEGER | notnull=0 | default=1 | pk=0
+  - window_start | INTEGER | notnull=1 | default=NULL | pk=2
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_rate_limits_cleanup | unique=0 | cols=(window_start)
+  - sqlite_autoindex_rate_limits_1 | unique=1 | cols=(key_name, window_start)
+
+### render_cache
+- Modul: labels
+- Satir: 51
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - template_id | TEXT | notnull=1 | default=NULL | pk=0
+  - cache_key | TEXT | notnull=1 | default=NULL | pk=0
+  - product_version | INTEGER | notnull=0 | default=1 | pk=0
+  - template_version | INTEGER | notnull=0 | default=1 | pk=0
+  - image_path | TEXT | notnull=0 | default=NULL | pk=0
+  - image_md5 | TEXT | notnull=0 | default=NULL | pk=0
+  - image_size | INTEGER | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - rendered_at | TEXT | notnull=0 | default=NULL | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_render_cache_lookup | unique=0 | cols=(company_id, product_id, template_id)
+  - idx_render_cache_key | unique=0 | cols=(cache_key)
+  - idx_render_cache_status | unique=0 | cols=(status)
+  - idx_render_cache_template | unique=0 | cols=(template_id)
+  - idx_render_cache_product | unique=0 | cols=(product_id)
+  - idx_render_cache_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_render_cache_2 | unique=1 | cols=(company_id, product_id, template_id)
+  - sqlite_autoindex_render_cache_1 | unique=1 | cols=(id)
+
+### render_jobs
+- Modul: labels
+- Satir: 594
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - product_id | TEXT | notnull=1 | default=NULL | pk=0
+  - template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - job_type | TEXT | notnull=0 | default='product_update' | pk=0
+  - priority | TEXT | notnull=0 | default='normal' | pk=0
+  - source | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - retry_count | INTEGER | notnull=0 | default=0 | pk=0
+  - max_retries | INTEGER | notnull=0 | default=3 | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - batch_id | TEXT | notnull=0 | default=NULL | pk=0
+  - batch_total | INTEGER | notnull=0 | default=NULL | pk=0
+  - batch_index | INTEGER | notnull=0 | default=NULL | pk=0
+  - scheduled_at | TEXT | notnull=0 | default=NULL | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_render_jobs_batch | unique=0 | cols=(batch_id)
+  - idx_render_jobs_priority | unique=0 | cols=(priority, created_at)
+  - idx_render_jobs_status | unique=0 | cols=(status)
+  - idx_render_jobs_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_render_jobs_1 | unique=1 | cols=(id)
+
+### render_priority_weights
+- Modul: labels
+- Satir: 4
+- company_id: yok
+- Kolonlar:
+  - priority | TEXT | notnull=0 | default=NULL | pk=1
+  - weight | INTEGER | notnull=1 | default=NULL | pk=0
+  - max_concurrent | INTEGER | notnull=0 | default=10 | pk=0
+  - timeout_seconds | INTEGER | notnull=0 | default=300 | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_render_priority_weights_1 | unique=1 | cols=(priority)
+
+### render_queue
+- Modul: labels
+- Satir: 849
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - job_type | TEXT | notnull=1 | default='render_send' | pk=0
+  - priority | TEXT | notnull=1 | default='normal' | pk=0
+  - template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - product_id | TEXT | notnull=0 | default=NULL | pk=0
+  - device_ids | TEXT | notnull=0 | default=NULL | pk=0
+  - device_count | INTEGER | notnull=0 | default=0 | pk=0
+  - render_params | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=1 | default='pending' | pk=0
+  - progress | INTEGER | notnull=0 | default=0 | pk=0
+  - devices_total | INTEGER | notnull=0 | default=0 | pk=0
+  - devices_completed | INTEGER | notnull=0 | default=0 | pk=0
+  - devices_failed | INTEGER | notnull=0 | default=0 | pk=0
+  - devices_skipped | INTEGER | notnull=0 | default=0 | pk=0
+  - retry_count | INTEGER | notnull=0 | default=0 | pk=0
+  - max_retries | INTEGER | notnull=0 | default=3 | pk=0
+  - last_retry_at | TEXT | notnull=0 | default=NULL | pk=0
+  - next_retry_at | TEXT | notnull=0 | default=NULL | pk=0
+  - result | TEXT | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - failed_devices | TEXT | notnull=0 | default=NULL | pk=0
+  - scheduled_at | TEXT | notnull=0 | default=NULL | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - rendered_image_path | TEXT | notnull=0 | default=NULL | pk=0
+  - batch_id | TEXT | notnull=0 | default=NULL | pk=0
+  - product_name | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - product_id -> products.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - template_id -> templates.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=NO ACTION)
+- Indexler:
+  - idx_render_queue_batch_id | unique=0 | cols=(batch_id)
+  - idx_render_queue_rendered_image | unique=0 | cols=(rendered_image_path)
+  - idx_render_queue_worker | unique=0 | cols=(status, priority, scheduled_at, created_at)
+  - idx_render_queue_retry | unique=0 | cols=(next_retry_at, status)
+  - idx_render_queue_scheduled | unique=0 | cols=(scheduled_at, status)
+  - idx_render_queue_company | unique=0 | cols=(company_id, status)
+  - idx_render_queue_priority | unique=0 | cols=(priority, created_at)
+  - idx_render_queue_status | unique=0 | cols=(status)
+  - sqlite_autoindex_render_queue_1 | unique=1 | cols=(id)
+
+### render_queue_items
+- Modul: labels
+- Satir: 200
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - queue_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=1 | default='pending' | pk=0
+  - retry_count | INTEGER | notnull=0 | default=0 | pk=0
+  - last_error | TEXT | notnull=0 | default=NULL | pk=0
+  - skipped_reason | TEXT | notnull=0 | default=NULL | pk=0
+  - file_md5 | TEXT | notnull=0 | default=NULL | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - duration_ms | INTEGER | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - error_type | TEXT | notnull=0 | default=NULL | pk=0
+  - next_retry_at | TEXT | notnull=0 | default=NULL | pk=0
+  - rendered_image_path | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - queue_id -> render_queue.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_queue_items_device | unique=0 | cols=(device_id)
+  - idx_queue_items_queue | unique=0 | cols=(queue_id, status)
+  - sqlite_autoindex_render_queue_items_1 | unique=1 | cols=(id)
+
+### render_retry_policies
+- Modul: labels
+- Satir: 5
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - error_type | TEXT | notnull=1 | default=NULL | pk=0
+  - max_retries | INTEGER | notnull=0 | default=3 | pk=0
+  - base_delay_seconds | INTEGER | notnull=0 | default=5 | pk=0
+  - max_delay_seconds | INTEGER | notnull=0 | default=300 | pk=0
+  - backoff_multiplier | REAL | notnull=0 | default=2.0 | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - sqlite_autoindex_render_retry_policies_1 | unique=1 | cols=(id)
+
+### schedule_devices
+- Modul: signage
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - schedule_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+- Foreign keys:
+  - schedule_id -> schedules.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - sqlite_autoindex_schedule_devices_1 | unique=1 | cols=(id)
+
+### schedules
+- Modul: signage
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - playlist_id | TEXT | notnull=0 | default=NULL | pk=0
+  - start_date | TEXT | notnull=0 | default=NULL | pk=0
+  - end_date | TEXT | notnull=0 | default=NULL | pk=0
+  - start_time | TEXT | notnull=0 | default=NULL | pk=0
+  - end_time | TEXT | notnull=0 | default=NULL | pk=0
+  - days_of_week | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - priority | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_schedules_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_schedules_1 | unique=1 | cols=(id)
+
+### sessions
+- Modul: core
+- Satir: 119
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - user_id | TEXT | notnull=1 | default=NULL | pk=0
+  - token_hash | TEXT | notnull=1 | default=NULL | pk=0
+  - refresh_token_hash | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - last_activity | TEXT | notnull=0 | default=NULL | pk=0
+  - expires_at | TEXT | notnull=1 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - user_id -> users.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_sessions_expires | unique=0 | cols=(expires_at)
+  - idx_sessions_user | unique=0 | cols=(user_id)
+  - sqlite_autoindex_sessions_3 | unique=1 | cols=(refresh_token_hash)
+  - sqlite_autoindex_sessions_2 | unique=1 | cols=(token_hash)
+  - sqlite_autoindex_sessions_1 | unique=1 | cols=(id)
+
+### settings
+- Modul: core
+- Satir: 4
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - data | TEXT | notnull=1 | default="{}" | pk=0
+  - created_at | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_settings_user | unique=0 | cols=(user_id)
+  - idx_settings_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_settings_1 | unique=1 | cols=(id)
+
+### settings_backup
+- Modul: unmapped
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=0
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - user_id | TEXT | notnull=0 | default=NULL | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+  - value | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - data | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - yok
+
+### stream_access_logs
+- Modul: signage
+- Satir: 0
+- company_id: yok
+- Kolonlar:
+  - id | INTEGER | notnull=0 | default=NULL | pk=1
+  - device_id | TEXT | notnull=0 | default=NULL | pk=0
+  - stream_token | TEXT | notnull=0 | default=NULL | pk=0
+  - request_type | TEXT | notnull=0 | default=NULL | pk=0
+  - request_path | TEXT | notnull=0 | default=NULL | pk=0
+  - media_id | TEXT | notnull=0 | default=NULL | pk=0
+  - profile | TEXT | notnull=0 | default=NULL | pk=0
+  - ip_address | TEXT | notnull=0 | default=NULL | pk=0
+  - user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - response_status | INTEGER | notnull=0 | default=NULL | pk=0
+  - response_bytes | INTEGER | notnull=0 | default=NULL | pk=0
+  - latency_ms | INTEGER | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_stream_logs_created | unique=0 | cols=(created_at)
+  - idx_stream_logs_token | unique=0 | cols=(stream_token)
+  - idx_stream_logs_device | unique=0 | cols=(device_id)
+
+### tamsoft_depo_mapping
+- Modul: integration
+- Satir: 8
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - tamsoft_depo_id | INTEGER | notnull=1 | default=NULL | pk=0
+  - tamsoft_depo_kod | TEXT | notnull=0 | default=NULL | pk=0
+  - tamsoft_depo_adi | TEXT | notnull=0 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - is_default_region | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_tamsoft_depo_mapping_branch | unique=0 | cols=(branch_id)
+  - idx_tamsoft_depo_mapping_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_tamsoft_depo_mapping_2 | unique=1 | cols=(company_id, tamsoft_depo_id)
+  - sqlite_autoindex_tamsoft_depo_mapping_1 | unique=1 | cols=(id)
+
+### tamsoft_settings
+- Modul: integration
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - api_url | TEXT | notnull=0 | default='http://tamsoftintegration.camlica.com.tr' | pk=0
+  - username | TEXT | notnull=0 | default=NULL | pk=0
+  - password | TEXT | notnull=0 | default=NULL | pk=0
+  - default_depo_id | INTEGER | notnull=0 | default=1 | pk=0
+  - sync_interval | INTEGER | notnull=0 | default=30 | pk=0
+  - last_sync_date | TEXT | notnull=0 | default=NULL | pk=0
+  - auto_sync_enabled | INTEGER | notnull=0 | default=0 | pk=0
+  - only_stock_positive | INTEGER | notnull=0 | default=0 | pk=0
+  - only_ecommerce | INTEGER | notnull=0 | default=0 | pk=0
+  - single_barcode | INTEGER | notnull=0 | default=1 | pk=0
+  - enabled | INTEGER | notnull=0 | default=0 | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_tamsoft_settings_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_tamsoft_settings_2 | unique=1 | cols=(company_id)
+  - sqlite_autoindex_tamsoft_settings_1 | unique=1 | cols=(id)
+
+### tamsoft_sync_logs
+- Modul: integration
+- Satir: 8
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - sync_type | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=1 | default=NULL | pk=0
+  - total_items | INTEGER | notnull=0 | default=0 | pk=0
+  - inserted | INTEGER | notnull=0 | default=0 | pk=0
+  - updated | INTEGER | notnull=0 | default=0 | pk=0
+  - failed | INTEGER | notnull=0 | default=0 | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_tamsoft_sync_logs_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_tamsoft_sync_logs_1 | unique=1 | cols=(id)
+
+### tamsoft_tokens
+- Modul: integration
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - access_token | TEXT | notnull=1 | default=NULL | pk=0
+  - token_type | TEXT | notnull=0 | default='bearer' | pk=0
+  - expires_at | TEXT | notnull=1 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_tamsoft_tokens_expires | unique=0 | cols=(expires_at)
+  - idx_tamsoft_tokens_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_tamsoft_tokens_1 | unique=1 | cols=(id)
+
+### templates
+- Modul: labels
+- Satir: 21
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - type | TEXT | notnull=1 | default=NULL | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - width | INTEGER | notnull=1 | default=NULL | pk=0
+  - height | INTEGER | notnull=1 | default=NULL | pk=0
+  - orientation | TEXT | notnull=0 | default='landscape' | pk=0
+  - design_data | TEXT | notnull=1 | default=NULL | pk=0
+  - preview_image | TEXT | notnull=0 | default=NULL | pk=0
+  - version | INTEGER | notnull=0 | default=1 | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - is_public | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='active' | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - layout_type | TEXT | notnull=0 | default='full' | pk=0
+  - template_file | TEXT | notnull=0 | default=NULL | pk=0
+  - slots | TEXT | notnull=0 | default=NULL | pk=0
+  - device_types | TEXT | notnull=0 | default=NULL | pk=0
+  - target_device_type | TEXT | notnull=0 | default=NULL | pk=0
+  - grid_layout | TEXT | notnull=0 | default='single' | pk=0
+  - regions_config | TEXT | notnull=0 | default=NULL | pk=0
+  - background_type | TEXT | notnull=0 | default='color' | pk=0
+  - background_value | TEXT | notnull=0 | default='#FFFFFF' | pk=0
+  - render_image | TEXT | notnull=0 | default=NULL | pk=0
+  - scope | TEXT | notnull=0 | default="company" | pk=0
+  - is_forked | INTEGER | notnull=0 | default=0 | pk=0
+  - is_demo | INTEGER | notnull=0 | default=0 | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+  - grid_visible | INTEGER | notnull=0 | default=1 | pk=0
+  - responsive_mode | TEXT | notnull=0 | default='off' | pk=0
+  - scale_policy | TEXT | notnull=0 | default='contain' | pk=0
+  - design_width | INTEGER | notnull=0 | default=NULL | pk=0
+  - design_height | INTEGER | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - parent_id -> templates.id (on_update=NO ACTION, on_delete=SET NULL)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_templates_is_demo | unique=0 | cols=(is_demo)
+  - idx_templates_company_scope | unique=0 | cols=(company_id, scope)
+  - idx_templates_scope | unique=0 | cols=(scope)
+  - idx_templates_grid_layout | unique=0 | cols=(grid_layout)
+  - idx_templates_target_device | unique=0 | cols=(target_device_type)
+  - idx_templates_layout_type | unique=0 | cols=(layout_type)
+  - idx_templates_public | unique=0 | cols=(is_public)
+  - idx_templates_status | unique=0 | cols=(status)
+  - idx_templates_category | unique=0 | cols=(category)
+  - idx_templates_type | unique=0 | cols=(type)
+  - idx_templates_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_templates_1 | unique=1 | cols=(id)
+
+### templates_backup
+- Modul: labels
+- Satir: 10
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=0
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - type | TEXT | notnull=0 | default=NULL | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - width | INT | notnull=0 | default=NULL | pk=0
+  - height | INT | notnull=0 | default=NULL | pk=0
+  - orientation | TEXT | notnull=0 | default=NULL | pk=0
+  - design_data | TEXT | notnull=0 | default=NULL | pk=0
+  - preview_image | TEXT | notnull=0 | default=NULL | pk=0
+  - version | INT | notnull=0 | default=NULL | pk=0
+  - parent_id | TEXT | notnull=0 | default=NULL | pk=0
+  - is_default | INT | notnull=0 | default=NULL | pk=0
+  - is_public | INT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default=NULL | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_at | TEXT | notnull=0 | default=NULL | pk=0
+  - layout_type | TEXT | notnull=0 | default=NULL | pk=0
+  - template_file | TEXT | notnull=0 | default=NULL | pk=0
+  - slots | TEXT | notnull=0 | default=NULL | pk=0
+  - device_types | TEXT | notnull=0 | default=NULL | pk=0
+  - target_device_type | TEXT | notnull=0 | default=NULL | pk=0
+  - grid_layout | TEXT | notnull=0 | default=NULL | pk=0
+  - regions_config | TEXT | notnull=0 | default=NULL | pk=0
+  - background_type | TEXT | notnull=0 | default=NULL | pk=0
+  - background_value | TEXT | notnull=0 | default=NULL | pk=0
+  - render_image | TEXT | notnull=0 | default=NULL | pk=0
+  - scope | TEXT | notnull=0 | default=NULL | pk=0
+  - is_forked | INT | notnull=0 | default=NULL | pk=0
+  - is_demo | INT | notnull=0 | default=NULL | pk=0
+  - key | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - yok
+
+### transcode_queue
+- Modul: signage
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - media_id | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - priority | INTEGER | notnull=0 | default=0 | pk=0
+  - input_path | TEXT | notnull=1 | default=NULL | pk=0
+  - output_dir | TEXT | notnull=0 | default=NULL | pk=0
+  - profiles | TEXT | notnull=0 | default='["720p"]' | pk=0
+  - progress | INTEGER | notnull=0 | default=0 | pk=0
+  - duration_seconds | REAL | notnull=0 | default=NULL | pk=0
+  - file_size_bytes | INTEGER | notnull=0 | default=NULL | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - retry_count | INTEGER | notnull=0 | default=0 | pk=0
+  - max_retries | INTEGER | notnull=0 | default=3 | pk=0
+  - started_at | TEXT | notnull=0 | default=NULL | pk=0
+  - completed_at | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_transcode_queue_priority | unique=0 | cols=(priority, created_at)
+  - idx_transcode_queue_company | unique=0 | cols=(company_id)
+  - idx_transcode_queue_media | unique=0 | cols=(media_id)
+  - idx_transcode_queue_status | unique=0 | cols=(status)
+  - sqlite_autoindex_transcode_queue_1 | unique=1 | cols=(id)
+
+### transcode_variants
+- Modul: signage
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - media_id | TEXT | notnull=1 | default=NULL | pk=0
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - profile | TEXT | notnull=1 | default=NULL | pk=0
+  - resolution | TEXT | notnull=0 | default=NULL | pk=0
+  - bitrate | INTEGER | notnull=0 | default=NULL | pk=0
+  - codec | TEXT | notnull=0 | default='h264' | pk=0
+  - segment_duration | INTEGER | notnull=0 | default=6 | pk=0
+  - playlist_path | TEXT | notnull=0 | default=NULL | pk=0
+  - segment_count | INTEGER | notnull=0 | default=0 | pk=0
+  - total_size_bytes | INTEGER | notnull=0 | default=0 | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - error_message | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - yok
+- Indexler:
+  - idx_transcode_variants_status | unique=0 | cols=(status)
+  - idx_transcode_variants_company | unique=0 | cols=(company_id)
+  - idx_transcode_variants_media | unique=0 | cols=(media_id)
+  - sqlite_autoindex_transcode_variants_1 | unique=1 | cols=(id)
+
+### user_branch_access
+- Modul: branch
+- Satir: 2
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - user_id | TEXT | notnull=1 | default=NULL | pk=0
+  - branch_id | TEXT | notnull=1 | default=NULL | pk=0
+  - access_level | TEXT | notnull=0 | default='full' | pk=0
+  - is_default | INTEGER | notnull=0 | default=0 | pk=0
+  - permissions | TEXT | notnull=0 | default=NULL | pk=0
+  - granted_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - granted_by | TEXT | notnull=0 | default=NULL | pk=0
+  - expires_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - granted_by -> users.id (on_update=NO ACTION, on_delete=SET NULL)
+  - branch_id -> branches.id (on_update=NO ACTION, on_delete=CASCADE)
+  - user_id -> users.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_uba_default | unique=0 | cols=(user_id, is_default)
+  - idx_uba_branch | unique=0 | cols=(branch_id)
+  - idx_uba_user | unique=0 | cols=(user_id)
+  - sqlite_autoindex_user_branch_access_2 | unique=1 | cols=(user_id, branch_id)
+  - sqlite_autoindex_user_branch_access_1 | unique=1 | cols=(id)
+
+### user_notification_preferences
+- Modul: audit
+- Satir: 1
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - user_id | TEXT | notnull=1 | default=NULL | pk=0
+  - email_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - push_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - toast_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - web_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - sound_enabled | INTEGER | notnull=0 | default=1 | pk=0
+  - type_preferences | TEXT | notnull=0 | default='{}' | pk=0
+  - quiet_start | TEXT | notnull=0 | default=NULL | pk=0
+  - quiet_end | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=CURRENT_TIMESTAMP | pk=0
+  - updated_at | TEXT | notnull=0 | default=CURRENT_TIMESTAMP | pk=0
+- Foreign keys:
+  - user_id -> users.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_user_notif_prefs_user | unique=0 | cols=(user_id)
+  - sqlite_autoindex_user_notification_preferences_2 | unique=1 | cols=(user_id)
+  - sqlite_autoindex_user_notification_preferences_1 | unique=1 | cols=(id)
+
+### users
+- Modul: core
+- Satir: 3
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - email | TEXT | notnull=1 | default=NULL | pk=0
+  - password_hash | TEXT | notnull=1 | default=NULL | pk=0
+  - first_name | TEXT | notnull=1 | default=NULL | pk=0
+  - last_name | TEXT | notnull=1 | default=NULL | pk=0
+  - phone | TEXT | notnull=0 | default=NULL | pk=0
+  - avatar | TEXT | notnull=0 | default=NULL | pk=0
+  - role | TEXT | notnull=1 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='pending' | pk=0
+  - activation_token | TEXT | notnull=0 | default=NULL | pk=0
+  - activation_expires | TEXT | notnull=0 | default=NULL | pk=0
+  - password_reset_token | TEXT | notnull=0 | default=NULL | pk=0
+  - password_reset_expires | TEXT | notnull=0 | default=NULL | pk=0
+  - last_login | TEXT | notnull=0 | default=NULL | pk=0
+  - last_ip | TEXT | notnull=0 | default=NULL | pk=0
+  - last_user_agent | TEXT | notnull=0 | default=NULL | pk=0
+  - preferences | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - reset_token | TEXT | notnull=0 | default=NULL | pk=0
+  - reset_token_expires | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=SET NULL)
+- Indexler:
+  - idx_users_status | unique=0 | cols=(status)
+  - idx_users_role | unique=0 | cols=(role)
+  - idx_users_email | unique=0 | cols=(email)
+  - idx_users_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_users_2 | unique=1 | cols=(email)
+  - sqlite_autoindex_users_1 | unique=1 | cols=(id)
+
+### web_template_assignments
+- Modul: signage
+- Satir: 0
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - template_id | TEXT | notnull=1 | default=NULL | pk=0
+  - device_id | TEXT | notnull=1 | default=NULL | pk=0
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - priority | INTEGER | notnull=0 | default=0 | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - start_date | TEXT | notnull=0 | default=NULL | pk=0
+  - end_date | TEXT | notnull=0 | default=NULL | pk=0
+  - schedule_config | TEXT | notnull=0 | default=NULL | pk=0
+  - data_overrides | TEXT | notnull=0 | default=NULL | pk=0
+  - last_synced_at | TEXT | notnull=0 | default=NULL | pk=0
+  - sync_status | TEXT | notnull=0 | default='pending' | pk=0
+  - assigned_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - assigned_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - device_id -> devices.id (on_update=NO ACTION, on_delete=CASCADE)
+  - template_id -> web_templates.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_web_template_assignments_active | unique=0 | cols=(is_active, device_id)
+  - idx_web_template_assignments_company | unique=0 | cols=(company_id)
+  - idx_web_template_assignments_device | unique=0 | cols=(device_id)
+  - idx_web_template_assignments_template | unique=0 | cols=(template_id)
+  - sqlite_autoindex_web_template_assignments_2 | unique=1 | cols=(template_id, device_id)
+  - sqlite_autoindex_web_template_assignments_1 | unique=1 | cols=(id)
+
+### web_template_versions
+- Modul: signage
+- Satir: 1
+- company_id: yok
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - template_id | TEXT | notnull=1 | default=NULL | pk=0
+  - version_number | INTEGER | notnull=1 | default=NULL | pk=0
+  - version_name | TEXT | notnull=0 | default=NULL | pk=0
+  - change_notes | TEXT | notnull=0 | default=NULL | pk=0
+  - html_content | TEXT | notnull=0 | default=NULL | pk=0
+  - css_content | TEXT | notnull=0 | default=NULL | pk=0
+  - js_content | TEXT | notnull=0 | default=NULL | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - template_id -> web_templates.id (on_update=NO ACTION, on_delete=CASCADE)
+- Indexler:
+  - idx_web_template_versions_number | unique=0 | cols=(template_id, version_number)
+  - idx_web_template_versions_template | unique=0 | cols=(template_id)
+  - sqlite_autoindex_web_template_versions_1 | unique=1 | cols=(id)
+
+### web_template_widgets
+- Modul: signage
+- Satir: 6
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=0 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=1 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - category | TEXT | notnull=0 | default='custom' | pk=0
+  - icon | TEXT | notnull=0 | default=NULL | pk=0
+  - html_template | TEXT | notnull=1 | default=NULL | pk=0
+  - css_styles | TEXT | notnull=0 | default=NULL | pk=0
+  - js_code | TEXT | notnull=0 | default=NULL | pk=0
+  - properties | TEXT | notnull=0 | default=NULL | pk=0
+  - default_values | TEXT | notnull=0 | default=NULL | pk=0
+  - is_system | INTEGER | notnull=0 | default=0 | pk=0
+  - is_active | INTEGER | notnull=0 | default=1 | pk=0
+  - sort_order | INTEGER | notnull=0 | default=0 | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+- Foreign keys:
+  - created_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=NO ACTION)
+- Indexler:
+  - idx_web_template_widgets_category | unique=0 | cols=(category)
+  - idx_web_template_widgets_slug | unique=0 | cols=(slug)
+  - idx_web_template_widgets_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_web_template_widgets_2 | unique=1 | cols=(slug)
+  - sqlite_autoindex_web_template_widgets_1 | unique=1 | cols=(id)
+
+### web_templates
+- Modul: signage
+- Satir: 2
+- company_id: var
+- Kolonlar:
+  - id | TEXT | notnull=0 | default=NULL | pk=1
+  - company_id | TEXT | notnull=1 | default=NULL | pk=0
+  - name | TEXT | notnull=1 | default=NULL | pk=0
+  - slug | TEXT | notnull=0 | default=NULL | pk=0
+  - description | TEXT | notnull=0 | default=NULL | pk=0
+  - html_content | TEXT | notnull=0 | default=NULL | pk=0
+  - css_content | TEXT | notnull=0 | default=NULL | pk=0
+  - js_content | TEXT | notnull=0 | default=NULL | pk=0
+  - template_type | TEXT | notnull=0 | default='signage' | pk=0
+  - category | TEXT | notnull=0 | default=NULL | pk=0
+  - tags | TEXT | notnull=0 | default=NULL | pk=0
+  - thumbnail | TEXT | notnull=0 | default=NULL | pk=0
+  - width | INTEGER | notnull=0 | default=NULL | pk=0
+  - height | INTEGER | notnull=0 | default=NULL | pk=0
+  - orientation | TEXT | notnull=0 | default='landscape' | pk=0
+  - responsive_breakpoints | TEXT | notnull=0 | default=NULL | pk=0
+  - data_sources | TEXT | notnull=0 | default=NULL | pk=0
+  - dynamic_fields | TEXT | notnull=0 | default=NULL | pk=0
+  - status | TEXT | notnull=0 | default='draft' | pk=0
+  - version | INTEGER | notnull=0 | default=1 | pk=0
+  - published_at | TEXT | notnull=0 | default=NULL | pk=0
+  - scope | TEXT | notnull=0 | default='company' | pk=0
+  - is_forked | INTEGER | notnull=0 | default=0 | pk=0
+  - parent_template_id | TEXT | notnull=0 | default=NULL | pk=0
+  - created_by | TEXT | notnull=0 | default=NULL | pk=0
+  - updated_by | TEXT | notnull=0 | default=NULL | pk=0
+  - created_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - updated_at | TEXT | notnull=0 | default=datetime('now') | pk=0
+  - deleted_at | TEXT | notnull=0 | default=NULL | pk=0
+- Foreign keys:
+  - parent_template_id -> web_templates.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - updated_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - created_by -> users.id (on_update=NO ACTION, on_delete=NO ACTION)
+  - company_id -> companies.id (on_update=NO ACTION, on_delete=NO ACTION)
+- Indexler:
+  - idx_web_templates_created | unique=0 | cols=(created_at)
+  - idx_web_templates_slug | unique=0 | cols=(slug)
+  - idx_web_templates_scope | unique=0 | cols=(scope)
+  - idx_web_templates_type | unique=0 | cols=(template_type)
+  - idx_web_templates_status | unique=0 | cols=(status)
+  - idx_web_templates_company | unique=0 | cols=(company_id)
+  - sqlite_autoindex_web_templates_1 | unique=1 | cols=(id)
+

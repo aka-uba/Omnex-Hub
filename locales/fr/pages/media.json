@@ -1,0 +1,150 @@
+{
+    "title": "Bibliothèque multimédia",
+    "subtitle": {
+        "default": "Gérer les fichiers image et vidéo",
+        "directory": "Répertoire",
+        "notSelected": "Non sélectionné"
+    },
+    "breadcrumb": {
+        "panel": "Panneau",
+        "media": "Bibliothèque multimédia"
+    },
+    "toolbar": {
+        "upload": "Téléverser",
+        "browse": "Parcourir le répertoire",
+        "library": "Bibliothèque",
+        "browseMode": "Passer en mode explorateur de répertoire",
+        "search": "Rechercher des fichiers...",
+        "parentFolder": "Dossier parent",
+        "gridView": "Vue en grille",
+        "listView": "Vue en liste",
+        "scanSamples": "Scanner la bibliothèque publique"
+    },
+    "filter": {
+        "all": "Tous les fichiers",
+        "images": "Images",
+        "videos": "Vidéos",
+        "documents": "Documents"
+    },
+    "filters": {
+        "advancedFilters": "Filtres avancés",
+        "apply": "Appliquer",
+        "applied": "Filtres appliqués",
+        "searchPlaceholder": "Rechercher le nom de fichier...",
+        "sizeRange": "Taille du fichier",
+        "minSize": "Min (Ko)",
+        "maxSize": "Max (Ko)"
+    },
+    "type": {
+        "image": "Image",
+        "video": "Vidéo",
+        "document": "Document",
+        "folder": "Dossier"
+    },
+    "bulk": {
+        "selected": "fichiers sélectionnés",
+        "delete": "Supprimer",
+        "import": "Importer",
+        "clear": "Effacer la sélection"
+    },
+    "actions": {
+        "preview": "Aperçu",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "import": "Importer",
+        "download": "Télécharger"
+    },
+    "table": {
+        "name": "Nom du fichier",
+        "type": "Type",
+        "size": "Taille",
+        "date": "Date"
+    },
+    "upload": {
+        "uploading": "Téléversement..."
+    },
+    "settings": {
+        "title": "Paramètres de la bibliothèque",
+        "fields": {
+            "defaultPath": "Chemin du répertoire par défaut",
+            "maxFileSize": "Taille maximale du fichier (Mo)",
+            "allowedTypes": "Types de fichiers autorisés"
+        },
+        "hints": {
+            "defaultPath": "L'explorateur de répertoire commence à partir de ce chemin"
+        },
+        "scan": {
+            "title": "Scanner le répertoire",
+            "description": "Importer des fichiers dans la base de données",
+            "button": "Scanner"
+        },
+        "fileTypes": {
+            "images": "Images",
+            "videos": "Vidéos",
+            "documents": "Documents"
+        }
+    },
+    "preview": {
+        "title": "Aperçu du fichier",
+        "fields": {
+            "fileName": "Nom du fichier",
+            "size": "Taille",
+            "type": "Type",
+            "date": "Date",
+            "path": "Chemin du fichier"
+        },
+        "actions": {
+            "import": "Importer dans la bibliothèque",
+            "download": "Télécharger",
+            "delete": "Supprimer"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Supprimer le fichier",
+            "confirm": "Êtes-vous sûr de vouloir supprimer ce fichier ?"
+        },
+        "bulk": {
+            "title": "Supprimer les fichiers",
+            "confirm": "Êtes-vous sûr de vouloir supprimer {count} fichiers ?"
+        }
+    },
+    "empty": {
+        "title": "Aucun fichier trouvé",
+        "uploadHint": "Cliquez sur le bouton Téléverser pour téléverser des fichiers",
+        "browseHint": "Ouvrez un dossier pour voir le contenu du répertoire"
+    },
+    "modal": {
+        "close": "Fermer",
+        "cancel": "Annuler",
+        "delete": "Supprimer"
+    },
+    "toast": {
+        "uploaded": "Fichier téléversé",
+        "uploadFailed": "Échec du téléversement des fichiers",
+        "deleted": "Fichier supprimé",
+        "imported": "Fichier importé dans la bibliothèque",
+        "importFailed": "Échec de l'ajout du fichier",
+        "scanned": "Scan du répertoire terminé",
+        "samplesScanned": "{imported} fichiers importés, {skipped} fichiers existent déjà (total {total} fichiers trouvés)",
+        "copied": "Copié",
+        "settingsSaved": "Paramètres enregistrés",
+        "pathRequired": "Entrez le chemin du répertoire",
+        "bulkImported": "{count} fichiers importés"
+    },
+    "messages": {
+        "enterPath": "Veuillez entrer le chemin du répertoire",
+        "scanFailed": "Échec du scan du répertoire",
+        "importFailed": "Échec de l'importation",
+        "deleteFailed": "Échec de l'opération de suppression",
+        "loadFailed": "Échec du chargement des fichiers",
+        "setDirectoryPath": "Veuillez d'abord définir le chemin du répertoire dans les paramètres",
+        "uploadFailed": "échec du téléversement"
+    },
+    "pagination": {
+        "items": "éléments",
+        "page": "Page",
+        "previous": "Précédent",
+        "next": "Suivant"
+    }
+}

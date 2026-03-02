@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Yeni Sayfa</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Line Awesome Icons (for landing sections) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+
+    <!-- AOS (Animate on Scroll) -->
+    <link href="libs/aos/aos.css" rel="stylesheet">
+
+    <!-- Landing Page Styles (for sections and blocks) -->
+    <link href="demo/landing/css/style.css" rel="stylesheet">
+
+    <!-- VvvebJs Editor Helpers (visual feedback for drag/drop) -->
+    <link href="css/vvvebjs-editor-helpers.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --omnex-primary: #228be6;
+            --omnex-success: #40c057;
+            --omnex-warning: #fab005;
+            --omnex-danger: #fa5252;
+            --omnex-dark: #1a1a2e;
+            --omnex-gray: #868e96;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Omnex Widget Base Styles */
+        .omnex-widget {
+            padding: 1rem;
+        }
+
+        /* Product Card Widget */
+        .omnex-product-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .omnex-product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .omnex-product-card .product-image {
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .omnex-product-card .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .omnex-product-card .product-info {
+            padding: 1rem;
+        }
+
+        .omnex-product-card .product-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: #212529;
+        }
+
+        .omnex-product-card .product-description {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 0 0 0.75rem;
+        }
+
+        .omnex-product-card .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .omnex-product-card .current-price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--omnex-primary);
+        }
+
+        .omnex-product-card .old-price {
+            font-size: 0.9rem;
+            color: #adb5bd;
+            text-decoration: line-through;
+        }
+
+        /* Ticker Widget */
+        .omnex-ticker {
+            background: var(--omnex-dark);
+            color: #fff;
+            padding: 0.75rem 0;
+            overflow: hidden;
+        }
+
+        .omnex-ticker .ticker-content {
+            display: flex;
+            animation: ticker 20s linear infinite;
+            white-space: nowrap;
+        }
+
+        .omnex-ticker .ticker-item {
+            padding: 0 2rem;
+            font-size: 0.9rem;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Clock Widget */
+        .omnex-clock {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .omnex-clock .time {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--omnex-dark);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .omnex-clock .date {
+            font-size: 1rem;
+            color: var(--omnex-gray);
+        }
+
+        /* Price List Widget */
+        .omnex-price-list {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .omnex-price-list .price-list-header {
+            background: var(--omnex-primary);
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .omnex-price-list .price-list-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .omnex-price-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .omnex-price-list th,
+        .omnex-price-list td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .omnex-price-list th {
+            background: #f8f9fa;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+
+        .omnex-price-list .price-cell {
+            font-weight: 600;
+            color: var(--omnex-primary);
+        }
+
+        /* Countdown Widget */
+        .omnex-countdown {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--omnex-primary), #1c7ed6);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        .omnex-countdown .countdown-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .omnex-countdown .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .omnex-countdown .countdown-unit {
+            background: rgba(255,255,255,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            min-width: 70px;
+        }
+
+        .omnex-countdown .countdown-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .omnex-countdown .countdown-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        /* QR Code Widget */
+        .omnex-qrcode {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .omnex-qrcode canvas {
+            max-width: 100%;
+        }
+
+        .omnex-qrcode .qr-label {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--omnex-gray);
+        }
+
+        /* Placeholder styles for editor */
+        [data-component] {
+            min-height: 50px;
+        }
+
+        [data-component]:empty::before {
+            content: attr(data-placeholder);
+            color: #adb5bd;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Boş sayfa - içerik editörde eklenecek -->
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Buraya içerik ekleyin -->
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AOS (Animate on Scroll) -->
+<script src="libs/aos/aos.js"></script>
+<script>
+    // Initialize AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    }
+</script>
+
+<!-- Omnex Widget Runtime Scripts -->
+<script>
+// Clock Widget Runtime
+document.querySelectorAll('.omnex-clock').forEach(function(clock) {
+    function updateClock() {
+        const now = new Date();
+        const timeEl = clock.querySelector('.time');
+        const dateEl = clock.querySelector('.date');
+
+        if (timeEl) {
+            timeEl.textContent = now.toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        if (dateEl) {
+            dateEl.textContent = now.toLocaleDateString('tr-TR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+});
+
+// Countdown Widget Runtime
+document.querySelectorAll('.omnex-countdown').forEach(function(countdown) {
+    const targetDate = new Date(countdown.dataset.targetDate || Date.now() + 86400000);
+
+    function updateCountdown() {
+        const now = new Date();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+            countdown.querySelector('.countdown-timer').innerHTML = '<span>Süre doldu!</span>';
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const daysEl = countdown.querySelector('[data-unit="days"] .countdown-value');
+        const hoursEl = countdown.querySelector('[data-unit="hours"] .countdown-value');
+        const minutesEl = countdown.querySelector('[data-unit="minutes"] .countdown-value');
+        const secondsEl = countdown.querySelector('[data-unit="seconds"] .countdown-value');
+
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+        if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+});
+
+// Ticker pause on hover
+document.querySelectorAll('.omnex-ticker').forEach(function(ticker) {
+    const content = ticker.querySelector('.ticker-content');
+    if (content) {
+        ticker.addEventListener('mouseenter', function() {
+            content.style.animationPlayState = 'paused';
+        });
+        ticker.addEventListener('mouseleave', function() {
+            content.style.animationPlayState = 'running';
+        });
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+{
+    "title": "Kunye-Verteilungszentrum",
+    "subtitle": "Verteilen Sie Kunye aus HAL-Benachrichtigungen",
+    "breadcrumb": {
+        "panel": "Dashboard",
+        "products": "Produkte",
+        "distribution": "Kunye-Verteilung"
+    },
+    "steps": {
+        "query": "Benachrichtigungen abfragen",
+        "select": "Dokumentauswahl",
+        "assign": "Produktzuordnung",
+        "result": "Ergebnis"
+    },
+    "form": {
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "sifat": "Bezeichnung",
+        "onlyRemaining": "Nur Restmenge > 0",
+        "query": "Abfragen",
+        "querying": "Wird abgefragt..."
+    },
+    "belge": {
+        "title": "Dokument-Nr.",
+        "plaka": "Kennzeichen",
+        "items": "Artikel",
+        "selectAll": "Alle auswählen",
+        "totalMiktar": "Gesamtmenge",
+        "totalKalan": "Gesamtrest",
+        "noSelection": "Bitte wählen Sie mindestens ein Kunye"
+    },
+    "assign": {
+        "halProduct": "HAL-Produkt",
+        "systemProduct": "Systemprodukt",
+        "type": "Verteilungstyp",
+        "full": "Einzeln (Vollständig)",
+        "split": "Doppelt (Geteilt)",
+        "miktar": "Menge",
+        "kalan": "Rest",
+        "birim": "Einheit",
+        "search": "Produkt suchen...",
+        "autoMatch": "Automatisch zuordnen",
+        "distribute": "Verteilen",
+        "distributing": "Wird verteilt...",
+        "noMatch": "Keine Übereinstimmung gefunden",
+        "selectProduct": "Produkt auswählen",
+        "matched": "Zugeordnet",
+        "splitMiktar1": "Teil 1 Menge",
+        "splitMiktar2": "Teil 2 Menge",
+        "nextStep": "Zur Zuordnung",
+        "prevStep": "Zurück",
+        "belgeNo": "Dokument-Nr.",
+        "bildirimTarihi": "Benachrichtigungsdatum",
+        "searchHint": "Suche nach Name, SKU oder Barcode. Türkische Zeichenunempfindliche Suche wird unterstützt."
+    },
+    "result": {
+        "title": "Verteilungsergebnis",
+        "success": "{count} Kunye erfolgreich verteilt",
+        "skipped": "{count} Kunye übersprungen",
+        "error": "{count} Kunye mit Fehlern",
+        "viewProducts": "Produkte anzeigen",
+        "newDistribution": "Neue Verteilung"
+    },
+    "errors": {
+        "noCredentials": "HAL-Einstellungen nicht konfiguriert",
+        "noResults": "Keine Benachrichtigungen für die angegebenen Kriterien gefunden",
+        "fetchFailed": "Benachrichtigungsabfrage fehlgeschlagen",
+        "distributeFailed": "Fehler bei der Verteilung",
+        "noSelection": "Bitte wählen Sie mindestens ein Kunye",
+        "noProduct": "Bitte vervollständigen Sie alle Produktzuordnungen",
+        "dateRequired": "Start- und Enddatum erforderlich",
+        "dateRange": "Datumsbereich darf 31 Tage nicht überschreiten"
+    },
+    "sifat": [
+        "Auswählen",
+        "Industrieller",
+        "Exporteur",
+        "Importeur",
+        "Hersteller",
+        "Makler",
+        "Händler",
+        "Markt",
+        "Gemüsehändler",
+        "Lager/Sortierung",
+        "Erzeugerorganisation",
+        "Straßenhändler",
+        "Hotel",
+        "Restaurant",
+        "Wohnheim",
+        "Lebensmittelfabrik",
+        "Krankenhaus",
+        "Händler (Extern)"
+    ]
+}

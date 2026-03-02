@@ -1,0 +1,706 @@
+/**
+ * Omnex Display Hub - Export Manager
+ * Merkezi export sistemi - Excel, CSV, HTML, JSON, MD, TXT, Print destekli
+ *
+ * @version 1.0.0
+ */
+
+export class ExportManager {
+    constructor(options = {}) {
+        this.options = {
+            filename: options.filename || 'export',
+            title: options.title || (typeof window.__ === 'function' ? window.__('export.title') : 'Export'),
+            subtitle: options.subtitle || '',
+            logo: options.logo || null,
+            author: options.author || 'Omnex Display Hub',
+            dateFormat: options.dateFormat || 'tr-TR',
+            ...options
+        };
+    }
+
+    /**
+     * Export türlerini döndür
+     */
+    static getExportTypes() {
+        return [
+            { id: 'excel', label: 'Excel (.xlsx)', icon: 'ti-file-spreadsheet', color: '#217346' },
+            { id: 'csv', label: 'CSV', icon: 'ti-file-text', color: '#4CAF50' },
+            { id: 'html', label: 'HTML', icon: 'ti-file-code', color: '#E44D26' },
+            { id: 'json', label: 'JSON', icon: 'ti-braces', color: '#F7DF1E' },
+            { id: 'md', label: 'Markdown', icon: 'ti-markdown', color: '#083FA1' },
+            { id: 'txt', label: 'Text (.txt)', icon: 'ti-file', color: '#6c757d' },
+            { id: 'print', label: (typeof window.__ === 'function' ? window.__('export.print') : 'Print'), icon: 'ti-printer', color: '#6366f1' }
+        ];
+    }
+
+    /**
+     * Ana export metodu
+     * @param {string} type - Export türü (excel, csv, html, json, md, txt, print)
+     * @param {Array} data - Export edilecek veri
+     * @param {Array} columns - Kolon tanımları [{key, label, render?}]
+     */
+    async export(type, data, columns) {
+        switch (type) {
+            case 'excel':
+                return this.exportExcel(data, columns);
+            case 'csv':
+                return this.exportCSV(data, columns);
+            case 'html':
+                return this.exportHTML(data, columns);
+            case 'json':
+                return this.exportJSON(data, columns);
+            case 'md':
+                return this.exportMarkdown(data, columns);
+            case 'txt':
+                return this.exportText(data, columns);
+            case 'print':
+                return this.print(data, columns);
+            default:
+                throw new Error(`Desteklenmeyen export türü: ${type}`);
+        }
+    }
+
+    /**
+     * Excel export (XLSX)
+     */
+    async exportExcel(data, columns) {
+        // SheetJS (xlsx) kütüphanesini dinamik yükle (Local Vendor)
+        if (!window.XLSX) {
+            const basePath = window.OmnexConfig?.basePath || '';
+            await this._loadScript(`${basePath}/assets/vendor/xlsx/xlsx.full.min.js`);
+        }
+
+        const rows = this._prepareData(data, columns, 'excel');
+        const headers = columns.map(c => c.label);
+
+        // Worksheet oluştur
+        const ws = window.XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+        // Kolon genişlikleri
+        ws['!cols'] = columns.map(c => ({ wch: Math.max(c.label.length, 15) }));
+
+        // Workbook oluştur
+        const wb = window.XLSX.utils.book_new();
+        window.XLSX.utils.book_append_sheet(wb, ws, this.options.title.substring(0, 31));
+
+        // İndir
+        const filename = `${this.options.filename}_${this._getTimestamp()}.xlsx`;
+        window.XLSX.writeFile(wb, filename);
+
+        return { success: true, filename };
+    }
+
+    /**
+     * CSV export
+     */
+    exportCSV(data, columns) {
+        const rows = this._prepareData(data, columns, 'csv');
+        const headers = columns.map(c => this._escapeCSV(c.label));
+
+        let csv = '\uFEFF'; // UTF-8 BOM for Excel
+        csv += headers.join(';') + '\n';
+
+        rows.forEach(row => {
+            csv += row.map(cell => this._escapeCSV(cell)).join(';') + '\n';
+        });
+
+        const filename = `${this.options.filename}_${this._getTimestamp()}.csv`;
+        this._downloadFile(csv, filename, 'text/csv;charset=utf-8');
+
+        return { success: true, filename };
+    }
+
+    /**
+     * HTML export - Yeni sekmede açar
+     */
+    exportHTML(data, columns) {
+        const rows = this._prepareData(data, columns, 'html');
+        const now = new Date().toLocaleString(this.options.dateFormat);
+
+        let html = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${this._escapeHTML(this.options.title)}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 2rem;
+            color: #1a1a2e;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { width: 48px; height: 48px; }
+        .title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+        .subtitle { font-size: 0.875rem; color: #6c757d; }
+        .meta { font-size: 0.75rem; color: #6c757d; text-align: right; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #228be6;
+            color: white;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.875rem;
+        }
+        tr:nth-child(even) { background: #f8f9fa; }
+        tr:hover { background: #e7f5ff; }
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-success { background: #d3f9d8; color: #2b8a3e; }
+        .badge-warning { background: #fff3bf; color: #e67700; }
+        .badge-danger { background: #ffe3e3; color: #c92a2a; }
+        .badge-info { background: #d0ebff; color: #1864ab; }
+        i { margin-right: 0.25rem; }
+        @media print {
+            body { background: white; padding: 0; }
+            table { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                ${this.options.logo ? `<img src="${this.options.logo}" alt="Logo" class="logo">` : ''}
+                <div>
+                    <h1 class="title">${this._escapeHTML(this.options.title)}</h1>
+                    ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
+                </div>
+            </div>
+            <div class="meta">
+                <div>Oluşturulma: ${now}</div>
+                <div>Toplam: ${data.length} kayıt</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    ${columns.map(c => `<th>${this._escapeHTML(c.label)}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map(row => `
+                    <tr>
+                        ${row.map(cell => `<td>${cell}</td>`).join('')}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            ${this.options.author} - ${now}
+        </div>
+    </div>
+</body>
+</html>`;
+
+        // HTML export yeni sekmede açılır (indirmez)
+        const htmlWindow = window.open('', '_blank');
+        if (htmlWindow) {
+            htmlWindow.document.write(html);
+            htmlWindow.document.close();
+        } else {
+            // Popup engellenirse fallback olarak indir
+            const filename = `${this.options.filename}_${this._getTimestamp()}.html`;
+            this._downloadFile(html, filename, 'text/html;charset=utf-8');
+        }
+
+        return { success: true };
+    }
+
+    /**
+     * JSON export
+     */
+    exportJSON(data, columns) {
+        const exportData = {
+            meta: {
+                title: this.options.title,
+                subtitle: this.options.subtitle,
+                author: this.options.author,
+                exportedAt: new Date().toISOString(),
+                totalRecords: data.length
+            },
+            columns: columns.map(c => ({
+                key: c.key,
+                label: c.label
+            })),
+            data: data.map(item => {
+                const obj = {};
+                columns.forEach(col => {
+                    obj[col.key] = this._getCellValue(item, col, 'json');
+                });
+                return obj;
+            })
+        };
+
+        const json = JSON.stringify(exportData, null, 2);
+        const filename = `${this.options.filename}_${this._getTimestamp()}.json`;
+        this._downloadFile(json, filename, 'application/json;charset=utf-8');
+
+        return { success: true, filename };
+    }
+
+    /**
+     * Markdown export
+     */
+    exportMarkdown(data, columns) {
+        const rows = this._prepareData(data, columns, 'md');
+        const now = new Date().toLocaleString(this.options.dateFormat);
+
+        let md = `# ${this.options.title}\n\n`;
+
+        if (this.options.subtitle) {
+            md += `> ${this.options.subtitle}\n\n`;
+        }
+
+        md += `**Oluşturulma:** ${now}  \n`;
+        md += `**Toplam Kayıt:** ${data.length}\n\n`;
+        md += `---\n\n`;
+
+        // Tablo başlıkları
+        md += '| ' + columns.map(c => c.label).join(' | ') + ' |\n';
+        md += '| ' + columns.map(() => '---').join(' | ') + ' |\n';
+
+        // Tablo satırları
+        rows.forEach(row => {
+            md += '| ' + row.map(cell => this._escapeMarkdown(String(cell))).join(' | ') + ' |\n';
+        });
+
+        md += `\n---\n\n`;
+        md += `*${this.options.author}*\n`;
+
+        const filename = `${this.options.filename}_${this._getTimestamp()}.md`;
+        this._downloadFile(md, filename, 'text/markdown;charset=utf-8');
+
+        return { success: true, filename };
+    }
+
+    /**
+     * Text export
+     */
+    exportText(data, columns) {
+        const rows = this._prepareData(data, columns, 'txt');
+        const now = new Date().toLocaleString(this.options.dateFormat);
+
+        // Kolon genişliklerini hesapla
+        const widths = columns.map((col, i) => {
+            const headerLen = col.label.length;
+            const maxDataLen = Math.max(...rows.map(row => String(row[i]).length));
+            return Math.max(headerLen, maxDataLen, 10);
+        });
+
+        let txt = `${'='.repeat(widths.reduce((a, b) => a + b, 0) + columns.length * 3 + 1)}\n`;
+        txt += `${this.options.title}\n`;
+        if (this.options.subtitle) txt += `${this.options.subtitle}\n`;
+        txt += `Oluşturulma: ${now}\n`;
+        txt += `Toplam Kayıt: ${data.length}\n`;
+        txt += `${'='.repeat(widths.reduce((a, b) => a + b, 0) + columns.length * 3 + 1)}\n\n`;
+
+        // Başlıklar
+        txt += '| ' + columns.map((c, i) => c.label.padEnd(widths[i])).join(' | ') + ' |\n';
+        txt += '| ' + widths.map(w => '-'.repeat(w)).join(' | ') + ' |\n';
+
+        // Satırlar
+        rows.forEach(row => {
+            txt += '| ' + row.map((cell, i) => String(cell).padEnd(widths[i])).join(' | ') + ' |\n';
+        });
+
+        txt += `\n${'='.repeat(widths.reduce((a, b) => a + b, 0) + columns.length * 3 + 1)}\n`;
+        txt += `${this.options.author}\n`;
+
+        const filename = `${this.options.filename}_${this._getTimestamp()}.txt`;
+        this._downloadFile(txt, filename, 'text/plain;charset=utf-8');
+
+        return { success: true, filename };
+    }
+
+    /**
+     * Print - Yazdırma penceresi aç
+     */
+    print(data, columns) {
+        const rows = this._prepareData(data, columns, 'html');
+        const now = new Date().toLocaleString(this.options.dateFormat);
+
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.write(`<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>${this._escapeHTML(this.options.title)} - Yazdır</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 1.5rem;
+            color: #1a1a2e;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #1a1a2e;
+        }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { width: 40px; height: 40px; }
+        .title { font-size: 1.25rem; font-weight: 700; }
+        .subtitle { font-size: 0.75rem; color: #6c757d; }
+        .meta { font-size: 0.7rem; color: #6c757d; text-align: right; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        th {
+            background: #f1f3f5;
+            padding: 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #dee2e6;
+        }
+        td {
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+        tr:nth-child(even) { background: #f8f9fa; }
+        .footer {
+            margin-top: 1.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .badge-success { background: #d3f9d8; color: #2b8a3e; }
+        .badge-warning { background: #fff3bf; color: #e67700; }
+        .badge-danger { background: #ffe3e3; color: #c92a2a; }
+        .badge-info { background: #d0ebff; color: #1864ab; }
+        i { margin-right: 0.15rem; font-size: 0.85em; }
+        @page {
+            margin: 1cm;
+            size: A4 landscape;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            ${this.options.logo ? `<img src="${this.options.logo}" alt="Logo" class="logo">` : ''}
+            <div>
+                <h1 class="title">${this._escapeHTML(this.options.title)}</h1>
+                ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
+            </div>
+        </div>
+        <div class="meta">
+            <div>${now}</div>
+            <div>${data.length} kayıt</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                ${columns.map(c => `<th>${this._escapeHTML(c.label)}</th>`).join('')}
+            </tr>
+        </thead>
+        <tbody>
+            ${rows.map(row => `
+                <tr>
+                    ${row.map(cell => `<td>${cell}</td>`).join('')}
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        ${this.options.author}
+    </div>
+
+    <script>
+        window.onload = function() {
+            window.print();
+            // Yazdırma iptal edilirse pencereyi kapat
+            window.onafterprint = function() {
+                window.close();
+            };
+        };
+    </script>
+</body>
+</html>`);
+
+        printWindow.document.close();
+
+        return { success: true };
+    }
+
+    /**
+     * Export menüsü HTML'i oluştur
+     * @param {string} containerId - Menünün ekleneceği container ID
+     * @param {Function} onExport - Export fonksiyonu callback
+     */
+    static renderExportMenu(containerId, onExport) {
+        const types = ExportManager.getExportTypes();
+
+        return `
+            <div class="export-dropdown" id="${containerId}">
+                <button class="btn btn-outline export-dropdown-btn" type="button">
+                    <i class="ti ti-download"></i>
+                    <span>Dışa Aktar</span>
+                    <i class="ti ti-chevron-down"></i>
+                </button>
+                <div class="export-dropdown-menu">
+                    ${types.map(type => `
+                        <button class="export-dropdown-item" data-export-type="${type.id}">
+                            <i class="${type.icon}" style="color: ${type.color}"></i>
+                            <span>${type.label}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Export dropdown event binding
+     */
+    static bindExportDropdown(containerId, callback) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const btn = container.querySelector('.export-dropdown-btn');
+        const menu = container.querySelector('.export-dropdown-menu');
+
+        // Toggle menu
+        btn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('show');
+        });
+
+        // Close on outside click
+        document.addEventListener('click', () => {
+            menu?.classList.remove('show');
+        });
+
+        // Export item click
+        container.querySelectorAll('.export-dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const type = item.dataset.exportType;
+                menu.classList.remove('show');
+                callback(type);
+            });
+        });
+    }
+
+    // ==========================================
+    // PRIVATE METHODS
+    // ==========================================
+
+    /**
+     * Veriyi export formatına hazırla
+     */
+    _prepareData(data, columns, format) {
+        return data.map(item => {
+            return columns.map(col => this._getCellValue(item, col, format));
+        });
+    }
+
+    /**
+     * Hücre değerini al
+     */
+    _getCellValue(item, column, format) {
+        let value = item[column.key];
+
+        // Nested key desteği (örn: "user.name")
+        if (column.key.includes('.')) {
+            value = column.key.split('.').reduce((obj, key) => obj?.[key], item);
+        }
+
+        // Özel render fonksiyonu varsa
+        if (column.exportRender && typeof column.exportRender === 'function') {
+            return column.exportRender(value, item, format);
+        }
+
+        // Format-specific işlemler
+        if (format === 'html' || format === 'print') {
+            // HTML için badge ve icon desteği
+            if (column.badge) {
+                const badgeConfig = typeof column.badge === 'function'
+                    ? column.badge(value, item)
+                    : column.badge[value];
+                if (badgeConfig) {
+                    return `<span class="badge badge-${badgeConfig.type || 'info'}">${badgeConfig.icon ? `<i class="${badgeConfig.icon}"></i>` : ''}${badgeConfig.label || value}</span>`;
+                }
+            }
+            if (column.icon) {
+                const icon = typeof column.icon === 'function' ? column.icon(value, item) : column.icon;
+                return `<i class="${icon}"></i> ${this._escapeHTML(String(value ?? ''))}`;
+            }
+            return this._escapeHTML(String(value ?? ''));
+        }
+
+        // Diğer formatlar için düz değer
+        if (value === null || value === undefined) return '';
+        if (typeof value === 'boolean') return value ? (typeof window.__ === 'function' ? window.__('export.yes') : 'Yes') : (typeof window.__ === 'function' ? window.__('export.no') : 'No');
+        if (value instanceof Date) return value.toLocaleString(this.options.dateFormat);
+
+        return String(value);
+    }
+
+    /**
+     * CSV için escape
+     */
+    _escapeCSV(value) {
+        if (value === null || value === undefined) return '';
+        const str = String(value);
+        if (str.includes(';') || str.includes('"') || str.includes('\n')) {
+            return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+    }
+
+    /**
+     * HTML için escape
+     */
+    _escapeHTML(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * Markdown için escape
+     */
+    _escapeMarkdown(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/\|/g, '\\|')
+            .replace(/\n/g, ' ');
+    }
+
+    /**
+     * Dosya indirme
+     */
+    _downloadFile(content, filename, mimeType) {
+        // Dosya adını sanitize et (Türkçe karakterleri ve özel karakterleri temizle)
+        const sanitizedFilename = this._sanitizeFilename(filename);
+
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = sanitizedFilename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+
+        // Timeout ile indirme başlat (bazı tarayıcılarda gerekli)
+        setTimeout(() => {
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 100);
+    }
+
+    /**
+     * Dosya adını güvenli hale getir
+     */
+    _sanitizeFilename(filename) {
+        // Türkçe karakterleri değiştir
+        const turkishMap = {
+            'ı': 'i', 'İ': 'I', 'ğ': 'g', 'Ğ': 'G',
+            'ü': 'u', 'Ü': 'U', 'ş': 's', 'Ş': 'S',
+            'ö': 'o', 'Ö': 'O', 'ç': 'c', 'Ç': 'C'
+        };
+
+        let safe = filename;
+        for (const [from, to] of Object.entries(turkishMap)) {
+            safe = safe.replace(new RegExp(from, 'g'), to);
+        }
+
+        // Güvenli olmayan karakterleri kaldır
+        safe = safe.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+        // Çift alt çizgileri temizle
+        safe = safe.replace(/_+/g, '_');
+
+        return safe;
+    }
+
+    /**
+     * Dinamik script yükleme
+     */
+    _loadScript(src) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src="${src}"]`)) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    /**
+     * Timestamp oluştur (dosya adı için)
+     */
+    _getTimestamp() {
+        const now = new Date();
+        return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+    }
+}
+
+// Global erişim için window'a ekle
+window.ExportManager = ExportManager;

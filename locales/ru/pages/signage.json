@@ -1,0 +1,390 @@
+{
+    "title": "Digital Signage",
+    "subtitle": "Управляйте контентом digital signage",
+    "playlists": {
+        "title": "Плейлисты",
+        "subtitle": "Управляйте плейлистами",
+        "addPlaylist": "Новый плейлист",
+        "editPlaylist": "Редактировать плейлист",
+        "deletePlaylist": "Удалить плейлист",
+        "deleteConfirm": "Вы уверены, что хотите удалить этот плейлист?",
+        "detail": "Детали плейлиста",
+        "empty": "Плейлисты ещё не созданы",
+        "selectMedia": "Выбрать медиа",
+        "itemCount": "элементов",
+        "columns": {
+            "orientation": "Ориентация экрана",
+            "template": "Шаблон",
+            "layoutType": "Тип макета",
+            "assignedDevice": "Назначенное устройство",
+            "devicesCount": "Cihazlar ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} — назначенные устройства",
+            "noDevices": "Назначенные устройства не найдены",
+            "removeDevice": "Удалить",
+            "removeConfirm": "Удалить это устройство из назначения плейлиста?",
+            "removed": "Назначение устройства удалено"
+        },
+        "orientations": {
+            "landscape": "Альбомная (1920x1080)",
+            "portrait": "Портретная (1080x1920)"
+        },
+        "layouts": {
+            "full": "Полный экран",
+            "grid2": "Сетка на 2 колонки",
+            "grid3": "Сетка на 3 колонки",
+            "grid4": "Сетка на 4 колонки",
+            "hybrid": "Гибрид (основная + боковая)"
+        },
+        "mediaTypes": {
+            "image": "Изображение",
+            "video": "Video",
+            "template": "Шаблон",
+            "webpage": "Web",
+            "stream": "Поток"
+        },
+        "templatePreview": "Предпросмотр шаблона",
+        "noTemplateSelected": "Шаблон не выбран",
+        "transitions": {
+            "none": "Нет",
+            "fade": "Затухание",
+            "slideLeft": "Сдвиг влево",
+            "slideRight": "Сдвиг вправо",
+            "slideUp": "Сдвиг вверх",
+            "slideDown": "Сдвиг вниз",
+            "zoom": "Приближение",
+            "crossfade": "Плавный переход"
+        },
+        "form": {
+            "fields": {
+                "name": "Название плейлиста",
+                "description": "Описание",
+                "duration": "Длительность (сек.)",
+                "transition": "Эффект перехода",
+                "transitionDuration": "Длительность перехода",
+                "loop": "Цикл",
+                "orientation": "Ориентация экрана",
+                "template": "Шаблон",
+                "layoutType": "Тип макета"
+            },
+            "infoTitle": "Информация о списке",
+            "itemsTitle": "Содержимое списка",
+            "addItem": "Добавить контент",
+            "createDesc": "Создайте новый плейлист",
+            "editDesc": "Редактируйте плейлист",
+            "namePlaceholder": "Пример: Изображения акции",
+            "descPlaceholder": "Короткое описание списка",
+            "durationHint": "Длительность показа по умолчанию для каждого элемента",
+            "selectTemplate": "Выберите шаблон...",
+            "noPreview": "Нет предпросмотра",
+            "noItems": "Контент ещё не добавлен",
+            "noItemsHint": "Используйте кнопку выше, чтобы добавить контент",
+            "emptyMedia": "Медиатека пуста",
+            "uploadMedia": "Загрузить медиа",
+            "tabMedia": "Медиа",
+            "tabTemplates": "Шаблоны",
+            "tabWebpage": "Веб‑страница",
+            "tabStream": "Прямой эфир",
+            "webpageTitle": "Добавить веб‑страницу",
+            "webpageHint": "Введите URL веб‑страницы, которую хотите показать. Страница будет отображаться в iframe.",
+            "webpageUrl": "URL веб‑страницы",
+            "webpageName": "Отображаемое имя",
+            "webpageNamePlaceholder": "Пример: Погода",
+            "addWebpage": "Добавить веб‑страницу",
+            "webpageWarning": "Примечание: некоторые сайты могут блокировать отображение в iframe (X-Frame-Options). В этом случае страницу нельзя будет показать.",
+            "webpageUrlRequired": "Введите URL",
+            "webpageUrlInvalid": "URL должен начинаться с http:// или https://",
+            "webpageAlreadyAdded": "Этот URL уже добавлен",
+            "webpageAdded": "Веб‑страница добавлена",
+            "streamTitle": "Добавить прямой эфир",
+            "streamHint": "Введите URL потока HLS (m3u8), RTSP или другой. Воспроизводится через hls.js на устройствах.",
+            "streamUrl": "URL потока",
+            "streamName": "Название потока",
+            "streamNamePlaceholder": "Напр.: Камера 1, ТВ-трансляция",
+            "streamDurationHint": "0 = бессрочно (непрерывный поток)",
+            "streamMuted": "Звук",
+            "streamMutedYes": "Без звука",
+            "streamMutedNo": "Со звуком",
+            "streamAdd": "Добавить поток",
+            "streamFormats": "Поддерживаемые форматы: HLS (.m3u8), MP4, WebM. RTSP не поддерживается напрямую, необходимо конвертировать в HLS.",
+            "streamUrlRequired": "Введите URL потока",
+            "streamUrlInvalid": "Неверный формат URL",
+            "streamAlreadyAdded": "Этот поток уже добавлен",
+            "streamAdded": "Прямой эфир добавлен",
+            "emptyTemplates": "Шаблоны не найдены",
+            "emptyTemplatesHint": "Создайте шаблоны Signage или TV",
+            "createTemplate": "Создать шаблон",
+            "seconds": "sn",
+            "loop": "Цикл",
+            "loopHint": "Перезапускать видео после завершения",
+            "loopCountHint": "Сколько раз повторять",
+            "soundOn": "Звук включён",
+            "soundOff": "Звук выключен",
+            "durationHintVideo": "Если оставить пустым, видео воспроизводится по своей длительности",
+            "durationHintImage": "Длительность показа (секунды)",
+            "itemsHint": "Длительность: если пусто, видео играет по своей длительности. Цикл: если включено, контент повторяется заданное число раз; после истечения длительности — переход к следующему.",
+            "editItem": "Редактировать элемент",
+            "itemName": "Имя",
+            "itemUpdated": "Элемент обновлён",
+            "duration": "Длительность",
+            "autoForVideo": "Авто",
+            "loopVideo": "Цикл видео",
+            "loopCount": "Количество повторов",
+            "selectDevice": "Выберите устройство",
+            "selectDevices": "Выберите устройства",
+            "selectedDevices": "Выбранные устройства",
+            "assignToMultiple": "Можно назначить нескольким устройствам",
+            "selectDevicePlaceholder": "Выберите устройство...",
+            "noDevices": "Подходящие устройства не найдены. Сначала добавьте устройство signage.",
+            "willBeAssigned": "плейлист будет назначен выбранному устройству.",
+            "selectDeviceRequired": "Выберите устройство",
+            "confirmUnassign": "Устройства не выбраны. Этот плейлист будет удалён со всех устройств. Продолжить?",
+            "currentlyAssigned": "Сейчас назначено устройству {device}",
+            "currentlyAssignedCount": "Сейчас назначено устройствам: {count}",
+            "aDevice": "устройство"
+        },
+        "assignToDevice": "Назначить устройству",
+        "toast": {
+            "created": "Плейлист создан",
+            "updated": "Плейлист обновлён",
+            "deleted": "Плейлист удалён",
+            "mediaAdded": "Медиа добавлено",
+            "assigned": "Плейлист назначен устройству",
+            "assignedCount": "Назначено устройствам: {count}",
+            "assignFailedCount": "Не удалось назначить устройств: {count}"
+        },
+        "commands": {
+            "start": "Запустить трансляцию",
+            "stop": "Остановить трансляцию",
+            "refresh": "Обновить устройство",
+            "reboot": "Перезагрузить устройство",
+            "device": "Устройство",
+            "send": "Отправить",
+            "sentCount": "Команд отправлено на устройств: {count}",
+            "failedCount": "Не удалось отправить команд на устройств: {count}",
+            "confirmMessage": "Команда «{command}» будет отправлена для <strong>{device}</strong>.",
+            "sent": "Команда отправлена: {device}",
+            "failed": "Не удалось отправить команду"
+        },
+        "actions": {
+            "startBroadcast": "Запустить трансляцию",
+            "stopBroadcast": "Остановить трансляцию",
+            "refreshDevice": "Обновить устройство"
+        }
+    },
+    "schedules": {
+        "title": "Расписания",
+        "subtitle": "Управляйте расписаниями трансляции",
+        "addSchedule": "Новое расписание",
+        "editSchedule": "Редактировать расписание",
+        "deleteSchedule": "Удалить расписание",
+        "deleteConfirm": "Вы уверены, что хотите удалить расписание «{name}»?",
+        "empty": "Расписания ещё не созданы",
+        "historyFeature": "Функция истории скоро появится",
+        "searchPlaceholder": "Поиск расписания...",
+        "emptyText": "Расписание не найдено",
+        "columns": {
+            "preview": "Предпросмотр",
+            "name": "Название расписания",
+            "playlist": "Плейлист",
+            "devices": "Устройства",
+            "deviceCount": "{count} устройств",
+            "startDate": "Начало",
+            "endDate": "Окончание",
+            "continuous": "Непрерывно",
+            "status": "Статус"
+        },
+        "status": {
+            "active": "Активно",
+            "scheduled": "Запланировано",
+            "inactive": "Неактивно",
+            "completed": "Завершено"
+        },
+        "actions": {
+            "history": "История",
+            "view": "Просмотреть",
+            "edit": "Редактировать",
+            "delete": "Удалить"
+        },
+        "newSchedule": "Новое расписание",
+        "createDesc": "Создайте новое расписание",
+        "editDesc": "Редактируйте настройки расписания",
+        "scheduleInfo": "Информация о расписании",
+        "targetDevices": "Целевые устройства",
+        "selectedCount": "Выбрано: {count}",
+        "searchDevice": "Поиск устройства...",
+        "noMatch": "Совпадений не найдено",
+        "noTvDevices": "Устройства TV/Signage не найдены",
+        "locationNotSpecified": "Местоположение не указано",
+        "form": {
+            "fields": {
+                "name": "Название расписания",
+                "playlist": "Плейлист",
+                "startDate": "Дата начала",
+                "endDate": "Дата окончания",
+                "startTime": "Время начала",
+                "endTime": "Время окончания",
+                "repeat": "Повтор",
+                "weekdays": "Дни",
+                "status": "Статус",
+                "devices": "Устройства",
+                "priority": "Приоритет"
+            },
+            "placeholders": {
+                "name": "Пример: Акция на выходные",
+                "selectPlaylist": "Выберите список"
+            },
+            "hints": {
+                "endDate": "Если оставить пустым, будет воспроизводиться непрерывно",
+                "priority": "Большее значение = более высокий приоритет"
+            },
+            "repeat": {
+                "none": "Без повтора",
+                "daily": "Ежедневно",
+                "weekly": "Еженедельно",
+                "monthly": "Ежемесячно"
+            },
+            "weekdays": {
+                "mon": "Пн",
+                "tue": "Вт",
+                "wed": "Ср",
+                "thu": "Чт",
+                "fri": "Пт",
+                "sat": "Сб",
+                "sun": "Вс"
+            },
+            "status": {
+                "active": "Активно",
+                "scheduled": "Запланировано",
+                "inactive": "Неактивно"
+            }
+        },
+        "toast": {
+            "created": "Расписание создано",
+            "updated": "Расписание обновлено",
+            "deleted": "Расписание удалено",
+            "loadFailed": "Не удалось загрузить расписание",
+            "requiredFields": "Заполните обязательные поля",
+            "selectDevice": "Нужно выбрать хотя бы одно устройство",
+            "saveFailed": "Ошибка сохранения"
+        }
+    },
+    "template": {
+        "title": "Шаблоны экранов",
+        "subtitle": "Управляйте макетами экранов TV и signage",
+        "addTemplate": "Добавить шаблон",
+        "editTemplate": "Редактировать шаблон",
+        "types": {
+            "signage": "Signage",
+            "tv": "TV",
+            "label": "Ценник"
+        },
+        "layoutTypes": {
+            "full": "Полный экран",
+            "grid2": "Разделение на 2 колонки",
+            "grid3": "Разделение на 3 колонки",
+            "grid4": "Разделение на 4 колонки",
+            "hybrid": "Гибрид"
+        },
+        "slots": {
+            "main": "Основная область",
+            "slot1": "Область 1",
+            "slot2": "Область 2",
+            "slot3": "Область 3",
+            "slot4": "Область 4",
+            "sidebar": "Боковая панель",
+            "banner": "Нижний баннер"
+        },
+        "preview": "Предпросмотр",
+        "previewDescription": "Как шаблон будет выглядеть на экране"
+    },
+    "deviceTree": {
+        "title": "Статус устройств",
+        "subtitle": "Иерархический вид всех устройств signage",
+        "expandAll": "Развернуть все",
+        "collapseAll": "Свернуть все",
+        "summary": {
+            "total": "Всего",
+            "online": "Онлайн",
+            "offline": "Офлайн",
+            "warning": "Предупреждение",
+            "devices": "устройств"
+        },
+        "filter": {
+            "search": "Поиск устройства, IP или филиала...",
+            "all": "Все",
+            "online": "Онлайн",
+            "offline": "Офлайн",
+            "warning": "Предупреждения"
+        },
+        "columns": {
+            "name": "Название",
+            "status": "Статус",
+            "playlist": "Воспроизведение",
+            "lastSeen": "Последний раз",
+            "actions": "Действия"
+        },
+        "node": {
+            "devices": "{count} устройств",
+            "unassigned": "Неназначенные устройства",
+            "noBranch": "Без филиала"
+        },
+        "commands": {
+            "start": "Запустить",
+            "stop": "Остановить",
+            "refresh": "Обновить",
+            "reboot": "Перезагрузить",
+            "startAll": "Запустить все",
+            "stopAll": "Остановить все",
+            "refreshAll": "Обновить все",
+            "confirmCascade": "Команда \"{command}\" будет отправлена на {count} устройств. Продолжить?",
+            "sending": "Отправка команд...",
+            "progress": "Отправлено {sent}/{total}",
+            "resultSuccess": "{success} успешно",
+            "resultFailed": "{failed} неудачно",
+            "resultSummary": "Результат команды"
+        },
+        "toast": {
+            "started": "Трансляция запущена: {device}",
+            "stopped": "Трансляция остановлена: {device}",
+            "refreshed": "Устройство обновлено: {device}",
+            "rebooted": "Перезагрузка: {device}",
+            "failed": "Ошибка команды: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Планшет",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "только что",
+            "secondsAgo": "{n}с назад",
+            "minutesAgo": "{n}мин назад",
+            "hoursAgo": "{n}ч назад",
+            "daysAgo": "{n}д назад",
+            "never": "Никогда"
+        },
+        "empty": "Устройства signage не найдены",
+        "emptyHint": "Добавьте ТВ или устройство signage со страницы Устройства",
+        "autoRefresh": "Автообновление: {seconds}с",
+        "refreshing": "Обновление...",
+        "noPlaylist": "Плейлист не назначен",
+        "loading": "Загрузка дерева устройств..."
+    },
+    "player": {
+        "title": "PWA‑плеер",
+        "syncCode": "Код синхронизации",
+        "enterSyncCode": "Введите код синхронизации",
+        "connecting": "Подключение...",
+        "connected": "Подключено",
+        "disconnected": "Отключено",
+        "nowPlaying": "Сейчас воспроизводится",
+        "nextItem": "Следующее",
+        "rotation": "Длительность цикла",
+        "seconds": "секунд"
+    }
+}

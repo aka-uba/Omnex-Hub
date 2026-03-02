@@ -1,0 +1,1202 @@
+{
+    "title": "Настройки",
+    "subtitle": "Настройте системные параметры",
+    "breadcrumb": {
+        "panel": "Панель",
+        "settings": "Настройки",
+        "general": "Общие настройки",
+        "users": "Настройки пользователей",
+        "integrations": "Интеграции",
+        "labels": "Размеры ценников"
+    },
+    "nav": {
+        "general": "Общие",
+        "users": "Пользователи",
+        "integrations": "Интеграции"
+    },
+    "profile": {
+        "title": "Профиль",
+        "subtitle": "Управляйте личной информацией и настройками аккаунта",
+        "loadFailed": "Не удалось загрузить информацию о пользователе",
+        "personalInfo": "Личная информация",
+        "changePassword": "Сменить пароль",
+        "changePasswordBtn": "Сменить пароль",
+        "accountInfo": "Информация об аккаунте",
+        "company": "Компания",
+        "role": "Роль",
+        "createdAt": "Аккаунт создан",
+        "lastLogin": "Последний вход",
+        "form": {
+            "firstName": "Имя",
+            "lastName": "Фамилия",
+            "email": "Email",
+            "phone": "Телефон",
+            "currentPassword": "Текущий пароль",
+            "newPassword": "Новый пароль",
+            "confirmPassword": "Новый пароль (подтверждение)"
+        },
+        "avatar": {
+            "title": "Фото профиля",
+            "selectFile": "Выбрать файл",
+            "remove": "Удалить фото"
+        },
+        "toast": {
+            "updated": "Профиль обновлён",
+            "avatarUpdated": "Фото профиля обновлено",
+            "avatarRemoved": "Фото профиля удалено",
+            "passwordChanged": "Пароль успешно изменён"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "Супер‑администратор",
+        "Admin": "Администратор",
+        "Manager": "Менеджер",
+        "Editor": "Редактор",
+        "Viewer": "Просмотр"
+    },
+    "users": {
+        "title": "Пользователи",
+        "subtitle": "Управляйте пользователями и редактируйте их",
+        "addUser": "Добавить пользователя",
+        "editUser": "Редактировать пользователя",
+        "deleteUser": "Удалить пользователя",
+        "noUsers": "Пользователи пока не найдены",
+        "table": {
+            "user": "Пользователь",
+            "email": "Email",
+            "role": "Роль",
+            "status": "Статус"
+        },
+        "status": {
+            "active": "Активен",
+            "inactive": "Неактивен"
+        },
+        "fields": {
+            "firstName": "Имя",
+            "lastName": "Фамилия",
+            "email": "Email",
+            "password": "Пароль",
+            "role": "Роль"
+        },
+        "placeholders": {
+            "selectRole": "Выберите роль"
+        },
+        "roles": {
+            "admin": "Администратор",
+            "editor": "Редактор",
+            "viewer": "Просмотр"
+        },
+        "deleteConfirm": "Вы уверены, что хотите удалить этого пользователя?",
+        "toast": {
+            "created": "Пользователь создан",
+            "updated": "Пользователь обновлён",
+            "deleted": "Пользователь удалён"
+        }
+    },
+    "saveChanges": "Сохранить изменения",
+    "tabs": {
+        "general": "Общие",
+        "branding": "Брендинг",
+        "email": "Email / SMTP",
+        "barcode": "Штрих‑код"
+    },
+    "general": {
+        "title": "Общие настройки",
+        "subtitle": "Общие настройки конфигурации системы",
+        "sections": {
+            "company": "Информация о компании",
+            "system": "Системные настройки",
+            "locale": "Региональные настройки",
+            "appearance": "Внешний вид"
+        },
+        "fields": {
+            "companyName": "Название компании",
+            "companyPhone": "Телефон",
+            "companyAddress": "Адрес",
+            "timezone": "Часовой пояс",
+            "language": "Язык",
+            "currency": "Валюта",
+            "dateFormat": "Формат даты",
+            "theme": "Тема"
+        },
+        "placeholders": {
+            "companyName": "Название компании",
+            "companyPhone": "+90 xxx xxx xx xx",
+            "companyAddress": "Адрес компании"
+        },
+        "languages": {
+            "tr": "Турецкий",
+            "en": "Английский"
+        },
+        "currencies": {
+            "TRY": "Турецкая лира (₺)",
+            "USD": "Доллар США ($)",
+            "EUR": "Euro (€)",
+            "GBP": "Британский фунт (£)",
+            "RUB": "Rus Rublesi (₽)",
+            "AZN": "Азербайджанский манат (₼)"
+        },
+        "themes": {
+            "light": "Светлая",
+            "dark": "Тёмная",
+            "auto": "Авто"
+        }
+    },
+    "branding": {
+        "title": "Ресурсы брендинга системы",
+        "description": "Здесь отображаются ресурсы брендинга по умолчанию. Эти ресурсы доступны только для чтения и могут быть изменены вручную только разработчиком в папке public/branding. Для ресурсов на уровне компании используйте страницу «Управление компанией».",
+        "logoLight": "Логотип (светлая тема)",
+        "logoDark": "Логотип (тёмная тема)",
+        "favicon": "Favicon",
+        "pwaIcon": "Иконка PWA",
+        "file": "Файл"
+    },
+    "email": {
+        "smtp": {
+            "title": "Настройки SMTP",
+            "testButton": "Отправить тестовое письмо",
+            "testing": "Отправка...",
+            "fields": {
+                "host": "SMTP‑сервер",
+                "port": "Port",
+                "username": "Имя пользователя",
+                "password": "Пароль",
+                "encryption": "Шифрование",
+                "fromName": "Имя отправителя",
+                "fromEmail": "Email отправителя",
+                "testEmail": "Тестовый email"
+            },
+            "placeholders": {
+                "host": "smtp.example.com",
+                "port": "587",
+                "username": "user@example.com",
+                "password": "********",
+                "fromName": "Omnex Display Hub",
+                "fromEmail": "noreply@example.com",
+                "testEmail": "test@example.com"
+            },
+            "hints": {
+                "testEmail": "Если оставить пустым, будет отправлено на email в вашем аккаунте"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "SSL",
+                "none": "Нет"
+            }
+        },
+        "templates": {
+            "title": "Шаблоны писем",
+            "comingSoon": "Функция редактирования шаблонов писем скоро появится",
+            "welcome": {
+                "title": "Письмо приветствия",
+                "description": "Отправляется при регистрации нового пользователя"
+            },
+            "passwordReset": {
+                "title": "Сброс пароля",
+                "description": "Отправляется при запросе на сброс пароля"
+            },
+            "errorNotification": {
+                "title": "Уведомление об ошибке",
+                "description": "Отправляется при системных ошибках"
+            }
+        }
+    },
+    "integrations": {
+        "title": "Интеграции",
+        "subtitle": "Настройте интеграции с внешними системами",
+        "configure": "Настроить",
+        "tabs": {
+            "esl": "Системы ESL",
+            "erp": "ERP",
+            "api": "API",
+            "import": "Импорт файлов",
+            "payment": "Платёжная система",
+            "mqtt": "MQTT Broker"
+        },
+        "import": {
+            "loading": "Загрузка...",
+            "settingsTitle": "Настройки импорта",
+            "settingsDescription": "Настройте параметры файлового импорта товаров из ERP и внешних систем.",
+            "enabled": "Файловый импорт включён",
+            "autoImport": "Автоматический импорт",
+            "autoImportHint": "При включении файлы в директории импорта автоматически импортируются с заданным интервалом.",
+            "checkInterval": "Интервал проверки",
+            "minutes": "минут",
+            "maxFileSize": "Максимальный размер файла",
+            "allowedFormats": "Разрешённые форматы",
+            "importOptions": "Параметры импорта",
+            "updateExisting": "Обновлять существующие товары (совпадение SKU)",
+            "createNew": "Создавать новые товары",
+            "skipErrors": "Пропускать строки с ошибками, продолжать с остальными",
+            "triggerRender": "Запускать автоматический рендер после импорта",
+            "importDirectory": "Директория импорта",
+            "importDirectoryHint": "Файлы ERP должны отправляться в эту директорию. Автоимпорт сканирует эту директорию.",
+            "lastAutoImport": "Последний автоимпорт",
+            "testImport": "Тест с файлом",
+            "redirectingToImport": "Перенаправление на страницу импорта товаров...",
+            "settingsSaved": "Настройки импорта сохранены",
+            "settingsSaveError": "Не удалось сохранить настройки импорта",
+            "statusActive": "Активен",
+            "statusAutoActive": "Авто Активен",
+            "statusInactive": "Неактивен",
+            "apiDocTitle": "API отправки файлов ERP",
+            "apiDocDescription": "Системы ERP могут отправлять файлы импорта через указанную ниже конечную точку API.",
+            "apiEndpoint": "Точка загрузки",
+            "apiAuth": "Аутентификация",
+            "apiAuthHint": "Используйте API-ключ из вкладки API.",
+            "apiAuthAlt": "Альтернативный заголовок:",
+            "apiExample": "Примеры cURL",
+            "apiExampleCsv": "Отправка CSV файла (Linux/Mac):",
+            "apiExampleJson": "Отправка JSON файла (альтернативный заголовок):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "Успешный ответ (200)",
+            "apiResponseErrors": "Ответы об ошибках",
+            "apiErrorDesc": "Описание",
+            "apiError401": "Недействительный или отсутствующий API-ключ",
+            "apiError400": "Неподдерживаемый формат, превышение размера или отсутствие файла",
+            "apiError403": "Импорт файлов не активирован для этой компании",
+            "apiErrorDup": "Этот файл уже был загружен ранее (совпадение хеша)",
+            "apiFormats": "Поддерживаемые форматы",
+            "apiFormatsHint": "Файлы автоматически анализируются с определением формата. Сопоставление полей выполняется автоматически с помощью SmartFieldMapper.",
+            "apiFieldMapping": "Сопоставление Полей",
+            "apiFieldMappingDesc": "Заголовки столбцов в вашем файле автоматически сопоставляются с полями продукта. Распространённые примеры ниже:",
+            "apiFieldTarget": "Целевое Поле",
+            "apiFieldSample": "Распознаваемые Имена Столбцов-Источников",
+            "apiFieldMappingAuto": "SmartFieldMapper автоматически распознаёт турецкие, английские и распространённые имена полей ERP. Сопоставления по умолчанию можно настроить в параметрах.",
+            "historyTitle": "История импорта",
+            "historyLoading": "Загрузка истории...",
+            "historyEmpty": "История импорта пока отсутствует.",
+            "historyFile": "Файл",
+            "historySource": "Источник",
+            "historyStatus": "Статус",
+            "historyTotal": "Всего",
+            "historyInserted": "Добавлено",
+            "historyUpdated": "Обновлено",
+            "historyFailed": "Ошибки",
+            "historyDate": "Дата",
+            "sourceAuto": "Автоматически",
+            "sourceManual": "Вручную",
+            "pendingFilesTitle": "Файлы в Каталоге Импорта",
+            "pendingFilesDesc": "Ожидающие файлы в каталоге импорта компании. Вы можете выбрать файл для запуска ручного импорта.",
+            "pendingFilesEmpty": "Нет ожидающих файлов в каталоге импорта.",
+            "alreadyImported": "Уже Импортирован",
+            "importFile": "Импортировать",
+            "fileFormat": "Формат",
+            "fileSize": "Размер",
+            "fileModified": "Изменён",
+            "fileAction": "Действие",
+            "defaultImportOptions": "Параметры импорта по умолчанию",
+            "defaultImportOptionsHint": "Эти параметры используются по умолчанию при импорте файлов. Их можно изменить для каждого импорта.",
+            "importModalTitle": "Импорт файла",
+            "importModalOptions": "Параметры импорта",
+            "importModalDefaultsHint": "Параметры предварительно отмечены значениями по умолчанию из настроек. Вы можете изменить их для этого импорта.",
+            "savedMappingsWillBeUsed": "Будет использовано {count} сохранённых сопоставлений полей",
+            "noSavedMappingsAutoDetect": "Сохранённых сопоставлений нет, будет использовано автоопределение",
+            "startImport": "Начать импорт",
+            "importConfirmTitle": "Подтверждение Импорта",
+            "importConfirmMessage": "Файл \"{filename}\" будет импортирован. Хотите продолжить?",
+            "importing": "Импорт...",
+            "importError": "Операция импорта не удалась",
+            "importErrors": "Ошибки",
+            "importResultTitle": "Результат Импорта",
+            "mappingSource": "Источник Сопоставления",
+            "mappingSaved": "Сохранённые Сопоставления",
+            "mappingAuto": "Автоматическое Определение",
+            "configureMappings": "Сопоставление Полей",
+            "configureMappingsTitle": "Сопоставление Полей по Умолчанию",
+            "configureMappingsDesc": "Определите, какие поля продукта соответствуют заголовкам столбцов в файлах импорта. Вы можете загрузить образец файла для автоматического определения.",
+            "configureMappingsHint": "Введите имена столбцов-источников в соответствии с заголовками вашего файла. Пустые поля будут автоматически сопоставлены с помощью SmartFieldMapper.",
+            "mappingSourcePlaceholder": "Имя столбца-источника (напр. КОД_ТОВАРА)",
+            "uploadSampleFile": "Загрузить Образец Файла",
+            "autoDetectedMappings": "{count} полей сопоставлены автоматически (из {total} столбцов)",
+            "noAutoDetect": "Автоматическое определение не удалось. Пожалуйста, введите вручную.",
+            "sampleFileFailed": "Не удалось проанализировать образец файла",
+            "mappingsSaved": "{count} сопоставлений полей сохранено",
+            "savedMappings": "{count} сопоставлений полей сохранено",
+            "noMapping": "-- Нет соответствия --",
+            "noPreviewData": "Данные для предпросмотра не найдены",
+            "mappingDragDrop": "Перетащите файл-образец сюда или выберите",
+            "mappingFileHint": "Ваш файл будет проанализирован, и заголовки столбцов будут определены автоматически.",
+            "mappingGridTitle": "Сопоставление полей",
+            "mappingPreviewTitle": "Предпросмотр данных",
+            "fields": {
+                "sku": "SKU / Код товара",
+                "name": "Название товара",
+                "barcode": "Штрих-код",
+                "slug": "Slug",
+                "kunyeNo": "№ сертификата",
+                "category": "Категория",
+                "subcategory": "Подкатегория",
+                "brand": "Бренд",
+                "origin": "Происхождение",
+                "productionType": "Тип производства",
+                "description": "Описание",
+                "currentPrice": "Цена продажи",
+                "previousPrice": "Старая цена",
+                "priceValidUntil": "Цена действительна до",
+                "priceUpdatedAt": "Цена обновлена",
+                "previousPriceUpdatedAt": "Старая цена обновлена",
+                "vatRate": "Ставка НДС",
+                "discountPercent": "Скидка %",
+                "campaignText": "Текст акции",
+                "unit": "Единица",
+                "stock": "Склад",
+                "weight": "Вес",
+                "shelfLocation": "Место на полке",
+                "supplierCode": "Код поставщика",
+                "validFrom": "Действителен с",
+                "validUntil": "Действителен до",
+                "status": "Статус",
+                "isFeatured": "Избранное",
+                "imageUrl": "URL изображения",
+                "images": "Изображения",
+                "videos": "Видео",
+                "videoUrl": "URL видео",
+                "storageInfo": "Информация о хранении",
+                "group": "Группа",
+                "erpId": "ID ERP"
+            },
+            "status": {
+                "pending": "Ожидание",
+                "processing": "Обработка",
+                "completed": "Завершено",
+                "failed": "Ошибка",
+                "skipped": "Пропущено"
+            }
+        },
+        "debug": {
+            "tooltip": "API Debug — протестировать ответ Stock List",
+            "modalTitle": "TAMSOFT API Debug - StokListesi",
+            "loading": "Загрузка...",
+            "title": "Настройки TAMSOFT",
+            "defaultDepo": "Склад по умолчанию",
+            "lastSync": "Последняя синхронизация",
+            "neverSynced": "Никогда",
+            "rawApiResponse": "Сырой ответ API (cURL)",
+            "responseSize": "Размер ответа",
+            "jsonParse": "Парсинг JSON",
+            "parseSuccess": "Успех",
+            "parseFailed": "Ошибка",
+            "isArray": "Это массив",
+            "yes": "Да",
+            "no": "Нет",
+            "elementCount": "Количество элементов",
+            "numericArray": "Числовой массив",
+            "firstKeys": "Первые 10 ключей",
+            "doubleJsonDetected": "Обнаружен двойной JSON!",
+            "rawResponse": "Сырой ответ (первые 500 символов)",
+            "firstItem": "Первый элемент",
+            "firstItemUnwrapped": "Первый элемент (после unwrap)",
+            "depoCount": "Количество складов",
+            "debugError": "Ошибка отладки: {error}",
+            "debugRequestFailed": "Запрос отладки не удался",
+            "apiNoResponse": "API не ответил"
+        },
+        "depotMapping": {
+            "newBranches": "Создано новых филиалов: {count}",
+            "existingMappings": "Существующих сопоставлений: {count}",
+            "mapped": "Сопоставлено складов → филиалов: {count} ({details})"
+        },
+        "companyOverride": "Настройка компании",
+        "systemDefault": "Системное значение по умолчанию",
+        "hanshow": {
+            "title": "Hanshow ESL",
+            "description": "Интеграция Hanshow electronic shelf label (ESL-Working v2.5.3 API)",
+            "loading": "Загрузка...",
+            "active": "Активно",
+            "inactive": "Неактивно",
+            "connectionStatus": "Проверка статуса подключения...",
+            "fields": {
+                "eslworkingUrl": "ESL-Working API URL",
+                "userId": "ID пользователя",
+                "callbackUrl": "Callback URL",
+                "defaultPriority": "Приоритет по умолчанию",
+                "syncInterval": "Интервал синхронизации (сек.)",
+                "ledColor": "Цвет LED",
+                "maxRetryAttempts": "Макс. кол-во попыток",
+                "options": "Опции",
+                "ledFlashOnUpdate": "Мигать LED при обновлении",
+                "autoRetry": "Автоповтор",
+                "enabled": "Интеграция активна"
+            },
+            "hints": {
+                "eslworkingUrl": "Адрес сервиса Hanshow ESL-Working",
+                "callbackUrl": "URL асинхронного callback"
+            },
+            "ledColors": {
+                "green": "Зелёный",
+                "blue": "Синий",
+                "red": "Красный",
+                "yellow": "Жёлтый",
+                "white": "Белый"
+            },
+            "buttons": {
+                "testConnection": "Проверить соединение",
+                "save": "Сохранить",
+                "testing": "Проверка...",
+                "saving": "Сохранение..."
+            },
+            "connection": {
+                "online": "Соединение с ESL-Working активно",
+                "offline": "Соединение с ESL-Working отсутствует",
+                "responseTime": "Время ответа: {time}мс",
+                "connectedGateways": "Подключённые шлюзы ({count})",
+                "startCommand": "Команда запуска ESL-Working"
+            },
+            "connectionSuccess": "Соединение с ESL-Working успешно ({time}мс) — подключено AP: {count}",
+            "connectionFailed": "Не удалось подключиться к ESL-Working: {error}",
+            "testFailed": "Проверка соединения не удалась: {error}",
+            "testConnection": "Проверить соединение",
+            "saveSuccess": "Настройки Hanshow сохранены",
+            "saveFailed": "Не удалось сохранить настройки: {error}",
+            "toast": {
+                "testSuccess": "Соединение с ESL-Working успешно ({time}мс) — подключено AP: {count}",
+                "testFailed": "Не удалось подключиться к ESL-Working: {error}",
+                "saved": "Настройки Hanshow сохранены",
+                "saveFailed": "Не удалось сохранить настройки: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "PavoDisplay",
+            "description": "Интеграция PavoDisplay Android electronic price tag (HTTP-SERVER)",
+            "active": "Активно",
+            "integrated": "Интеграция PavoDisplay встроена и активна",
+            "deviceManagement": "Посетите страницу {link} для управления устройствами.",
+            "devicesLink": "Устройства"
+        },
+        "hal": {
+            "title": "Система регистрации HAL",
+            "description": "Интеграция системы регистрации HAL (HKS) Министерства торговли Турции для запроса регистрации",
+            "loading": "Загрузка...",
+            "active": "Активно",
+            "inactive": "Неактивно",
+            "configured": "Настроено",
+            "notConfigured": "Не настроено",
+            "connectionStatus": "Проверка статуса подключения...",
+            "connectionConfigured": "Настройки HAL настроены",
+            "connectionNotConfigured": "Настройки HAL не настроены",
+            "enterCredentials": "Введите учётные данные HAL для запроса регистрации",
+            "credentialsRequired": "Требуются учётные данные HAL",
+            "responseTime": "Время ответа",
+            "fields": {
+                "username": "Имя пользователя",
+                "password": "Пароль",
+                "servicePassword": "Пароль сервиса",
+                "tcVergiNo": "TC ID / налоговый №",
+                "sifatId": "Статус уведомителя",
+                "sifat2Id": "Должность второго лица",
+                "enabled": "Интеграция активна"
+            },
+            "hints": {
+                "username": "Ваше имя пользователя, зарегистрированное в системе HKS",
+                "password": "Ваш пароль пользователя HKS",
+                "servicePassword": "Пароль веб‑сервиса HKS",
+                "tcVergiNo": "TC ID или налоговый номер для запроса (необязательно)",
+                "sifatId": "Выберите статус вашей организации, зарегистрированный в системе HAL",
+                "sifat2Id": "Выберите должность второго лица (необязательно)",
+                "howToGet": "Если у вас нет учётных данных HAL, вы можете зарегистрироваться на hal.gov.tr или через портал электронного правительства."
+            },
+            "sifatOptions": {
+                "select": "Выберите...",
+                "sanayici": "Производитель (manufacturer)",
+                "ihracat": "Экспорт",
+                "ithalat": "Импорт",
+                "uretici": "Производитель (producer)",
+                "komisyoncu": "Комиссионер",
+                "tuccarHalIci": "Торговец (внутри HAL)",
+                "market": "Маркет",
+                "manav": "Овощная лавка",
+                "depoTasnif": "Склад/сортировка и упаковка",
+                "ureticiOrgutu": "Организация производителей",
+                "pazarci": "Рыночный продавец",
+                "otel": "Отель",
+                "lokanta": "Ресторан",
+                "yurt": "Общежитие",
+                "yemekFabrikasi": "Пищевая фабрика",
+                "hastane": "Больница",
+                "tuccarHalDisi": "Торговец (вне HAL)"
+            },
+            "buttons": {
+                "testConnection": "Проверить соединение",
+                "save": "Сохранить",
+                "testing": "Проверка...",
+                "saving": "Сохранение..."
+            },
+            "connection": {
+                "online": "Соединение HKS активно",
+                "offline": "Соединение HKS отсутствует",
+                "responseTime": "Время ответа: {time}мс"
+            },
+            "toast": {
+                "connectionSuccess": "Соединение HKS успешно",
+                "connectionFailed": "Соединение HKS не удалось",
+                "testSuccess": "Соединение HKS успешно",
+                "testFailed": "Соединение HKS не удалось: {error}",
+                "saved": "Настройки HAL сохранены",
+                "saveFailed": "Не удалось сохранить настройки",
+                "servicePasswordMissing": "Пароль сервиса не введён — часть функций может быть ограничена"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "Настройки HAL не настроены. Пожалуйста, сохраните настройки.",
+                "MISSING_CREDENTIALS": "Отсутствует имя пользователя или пароль",
+                "SOAP_NOT_AVAILABLE": "Расширение PHP SOAP не установлено. Обратитесь к администратору сервера.",
+                "SOAP_CONNECTION_FAILED": "Не удалось подключиться к серверу HAL. Сервер может быть недоступен или есть проблемы с сетью.",
+                "AUTH_ERROR": "Ошибка аутентификации HAL: {detail}",
+                "UNEXPECTED_RESPONSE": "Получен неожиданный ответ от сервера HAL",
+                "SOAP_FAULT": "Ошибка протокола SOAP: {detail}",
+                "CONNECTION_ERROR": "Ошибка соединения: {detail}",
+                "HAL_ERROR_1": "Операция не выполнена. Сервис HAL не смог обработать запрос.",
+                "HAL_ERROR_11": "Неверные учётные данные. Имя пользователя или пароль неверны.",
+                "HAL_ERROR_13": "Аутентификация не удалась. Имя пользователя или пароль неверны.",
+                "HAL_ERROR_UNEXPECTED": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.",
+                "HAL_ERROR_GENERIC": "Сервис HAL вернул ошибку (код: {code})"
+            },
+            "infoBox": {
+                "title": "О системе регистрации HAL",
+                "description": "Система регистрации HAL — официальный сервис, который отслеживает овощи и фрукты от производства до потребления. С помощью функции запроса регистрации вы можете увидеть происхождение товара, данные производителя и историю операций.",
+                "apiInfo": "Эта интеграция использует HAL SOAP Web Services (BildirimService).",
+                "registerLink": "Посетите hal.gov.tr, чтобы зарегистрироваться в HKS."
+            }
+        },
+        "tamsoft": {
+            "title": "TAMSOFT ERP",
+            "description": "Интеграция системы TAMSOFT ERP. Синхронизируйте товары, остатки и цены.",
+            "loading": "Загрузка...",
+            "active": "Активно",
+            "inactive": "Неактивно",
+            "connectionStatus": "Проверка статуса подключения...",
+            "connectionSuccess": "Соединение с TAMSOFT ERP успешно",
+            "connectionFailed": "Не удалось подключиться к TAMSOFT ERP",
+            "lastSync": "Последняя синхронизация",
+            "fields": {
+                "apiUrl": "API URL",
+                "username": "Имя пользователя",
+                "password": "Пароль",
+                "defaultDepo": "Склад по умолчанию",
+                "syncInterval": "Интервал синхронизации (мин.)",
+                "autoSync": "Автосинхронизация",
+                "onlyStockPositive": "Только товары в наличии",
+                "onlyEcommerce": "Только e-commerce товары",
+                "singleBarcode": "Использовать один штрих‑код"
+            },
+            "hints": {
+                "apiUrl": "Адрес TAMSOFT Web Service URL",
+                "username": "Ваше имя пользователя TAMSOFT",
+                "defaultDepo": "Выберите склад по умолчанию. Выполните тест соединения, чтобы загрузить список складов.",
+                "loadDepos": "Сначала выполните тест соединения",
+                "syncInterval": "Интервал автосинхронизации (минуты)"
+            },
+            "buttons": {
+                "loadDepolar": "Загрузить склады",
+                "syncNow": "Синхронизировать сейчас"
+            },
+            "sync": {
+                "title": "Синхронизация TAMSOFT",
+                "start": "Синхронизировать",
+                "syncing": "Синхронизация...",
+                "syncingAll": "Синхронизация всех складов...",
+                "allDepots": "Все склады",
+                "noDepoWarning": "Сначала выберите склад через «Загрузить склады».",
+                "depoHint": "Выберите склад для загрузки товаров или синхронизируйте все склады",
+                "selectAndSave": "Выбрать и сохранить",
+                "infoTitle": "Информация о синхронизации",
+                "infoNew": "Новые товары добавляются автоматически",
+                "infoUpdate": "Цены и остатки существующих товаров обновляются",
+                "infoSafe": "Локально изменённые изображения сохраняются",
+                "infoAllDepots": "Если выбраны «Все склады», товары будут загружены последовательно со всех складов",
+                "fullSync": "Полная синхронизация"
+            },
+            "toast": {
+                "connectionSuccess": "Соединение с TAMSOFT успешно",
+                "connectionFailed": "Не удалось подключиться к TAMSOFT",
+                "saved": "Настройки TAMSOFT сохранены",
+                "saveFailed": "Не удалось сохранить настройки",
+                "depoLoaded": "склады загружены",
+                "depoLoadFailed": "Не удалось загрузить список складов",
+                "syncSuccess": "Синхронизация завершена: добавлено {inserted}, обновлено {updated}, ошибок {failed}",
+                "syncAllSuccess": "Синхронизировано складов: {depo_count}. Добавлено {inserted}, обновлено {updated}, ошибок {failed}",
+                "syncFailed": "Синхронизация не удалась"
+            },
+            "debug": {
+                "tooltip": "API Debug — протестировать ответ Stock List",
+                "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "Платёжная система",
+            "adminOnly": "Эти настройки может менять только SuperAdmin.",
+            "selectProvider": "Выберите платёжного провайдера",
+            "connectionStatus": "Проверка статуса подключения...",
+            "loading": "Загрузка...",
+            "providers": {
+                "iyzico": {
+                    "name": "Iyzico",
+                    "description": "Ведущая платёжная инфраструктура Турции"
+                },
+                "paynet": {
+                    "name": "Paynet",
+                    "description": "Безопасное решение виртуального POS"
+                }
+            },
+            "providerStatus": {
+                "active": "Активно",
+                "inactive": "Неактивно",
+                "configured": "Настроено",
+                "notConfigured": "Не настроено",
+                "test": "Тест",
+                "live": "Live"
+            },
+            "statusBadge": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Активно (live)",
+                "inactive": "Неактивно"
+            },
+            "fields": {
+                "apiKey": "API Key",
+                "secretKey": "Secret Key",
+                "publishableKey": "Publishable Key",
+                "environment": "Окружение",
+                "testMode": "Тестовый режим",
+                "apiUrl": "API URL",
+                "callbackUrl": "Callback URL",
+                "currency": "Валюта",
+                "installmentEnabled": "Оплата в рассрочку активна",
+                "maxInstallments": "Макс. рассрочек:",
+                "statusActive": "Платёжная система активна",
+                "iyzicoSettings": "Настройки Iyzico",
+                "paynetSettings": "Настройки Paynet",
+                "installmentSettings": "Настройки рассрочки",
+                "installmentActive": "Рассрочка активна",
+                "maxInstallment": "Макс. рассрочка:",
+                "status": "Статус",
+                "iyzicoActive": "Iyzico активен",
+                "paynetActive": "Paynet активен"
+            },
+            "hints": {
+                "apiKey": "API key, полученный в панели Iyzico",
+                "secretKey": "Secret key, полученный в панели",
+                "publishableKey": "Publishable Key, полученный в панели Paynet",
+                "environment": "Выберите sandbox для тестов, production для live‑платежей",
+                "testMode": "В тестовом режиме реальные операции не выполняются",
+                "apiUrl": "Адрес API сервера Paynet",
+                "callbackUrl": "URL возврата 3D Secure (автоматически)",
+                "iyzicoMerchant": "Получается в merchant‑панели Iyzico",
+                "paynetMerchant": "Public key из merchant‑панели Paynet",
+                "secretKeyHint": "Secret key (для API запросов)",
+                "testModeHint": "В тестовом режиме реальные платежи не проходят",
+                "callbackReadonly": "Адрес возврата 3D Secure (только чтение)"
+            },
+            "placeholders": {
+                "apiKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "secretKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (существует)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Production (Live)",
+                "testMode": "Тестовый режим",
+                "liveMode": "Live режим"
+            },
+            "currencies": {
+                "TRY": "TRY — турецкая лира",
+                "USD": "USD — доллар США",
+                "EUR": "EUR — евро"
+            },
+            "testing": "Проверка...",
+            "buttons": {
+                "testConnection": "Проверить соединение",
+                "save": "Сохранить",
+                "showHide": "Показать/скрыть",
+                "testing": "Проверка...",
+                "saving": "Сохранение..."
+            },
+            "connectionSuccess": "Соединение с {provider} успешно ({env} режим)",
+            "connectionFailed": "Соединение с {provider} не удалось: {error}",
+            "connectionTestFailed": "Проверка соединения не удалась: {error}",
+            "saveSuccess": "Платёжные настройки {provider} сохранены",
+            "saveFailed": "Не удалось сохранить настройки: {error}",
+            "connection": {
+                "configured": "Соединение Iyzico настроено",
+                "notConfigured": "Соединение Iyzico не настроено",
+                "missingKeys": "Отсутствуют API ключи"
+            },
+            "toast": {
+                "testSuccess": "Соединение с {provider} успешно — режим {environment}",
+                "testFailed": "Соединение с {provider} не удалось: {error}",
+                "saved": "Платёжные настройки {provider} сохранены",
+                "saveFailed": "Не удалось сохранить настройки: {error}",
+                "apiKeyRequired": "Для активации платёжной системы требуется API Key",
+                "secretKeyRequired": "Для активации платёжной системы требуется Secret Key",
+                "publishableKeyRequired": "Для активации платёжной системы требуется Publishable Key"
+            },
+            "validation": {
+                "apiKeyRequired": "Для активации платёжной системы требуется API Key",
+                "secretKeyRequired": "Для активации платёжной системы требуется Secret Key",
+                "publishableKeyRequired": "Для активации платёжной системы требуется Publishable Key"
+            }
+        },
+        "licensePlans": {
+            "title": "Тарифные планы лицензии",
+            "description": "Тарифные планы лицензии для клиентов",
+            "loading": "Загрузка...",
+            "empty": "Тарифные планы пока не определены",
+            "recommended": "Рекомендуемый",
+            "enterprise": "Корпоративный",
+            "inactive": "Неактивно",
+            "months": "мес.",
+            "addPlan": "Новый план",
+            "editPlan": "Редактировать план",
+            "notFound": "План не найден",
+            "created": "План создан",
+            "updated": "План обновлён",
+            "deleted": "План удалён",
+            "limits": {
+                "users": "Пользователи",
+                "devices": "Устройства",
+                "products": "Товары",
+                "templates": "Шаблоны",
+                "storage": "Хранилище",
+                "branches": "Филиалы"
+            },
+            "form": {
+                "name": "Название плана",
+                "slug": "Slug",
+                "slugPlaceholder": "plan-name",
+                "description": "Описание",
+                "price": "Цена",
+                "currency": "Валюта",
+                "duration": "Срок (мес.)",
+                "maxUsers": "Макс. пользователей",
+                "maxDevices": "Макс. устройств",
+                "maxProducts": "Макс. товаров",
+                "maxTemplates": "Макс. шаблонов",
+                "maxBranches": "Макс. филиалов",
+                "storageLimit": "Лимит хранилища (MB)",
+                "features": "Возможности",
+                "featuresHint": "Указывайте по одной возможности в строке",
+                "isPopular": "Рекомендуемый план",
+                "isEnterprise": "Корпоративный",
+                "isActive": "Активен",
+                "sortOrder": "Порядок сортировки",
+                "unlimited": "Введите 0 для безлимита",
+                "unlimitedZero": "Введите 0 для безлимита"
+            },
+            "deleteConfirm": {
+                "title": "Удалить план",
+                "message": "Вы уверены, что хотите удалить план {name}?"
+            },
+            "validation": {
+                "nameRequired": "Название плана обязательно"
+            },
+            "features": {
+                "esl_support": "Поддержка ESL",
+                "basic_templates": "Базовые шаблоны",
+                "email_support": "Поддержка email",
+                "signage_support": "Поддержка digital signage",
+                "advanced_templates": "Расширенные шаблоны",
+                "priority_support": "Приоритетная поддержка",
+                "api_access": "Доступ к API",
+                "custom_branding": "Кастомный брендинг",
+                "multi_location": "Мульти‑локации",
+                "dedicated_support": "Выделенная поддержка",
+                "sla_guarantee": "Гарантия SLA",
+                "custom_integration": "Кастомная интеграция",
+                "white_label": "White label",
+                "unlimited_users": "Безлимитные пользователи",
+                "unlimited_devices": "Безлимитные устройства",
+                "analytics": "Аналитические отчёты",
+                "export_reports": "Экспорт отчётов",
+                "bulk_import": "Массовый импорт",
+                "scheduler": "Планировщик",
+                "notifications": "Уведомления"
+            }
+        },
+        "paymentInfo": {
+            "title": "О платежной интеграции",
+            "features": {
+                "title": "Поддерживаемые возможности",
+                "singlePayment": "Разовый платёж",
+                "installment": "Оплата в рассрочку (2–12 платежей)",
+                "secure3d": "Безопасная оплата 3D Secure",
+                "refund": "Возврат и отмена",
+                "cardSaving": "Сохранение карты (опционально)",
+                "items": {
+                    "singlePayment": "Разовый платёж по банковской карте",
+                    "installment": "Оплата в рассрочку (2–12 платежей)",
+                    "secure3d": "Безопасная оплата 3D Secure",
+                    "refund": "Возврат и отмена",
+                    "bkmExpress": "Интеграция BKM Express"
+                }
+            },
+            "cards": {
+                "title": "Поддерживаемые карты"
+            },
+            "testCard": {
+                "title": "Тестовая карта (Iyzico)",
+                "cardNo": "Номер карты:",
+                "expiry": "Срок:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "Данные тестовой карты (Sandbox)",
+                    "cardNo": "Номер карты:",
+                    "expiry": "Срок:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "Документация API",
+                "link": "Документация API Iyzico",
+                "iyzicoLink": "Документация API Iyzico",
+                "paynetLink": "Документация API Paynet"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "Интеграция ERP",
+                "description": "SAP, Oracle, Dynamics, Logo, Netsis",
+                "fields": {
+                    "type": "Тип ERP",
+                    "endpoint": "API Endpoint",
+                    "username": "Имя пользователя",
+                    "password": "Пароль",
+                    "syncInterval": "Интервал синхронизации (мин.)"
+                },
+                "types": {
+                    "sap": "SAP",
+                    "oracle": "Oracle",
+                    "dynamics": "Microsoft Dynamics",
+                    "logo": "Logo",
+                    "netsis": "Netsis",
+                    "other": "Другое"
+                }
+            },
+            "pos": {
+                "title": "Интеграция POS",
+                "description": "Wolvox, Sentez, Nebim",
+                "fields": {
+                    "type": "Тип POS",
+                    "endpoint": "API Endpoint",
+                    "apiKey": "API Key",
+                    "storeId": "ID магазина"
+                },
+                "types": {
+                    "wolvox": "Wolvox",
+                    "sentez": "Sentez",
+                    "nebim": "Nebim",
+                    "other": "Другое"
+                }
+            },
+            "wms": {
+                "title": "Интеграция WMS",
+                "description": "Система управления складом",
+                "fields": {
+                    "endpoint": "API Endpoint",
+                    "apiKey": "API Key",
+                    "warehouseId": "ID склада",
+                    "stockSync": "Синхронизация остатков",
+                    "active": "Активно"
+                }
+            },
+            "api": {
+                "title": "Доступ к API",
+                "description": "Интеграция с внешним API",
+                "fields": {
+                    "apiKey": "API Key",
+                    "rateLimit": "Лимит (запросов/мин)",
+                    "webhookUrl": "Webhook URL"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.example.com/api",
+                    "webhookUrl": "https://your-app.com/webhook"
+                },
+                "docs": {
+                    "title": "Документация API",
+                    "subtitle": "Быстрый старт по использованию API",
+                    "auth": "Аутентификация",
+                    "exampleRequest": "Пример запроса"
+                }
+            }
+        },
+        "toast": {
+            "saved": "Настройки интеграции сохранены",
+            "testSuccess": "Проверка соединения успешна",
+            "testFailed": "Проверка соединения не удалась",
+            "apiKeyGenerated": "Сгенерирован новый API key"
+        },
+        "messages": {
+            "connectionSuccess": "Соединение успешно",
+            "connectionFailed": "Соединение не удалось",
+            "testSuccess": "Проверка соединения успешна",
+            "testFailed": "Проверка соединения не удалась",
+            "saved": "Настройки сохранены",
+            "settingsSaved": "Настройки сохранены",
+            "saveFailed": "Не удалось сохранить настройки",
+            "settingsSaveError": "Не удалось сохранить настройки",
+            "unknownError": "Произошла неизвестная ошибка",
+            "invalidIntegrationType": "Неверный тип интеграции",
+            "apiKeyCopied": "API key скопирован в буфер обмена",
+            "apiKeyGenerated": "Сгенерирован новый API key",
+            "settingsLoadFailed": "Не удалось загрузить настройки",
+            "paymentConfigured": "{providers} настроено. Запустите проверку соединения.",
+            "noPaymentConfigured": "Платёжный провайдер пока не настроен"
+        },
+        "mqtt": {
+            "title": "Настройки MQTT Broker",
+            "description": "Настройки подключения брокера для ESL-устройств в режиме MQTT",
+            "brokerUrl": "URL брокера",
+            "brokerUrlPlaceholder": "localhost или IP-адрес",
+            "brokerPort": "Порт",
+            "useTls": "Использовать TLS",
+            "useTlsHelp": "Активируйте для шифрованного подключения (порт 8883)",
+            "username": "Имя пользователя",
+            "usernamePlaceholder": "Необязательно",
+            "password": "Пароль",
+            "passwordPlaceholder": "Необязательно",
+            "topicPrefix": "Префикс темы",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "Провайдер",
+            "providers": {
+                "mosquitto": "Mosquitto (Локальный)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "Другой"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "Генерируется автоматически",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "Необязательно - Для проверки подписи",
+            "contentServerUrl": "URL сервера контента",
+            "contentServerUrlPlaceholder": "Заполняется автоматически",
+            "reportServerUrl": "URL сервера отчётов",
+            "reportServerUrlPlaceholder": "Заполняется автоматически",
+            "status": "Статус",
+            "statuses": {
+                "active": "Активен",
+                "testing": "Тестирование",
+                "disabled": "Отключён"
+            },
+            "testConnection": "Проверить подключение",
+            "testing": "Тестирование...",
+            "connectionSuccess": "Подключение к брокеру успешно ({time}мс)",
+            "connectionFailed": "Подключение к брокеру не удалось",
+            "saved": "Настройки MQTT сохранены",
+            "saveFailed": "Не удалось сохранить настройки MQTT",
+            "loading": "Загрузка...",
+            "notConfigured": "Не настроено",
+            "configured": "Настроено",
+            "lastConnected": "Последнее подключение",
+            "never": "Никогда не подключался",
+            "save": "Сохранить",
+            "infoTitle": "О MQTT",
+            "infoText": "MQTT — лёгкий протокол обмена сообщениями для IoT-устройств. ESL-устройства в режиме CLIENT получают команды и сообщают статус через MQTT-брокер.",
+            "setupSteps": "Шаги настройки",
+            "step1": "Установите Mosquitto или другой MQTT-брокер",
+            "step2": "Введите URL и порт брокера",
+            "step3": "Проверьте подключение",
+            "step4": "Настройте устройства в режим MQTT через BLE"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "Штрих‑код взвешиваемого товара",
+            "description": "Настройки штрих‑кода для взвешиваемых товаров. Код флага + код весов = 7‑значный штрих‑код.",
+            "flagCode": "Код флага",
+            "flagCodeHint": "Двухзначный код флага, используемый на весах (20–29)",
+            "barcodeFormat": "Формат штрих‑кода",
+            "formatHint": "Формат штрих‑кода, используемый в дизайнах",
+            "preview": "Предпросмотр",
+            "scaleCode": "Код весов",
+            "resultBarcode": "Сформированный штрих‑код",
+            "previewHint": "Пример: код флага (27) + код весов (09337) = 7‑значный штрих‑код (2709337)"
+        },
+        "info": {
+            "title": "Информация о штрих‑коде",
+            "howItWorks": "Как это работает?",
+            "description": "У взвешиваемых товаров штрих‑код формируется из кода флага и кода весов. При взвешивании добавляется информация о весе, и получается полный штрих‑код.",
+            "flag": "Флаг",
+            "scaleCode": "Код весов",
+            "result": "Результат",
+            "note": "Примечание: формат полного штрих‑кода с весов: 27XXXXX QQ qqq + контрольная цифра (QQ=кг, qqq=грамм)"
+        }
+    },
+    "labels": {
+        "title": "Размеры ценников",
+        "subtitle": "Управляйте размерами ценников для печати",
+        "addNew": "Добавить",
+        "listTitle": "Список размеров ценников",
+        "noData": "Размеры ценников не найдены",
+        "infoTitle": "О размерах ценников",
+        "infoText": "Размеры по умолчанию нельзя редактировать или удалять. Вы можете добавлять и управлять своими размерами. Добавленные размеры будут доступны на экране печати товаров.",
+        "system": "Система",
+        "columns": {
+            "name": "Название",
+            "dimensions": "Размеры",
+            "inchDimensions": "Дюймы",
+            "status": "Статус"
+        },
+        "status": {
+            "active": "Активно",
+            "inactive": "Неактивно"
+        },
+        "form": {
+            "name": "Название (необязательно)",
+            "nameHint": "Если оставить пустым, будет автоматически сформировано из размеров",
+            "width": "Ширина",
+            "height": "Высота",
+            "unit": "Единица",
+            "active": "Активно",
+            "activeHint": "Неактивные размеры не отображаются в списке печати"
+        },
+        "placeholders": {
+            "name": "Формируется автоматически"
+        },
+        "validation": {
+            "dimensionsRequired": "Введите корректные ширину и высоту"
+        },
+        "addTitle": "Новый размер ценника",
+        "editTitle": "Редактировать размер ценника",
+        "editSystemTitle": "Системный размер ценника",
+        "systemEditInfo": "Это системный размер по умолчанию. Вы можете изменить только статус активен/неактивен.",
+        "deleteTitle": "Удалить размер ценника",
+        "deleteConfirm": "Размер ценника \"{name}\" будет удалён. Продолжить?",
+        "toast": {
+            "created": "Размер ценника добавлен",
+            "updated": "Размер ценника обновлён",
+            "deleted": "Размер ценника удалён",
+            "loadFailed": "Не удалось загрузить размеры ценников",
+            "saveFailed": "Операция не выполнена",
+            "statusChanged": "Статус размера ценника обновлён"
+        },
+        "units": {
+            "mm": "mm",
+            "cm": "cm",
+            "inch": "inch"
+        }
+    },
+    "toast": {
+        "saved": "Настройки сохранены",
+        "saveFailed": "Не удалось сохранить настройки",
+        "smtpSuccess": "SMTP соединение успешно!",
+        "smtpFailed": "SMTP соединение не удалось"
+    },
+    "gateway": {
+        "title": "Настройки Gateway",
+        "subtitle": "Управление gateway для устройств локальной сети",
+        "newGateway": "Новый gateway",
+        "systemTitle": "Система Gateway",
+        "systemDescription": "Вы можете активировать или деактивировать систему gateway. В неактивном состоянии контент не отправляется на устройства.",
+        "statusActive": "Активно",
+        "statusInactive": "Неактивно",
+        "runtime": {
+            "title": "Runtime‑настройки Gateway",
+            "description": "В этом разделе вы можете настроить таймауты Worker/Gateway, опрос и параметры backoff повторов.",
+            "retryBaseDelay": "Начальная задержка retry (сек.)",
+            "retryMaxDelay": "Максимальная задержка retry (сек.)",
+            "retryMultiplier": "Множитель retry",
+            "heartbeatTimeout": "Heartbeat Timeout (sn)",
+            "commandTimeout": "Таймаут команды (сек.)",
+            "pollInterval": "Gateway Poll (ms)",
+            "scopeCompany": "Область: настройка компании. Потоки отправки worker и сервера используют эти значения.",
+            "scopeUser": "Область: настройка пользователя. Чтобы применилось в worker‑потоке, сохраните на уровне компании с правами Admin/SuperAdmin."
+        },
+        "neverConnected": "Никогда не подключался",
+        "lastSeen": "Последний раз в сети",
+        "devices": "Устройства",
+        "device": "Устройство",
+        "pendingCommands": "Ожидающие команды",
+        "details": "Детали",
+        "credentials": "Учётные данные",
+        "createTitle": "Создать новый gateway",
+        "credentialsTitle": "Учётные данные gateway",
+        "credentialsWarning": "Эта информация будет показана только один раз. Пожалуйста, сохраните её в безопасном месте.",
+        "credentialsSecretHidden": "Этот gateway был создан ранее. По соображениям безопасности secret key показывается только при создании.",
+        "copyConfig": "Скопировать конфигурацию",
+        "hidden": "[СКРЫТО]",
+        "statusInfo": "Статус gateway",
+        "statusLabel": "Статус",
+        "lastHeartbeat": "Последний heartbeat",
+        "never": "Никогда",
+        "connectedDevices": "Подключённые устройства",
+        "noDevices": "Нет подключённых устройств",
+        "deleteTitle": "Удалить gateway",
+        "deleteConfirm": "Gateway \"{name}\" будет удалён. Продолжить?",
+        "status": {
+            "online": "В сети",
+            "error": "Ошибка",
+            "offline": "Не в сети"
+        },
+        "form": {
+            "name": "Название gateway",
+            "namePlaceholder": "Пример: Gateway магазина",
+            "description": "Описание",
+            "descriptionPlaceholder": "Краткое описание gateway",
+            "pollingInterval": "Интервал polling (сек.)",
+            "commandTimeout": "Таймаут команды (сек.)"
+        },
+        "empty": {
+            "title": "Gateway не найден",
+            "description": "Gateway ещё не добавлены. Начните с создания нового gateway.",
+            "createFirst": "Создать первый gateway"
+        },
+        "toast": {
+            "enabled": "Система gateway активирована",
+            "disabled": "Система gateway деактивирована",
+            "saveFailed": "Не удалось сохранить статус gateway",
+            "loadFailed": "Не удалось загрузить gateways",
+            "nameRequired": "Название gateway обязательно",
+            "created": "Gateway создан",
+            "configCopied": "Конфигурация скопирована",
+            "detailsFailed": "Не удалось загрузить детали gateway",
+            "deleted": "Gateway удалён",
+            "deleteFailed": "Не удалось удалить gateway",
+            "createFailed": "Не удалось создать gateway: {error}",
+            "savedUserLevel": "Нет прав на уровень компании. Изменение сохранено на уровне пользователя.",
+            "runtimeSavedCompany": "Runtime‑настройки gateway сохранены на уровне компании.",
+            "runtimeSavedUser": "Нет прав на уровень компании. Настройки сохранены на уровне пользователя.",
+            "runtimeSaveFailed": "Не удалось сохранить runtime‑настройки"
+        },
+        "defaultImage": {
+            "title": "Изображение по умолчанию",
+            "description": "Укажите изображение по умолчанию, которое будет показано при очистке памяти устройства. Можно задать разные изображения под разные размеры экрана.",
+            "upload": "Загрузить изображение",
+            "uploadTitle": "Загрузить изображение по умолчанию",
+            "uploadInfo": "Это изображение будет автоматически загружено при очистке памяти устройства. Рекомендуется выбрать изображение, подходящее под размер экрана.",
+            "gateway": "Gateway",
+            "general": "Общие",
+            "noGateways": "Сначала добавьте gateway",
+            "selectGateway": "Выберите gateway...",
+            "gatewayHint": "Это изображение будет отображаться на устройствах выбранного gateway",
+            "imageType": "Тип изображения",
+            "typeHint": "Выберите, для какого размера/ориентации экрана будет использоваться",
+            "file": "Файл изображения",
+            "dropzone": "Перетащите файл сюда или нажмите",
+            "formats": "JPG или PNG, макс. 5MB",
+            "selectFile": "Выберите изображение",
+            "empty": "Изображение по умолчанию ещё не добавлено",
+            "uploaded": "Изображение по умолчанию загружено",
+            "uploadFailed": "Не удалось загрузить изображение: {error}",
+            "deleteTitle": "Удалить изображение",
+            "deleteConfirm": "Вы уверены, что хотите удалить это изображение по умолчанию?",
+            "deleted": "Изображение по умолчанию удалено",
+            "deleteFailed": "Не удалось удалить изображение",
+            "types": {
+                "default": "Общее (все устройства)",
+                "portrait": "Портретные экраны",
+                "landscape": "Альбомные экраны"
+            }
+        }
+    },
+    "time": {
+        "justNow": "Только что",
+        "minutesAgo": "{count} мин назад",
+        "hoursAgo": "{count} ч назад",
+        "daysAgo": "{count} дн назад"
+    },
+    "messages": {
+        "unknownError": "Произошла неизвестная ошибка",
+        "loadFailed": "Не удалось загрузить данные",
+        "saveFailed": "Не удалось сохранить"
+    }
+}

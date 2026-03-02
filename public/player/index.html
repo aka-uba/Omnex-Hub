@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport - viewport-fit=contain keeps content within safe areas (status bar visible) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=contain, interactive-widget=resizes-content">
+
+    <!-- Theme & Status Bar -->
+    <meta name="theme-color" content="#000000">
+    <meta name="msapplication-navbutton-color" content="#000000">
+    <meta name="msapplication-TileColor" content="#000000">
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-touch-fullscreen" content="yes">
+
+    <!-- Android/Chrome PWA -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="full-screen" content="yes">
+    <meta name="browsermode" content="application">
+
+    <!-- Orientation -->
+    <meta name="screen-orientation" content="any">
+
+    <!-- Chinese browser fullscreen support -->
+    <meta name="x5-fullscreen" content="true">
+    <meta name="x5-page-mode" content="app">
+    <meta name="x5-orientation" content="landscape">
+    <meta name="360-fullscreen" content="true">
+    <meta name="UC-webkit-fullscreen" content="yes">
+
+    <!-- Disable format detection -->
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
+
+    <!-- Description -->
+    <meta name="description" content="Omnex Display Hub - Digital Signage Player">
+
+    <title>Omnex Player</title>
+
+    <!-- HTTPS Redirect (production only) -->
+    <script>
+        (function() {
+            var host = window.location.hostname;
+            var isLocalhost = host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.endsWith('.local');
+
+            // Redirect to HTTPS on production (non-localhost)
+            if (!isLocalhost && window.location.protocol === 'http:') {
+                window.location.href = window.location.href.replace('http:', 'https:');
+                return;
+            }
+        })();
+    </script>
+
+    <!-- Base URL and CSS injection for dynamic paths -->
+    <script>
+        (function() {
+            var path = window.location.pathname;
+            var playerIndex = path.indexOf('/player');
+            var basePath = playerIndex > 0 ? path.substring(0, playerIndex) : '';
+            var playerPath = basePath + '/player/';
+
+            window.PLAYER_BASE_PATH = basePath;
+            window.PLAYER_PATH = playerPath;
+
+            document.write('<base href="' + playerPath + '">');
+            document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=31">');
+            document.write('<link rel="manifest" href="' + playerPath + 'manifest.json">');
+        })();
+    </script>
+
+    <script>
+        (function() {
+            var basePath = window.PLAYER_BASE_PATH || '';
+            var playerPath = window.PLAYER_PATH || '/player/';
+
+            // Player-side install modal config.
+            // Set apkDownloadUrl to a public reachable APK URL.
+            // Example: basePath + '/downloads/omnex-player.apk'
+            window.PLAYER_CONFIG = Object.assign({
+                showInstallPromptInAndroidApp: false,
+                apkDownloadUrl: playerPath + '../downloads/omnex-player.apk'
+            }, window.PLAYER_CONFIG || {});
+        })();
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../branding/favicon.png">
+    <link rel="apple-touch-icon" href="../branding/favicon.png">
+
+    <!-- Critical inline styles for Android TV/Google TV compatibility (fallback if CSS fails) -->
+    <style>
+        /* Base reset and fallback */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: #0f0f23; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .screen.active { display: flex !important; }
+        .loading-content, .error-content { text-align: center; padding: 2rem; max-width: 90%; }
+        /* Registration content - responsive */
+        .registration-content {
+            text-align: center;
+            padding: clamp(1rem, 3vmin, 3rem);
+            max-width: 90vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(1rem, 2vmin, 2rem);
+        }
+        .loading-title, h1, h2 { font-size: clamp(1.25rem, 4vmin, 3rem); margin: 1rem 0; }
+        .loading-message, p { font-size: clamp(0.875rem, 2vmin, 1.5rem); color: rgba(255,255,255,0.7); margin: 0.5rem 0; }
+        .loading-spinner .spinner {
+            width: clamp(40px, 8vmin, 80px); height: clamp(40px, 8vmin, 80px);
+            border: 4px solid rgba(79,70,229,0.3); border-top-color: #4f46e5;
+            border-radius: 50%; animation: spin 1s linear infinite;
+            margin: 1.5rem auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .sync-code-container {
+            background: rgba(22,33,62,0.8);
+            border: 2px solid rgba(55,65,81,0.5);
+            border-radius: clamp(0.75rem, 2vmin, 1.5rem);
+            padding: clamp(1.5rem, 4vmin, 4rem);
+            width: 100%;
+            max-width: clamp(300px, 60vmin, 800px);
+        }
+        .sync-code {
+            font-size: clamp(2rem, 10vmin, 8rem);
+            font-weight: bold;
+            letter-spacing: clamp(0.2em, 0.3em, 0.4em);
+            color: #818cf8;
+            margin: clamp(0.25rem, 1vmin, 1rem) 0;
+            text-shadow: 0 0 20px rgba(79,70,229,0.5);
+            word-break: break-all;
+        }
+        .sync-code-label, .sync-code-hint { font-size: clamp(0.875rem, 2vmin, 1.5rem); }
+        .sync-code-timer {
+            font-size: clamp(0.75rem, 1.8vmin, 1.25rem);
+            color: rgba(255,255,255,0.5);
+            margin-top: clamp(0.5rem, 1vmin, 1rem);
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(245,158,11,0.1);
+            border-radius: 0.5rem;
+        }
+        .device-info {
+            margin-top: clamp(0.5rem, 2vmin, 2rem);
+            text-align: left;
+            display: inline-block;
+            background: rgba(22,33,62,0.8);
+            border: 1px solid rgba(55,65,81,0.5);
+            border-radius: clamp(0.5rem, 1.5vmin, 1rem);
+            padding: clamp(0.75rem, 2vmin, 1.5rem);
+            width: 100%;
+            max-width: clamp(280px, 50vmin, 600px);
+        }
+        .info-row { display: flex; gap: 1rem; padding: clamp(0.25rem, 1vmin, 0.5rem) 0; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-between; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: rgba(255,255,255,0.5); font-size: clamp(0.75rem, 1.8vmin, 1.25rem); }
+        .info-value { color: #fff; word-break: break-all; font-size: clamp(0.75rem, 1.8vmin, 1.25rem); text-align: right; }
+        .status-waiting { color: #fbbf24 !important; }
+        .status-error { color: #ef4444 !important; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .btn-retry {
+            padding: 1rem 2.5rem; background: #4f46e5; color: white;
+            border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+            margin-top: 1.5rem; transition: background 0.2s;
+        }
+        .btn-retry:hover, .btn-retry:focus { background: #4338ca; outline: none; }
+        #content-container { width: 100%; height: 100%; position: relative; background: #000; overflow: hidden; }
+        .content-item { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; }
+
+        /* Transition animations */
+        .content-item.transition-enter { z-index: 2; }
+        .content-item.transition-exit { z-index: 1; }
+
+        /* Fade transition */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .content-item.fade-enter { animation: fadeIn var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.fade-exit { animation: fadeOut var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Slide left transition */
+        @keyframes slideInLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes slideOutLeft { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+        .content-item.slide-left-enter { animation: slideInLeft var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.slide-left-exit { animation: slideOutLeft var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Slide right transition */
+        @keyframes slideInRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
+        .content-item.slide-right-enter { animation: slideInRight var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.slide-right-exit { animation: slideOutRight var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Slide up transition */
+        @keyframes slideInUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideOutUp { from { transform: translateY(0); } to { transform: translateY(-100%); } }
+        .content-item.slide-up-enter { animation: slideInUp var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.slide-up-exit { animation: slideOutUp var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Slide down transition */
+        @keyframes slideInDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+        @keyframes slideOutDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
+        .content-item.slide-down-enter { animation: slideInDown var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.slide-down-exit { animation: slideOutDown var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Zoom transition */
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes zoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
+        .content-item.zoom-enter { animation: zoomIn var(--transition-duration, 500ms) ease-out forwards; }
+        .content-item.zoom-exit { animation: zoomOut var(--transition-duration, 500ms) ease-out forwards; }
+
+        /* Crossfade transition (smooth overlap, ideal for signage) */
+        @keyframes crossfadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes crossfadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .content-item.crossfade-enter { animation: crossfadeIn var(--transition-duration, 500ms) ease-in-out forwards; }
+        .content-item.crossfade-exit { animation: crossfadeOut var(--transition-duration, 500ms) ease-in-out forwards; }
+        .fallback.visible { display: flex; justify-content: center; align-items: center; background: #0f0f23; }
+        .fallback-inner { text-align: center; }
+        .error-icon svg { margin-bottom: 1rem; }
+        .error-title { color: #ef4444; }
+        #debug-panel {
+            position: fixed; bottom: 0; left: 0; right: 0; max-height: 250px;
+            background: rgba(0,0,0,0.95); color: #0f0; font-family: 'Consolas', monospace;
+            font-size: 11px; overflow: auto; padding: 10px; z-index: 10000;
+            border-top: 2px solid #0f0;
+        }
+        .debug-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .debug-header button { background: #333; color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
+        /* Status bar - hidden by default, show on hover/activity */
+        .status-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+            padding: 0.75rem 1.5rem;
+            display: flex; justify-content: space-between; font-size: 0.875rem;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+        .status-bar.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .status-icon { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.5rem; }
+        .status-icon.online { background: #22c55e; }
+        .status-icon.offline { background: #ef4444; }
+        /* Landscape mode - ANY width */
+        @media (orientation: landscape) {
+            .registration-content { flex-direction: row; flex-wrap: wrap; max-width: 98vw; gap: 3vmin; justify-content: center; }
+            .sync-code-container { flex: 1 1 auto; max-width: 55vw; min-width: 300px; }
+            .device-info { flex: 0 1 auto; max-width: 30vw; min-width: 200px; margin-top: 0; }
+            .sync-code { font-size: clamp(2rem, 8vmin, 8rem); }
+        }
+        /* Large landscape */
+        @media (min-width: 1200px) and (orientation: landscape) {
+            .registration-content { gap: 4vmin; }
+            .sync-code-container { max-width: 50vw; }
+        }
+        /* Portrait mode */
+        @media (orientation: portrait) {
+            .registration-content { flex-direction: column; }
+            .sync-code { font-size: clamp(2rem, 10vw, 6rem); }
+        }
+        /* Small portrait (mobile) */
+        @media (max-width: 640px) and (orientation: portrait) {
+            #registration-screen { padding: 16px; }
+            .registration-content { padding: 16px; gap: 1rem; }
+            .sync-code { font-size: clamp(1.75rem, 12vw, 3rem); }
+        }
+        /* Small landscape (mobile landscape) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .registration-content { padding: 8px; gap: 2vmin; }
+            .registration-header { display: none; }
+            .sync-code { font-size: clamp(1.5rem, 10vh, 3rem); }
+        }
+        /* QR container responsive */
+        .qr-container { margin-top: clamp(0.5rem, 2vmin, 1.5rem); }
+        .qr-placeholder svg { width: clamp(80px, 15vmin, 200px); height: clamp(80px, 15vmin, 200px); opacity: 0.5; }
+    </style>
+
+    <!-- HLS.js for video streaming (Local Vendor) -->
+    <script src="../assets/vendor/hls/hls.min.js" async></script>
+
+    <!-- QRCode.js for QR code generation (Local Vendor) -->
+    <script src="../assets/vendor/qrcode/qrcode.min.js" async></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <img src="../branding/logo-player.png?v=1" alt="Omnex Logo" class="brand-logo brand-logo">
+            </div>
+            <h1 class="loading-title">Omnex Player</h1>
+            <p class="loading-message" id="loading-message">Başlatılıyor...</p>
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global install actions -->
+    <div id="floating-install-actions" class="floating-install-actions" style="display: none;">
+        <button id="pwa-install-btn" class="pwa-install-btn" style="display: none;" title="PWA Olarak Yükle">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+                <rect x="3" y="19" width="18" height="2" rx="1" fill="currentColor" stroke="none"/>
+            </svg>
+        </button>
+        <a id="apk-install-btn" class="apk-install-btn" style="display: none;" title="APK İndir" href="#" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="7" y="2" width="10" height="14" rx="2"/>
+                <path d="M9 19h6M12 11v9M9 17l3 3 3-3"/>
+            </svg>
+        </a>
+    </div>
+
+    <button id="orientation-toggle-btn" class="orientation-toggle-btn" style="display: none;" title="Yatay Görünüm">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="7" width="18" height="10" rx="2"/>
+            <path d="M7 5l-2 2 2 2M17 19l2-2-2-2"/>
+        </svg>
+    </button>
+    <!-- Registration Screen (Sync Code Display) -->
+    <div id="registration-screen" class="screen">
+        <div class="registration-content">
+            <div class="registration-header">
+                <img src="../branding/logo-player.png?v=1" alt="Omnex Logo" class="registration-brand-logo brand-logo">
+                <h1>Omnex Display Hub</h1>
+                <p>Digital Signage Player</p>
+            </div>
+
+            <div class="sync-code-container">
+                <p class="sync-code-label">Eşleştirme Kodu</p>
+                <div class="sync-code" id="sync-code">------</div>
+                <p class="sync-code-hint">Bu kodu yönetim paneline girin</p>
+                <div class="sync-code-timer">
+                    <span id="sync-timer">15:00</span> içinde geçerli
+                </div>
+            </div>
+
+            <div class="device-info">
+                <div class="info-row">
+                    <span class="info-label">Cihaz ID:</span>
+                    <span class="info-value" id="device-fingerprint">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Ekran:</span>
+                    <span class="info-value" id="screen-resolution">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Durum:</span>
+                    <span class="info-value status-waiting" id="registration-status">Onay Bekleniyor</span>
+                </div>
+            </div>
+
+            <div class="qr-container" id="qr-container">
+                <!-- QR Code will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Screen -->
+    <div id="player-screen" class="screen">
+        <!-- Content Container -->
+        <div id="content-container" class="content-container">
+            <!-- Image Content -->
+            <img id="image-content" class="content-item" style="display: none;" alt="">
+
+            <!-- Video Content (dual elements for seamless video-to-video crossfade) -->
+            <video id="video-content" class="content-item" style="display: none;"
+                   playsinline webkit-playsinline muted autoplay preload="auto"></video>
+            <video id="video-content-alt" class="content-item" style="display: none;"
+                   playsinline webkit-playsinline muted autoplay preload="auto"></video>
+
+            <!-- HTML/Template Content (Web Pages) -->
+            <iframe id="html-content" class="content-item" style="display: none; background: #000;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+            <!-- Fallback/Error Content -->
+            <div id="fallback-content" class="content-item fallback" style="display: none;">
+                <div class="fallback-inner">
+                    <img src="../branding/logo-player.png?v=1" alt="Omnex Logo" class="fallback-logo brand-logo">
+                    <h2>Omnex Display Hub</h2>
+                    <p id="fallback-message">İçerik yükleniyor...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar (can be hidden) -->
+        <div id="status-bar" class="status-bar">
+            <div class="status-left">
+                <span class="status-icon online" id="connection-status"></span>
+                <span id="device-name">Omnex Player</span>
+            </div>
+            <div class="status-center">
+                <span id="current-item-info">-</span>
+            </div>
+            <div class="status-right">
+                <span id="current-time">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Screen -->
+    <div id="error-screen" class="screen">
+        <div class="error-content">
+            <div class="error-icon">
+                <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#ef4444" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h2 class="error-title">Bağlantı Hatası</h2>
+            <p class="error-message" id="error-message">Sunucuya bağlanılamadı</p>
+            <button class="btn-retry" id="btn-retry">Tekrar Dene</button>
+        </div>
+    </div>
+
+    <!-- Debug Panel (Development Only) -->
+    <div id="debug-panel" class="debug-panel" style="display: none;">
+        <div class="debug-header">
+            <span>Debug Panel</span>
+            <button id="close-debug">&times;</button>
+        </div>
+        <div class="debug-content">
+            <pre id="debug-log"></pre>
+        </div>
+    </div>
+
+    <!-- Player Scripts -->
+    <!-- Main player module -->
+    <script type="module">
+        // Dynamic import of player module with full path
+        const playerPath = window.PLAYER_PATH || '/player/';
+        const scriptUrl = playerPath + 'assets/js/player.js?v=40';
+
+        try {
+            import(scriptUrl);
+        } catch (error) {
+            console.error('[Omnex Player] Failed to load player module:', error);
+            const loadingMsg = document.getElementById('loading-message');
+            if (loadingMsg) {
+                loadingMsg.innerHTML = 'Modül yüklenemedi:<br>' + error.message;
+                loadingMsg.style.color = '#ef4444';
+            }
+        }
+    </script>
+
+    <!-- Fallback for browsers without ES Module support -->
+    <script nomodule>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loadingScreen = document.getElementById('loading-screen');
+            var errorScreen = document.getElementById('error-screen');
+            var errorMsg = document.getElementById('error-message');
+
+            if (loadingScreen) {
+                loadingScreen.classList.remove('active');
+                loadingScreen.style.display = 'none';
+            }
+            if (errorScreen) {
+                errorScreen.classList.add('active');
+                errorScreen.style.display = 'flex';
+            }
+            if (errorMsg) {
+                errorMsg.innerHTML = 'Bu tarayıcı desteklenmiyor.<br>Lütfen güncel bir tarayıcı kullanın.';
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+

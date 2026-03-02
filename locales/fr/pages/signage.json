@@ -1,0 +1,390 @@
+{
+    "title": "Affichage numérique",
+    "subtitle": "Gérer le contenu d'affichage numérique",
+    "playlists": {
+        "title": "Listes de lecture",
+        "subtitle": "Gérer les listes de lecture",
+        "addPlaylist": "Nouvelle liste de lecture",
+        "editPlaylist": "Modifier la liste de lecture",
+        "deletePlaylist": "Supprimer la liste de lecture",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette liste de lecture ?",
+        "detail": "Détails de la liste de lecture",
+        "empty": "Aucune liste de lecture créée pour le moment",
+        "selectMedia": "Sélectionner un média",
+        "itemCount": "éléments",
+        "columns": {
+            "orientation": "Orientation de l'écran",
+            "template": "Modèle",
+            "layoutType": "Type de mise en page",
+            "assignedDevice": "Appareil assigné",
+            "devicesCount": "Appareils ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - Appareils assignés",
+            "noDevices": "Aucun appareil assigné trouvé",
+            "removeDevice": "Supprimer",
+            "removeConfirm": "Voulez-vous supprimer cet appareil de l'assignation de la liste de lecture ?",
+            "removed": "Assignation d'appareil supprimée"
+        },
+        "orientations": {
+            "landscape": "Paysage (1920x1080)",
+            "portrait": "Portrait (1080x1920)"
+        },
+        "layouts": {
+            "full": "Plein écran",
+            "grid2": "Grille 2 colonnes",
+            "grid3": "Grille 3 colonnes",
+            "grid4": "Grille 4 colonnes",
+            "hybrid": "Hybride (Principal + Latéral)"
+        },
+        "mediaTypes": {
+            "image": "Image",
+            "video": "Vidéo",
+            "template": "Modèle",
+            "webpage": "Web",
+            "stream": "Flux"
+        },
+        "templatePreview": "Aperçu du modèle",
+        "noTemplateSelected": "Aucun modèle sélectionné",
+        "transitions": {
+            "none": "Aucune",
+            "fade": "Fondu",
+            "slideLeft": "Glissement gauche",
+            "slideRight": "Glissement droite",
+            "slideUp": "Glissement haut",
+            "slideDown": "Glissement bas",
+            "zoom": "Zoom",
+            "crossfade": "Fondu enchaîné"
+        },
+        "form": {
+            "fields": {
+                "name": "Nom de la liste de lecture",
+                "description": "Description",
+                "duration": "Durée (sec)",
+                "transition": "Effet de transition",
+                "transitionDuration": "Durée de transition",
+                "loop": "Boucle",
+                "orientation": "Orientation de l'écran",
+                "template": "Modèle",
+                "layoutType": "Type de mise en page"
+            },
+            "infoTitle": "Informations de la liste",
+            "itemsTitle": "Contenu de la liste",
+            "addItem": "Ajouter du contenu",
+            "createDesc": "Créer une nouvelle liste de lecture",
+            "editDesc": "Modifier la liste de lecture",
+            "namePlaceholder": "Exemple : Images de campagne",
+            "descPlaceholder": "Brève description de la liste",
+            "durationHint": "Durée d'affichage par défaut pour chaque contenu",
+            "selectTemplate": "Sélectionner un modèle...",
+            "noPreview": "Aucun aperçu",
+            "noItems": "Aucun contenu ajouté pour le moment",
+            "noItemsHint": "Utilisez le bouton ci-dessus pour ajouter du contenu",
+            "emptyMedia": "La bibliothèque multimédia est vide",
+            "uploadMedia": "Téléverser un média",
+            "tabMedia": "Média",
+            "tabTemplates": "Modèles",
+            "tabWebpage": "Page Web",
+            "tabStream": "Flux en direct",
+            "webpageTitle": "Ajouter une page Web",
+            "webpageHint": "Entrez l'URL de la page Web que vous souhaitez afficher. La page sera affichée dans un iframe.",
+            "webpageUrl": "URL de la page Web",
+            "webpageName": "Nom d'affichage",
+            "webpageNamePlaceholder": "Exemple : Météo",
+            "addWebpage": "Ajouter une page Web",
+            "webpageWarning": "Note : Certains sites Web peuvent bloquer l'affichage dans un iframe (X-Frame-Options). Dans ce cas, la page ne peut pas être affichée.",
+            "webpageUrlRequired": "Veuillez entrer une URL",
+            "webpageUrlInvalid": "L'URL doit commencer par http:// ou https://",
+            "webpageAlreadyAdded": "Cette URL est déjà ajoutée",
+            "webpageAdded": "Page Web ajoutée",
+            "streamTitle": "Ajouter un flux en direct",
+            "streamHint": "Entrez l'URL du flux HLS (m3u8), RTSP ou autre. Il sera lu via hls.js sur les appareils.",
+            "streamUrl": "URL du flux",
+            "streamName": "Nom du flux",
+            "streamNamePlaceholder": "Ex : Caméra 1, Diffusion TV",
+            "streamDurationHint": "0 = indéfini (flux continu)",
+            "streamMuted": "Audio",
+            "streamMutedYes": "Muet",
+            "streamMutedNo": "Son activé",
+            "streamAdd": "Ajouter le flux",
+            "streamFormats": "Formats supportés : HLS (.m3u8), MP4, WebM. RTSP non supporté directement, doit être converti en HLS.",
+            "streamUrlRequired": "Veuillez entrer une URL de flux",
+            "streamUrlInvalid": "Format d'URL invalide",
+            "streamAlreadyAdded": "Ce flux est déjà ajouté",
+            "streamAdded": "Flux en direct ajouté",
+            "emptyTemplates": "Aucun modèle trouvé",
+            "emptyTemplatesHint": "Créer des modèles d'affichage ou TV",
+            "createTemplate": "Créer un modèle",
+            "seconds": "sec",
+            "loop": "Boucle",
+            "loopHint": "Redémarrer la vidéo lorsqu'elle se termine",
+            "loopCountHint": "Combien de fois répéter",
+            "soundOn": "Son activé",
+            "soundOff": "Son désactivé",
+            "durationHintVideo": "Si laissé vide, la vidéo joue à sa propre durée",
+            "durationHintImage": "Durée d'affichage (secondes)",
+            "itemsHint": "Durée : Si laissé vide, la vidéo joue à sa propre durée. Boucle : Si activée, le contenu se répète un nombre spécifié de fois, passe au suivant lorsque la durée expire.",
+            "editItem": "Modifier l'élément",
+            "itemName": "Nom",
+            "itemUpdated": "Élément mis à jour",
+            "duration": "Durée",
+            "autoForVideo": "Auto",
+            "loopVideo": "Boucle vidéo",
+            "loopCount": "Nombre de répétitions",
+            "selectDevice": "Sélectionner un appareil",
+            "selectDevices": "Sélectionner des appareils",
+            "selectedDevices": "Appareils sélectionnés",
+            "assignToMultiple": "Vous pouvez assigner à plusieurs appareils",
+            "selectDevicePlaceholder": "Sélectionner un appareil...",
+            "noDevices": "Aucun appareil approprié trouvé. Ajoutez d'abord un appareil d'affichage.",
+            "willBeAssigned": "la liste de lecture sera assignée à l'appareil sélectionné.",
+            "selectDeviceRequired": "Veuillez sélectionner un appareil",
+            "confirmUnassign": "Aucun appareil sélectionné. Cette liste de lecture sera supprimée de tous les appareils. Continuer ?",
+            "currentlyAssigned": "Actuellement assignée à l'appareil {device}",
+            "currentlyAssignedCount": "Actuellement assignée à {count} appareils",
+            "aDevice": "un appareil"
+        },
+        "assignToDevice": "Assigner à l'appareil",
+        "toast": {
+            "created": "Liste de lecture créée",
+            "updated": "Liste de lecture mise à jour",
+            "deleted": "Liste de lecture supprimée",
+            "mediaAdded": "Média ajouté",
+            "assigned": "Liste de lecture assignée à l'appareil",
+            "assignedCount": "{count} appareils assignés",
+            "assignFailedCount": "{count} assignations d'appareils échouées"
+        },
+        "commands": {
+            "start": "Démarrer la diffusion",
+            "stop": "Arrêter la diffusion",
+            "refresh": "Actualiser l'appareil",
+            "reboot": "Redémarrer l'appareil",
+            "device": "Appareil",
+            "send": "Envoyer",
+            "sentCount": "{count} commandes envoyées aux appareils",
+            "failedCount": "{count} commandes n'ont pas pu être envoyées",
+            "confirmMessage": "La commande \"{command}\" sera envoyée à <strong>{device}</strong>.",
+            "sent": "Commande envoyée : {device}",
+            "failed": "Échec de l'envoi de la commande"
+        },
+        "actions": {
+            "startBroadcast": "Démarrer la diffusion",
+            "stopBroadcast": "Arrêter la diffusion",
+            "refreshDevice": "Actualiser l'appareil"
+        }
+    },
+    "schedules": {
+        "title": "Planifications",
+        "subtitle": "Gérer les planifications de diffusion",
+        "addSchedule": "Nouvelle planification",
+        "editSchedule": "Modifier la planification",
+        "deleteSchedule": "Supprimer la planification",
+        "deleteConfirm": "Êtes-vous sûr de vouloir supprimer la planification \"{name}\" ?",
+        "empty": "Aucune planification créée pour le moment",
+        "historyFeature": "Fonction d'historique à venir",
+        "searchPlaceholder": "Rechercher une planification...",
+        "emptyText": "Planification non trouvée",
+        "columns": {
+            "preview": "Aperçu",
+            "name": "Nom de la planification",
+            "playlist": "Liste de lecture",
+            "devices": "Appareils",
+            "deviceCount": "{count} appareils",
+            "startDate": "Début",
+            "endDate": "Fin",
+            "continuous": "Continu",
+            "status": "Statut"
+        },
+        "status": {
+            "active": "Actif",
+            "scheduled": "Planifié",
+            "inactive": "Inactif",
+            "completed": "Terminé"
+        },
+        "actions": {
+            "history": "Historique",
+            "view": "Voir",
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "newSchedule": "Nouvelle planification",
+        "createDesc": "Créer une nouvelle planification",
+        "editDesc": "Modifier les paramètres de planification",
+        "scheduleInfo": "Informations de planification",
+        "targetDevices": "Appareils cibles",
+        "selectedCount": "{count} sélectionnés",
+        "searchDevice": "Rechercher un appareil...",
+        "noMatch": "Aucune correspondance trouvée",
+        "noTvDevices": "Aucun appareil TV/Affichage trouvé",
+        "locationNotSpecified": "Emplacement non spécifié",
+        "form": {
+            "fields": {
+                "name": "Nom de la planification",
+                "playlist": "Liste de lecture",
+                "startDate": "Date de début",
+                "endDate": "Date de fin",
+                "startTime": "Heure de début",
+                "endTime": "Heure de fin",
+                "repeat": "Répétition",
+                "weekdays": "Jours",
+                "status": "Statut",
+                "devices": "Appareils",
+                "priority": "Priorité"
+            },
+            "placeholders": {
+                "name": "Exemple : Campagne du week-end",
+                "selectPlaylist": "Sélectionner une liste"
+            },
+            "hints": {
+                "endDate": "Si laissé vide, joue en continu",
+                "priority": "Valeur plus élevée = Priorité plus élevée"
+            },
+            "repeat": {
+                "none": "Pas de répétition",
+                "daily": "Quotidien",
+                "weekly": "Hebdomadaire",
+                "monthly": "Mensuel"
+            },
+            "weekdays": {
+                "mon": "Lun",
+                "tue": "Mar",
+                "wed": "Mer",
+                "thu": "Jeu",
+                "fri": "Ven",
+                "sat": "Sam",
+                "sun": "Dim"
+            },
+            "status": {
+                "active": "Actif",
+                "scheduled": "Planifié",
+                "inactive": "Inactif"
+            }
+        },
+        "toast": {
+            "created": "Planification créée",
+            "updated": "Planification mise à jour",
+            "deleted": "Planification supprimée",
+            "loadFailed": "Échec du chargement de la planification",
+            "requiredFields": "Veuillez remplir les champs obligatoires",
+            "selectDevice": "Vous devez sélectionner au moins un appareil",
+            "saveFailed": "Erreur d'enregistrement"
+        }
+    },
+    "template": {
+        "title": "Modèles d'écran",
+        "subtitle": "Gérer les mises en page d'écran TV et d'affichage",
+        "addTemplate": "Ajouter un modèle",
+        "editTemplate": "Modifier le modèle",
+        "types": {
+            "signage": "Affichage",
+            "tv": "TV",
+            "label": "Étiquette"
+        },
+        "layoutTypes": {
+            "full": "Plein écran",
+            "grid2": "Division 2 colonnes",
+            "grid3": "Division 3 colonnes",
+            "grid4": "Division 4 colonnes",
+            "hybrid": "Hybride"
+        },
+        "slots": {
+            "main": "Zone principale",
+            "slot1": "Zone 1",
+            "slot2": "Zone 2",
+            "slot3": "Zone 3",
+            "slot4": "Zone 4",
+            "sidebar": "Barre latérale",
+            "banner": "Bannière inférieure"
+        },
+        "preview": "Aperçu",
+        "previewDescription": "Comment le modèle apparaîtra à l'écran"
+    },
+    "deviceTree": {
+        "title": "État des appareils",
+        "subtitle": "Vue hiérarchique de tous les appareils d'affichage",
+        "expandAll": "Tout déplier",
+        "collapseAll": "Tout replier",
+        "summary": {
+            "total": "Total",
+            "online": "En ligne",
+            "offline": "Hors ligne",
+            "warning": "Avertissement",
+            "devices": "appareils"
+        },
+        "filter": {
+            "search": "Rechercher appareil, IP ou succursale...",
+            "all": "Tous",
+            "online": "En ligne",
+            "offline": "Hors ligne",
+            "warning": "Avertissements"
+        },
+        "columns": {
+            "name": "Nom",
+            "status": "Statut",
+            "playlist": "En lecture",
+            "lastSeen": "Dernière vue",
+            "actions": "Actions"
+        },
+        "node": {
+            "devices": "{count} appareils",
+            "unassigned": "Appareils non assignés",
+            "noBranch": "Sans succursale"
+        },
+        "commands": {
+            "start": "Démarrer",
+            "stop": "Arrêter",
+            "refresh": "Actualiser",
+            "reboot": "Redémarrer",
+            "startAll": "Tout démarrer",
+            "stopAll": "Tout arrêter",
+            "refreshAll": "Tout actualiser",
+            "confirmCascade": "La commande \"{command}\" sera envoyée à {count} appareils. Continuer ?",
+            "sending": "Envoi des commandes...",
+            "progress": "{sent}/{total} envoyées",
+            "resultSuccess": "{success} réussi(s)",
+            "resultFailed": "{failed} échoué(s)",
+            "resultSummary": "Résultat de la commande"
+        },
+        "toast": {
+            "started": "Diffusion démarrée : {device}",
+            "stopped": "Diffusion arrêtée : {device}",
+            "refreshed": "Appareil actualisé : {device}",
+            "rebooted": "Redémarrage en cours : {device}",
+            "failed": "Échec de la commande : {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Tablette",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "à l'instant",
+            "secondsAgo": "il y a {n}s",
+            "minutesAgo": "il y a {n}min",
+            "hoursAgo": "il y a {n}h",
+            "daysAgo": "il y a {n}j",
+            "never": "Jamais"
+        },
+        "empty": "Aucun appareil d'affichage trouvé",
+        "emptyHint": "Ajoutez un téléviseur ou un appareil d'affichage depuis la page Appareils",
+        "autoRefresh": "Actualisation auto : {seconds}s",
+        "refreshing": "Actualisation...",
+        "noPlaylist": "Aucune liste de lecture assignée",
+        "loading": "Chargement de l'arborescence des appareils..."
+    },
+    "player": {
+        "title": "Lecteur PWA",
+        "syncCode": "Code de synchronisation",
+        "enterSyncCode": "Entrer le code de synchronisation",
+        "connecting": "Connexion...",
+        "connected": "Connecté",
+        "disconnected": "Déconnecté",
+        "nowPlaying": "En cours de lecture",
+        "nextItem": "Suivant",
+        "rotation": "Durée de rotation",
+        "seconds": "secondes"
+    }
+}

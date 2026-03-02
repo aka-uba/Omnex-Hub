@@ -1,0 +1,325 @@
+{
+    "title": "Панель",
+    "subtitle": "Обзор",
+    "breadcrumb": {
+        "panel": "Панель",
+        "analytics": "Аналитика и отчёты"
+    },
+    "welcome": "Добро пожаловать, {name}",
+    "welcomeDefault": "Пользователь",
+    "header": {
+        "systemAnalytics": "Системная аналитика",
+        "downloadReport": "Скачать отчёт",
+        "refresh": "Обновить"
+    },
+    "stats": {
+        "totalProducts": "Всего товаров",
+        "updatedIn24h": "Обновлено за последние 24 часа",
+        "inLast30Days": "За последние 30 дней",
+        "inThisPeriod": "За период",
+        "activeDevices": "Активные устройства",
+        "online": "В сети",
+        "offline": "Не в сети",
+        "labelUpdates": "Обновления ценников",
+        "licenseStatus": "Статус лицензии",
+        "critical": "Критично",
+        "licensesExpiring": "Истекает лицензий: {count}",
+        "allLicensesActive": "Все лицензии активны",
+        "storage": "Хранилище",
+        "unlimited": "Без ограничений",
+        "unlimitedStorage": "Безлимитное хранилище",
+        "used": "Использовано",
+        "remaining": "Осталось",
+        "errorRate": "Доля ошибок",
+        "belowIndustryAvg": "Ниже среднего по отрасли"
+    },
+    "gateways": {
+        "noDevices": "Пока нет зарегистрированных устройств",
+        "addDevice": "Добавить устройство",
+        "onlineDevices": "Устройства в сети",
+        "deviceActive": "Активных устройств: {count}",
+        "offlineDevices": "Устройства не в сети",
+        "deviceOffline": "Устройств не в сети: {count}",
+        "waitingConnection": "Ожидание подключения",
+        "allOnline": "Все в сети",
+        "totalDevices": "Всего устройств",
+        "registeredDevices": "Зарегистрировано устройств: {count}",
+        "manage": "Управлять",
+        "deviceGroups": "Группы устройств",
+        "devices": "{count} устройств"
+    },
+    "widgets": {
+        "products": {
+            "title": "Всего товаров",
+            "subtitle": "Количество зарегистрированных товаров"
+        },
+        "devices": {
+            "title": "Устройства",
+            "online": "В сети",
+            "offline": "Не в сети",
+            "pending": "В ожидании"
+        },
+        "templates": {
+            "title": "Шаблоны",
+            "subtitle": "Количество активных шаблонов"
+        },
+        "users": {
+            "title": "Пользователи",
+            "subtitle": "Количество активных пользователей"
+        },
+        "queue": {
+            "title": "Очередь",
+            "pending": "В ожидании"
+        },
+        "sync": {
+            "title": "Синхронизация",
+            "today": "Сегодня",
+            "success": "Успешно",
+            "pending": "В ожидании",
+            "failed": "Неудачно"
+        }
+    },
+    "recentActivity": {
+        "title": "Недавние действия",
+        "empty": "Пока нет записей активности",
+        "emptyHint": "Системные операции будут отображаться здесь",
+        "viewAll": "Показать все",
+        "exportAll": "ЭКСПОРТИРОВАТЬ ВСЕ ЗАПИСИ"
+    },
+    "quickActions": {
+        "title": "Быстрые действия",
+        "addProduct": "Добавить товар",
+        "addDevice": "Добавить устройство",
+        "createTemplate": "Создать шаблон",
+        "importProducts": "Импорт товаров"
+    },
+    "charts": {
+        "productsByCategory": "Товары по категориям",
+        "deviceStatus": "Статус устройств",
+        "syncActivity": "Активность синхронизации",
+        "labelSync": "Синхронизация ценников",
+        "labelUpdates": "Обновления ценников",
+        "loading": "Загрузка данных графика...",
+        "loadingDays": "Загрузка данных за последние {days} дней...",
+        "noData": "Данные не найдены",
+        "noChartData": "Нет данных для графика",
+        "loadError": "Не удалось загрузить данные графика",
+        "onlineDevices": "В сети",
+        "offlineDevices": "Не в сети",
+        "barTooltip": "{date}: {online} в сети, {offline} не в сети",
+        "totalUpdates": "Всего обновлений",
+        "dailyAverage": "Среднее за день",
+        "updates": "обновлений",
+        "noDevices": "Пока нет зарегистрированных устройств"
+    },
+    "period": {
+        "last7Days": "Последние 7 дней",
+        "last30Days": "Последние 30 дней",
+        "last90Days": "Последние 90 дней",
+        "today": "Сегодня",
+        "yesterday": "Вчера",
+        "daysAgo": "{count} дней назад"
+    },
+    "activity": {
+        "titles": {
+            "login": "Вход пользователя",
+            "logout": "Выход пользователя",
+            "create": "Новая запись",
+            "update": "Обновление",
+            "delete": "Удаление",
+            "sync": "Синхронизация",
+            "import": "Импорт",
+            "export": "Экспорт",
+            "send": "Отправка",
+            "error": "Ошибка",
+            "system": "Системная операция",
+            "bulkPriceUpdate": "Массовое обновление цен",
+            "deviceSync": "Синхронизация устройств",
+            "productImport": "Импорт товаров",
+            "connectionWarning": "Предупреждение о соединении"
+        },
+        "resources": {
+            "products": "товар",
+            "devices": "устройство",
+            "templates": "шаблон",
+            "users": "пользователь",
+            "companies": "компания",
+            "categories": "категория",
+            "media": "медиа",
+            "playlists": "плейлист",
+            "schedules": "расписание"
+        },
+        "descriptions": {
+            "login": "{user} вошёл(ла) в систему",
+            "logout": "{user} вышел(ла) из системы",
+            "create": "{user} создал(а) новый {resource}",
+            "update": "{user} обновил(а) {resource}",
+            "delete": "{user} удалил(а) {resource}",
+            "import": "{user} импортировал(а) {resource}",
+            "send": "{user} отправил(а) контент на устройство",
+            "export": "{user} экспортировал(а) данные",
+            "sync": "{user} выполнил(а) синхронизацию"
+        },
+        "messages": {
+            "productCreated": "Добавлено новых товаров: {count}",
+            "productUpdated": "Обновлено товаров: {count}",
+            "productDeleted": "Удалено товаров: {count}",
+            "deviceCreated": "Добавлено новое устройство",
+            "deviceUpdated": "Устройство обновлено",
+            "syncCompleted": "Синхронизация завершена",
+            "importCompleted": "Импортировано записей: {count}",
+            "bulkPriceUpdate": "Выполнено обновление цен для {count} товаров.",
+            "allDevicesSynced": "Все устройства ESL успешно синхронизированы.",
+            "productsImportedFromERP": "Из ERP импортировано новых товаров: {count}.",
+            "gatewayConnectionIssue": "Соединение с {gateway} временно прерывалось и было восстановлено."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Статус устройств",
+            "online": "В сети",
+            "offline": "Не в сети",
+            "offlineDevices": "Устройства не в сети",
+            "noOffline": "Все устройства в сети",
+            "lastSeen": "Последняя активность",
+            "viewAll": "Показать все",
+            "noDevices": "Пока нет устройств"
+        },
+        "recentActivities": {
+            "title": "Недавние действия",
+            "viewAll": "Показать все",
+            "empty": "Пока нет активности"
+        },
+        "renderQueue": {
+            "title": "Очередь рендера",
+            "successRate": "Успешность",
+            "avgTime": "Средн. время",
+            "pending": "В ожидании",
+            "priorityDistribution": "Распределение приоритетов",
+            "urgent": "Срочно",
+            "high": "Высокий",
+            "normal": "Normal",
+            "low": "Низкий",
+            "detail": "Детали",
+            "noData": "Нет данных по очереди",
+            "seconds": "сек"
+        },
+        "products": {
+            "title": "Товары",
+            "total": "Всего товаров",
+            "deviceAssigned": "Назначено устройствам",
+            "templateAssigned": "Назначено шаблонам",
+            "categories": "Категории",
+            "lastUpdated": "Последние обновления",
+            "viewAll": "Показать все"
+        },
+        "templates": {
+            "title": "Шаблоны",
+            "total": "Всего шаблонов",
+            "system": "Системные шаблоны",
+            "byType": "По типу",
+            "label": "Ценник",
+            "signage": "Signage",
+            "tv": "TV",
+            "poster": "Poster",
+            "manage": "Управлять"
+        },
+        "media": {
+            "title": "Медиатека",
+            "totalFiles": "Всего файлов",
+            "shared": "Общие",
+            "companyOnly": "Только для компании",
+            "storageUsage": "Использование хранилища",
+            "browse": "Открыть"
+        },
+        "detailedDevice": {
+            "title": "Подробная информация об устройствах",
+            "byType": "По типу",
+            "byBranch": "По филиалу",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android TV",
+            "tablet": "Tablet",
+            "webDisplay": "Веб‑экран",
+            "pwaPlayer": "PWA Player",
+            "manage": "Управлять",
+            "noBranch": "Нет информации о филиале"
+        },
+        "signage": {
+            "title": "Цифровые вывески",
+            "connectedDevices": "Подключённые устройства",
+            "totalPlaylists": "Всего плейлистов",
+            "active": "Активно",
+            "inactive": "Неактивно",
+            "playlistItems": "Элементы плейлиста",
+            "assignedDevices": "Назначенные устройства",
+            "manage": "Управлять",
+            "noData": "Нет данных Digital Signage"
+        },
+        "companyLicense": {
+            "title": "Компания и лицензия",
+            "company": "Компания",
+            "license": "Лицензия",
+            "branches": "Филиалы",
+            "users": "Пользователи",
+            "activeSessions": "активных сессий",
+            "eslLimit": "Лимит ESL",
+            "tvLimit": "Лимит ТВ",
+            "deviceLimit": "Лимит устройств",
+            "storageLimit": "Хранилище",
+            "daysRemaining": "Осталось дней: {count}",
+            "expired": "Истекла",
+            "unlimited": "Бессрочно",
+            "noLimit": "Без лимита",
+            "noLicense": "Нет информации о лицензии",
+            "noCompany": "Нет информации о компании"
+        },
+        "integrations": {
+            "title": "Интеграции",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "HAL‑регистрация",
+            "hanshow": "Hanshow ESL",
+            "payment": "Платёжная система",
+            "active": "Активно",
+            "configured": "Настроено",
+            "notConfigured": "Не настроено",
+            "disabled": "Отключено",
+            "lastSync": "Последняя синхронизация"
+        }
+    },
+    "toast": {
+        "refreshed": "Панель обновлена",
+        "refreshError": "Ошибка при обновлении панели",
+        "reportPreparing": "Подготовка отчёта...",
+        "reportDownloaded": "Отчёт успешно скачан",
+        "reportError": "Не удалось скачать отчёт",
+        "downloading": "Скачивание...",
+        "activityPreparing": "Подготовка записей активности...",
+        "activityExported": "Экспортировано записей активности: {count}",
+        "activityExportError": "Не удалось экспортировать записи активности",
+        "noActivityToExport": "Нет записей активности для экспорта",
+        "loadError": "Произошла ошибка при загрузке данных"
+    },
+    "export": {
+        "headers": {
+            "date": "Дата",
+            "user": "Пользователь",
+            "action": "Действие",
+            "resource": "Ресурс",
+            "details": "Детали",
+            "ipAddress": "IP‑адрес",
+            "metric": "Метрика",
+            "value": "Значение",
+            "totalProduct": "Всего товаров",
+            "totalDevice": "Всего устройств",
+            "onlineDevice": "Устройства в сети",
+            "labelUpdate": "Обновления ценников",
+            "todayUpdates": "Сегодняшние обновления",
+            "templateCount": "Количество шаблонов",
+            "categoryCount": "Количество категорий",
+            "errorRate": "Доля ошибок"
+        },
+        "system": "Система"
+    }
+}

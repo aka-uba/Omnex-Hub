@@ -1,0 +1,1202 @@
+{
+    "title": "إعدادات",
+    "subtitle": "تكوين إعدادات النظام",
+    "breadcrumb": {
+        "panel": "لوحة",
+        "settings": "إعدادات",
+        "general": "الإعدادات العامة",
+        "users": "إعدادات المستخدم",
+        "integrations": "التكامل",
+        "labels": "أحجام التسمية"
+    },
+    "nav": {
+        "general": "عام",
+        "users": "المستخدمين",
+        "integrations": "التكامل"
+    },
+    "profile": {
+        "title": "حساب تعريفي",
+        "subtitle": "إدارة معلوماتك الشخصية وإعدادات الحساب",
+        "loadFailed": "فشل تحميل معلومات المستخدم",
+        "personalInfo": "معلومات شخصية",
+        "changePassword": "تغيير كلمة المرور",
+        "changePasswordBtn": "تغيير كلمة المرور",
+        "accountInfo": "معلومات الحساب",
+        "company": "شركة",
+        "role": "دور",
+        "createdAt": "تم إنشاء الحساب",
+        "lastLogin": "تسجيل الدخول الأخير",
+        "form": {
+            "firstName": "الاسم الأول",
+            "lastName": "اسم العائلة",
+            "email": "بريد إلكتروني",
+            "phone": "هاتف",
+            "currentPassword": "كلمة المرور الحالية",
+            "newPassword": "كلمة المرور الجديدة",
+            "confirmPassword": "كلمة المرور الجديدة (تأكيد)"
+        },
+        "avatar": {
+            "title": "صورة الملف الشخصي",
+            "selectFile": "حدد ملف",
+            "remove": "إزالة الصورة"
+        },
+        "toast": {
+            "updated": "تم تحديث الملف الشخصي",
+            "avatarUpdated": "تم تحديث صورة الملف الشخصي",
+            "avatarRemoved": "تمت إزالة صورة الملف الشخصي",
+            "passwordChanged": "تم تغيير كلمة المرور بنجاح"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "المشرف الفائق",
+        "Admin": "مسؤل",
+        "Manager": "مدير",
+        "Editor": "محرر",
+        "Viewer": "مشاهد"
+    },
+    "users": {
+        "title": "المستخدمين",
+        "subtitle": "إدارة وتحرير المستخدمين",
+        "addUser": "إضافة مستخدم",
+        "editUser": "تحرير المستخدم",
+        "deleteUser": "حذف المستخدم",
+        "noUsers": "لم يتم العثور على مستخدمين حتى الآن",
+        "table": {
+            "user": "مستخدم",
+            "email": "بريد إلكتروني",
+            "role": "دور",
+            "status": "حالة"
+        },
+        "status": {
+            "active": "نشيط",
+            "inactive": "غير نشط"
+        },
+        "fields": {
+            "firstName": "الاسم الأول",
+            "lastName": "اسم العائلة",
+            "email": "بريد إلكتروني",
+            "password": "كلمة المرور",
+            "role": "دور"
+        },
+        "placeholders": {
+            "selectRole": "حدد الدور"
+        },
+        "roles": {
+            "admin": "مسؤل",
+            "editor": "محرر",
+            "viewer": "مشاهد"
+        },
+        "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذا المستخدم؟",
+        "toast": {
+            "created": "تم إنشاء المستخدم",
+            "updated": "تم تحديث المستخدم",
+            "deleted": "تم حذف المستخدم"
+        }
+    },
+    "saveChanges": "حفظ التغييرات",
+    "tabs": {
+        "general": "عام",
+        "branding": "العلامة التجارية",
+        "email": "البريد الإلكتروني / SMTP",
+        "barcode": "الباركود"
+    },
+    "general": {
+        "title": "الإعدادات العامة",
+        "subtitle": "إعدادات التكوين على مستوى النظام",
+        "sections": {
+            "company": "معلومات الشركة",
+            "system": "إعدادات النظام",
+            "locale": "الإعدادات الإقليمية",
+            "appearance": "مظهر"
+        },
+        "fields": {
+            "companyName": "اسم الشركة",
+            "companyPhone": "هاتف",
+            "companyAddress": "عنوان",
+            "timezone": "المنطقة الزمنية",
+            "language": "لغة",
+            "currency": "عملة",
+            "dateFormat": "تنسيق التاريخ",
+            "theme": "سمة"
+        },
+        "placeholders": {
+            "companyName": "اسم الشركة",
+            "companyPhone": "+90 xxx xxx xxx xxx",
+            "companyAddress": "عنوان الشركة"
+        },
+        "languages": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "currencies": {
+            "TRY": "ليرة تركية (₺)",
+            "USD": "الدولار الأمريكي ($)",
+            "EUR": "اليورو (€)",
+            "GBP": "الجنيه الاسترليني (جنيه استرليني)",
+            "RUB": "الروبل الروسي (₽)",
+            "AZN": "مانات أذربيجاني (₼)"
+        },
+        "themes": {
+            "light": "ضوء",
+            "dark": "مظلم",
+            "auto": "آلي"
+        }
+    },
+    "branding": {
+        "title": "أصول العلامة التجارية للنظام",
+        "description": "يتم عرض أصول العلامة التجارية الافتراضية للنظام هنا. هذه الأصول للقراءة فقط ولا يمكن للمطور تغييرها إلا يدويًا من المجلد العام/العلامة التجارية. استخدم صفحة إدارة الشركة للأصول القائمة على الشركة.",
+        "logoLight": "الشعار (موضوع فاتح)",
+        "logoDark": "الشعار (المظهر الداكن)",
+        "favicon": "الرمز المفضل",
+        "pwaIcon": "أيقونة بي دبليو إيه",
+        "file": "ملف"
+    },
+    "email": {
+        "smtp": {
+            "title": "إعدادات SMTP",
+            "testButton": "إرسال البريد الإلكتروني للاختبار",
+            "testing": "إرسال...",
+            "fields": {
+                "host": "خادم SMTP",
+                "port": "ميناء",
+                "username": "اسم المستخدم",
+                "password": "كلمة المرور",
+                "encryption": "التشفير",
+                "fromName": "من الاسم",
+                "fromEmail": "من البريد الإلكتروني",
+                "testEmail": "اختبار عنوان البريد الإلكتروني"
+            },
+            "placeholders": {
+                "host": "smtp.example.com",
+                "port": "587",
+                "username": "user@example.com",
+                "password": "********",
+                "fromName": "Omnex Display Hub",
+                "fromEmail": "noreply@example.com",
+                "testEmail": "test@example.com"
+            },
+            "hints": {
+                "testEmail": "إذا تركت فارغة، سيتم إرسالها إلى عنوان البريد الإلكتروني في حسابك"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "طبقة المقابس الآمنة",
+                "none": "لا أحد"
+            }
+        },
+        "templates": {
+            "title": "قوالب البريد الإلكتروني",
+            "comingSoon": "ستتم إضافة ميزة تحرير قالب البريد الإلكتروني قريبًا",
+            "welcome": {
+                "title": "ترحيب البريد الإلكتروني",
+                "description": "أرسلت على تسجيلات المستخدم الجديد"
+            },
+            "passwordReset": {
+                "title": "إعادة تعيين كلمة المرور",
+                "description": "تم إرسالها بناءً على طلبات إعادة تعيين كلمة المرور"
+            },
+            "errorNotification": {
+                "title": "إعلام بالخطأ",
+                "description": "أرسلت لأخطاء النظام"
+            }
+        }
+    },
+    "integrations": {
+        "title": "التكامل",
+        "subtitle": "تكوين عمليات تكامل النظام الخارجي",
+        "configure": "تكوين",
+        "tabs": {
+            "esl": "أنظمة اللغة الإنجليزية كلغة ثانية",
+            "erp": "تخطيط موارد المؤسسات",
+            "api": "واجهة برمجة التطبيقات",
+            "import": "استيراد الملفات",
+            "payment": "نظام الدفع",
+            "mqtt": "وسيط MQTT"
+        },
+        "import": {
+            "loading": "جاري التحميل...",
+            "settingsTitle": "إعدادات الاستيراد",
+            "settingsDescription": "تكوين إعدادات استيراد المنتجات من أنظمة ERP والأنظمة الخارجية.",
+            "enabled": "تفعيل استيراد الملفات",
+            "autoImport": "الاستيراد التلقائي",
+            "autoImportHint": "عند التفعيل، يتم استيراد الملفات في مجلد الاستيراد تلقائيًا في الفترات المحددة.",
+            "checkInterval": "فترة الفحص",
+            "minutes": "دقيقة",
+            "maxFileSize": "الحد الأقصى لحجم الملف",
+            "allowedFormats": "الصيغ المسموحة",
+            "importOptions": "خيارات الاستيراد",
+            "updateExisting": "تحديث المنتجات الموجودة (مطابقة SKU)",
+            "createNew": "إنشاء منتجات جديدة",
+            "skipErrors": "تخطي الصفوف الخاطئة والمتابعة",
+            "triggerRender": "تشغيل العرض التلقائي بعد الاستيراد",
+            "importDirectory": "مجلد الاستيراد",
+            "importDirectoryHint": "يجب إرسال ملفات ERP إلى هذا المجلد. يقوم الاستيراد التلقائي بمسح هذا المجلد.",
+            "lastAutoImport": "آخر استيراد تلقائي",
+            "testImport": "اختبار بملف",
+            "redirectingToImport": "جاري التوجيه إلى صفحة استيراد المنتجات...",
+            "settingsSaved": "تم حفظ إعدادات الاستيراد",
+            "settingsSaveError": "فشل في حفظ إعدادات الاستيراد",
+            "statusActive": "نشط",
+            "statusAutoActive": "تلقائي نشط",
+            "statusInactive": "غير نشط",
+            "apiDocTitle": "واجهة إرسال ملفات ERP",
+            "apiDocDescription": "يمكن لأنظمة ERP إرسال ملفات الاستيراد باستخدام نقطة النهاية أدناه.",
+            "apiEndpoint": "نقطة الرفع",
+            "apiAuth": "المصادقة",
+            "apiAuthHint": "استخدم مفتاح API من علامة تبويب API.",
+            "apiAuthAlt": "رأس بديل:",
+            "apiExample": "أمثلة cURL",
+            "apiExampleCsv": "إرسال ملف CSV (Linux/Mac):",
+            "apiExampleJson": "إرسال ملف JSON (رأس بديل):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "استجابة ناجحة (200)",
+            "apiResponseErrors": "استجابات الخطأ",
+            "apiErrorDesc": "الوصف",
+            "apiError401": "مفتاح API غير صالح أو مفقود",
+            "apiError400": "تنسيق غير مدعوم أو تجاوز الحجم أو ملف مفقود",
+            "apiError403": "استيراد الملفات غير مفعل لهذه الشركة",
+            "apiErrorDup": "تم تحميل نفس الملف من قبل (تطابق التجزئة)",
+            "apiFormats": "الصيغ المدعومة",
+            "apiFormatsHint": "يتم تحليل الملفات تلقائياً مع اكتشاف التنسيق. يتم تعيين الحقول تلقائياً باستخدام SmartFieldMapper.",
+            "apiFieldMapping": "تعيين الحقول",
+            "apiFieldMappingDesc": "يتم تعيين رؤوس الأعمدة في ملفك تلقائياً إلى حقول المنتج. أمثلة شائعة أدناه:",
+            "apiFieldTarget": "الحقل الهدف",
+            "apiFieldSample": "أسماء الأعمدة المصدر المعروفة",
+            "apiFieldMappingAuto": "يتعرف SmartFieldMapper تلقائياً على أسماء الحقول التركية والإنجليزية وأسماء حقول ERP الشائعة. يمكن تكوين التعيينات الافتراضية في الإعدادات.",
+            "historyTitle": "سجل الاستيراد",
+            "historyLoading": "جاري تحميل السجل...",
+            "historyEmpty": "لا يوجد سجل استيراد بعد.",
+            "historyFile": "الملف",
+            "historySource": "المصدر",
+            "historyStatus": "الحالة",
+            "historyTotal": "الإجمالي",
+            "historyInserted": "مضاف",
+            "historyUpdated": "محدث",
+            "historyFailed": "فاشل",
+            "historyDate": "التاريخ",
+            "sourceAuto": "تلقائي",
+            "sourceManual": "يدوي",
+            "pendingFilesTitle": "الملفات في دليل الاستيراد",
+            "pendingFilesDesc": "الملفات المعلقة في دليل استيراد الشركة. يمكنك اختيار ملف لبدء الاستيراد اليدوي.",
+            "pendingFilesEmpty": "لا توجد ملفات معلقة في دليل الاستيراد.",
+            "alreadyImported": "تم الاستيراد بالفعل",
+            "importFile": "استيراد",
+            "fileFormat": "التنسيق",
+            "fileSize": "الحجم",
+            "fileModified": "التعديل",
+            "fileAction": "الإجراء",
+            "defaultImportOptions": "خيارات الاستيراد الافتراضية",
+            "defaultImportOptionsHint": "تُستخدم هذه الخيارات كإعدادات افتراضية عند استيراد الملفات. يمكن تغييرها لكل عملية استيراد.",
+            "importModalTitle": "استيراد ملف",
+            "importModalOptions": "خيارات الاستيراد",
+            "importModalDefaultsHint": "الخيارات محددة مسبقاً بالقيم الافتراضية من الإعدادات. يمكنك تغييرها لهذا الاستيراد.",
+            "savedMappingsWillBeUsed": "سيتم استخدام {count} تعيين حقول محفوظ",
+            "noSavedMappingsAutoDetect": "لا توجد تعيينات محفوظة، سيتم استخدام الكشف التلقائي",
+            "startImport": "بدء الاستيراد",
+            "importConfirmTitle": "تأكيد الاستيراد",
+            "importConfirmMessage": "سيتم استيراد الملف \"{filename}\". هل تريد المتابعة؟",
+            "importing": "جاري الاستيراد...",
+            "importError": "فشلت عملية الاستيراد",
+            "importErrors": "الأخطاء",
+            "importResultTitle": "نتيجة الاستيراد",
+            "mappingSource": "مصدر التعيين",
+            "mappingSaved": "التعيينات المحفوظة",
+            "mappingAuto": "الكشف التلقائي",
+            "configureMappings": "تعيين الحقول",
+            "configureMappingsTitle": "تعيين الحقول الافتراضي",
+            "configureMappingsDesc": "حدد حقول المنتج المقابلة لرؤوس الأعمدة في ملفات الاستيراد. يمكنك تحميل ملف عينة للكشف التلقائي.",
+            "configureMappingsHint": "أدخل أسماء أعمدة المصدر وفقاً لرؤوس ملفك. الحقول الفارغة ستتم مطابقتها تلقائياً باستخدام SmartFieldMapper.",
+            "mappingSourcePlaceholder": "اسم عمود المصدر (مثال: STOCK_CODE)",
+            "uploadSampleFile": "تحميل ملف عينة",
+            "autoDetectedMappings": "تم تعيين {count} حقل تلقائياً (من {total} عمود)",
+            "noAutoDetect": "فشل الكشف التلقائي. الرجاء الإدخال يدوياً.",
+            "sampleFileFailed": "تعذر تحليل ملف العينة",
+            "mappingsSaved": "تم حفظ {count} تعيين حقل",
+            "savedMappings": "تم حفظ {count} تعيين حقل",
+            "noMapping": "-- بدون تعيين --",
+            "noPreviewData": "لم يتم العثور على بيانات للمعاينة",
+            "mappingDragDrop": "اسحب وأفلت ملف العينة هنا أو اختر",
+            "mappingFileHint": "سيتم تحليل ملفك واكتشاف رؤوس الأعمدة تلقائياً.",
+            "mappingGridTitle": "تعيين الحقول",
+            "mappingPreviewTitle": "معاينة البيانات",
+            "fields": {
+                "sku": "رمز المخزون",
+                "name": "اسم المنتج",
+                "barcode": "الباركود",
+                "slug": "الرابط",
+                "kunyeNo": "رقم الشهادة",
+                "category": "الفئة",
+                "subcategory": "الفئة الفرعية",
+                "brand": "العلامة التجارية",
+                "origin": "المنشأ",
+                "productionType": "نوع الإنتاج",
+                "description": "الوصف",
+                "currentPrice": "سعر البيع",
+                "previousPrice": "السعر السابق",
+                "priceValidUntil": "صلاحية السعر",
+                "priceUpdatedAt": "تحديث السعر",
+                "previousPriceUpdatedAt": "تحديث السعر السابق",
+                "vatRate": "نسبة الضريبة",
+                "discountPercent": "الخصم %",
+                "campaignText": "نص الحملة",
+                "unit": "الوحدة",
+                "stock": "المخزون",
+                "weight": "الوزن",
+                "shelfLocation": "موقع الرف",
+                "supplierCode": "رمز المورد",
+                "validFrom": "صالح من",
+                "validUntil": "صالح حتى",
+                "status": "الحالة",
+                "isFeatured": "مميز",
+                "imageUrl": "رابط الصورة",
+                "images": "الصور",
+                "videos": "الفيديوهات",
+                "videoUrl": "رابط الفيديو",
+                "storageInfo": "معلومات التخزين",
+                "group": "المجموعة",
+                "erpId": "معرف ERP"
+            },
+            "status": {
+                "pending": "قيد الانتظار",
+                "processing": "قيد المعالجة",
+                "completed": "مكتمل",
+                "failed": "فاشل",
+                "skipped": "تم التخطي"
+            }
+        },
+        "debug": {
+            "tooltip": "تصحيح أخطاء واجهة برمجة التطبيقات (API) - اختبار استجابة قائمة المخزون",
+            "modalTitle": "تصحيح أخطاء واجهة برمجة التطبيقات TAMSOFT - StokListesi",
+            "loading": "تحميل...",
+            "title": "إعدادات تامسوفت",
+            "defaultDepo": "المستودع الافتراضي",
+            "lastSync": "آخر مزامنة",
+            "neverSynced": "لم تتم مزامنتها مطلقًا",
+            "rawApiResponse": "استجابة واجهة برمجة التطبيقات الأولية (cURL)",
+            "responseSize": "حجم الاستجابة",
+            "jsonParse": "تحليل JSON",
+            "parseSuccess": "نجاح",
+            "parseFailed": "فشل",
+            "isArray": "هو صفيف",
+            "yes": "نعم",
+            "no": "لا",
+            "elementCount": "عدد العناصر",
+            "numericArray": "المصفوفة الرقمية",
+            "firstKeys": "أول 10 مفاتيح",
+            "doubleJsonDetected": "تم اكتشاف JSON مزدوج!",
+            "rawResponse": "الاستجابة الأولية (أول 500 حرف)",
+            "firstItem": "العنصر الأول",
+            "firstItemUnwrapped": "العنصر الأول (بعد فك التغليف)",
+            "depoCount": "عدد المستودعات",
+            "debugError": "خطأ التصحيح: {error}",
+            "debugRequestFailed": "فشل طلب التصحيح",
+            "apiNoResponse": "لم تستجب واجهة برمجة التطبيقات"
+        },
+        "depotMapping": {
+            "newBranches": "{count} تم إنشاء فروع جديدة",
+            "existingMappings": "{count} التعيينات الموجودة",
+            "mapped": "{count} المستودعات ← الفروع المعينة ({details})"
+        },
+        "companyOverride": "إعداد الشركة",
+        "systemDefault": "النظام الافتراضي",
+        "hanshow": {
+            "title": "هانشو ESL",
+            "description": "تكامل ملصق الرف الإلكتروني Hanshow (ESL-Working v2.5.3 API)",
+            "loading": "تحميل...",
+            "active": "نشيط",
+            "inactive": "غير نشط",
+            "connectionStatus": "التحقق من حالة الاتصال...",
+            "fields": {
+                "eslworkingUrl": "عنوان URL لواجهة برمجة تطبيقات ESL-Working",
+                "userId": "معرف المستخدم",
+                "callbackUrl": "عنوان URL لرد الاتصال",
+                "defaultPriority": "الأولوية الافتراضية",
+                "syncInterval": "الفاصل الزمني للمزامنة (ثانية)",
+                "ledColor": "لون الصمام",
+                "maxRetryAttempts": "الحد الأقصى لمحاولات إعادة المحاولة",
+                "options": "خيارات",
+                "ledFlashOnUpdate": "فلاش LED عند التحديث",
+                "autoRetry": "إعادة المحاولة التلقائية",
+                "enabled": "التكامل نشط"
+            },
+            "hints": {
+                "eslworkingUrl": "عنوان خدمة Hanshow ESL-Working",
+                "callbackUrl": "عنوان URL لرد الاتصال غير المتزامن"
+            },
+            "ledColors": {
+                "green": "أخضر",
+                "blue": "أزرق",
+                "red": "أحمر",
+                "yellow": "أصفر",
+                "white": "أبيض"
+            },
+            "buttons": {
+                "testConnection": "اتصال الاختبار",
+                "save": "يحفظ",
+                "testing": "اختبار...",
+                "saving": "توفير..."
+            },
+            "connection": {
+                "online": "اتصال ESL-Working نشط",
+                "offline": "اتصال ESL-Working غير متصل",
+                "responseTime": "وقت الاستجابة: {time}ms",
+                "connectedGateways": "البوابات المتصلة ({count})",
+                "startCommand": "ESL-أمر بدء العمل"
+            },
+            "connectionSuccess": "نجح اتصال ESL-Working ({time}ms) - {count} تم توصيل نقاط الوصول",
+            "connectionFailed": "فشل اتصال ESL-Working: {error}",
+            "testFailed": "فشل اختبار الاتصال: {error}",
+            "testConnection": "اتصال الاختبار",
+            "saveSuccess": "تم حفظ إعدادات Hanshow",
+            "saveFailed": "فشل حفظ الإعدادات: {error}",
+            "toast": {
+                "testSuccess": "نجح اتصال ESL-Working ({time}ms) - {count} تم توصيل نقاط الوصول",
+                "testFailed": "فشل اتصال ESL-Working: {error}",
+                "saved": "تم حفظ إعدادات Hanshow",
+                "saveFailed": "فشل حفظ الإعدادات: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "عرض بافو",
+            "description": "تكامل علامة السعر الإلكترونية PavoDisplay Android (HTTP-SERVER)",
+            "active": "نشيط",
+            "integrated": "تكامل PavoDisplay مدمج ونشط",
+            "deviceManagement": "قم بزيارة صفحة {link} لإدارة الجهاز.",
+            "devicesLink": "الأجهزة"
+        },
+        "hal": {
+            "title": "نظام التسجيل هال",
+            "description": "جمهورية تركيا وزارة التجارة تكامل استعلام التسجيل في نظام التسجيل HAL (HKS).",
+            "loading": "تحميل...",
+            "active": "نشيط",
+            "inactive": "غير نشط",
+            "configured": "تم تكوينه",
+            "notConfigured": "لم يتم تكوينه",
+            "connectionStatus": "التحقق من حالة الاتصال...",
+            "connectionConfigured": "تم تكوين إعدادات HAL",
+            "connectionNotConfigured": "لم يتم تكوين إعدادات HAL",
+            "enterCredentials": "أدخل بيانات اعتماد مستخدم HAL الخاصة بك لاستعلام التسجيل",
+            "credentialsRequired": "مطلوب بيانات اعتماد مستخدم HAL",
+            "responseTime": "وقت الاستجابة",
+            "fields": {
+                "username": "اسم المستخدم",
+                "password": "كلمة المرور",
+                "servicePassword": "كلمة مرور الخدمة",
+                "tcVergiNo": "معرف TC / رقم الضريبة",
+                "sifatId": "عنوان المخطر",
+                "sifat2Id": "صفة الشخص الثاني",
+                "enabled": "التكامل نشط"
+            },
+            "hints": {
+                "username": "اسم المستخدم الخاص بك المسجل في نظام HKS",
+                "password": "كلمة مرور المستخدم HKS الخاصة بك",
+                "servicePassword": "كلمة مرور خدمة الويب HKS",
+                "tcVergiNo": "معرف TC أو الرقم الضريبي الذي تريد الاستعلام عنه (اختياري)",
+                "sifatId": "حدد عنوان عملك المسجل في نظام HAL",
+                "sifat2Id": "اختر صفة الشخص الثاني (اختياري)",
+                "howToGet": "إذا لم يكن لديك بيانات اعتماد مستخدم HAL، فيمكنك التسجيل من hal.gov.tr ​​أو عبر الحكومة الإلكترونية."
+            },
+            "sifatOptions": {
+                "select": "يختار...",
+                "sanayici": "الشركة المصنعة",
+                "ihracat": "يصدّر",
+                "ithalat": "يستورد",
+                "uretici": "منتج",
+                "komisyoncu": "مفوض",
+                "tuccarHalIci": "التاجر (داخل HAL)",
+                "market": "سوق",
+                "manav": "بائع خضار",
+                "depoTasnif": "المستودع/الفرز والتعبئة",
+                "ureticiOrgutu": "منظمة المنتجين",
+                "pazarci": "بائع السوق",
+                "otel": "الفندق",
+                "lokanta": "مطعم",
+                "yurt": "المهجع",
+                "yemekFabrikasi": "مصنع المواد الغذائية",
+                "hastane": "مستشفى",
+                "tuccarHalDisi": "التاجر (خارج HAL)"
+            },
+            "buttons": {
+                "testConnection": "اتصال الاختبار",
+                "save": "يحفظ",
+                "testing": "اختبار...",
+                "saving": "توفير..."
+            },
+            "connection": {
+                "online": "اتصال HKS نشط",
+                "offline": "اتصال HKS غير متصل",
+                "responseTime": "وقت الاستجابة: {time}ms"
+            },
+            "toast": {
+                "connectionSuccess": "تم اتصال HKS بنجاح",
+                "connectionFailed": "فشل اتصال HKS",
+                "testSuccess": "تم اتصال HKS بنجاح",
+                "testFailed": "فشل اتصال HKS: {error}",
+                "saved": "تم حفظ إعدادات HAL",
+                "saveFailed": "فشل في حفظ الإعدادات",
+                "servicePasswordMissing": "لم يتم إدخال كلمة مرور الخدمة - قد تكون بعض الميزات محدودة"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "لم يتم تكوين إعدادات HAL. الرجاء حفظ الإعدادات.",
+                "MISSING_CREDENTIALS": "اسم المستخدم أو كلمة المرور مفقودة",
+                "SOAP_NOT_AVAILABLE": "ملحق PHP SOAP غير مثبت. اتصل بمسؤول الخادم الخاص بك.",
+                "SOAP_CONNECTION_FAILED": "تعذر الاتصال بخادم HAL. ربما لا يمكن الوصول إلى الخادم أو قد تكون هناك مشكلة في الشبكة.",
+                "AUTH_ERROR": "خطأ في مصادقة HAL: {detail}",
+                "UNEXPECTED_RESPONSE": "تم تلقي استجابة غير متوقعة من خادم HAL",
+                "SOAP_FAULT": "خطأ في بروتوكول SOAP: {detail}",
+                "CONNECTION_ERROR": "خطأ في الاتصال: {detail}",
+                "HAL_ERROR_1": "فشلت العملية. تعذر على خدمة HAL معالجة الطلب.",
+                "HAL_ERROR_11": "بيانات اعتماد المستخدم غير صحيحة. اسم المستخدم أو كلمة المرور خاطئة.",
+                "HAL_ERROR_13": "فشلت المصادقة. اسم المستخدم أو كلمة المرور خاطئة.",
+                "HAL_ERROR_UNEXPECTED": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى في وقت لاحق.",
+                "HAL_ERROR_GENERIC": "خطأ في خدمة HAL (الرمز: {code})"
+            },
+            "infoBox": {
+                "title": "حول نظام التسجيل HAL",
+                "description": "نظام التسجيل HAL هو النظام الرسمي الذي يتتبع الخضار والفواكه من الإنتاج إلى الاستهلاك. باستخدام ميزة استعلام التسجيل، يمكنك عرض أصل المنتج ومعلومات المنتج وتاريخ المعاملات.",
+                "apiInfo": "يستخدم هذا التكامل خدمات الويب HAL SOAP (BildirimService).",
+                "registerLink": "قم بزيارة hal.gov.tr ​​للتسجيل في HKS."
+            }
+        },
+        "tamsoft": {
+            "title": "تامسوفت لتخطيط موارد المؤسسات",
+            "description": "تكامل نظام TAMSOFT ERP. مزامنة معلومات المنتج والمخزون والأسعار.",
+            "loading": "تحميل...",
+            "active": "نشيط",
+            "inactive": "غير نشط",
+            "connectionStatus": "التحقق من حالة الاتصال...",
+            "connectionSuccess": "تم اتصال TAMSOFT ERP بنجاح",
+            "connectionFailed": "فشل اتصال TAMSOFT ERP",
+            "lastSync": "المزامنة الأخيرة",
+            "fields": {
+                "apiUrl": "عنوان URL لواجهة برمجة التطبيقات",
+                "username": "اسم المستخدم",
+                "password": "كلمة المرور",
+                "defaultDepo": "المستودع الافتراضي",
+                "syncInterval": "الفاصل الزمني للمزامنة (دقيقة)",
+                "autoSync": "المزامنة التلقائية",
+                "onlyStockPositive": "العناصر الموجودة في المخزون فقط",
+                "onlyEcommerce": "منتجات التجارة الإلكترونية فقط",
+                "singleBarcode": "استخدم باركود واحد"
+            },
+            "hints": {
+                "apiUrl": "عنوان URL لخدمة الويب TAMSOFT",
+                "username": "اسم مستخدم TAMSOFT الخاص بك",
+                "defaultDepo": "حدد المستودع الافتراضي. قم بتشغيل اختبار الاتصال لتحميل قائمة المستودعات.",
+                "loadDepos": "قم بتشغيل اختبار الاتصال أولاً",
+                "syncInterval": "الفاصل الزمني للمزامنة التلقائية (بالدقائق)"
+            },
+            "buttons": {
+                "loadDepolar": "مستودعات التحميل",
+                "syncNow": "مزامنة الآن"
+            },
+            "sync": {
+                "title": "مزامنة تامسوفت",
+                "start": "تزامن",
+                "syncing": "جارٍ المزامنة...",
+                "syncingAll": "مزامنة كافة المستودعات...",
+                "allDepots": "جميع المستودعات",
+                "noDepoWarning": "برجاء أولاً تحديد المستودع الذي يحتوي على \"مستودعات التحميل\".",
+                "depoHint": "حدد المستودع لسحب المنتجات من جميع المستودعات أو مزامنتها",
+                "selectAndSave": "حدد وحفظ",
+                "infoTitle": "معلومات المزامنة",
+                "infoNew": "تتم إضافة المنتجات الجديدة تلقائيا",
+                "infoUpdate": "يتم تحديث معلومات الأسعار والمخزون للمنتجات الحالية",
+                "infoSafe": "يتم الاحتفاظ بالصور التي تم تغييرها محليًا",
+                "infoAllDepots": "إذا تم تحديد \"جميع المستودعات\"، فسيتم سحب المنتجات من كل مستودع بالتسلسل",
+                "fullSync": "المزامنة الكاملة"
+            },
+            "toast": {
+                "connectionSuccess": "تم اتصال TAMSOFT بنجاح",
+                "connectionFailed": "فشل اتصال تامسوفت",
+                "saved": "تم حفظ إعدادات TAMSOFT",
+                "saveFailed": "فشل في حفظ الإعدادات",
+                "depoLoaded": "المستودعات محملة",
+                "depoLoadFailed": "فشل تحميل قائمة المستودعات",
+                "syncSuccess": "اكتملت المزامنة: تمت إضافة {inserted}، وتم تحديث {updated}، وفشل {failed}",
+                "syncAllSuccess": "{depo_count} المستودعات التي تمت مزامنتها: {inserted} تمت إضافتها، {updated} تم التحديث، {failed} فشلت",
+                "syncFailed": "فشلت المزامنة"
+            },
+            "debug": {
+                "tooltip": "تصحيح أخطاء واجهة برمجة التطبيقات (API) - اختبار استجابة قائمة المخزون",
+                "modalTitle": "تصحيح أخطاء واجهة برمجة التطبيقات TAMSOFT - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "نظام الدفع",
+            "adminOnly": "لا يمكن تغيير هذه الإعدادات إلا بواسطة SuperAdmin.",
+            "selectProvider": "حدد مزود الدفع",
+            "connectionStatus": "التحقق من حالة الاتصال...",
+            "loading": "تحميل...",
+            "providers": {
+                "iyzico": {
+                    "name": "ايزيكو",
+                    "description": "البنية التحتية الرائدة للدفع في تركيا"
+                },
+                "paynet": {
+                    "name": "باينيت",
+                    "description": "حل نقاط البيع الافتراضية الآمنة"
+                }
+            },
+            "providerStatus": {
+                "active": "نشيط",
+                "inactive": "غير نشط",
+                "configured": "تم تكوينه",
+                "notConfigured": "لم يتم تكوينه",
+                "test": "امتحان",
+                "live": "يعيش"
+            },
+            "statusBadge": {
+                "sandbox": "وضع الحماية (اختبار)",
+                "production": "نشط (مباشر)",
+                "inactive": "غير نشط"
+            },
+            "fields": {
+                "apiKey": "مفتاح واجهة برمجة التطبيقات",
+                "secretKey": "المفتاح السري",
+                "publishableKey": "مفتاح قابل للنشر",
+                "environment": "بيئة",
+                "testMode": "وضع الاختبار",
+                "apiUrl": "عنوان URL لواجهة برمجة التطبيقات",
+                "callbackUrl": "عنوان URL لرد الاتصال",
+                "currency": "عملة",
+                "installmentEnabled": "دفع القسط نشط",
+                "maxInstallments": "الحد الأقصى للأقساط:",
+                "statusActive": "نظام الدفع نشط",
+                "iyzicoSettings": "إعدادات إيزيكو",
+                "paynetSettings": "إعدادات باي نت",
+                "installmentSettings": "إعدادات التقسيط",
+                "installmentActive": "القسط نشط",
+                "maxInstallment": "الحد الأقصى للتقسيط:",
+                "status": "حالة",
+                "iyzicoActive": "ايزيكو نشط",
+                "paynetActive": "باي نت نشط"
+            },
+            "hints": {
+                "apiKey": "تم الحصول على مفتاح API من لوحة Iyzico",
+                "secretKey": "تم الحصول على المفتاح السري من اللوحة",
+                "publishableKey": "تم الحصول على المفتاح القابل للنشر من لوحة Paynet",
+                "environment": "حدد وضع الحماية للاختبار والإنتاج للمعاملات المباشرة",
+                "testMode": "لا توجد معاملات حقيقية في وضع الاختبار",
+                "apiUrl": "عنوان خادم Paynet API",
+                "callbackUrl": "عنوان URL للإرجاع الآمن ثلاثي الأبعاد (تلقائي)",
+                "iyzicoMerchant": "تم الحصول عليها من لوحة التاجر Iyzico",
+                "paynetMerchant": "تم الحصول على المفتاح العام من لوحة التاجر Paynet",
+                "secretKeyHint": "المفتاح السري (لطلبات واجهة برمجة التطبيقات)",
+                "testModeHint": "لا يوجد دفع حقيقي في وضع الاختبار",
+                "callbackReadonly": "عنوان الإرجاع الآمن ثلاثي الأبعاد (للقراءة فقط)"
+            },
+            "placeholders": {
+                "apiKey": "رمل-xxxxxxxxxxxxxxxxxx",
+                "secretKey": "رمل-xxxxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (موجود)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "وضع الحماية (اختبار)",
+                "production": "الإنتاج (مباشر)",
+                "testMode": "وضع الاختبار",
+                "liveMode": "الوضع المباشر"
+            },
+            "currencies": {
+                "TRY": "TRY - الليرة التركية",
+                "USD": "الدولار الأمريكي - الدولار الأمريكي",
+                "EUR": "يورو - يورو"
+            },
+            "testing": "اختبار...",
+            "buttons": {
+                "testConnection": "اتصال الاختبار",
+                "save": "يحفظ",
+                "showHide": "إظهار/إخفاء",
+                "testing": "اختبار...",
+                "saving": "توفير..."
+            },
+            "connectionSuccess": "{provider} تم الاتصال بنجاح (وضع {env})",
+            "connectionFailed": "{provider} فشل الاتصال: {error}",
+            "connectionTestFailed": "فشل اختبار الاتصال: {error}",
+            "saveSuccess": "{provider} تم حفظ إعدادات الدفع",
+            "saveFailed": "فشل حفظ الإعدادات: {error}",
+            "connection": {
+                "configured": "تم تكوين اتصال Iyzico",
+                "notConfigured": "لم يتم تكوين اتصال Iyzico",
+                "missingKeys": "مفاتيح API مفقودة"
+            },
+            "toast": {
+                "testSuccess": "{provider} تم الاتصال بنجاح - وضع {environment}",
+                "testFailed": "{provider} فشل الاتصال: {error}",
+                "saved": "{provider} تم حفظ إعدادات الدفع",
+                "saveFailed": "فشل حفظ الإعدادات: {error}",
+                "apiKeyRequired": "مفتاح API مطلوب لتفعيل نظام الدفع",
+                "secretKeyRequired": "المفتاح السري مطلوب لتفعيل نظام الدفع",
+                "publishableKeyRequired": "مطلوب مفتاح قابل للنشر لتفعيل نظام الدفع"
+            },
+            "validation": {
+                "apiKeyRequired": "مفتاح API مطلوب لتفعيل نظام الدفع",
+                "secretKeyRequired": "المفتاح السري مطلوب لتفعيل نظام الدفع",
+                "publishableKeyRequired": "مطلوب مفتاح قابل للنشر لتفعيل نظام الدفع"
+            }
+        },
+        "licensePlans": {
+            "title": "خطط الترخيص",
+            "description": "خطط الترخيص المقدمة للعملاء",
+            "loading": "تحميل...",
+            "empty": "لم يتم تحديد خطط الترخيص حتى الآن",
+            "recommended": "مُستَحسَن",
+            "enterprise": "مَشرُوع",
+            "inactive": "غير نشط",
+            "months": "شهور",
+            "addPlan": "خطة جديدة",
+            "editPlan": "تحرير الخطة",
+            "notFound": "لم يتم العثور على الخطة",
+            "created": "تم إنشاء الخطة",
+            "updated": "تم تحديث الخطة",
+            "deleted": "تم حذف الخطة",
+            "limits": {
+                "users": "المستخدمين",
+                "devices": "الأجهزة",
+                "products": "منتجات",
+                "templates": "قوالب",
+                "storage": "تخزين",
+                "branches": "الفروع"
+            },
+            "form": {
+                "name": "اسم الخطة",
+                "slug": "سبيكة",
+                "slugPlaceholder": "اسم الخطة",
+                "description": "وصف",
+                "price": "سعر",
+                "currency": "عملة",
+                "duration": "المدة (أشهر)",
+                "maxUsers": "الأعلى. المستخدمين",
+                "maxDevices": "الأعلى. الأجهزة",
+                "maxProducts": "الأعلى. منتجات",
+                "maxTemplates": "الأعلى. قوالب",
+                "maxBranches": "الأعلى. الفروع",
+                "storageLimit": "حد التخزين (ميجابايت)",
+                "features": "سمات",
+                "featuresHint": "اكتب ميزة واحدة في كل سطر",
+                "isPopular": "الخطة الموصى بها",
+                "isEnterprise": "مَشرُوع",
+                "isActive": "نشيط",
+                "sortOrder": "ترتيب الفرز",
+                "unlimited": "أدخل 0 لعدد غير محدود",
+                "unlimitedZero": "أدخل 0 لعدد غير محدود"
+            },
+            "deleteConfirm": {
+                "title": "حذف الخطة",
+                "message": "هل أنت متأكد أنك تريد حذف الخطة {name}؟"
+            },
+            "validation": {
+                "nameRequired": "اسم الخطة مطلوب"
+            },
+            "features": {
+                "esl_support": "دعم اللغة الإنجليزية كلغة ثانية",
+                "basic_templates": "القوالب الأساسية",
+                "email_support": "دعم البريد الإلكتروني",
+                "signage_support": "دعم اللافتات الرقمية",
+                "advanced_templates": "قوالب متقدمة",
+                "priority_support": "دعم الأولوية",
+                "api_access": "الوصول إلى واجهة برمجة التطبيقات",
+                "custom_branding": "العلامات التجارية المخصصة",
+                "multi_location": "موقع متعدد",
+                "dedicated_support": "دعم مخصص",
+                "sla_guarantee": "ضمان جيش تحرير السودان",
+                "custom_integration": "التكامل المخصص",
+                "white_label": "العلامة البيضاء",
+                "unlimited_users": "عدد غير محدود من المستخدمين",
+                "unlimited_devices": "أجهزة غير محدودة",
+                "analytics": "تقارير التحليلات",
+                "export_reports": "تقرير التصدير",
+                "bulk_import": "استيراد بالجملة",
+                "scheduler": "مجدول",
+                "notifications": "إشعارات"
+            }
+        },
+        "paymentInfo": {
+            "title": "حول تكامل الدفع",
+            "features": {
+                "title": "الميزات المدعومة",
+                "singlePayment": "دفعة واحدة",
+                "installment": "الدفع بالتقسيط (2-12 قسط)",
+                "secure3d": "الدفع الآمن ثلاثي الأبعاد",
+                "refund": "عمليات الاسترداد والإلغاء",
+                "cardSaving": "حفظ البطاقة (اختياري)",
+                "items": {
+                    "singlePayment": "دفعة واحدة ببطاقة الائتمان",
+                    "installment": "الدفع بالتقسيط (2-12 قسط)",
+                    "secure3d": "الدفع الآمن ثلاثي الأبعاد",
+                    "refund": "عمليات الاسترداد والإلغاء",
+                    "bkmExpress": "التكامل BKM اكسبرس"
+                }
+            },
+            "cards": {
+                "title": "البطاقات المدعومة"
+            },
+            "testCard": {
+                "title": "بطاقة الاختبار (إيزيكو)",
+                "cardNo": "رقم البطاقة:",
+                "expiry": "انتهاء الصلاحية:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "معلومات بطاقة الاختبار (وضع الحماية)",
+                    "cardNo": "رقم البطاقة:",
+                    "expiry": "انتهاء الصلاحية:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "وثائق واجهة برمجة التطبيقات",
+                "link": "وثائق Iyzico API",
+                "iyzicoLink": "وثائق Iyzico API",
+                "paynetLink": "وثائق واجهة برمجة تطبيقات Paynet"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "تكامل تخطيط موارد المؤسسات",
+                "description": "SAP، أوراكل، ديناميات، الشعار، Netsis",
+                "fields": {
+                    "type": "نوع تخطيط موارد المؤسسات",
+                    "endpoint": "نقطة نهاية واجهة برمجة التطبيقات",
+                    "username": "اسم المستخدم",
+                    "password": "كلمة المرور",
+                    "syncInterval": "الفاصل الزمني للمزامنة (دقيقة)"
+                },
+                "types": {
+                    "sap": "ساب",
+                    "oracle": "أوراكل",
+                    "dynamics": "مايكروسوفت ديناميات",
+                    "logo": "الشعار",
+                    "netsis": "نتسيس",
+                    "other": "آخر"
+                }
+            },
+            "pos": {
+                "title": "تكامل نقاط البيع",
+                "description": "وولفوكس، سينتيز، نيبيم",
+                "fields": {
+                    "type": "نوع نقطة البيع",
+                    "endpoint": "نقطة نهاية واجهة برمجة التطبيقات",
+                    "apiKey": "مفتاح واجهة برمجة التطبيقات",
+                    "storeId": "معرف المتجر"
+                },
+                "types": {
+                    "wolvox": "وولفوكس",
+                    "sentez": "سينتيز",
+                    "nebim": "نيبيم",
+                    "other": "آخر"
+                }
+            },
+            "wms": {
+                "title": "تكامل WMS",
+                "description": "نظام إدارة المستودعات",
+                "fields": {
+                    "endpoint": "نقطة نهاية واجهة برمجة التطبيقات",
+                    "apiKey": "مفتاح واجهة برمجة التطبيقات",
+                    "warehouseId": "معرف المستودع",
+                    "stockSync": "مزامنة الأسهم",
+                    "active": "نشيط"
+                }
+            },
+            "api": {
+                "title": "الوصول إلى واجهة برمجة التطبيقات",
+                "description": "تكامل واجهة برمجة التطبيقات الخارجية",
+                "fields": {
+                    "apiKey": "مفتاح واجهة برمجة التطبيقات",
+                    "rateLimit": "حد السعر (الطلبات/الدقيقة)",
+                    "webhookUrl": "عنوان URL للويب هوك"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.example.com/api",
+                    "webhookUrl": "https://your-app.com/webhook"
+                },
+                "docs": {
+                    "title": "وثائق واجهة برمجة التطبيقات",
+                    "subtitle": "بداية سريعة لاستخدام API",
+                    "auth": "المصادقة",
+                    "exampleRequest": "طلب مثال"
+                }
+            }
+        },
+        "toast": {
+            "saved": "تم حفظ إعدادات التكامل",
+            "testSuccess": "تم اختبار الاتصال بنجاح",
+            "testFailed": "فشل اختبار الاتصال",
+            "apiKeyGenerated": "تم إنشاء مفتاح API جديد"
+        },
+        "messages": {
+            "connectionSuccess": "تم الاتصال بنجاح",
+            "connectionFailed": "فشل الاتصال",
+            "testSuccess": "تم اختبار الاتصال بنجاح",
+            "testFailed": "فشل اختبار الاتصال",
+            "saved": "تم حفظ الإعدادات",
+            "settingsSaved": "تم حفظ الإعدادات",
+            "saveFailed": "فشل في حفظ الإعدادات",
+            "settingsSaveError": "فشل في حفظ الإعدادات",
+            "unknownError": "حدث خطأ غير معروف",
+            "invalidIntegrationType": "نوع التكامل غير صالح",
+            "apiKeyCopied": "تم نسخ مفتاح API إلى الحافظة",
+            "apiKeyGenerated": "تم إنشاء مفتاح API جديد",
+            "settingsLoadFailed": "فشل تحميل الإعدادات",
+            "paymentConfigured": "تم تكوين {providers}. قم بتشغيل اختبار الاتصال.",
+            "noPaymentConfigured": "لم يتم تكوين مزود الدفع حتى الآن"
+        },
+        "mqtt": {
+            "title": "إعدادات وسيط MQTT",
+            "description": "إعدادات اتصال الوسيط لأجهزة ESL في وضع MQTT",
+            "brokerUrl": "عنوان الوسيط",
+            "brokerUrlPlaceholder": "localhost أو عنوان IP",
+            "brokerPort": "المنفذ",
+            "useTls": "استخدام TLS",
+            "useTlsHelp": "تفعيل للاتصال المشفر (منفذ 8883)",
+            "username": "اسم المستخدم",
+            "usernamePlaceholder": "اختياري",
+            "password": "كلمة المرور",
+            "passwordPlaceholder": "اختياري",
+            "topicPrefix": "بادئة الموضوع",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "المزود",
+            "providers": {
+                "mosquitto": "Mosquitto (محلي)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "مخصص"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "يتم إنشاؤه تلقائياً",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "اختياري - للتحقق من التوقيع",
+            "contentServerUrl": "عنوان خادم المحتوى",
+            "contentServerUrlPlaceholder": "يتم ملؤه تلقائياً",
+            "reportServerUrl": "عنوان خادم التقارير",
+            "reportServerUrlPlaceholder": "يتم ملؤه تلقائياً",
+            "status": "الحالة",
+            "statuses": {
+                "active": "نشط",
+                "testing": "اختبار",
+                "disabled": "معطل"
+            },
+            "testConnection": "اختبار الاتصال",
+            "testing": "جارٍ الاختبار...",
+            "connectionSuccess": "اتصال الوسيط ناجح ({time}مللي ثانية)",
+            "connectionFailed": "فشل اتصال الوسيط",
+            "saved": "تم حفظ إعدادات MQTT",
+            "saveFailed": "فشل حفظ إعدادات MQTT",
+            "loading": "جارٍ التحميل...",
+            "notConfigured": "غير مُكوَّن",
+            "configured": "مُكوَّن",
+            "lastConnected": "آخر اتصال",
+            "never": "لم يتم الاتصال مطلقاً",
+            "save": "حفظ",
+            "infoTitle": "حول MQTT",
+            "infoText": "MQTT هو بروتوكول رسائل خفيف لأجهزة إنترنت الأشياء. تتلقى أجهزة ESL في وضع CLIENT الأوامر وتبلغ عن حالتها عبر وسيط MQTT.",
+            "setupSteps": "خطوات الإعداد",
+            "step1": "قم بتثبيت Mosquitto أو وسيط MQTT آخر",
+            "step2": "أدخل عنوان ومنفذ الوسيط",
+            "step3": "اختبر الاتصال",
+            "step4": "قم بتكوين الأجهزة إلى وضع MQTT عبر BLE"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "وزن الباركود المنتج",
+            "description": "إعدادات الباركود للمنتجات الموزونة. رمز العلم + رمز المقياس = باركود مكون من 7 أرقام.",
+            "flagCode": "رمز العلم",
+            "flagCodeHint": "رمز العلم المكون من رقمين المستخدم في المقاييس (20-29)",
+            "barcodeFormat": "تنسيق الباركود",
+            "formatHint": "تنسيق الباركود المستخدم في التصاميم",
+            "preview": "معاينة",
+            "scaleCode": "كود المقياس",
+            "resultBarcode": "الباركود المولد",
+            "previewHint": "مثال: رمز العلم (27) + رمز المقياس (09337) = باركود مكون من 7 أرقام (2709337)"
+        },
+        "info": {
+            "title": "معلومات الباركود",
+            "howItWorks": "كيف يعمل؟",
+            "description": "في المنتجات الموزونة، يتكون الرمز الشريطي من مجموعة من رمز العلم ورمز المقياس. عند الوزن على الميزان، يتم إنشاء باركود كامل عن طريق إضافة معلومات الوزن.",
+            "flag": "علَم",
+            "scaleCode": "كود المقياس",
+            "result": "نتيجة",
+            "note": "ملاحظة: تنسيق الباركود الكامل من المقياس: 27XXXXXX QQ qqq + رقم التحقق (QQ=kg، qqq=gram)"
+        }
+    },
+    "labels": {
+        "title": "أحجام التسمية",
+        "subtitle": "إدارة أحجام الملصقات للطباعة",
+        "addNew": "أضف جديد",
+        "listTitle": "قائمة أحجام التسمية",
+        "noData": "لم يتم العثور على أحجام التصنيفات",
+        "infoTitle": "حول أحجام الملصقات",
+        "infoText": "لا يمكن تعديل أو حذف الأحجام الافتراضية للنظام. يمكنك إضافة وإدارة الأحجام المخصصة الخاصة بك. ستظهر المقاسات التي تضيفها في شاشة طباعة المنتج.",
+        "system": "نظام",
+        "columns": {
+            "name": "اسم",
+            "dimensions": "أبعاد",
+            "inchDimensions": "بوصة",
+            "status": "حالة"
+        },
+        "status": {
+            "active": "نشيط",
+            "inactive": "غير نشط"
+        },
+        "form": {
+            "name": "الاسم (اختياري)",
+            "nameHint": "إذا تركت فارغة، سيتم إنشاؤها تلقائيًا من الأبعاد",
+            "width": "عرض",
+            "height": "ارتفاع",
+            "unit": "وحدة",
+            "active": "نشيط",
+            "activeHint": "لا تظهر الأحجام غير النشطة في قائمة الطباعة"
+        },
+        "placeholders": {
+            "name": "تم إنشاؤها تلقائيًا"
+        },
+        "validation": {
+            "dimensionsRequired": "أدخل العرض والارتفاع الصحيحين"
+        },
+        "addTitle": "حجم التسمية الجديد",
+        "editTitle": "تحرير حجم التسمية",
+        "editSystemTitle": "حجم تسمية النظام",
+        "systemEditInfo": "هذا هو الحجم الافتراضي للنظام. يمكنك فقط تغيير الحالة النشطة/غير النشطة.",
+        "deleteTitle": "حذف حجم التسمية",
+        "deleteConfirm": "سيتم حذف حجم التصنيف \"{name}\". هل تريد الاستمرار؟",
+        "toast": {
+            "created": "تمت إضافة حجم التسمية",
+            "updated": "تم تحديث حجم التصنيف",
+            "deleted": "تم حذف حجم التصنيف",
+            "loadFailed": "فشل تحميل أحجام التصنيفات",
+            "saveFailed": "فشلت العملية",
+            "statusChanged": "تم تحديث حالة حجم الملصق"
+        },
+        "units": {
+            "mm": "مم",
+            "cm": "سم",
+            "inch": "بوصة"
+        }
+    },
+    "toast": {
+        "saved": "تم حفظ الإعدادات",
+        "saveFailed": "فشل في حفظ الإعدادات",
+        "smtpSuccess": "تم الاتصال بـ SMTP بنجاح!",
+        "smtpFailed": "فشل اتصال SMTP"
+    },
+    "gateway": {
+        "title": "إعدادات البوابة",
+        "subtitle": "إدارة البوابة لأجهزة الشبكة المحلية",
+        "newGateway": "بوابة جديدة",
+        "systemTitle": "نظام البوابة",
+        "systemDescription": "يمكنك تفعيل أو إلغاء تنشيط نظام البوابة. عندما يكون غير نشط، لن يتم إرسال المحتوى إلى الأجهزة.",
+        "statusActive": "نشيط",
+        "statusInactive": "غير نشط",
+        "runtime": {
+            "title": "إعدادات وقت تشغيل البوابة",
+            "description": "يمكنك إدارة مهلة العامل/البوابة والاستقصاء وإعادة محاولة قيم التراجع من هذا القسم.",
+            "retryBaseDelay": "إعادة محاولة البدء (ثانية)",
+            "retryMaxDelay": "إعادة المحاولة الحد الأقصى (ثانية)",
+            "retryMultiplier": "إعادة محاولة المضاعف",
+            "heartbeatTimeout": "مهلة نبضات القلب (ثانية)",
+            "commandTimeout": "مهلة الأمر (ثانية)",
+            "pollInterval": "استقصاء البوابة (ملي ثانية)",
+            "scopeCompany": "النطاق: إعداد الشركة. تستخدم عمليات إرسال العامل والخادم هذه القيم.",
+            "scopeUser": "النطاق: إعداد المستخدم. احفظ باستخدام Admin/SuperAdmin على نطاق الشركة حتى ينعكس ذلك في تدفق العمال."
+        },
+        "neverConnected": "لم يتم توصيله أبدًا",
+        "lastSeen": "شوهد آخر مرة",
+        "devices": "الأجهزة",
+        "device": "جهاز",
+        "pendingCommands": "الأوامر المعلقة",
+        "details": "تفاصيل",
+        "credentials": "أوراق اعتماد",
+        "createTitle": "إنشاء بوابة جديدة",
+        "credentialsTitle": "بيانات اعتماد البوابة",
+        "credentialsWarning": "سيتم عرض هذه المعلومات مرة واحدة فقط. يرجى حفظه في مكان آمن.",
+        "credentialsSecretHidden": "تم إنشاء هذه البوابة من قبل. لأسباب أمنية، يظهر المفتاح السري فقط أثناء الإنشاء.",
+        "copyConfig": "نسخ التكوين",
+        "hidden": "[مختفي]",
+        "statusInfo": "حالة البوابة",
+        "statusLabel": "حالة",
+        "lastHeartbeat": "آخر نبضات القلب",
+        "never": "أبداً",
+        "connectedDevices": "الأجهزة المتصلة",
+        "noDevices": "لا توجد أجهزة متصلة",
+        "deleteTitle": "حذف البوابة",
+        "deleteConfirm": "سيتم حذف البوابة \"{name}\". هل تريد الاستمرار؟",
+        "status": {
+            "online": "متصل",
+            "error": "خطأ",
+            "offline": "غير متصل"
+        },
+        "form": {
+            "name": "اسم البوابة",
+            "namePlaceholder": "مثال: بوابة المتجر",
+            "description": "وصف",
+            "descriptionPlaceholder": "وصف موجز عن البوابة",
+            "pollingInterval": "الفاصل الزمني للاستقصاء (ثانية)",
+            "commandTimeout": "مهلة الأمر (ثانية)"
+        },
+        "empty": {
+            "title": "لم يتم العثور على بوابة",
+            "description": "لم تتم إضافة أي بوابات حتى الآن. ابدأ بإنشاء بوابة جديدة.",
+            "createFirst": "إنشاء البوابة الأولى"
+        },
+        "toast": {
+            "enabled": "تم تفعيل نظام البوابة",
+            "disabled": "تم تعطيل نظام البوابة",
+            "saveFailed": "فشل حفظ حالة البوابة",
+            "loadFailed": "فشل تحميل البوابات",
+            "nameRequired": "اسم البوابة مطلوب",
+            "created": "تم إنشاء البوابة",
+            "configCopied": "تم نسخ التكوين",
+            "detailsFailed": "فشل تحميل تفاصيل البوابة",
+            "deleted": "تم حذف البوابة",
+            "deleteFailed": "فشل حذف البوابة",
+            "createFailed": "فشل إنشاء البوابة: {error}",
+            "savedUserLevel": "لم يتم العثور على إذن إعداد الشركة. تم حفظ التغيير على مستوى المستخدم.",
+            "runtimeSavedCompany": "تم حفظ إعدادات وقت تشغيل البوابة على مستوى الشركة.",
+            "runtimeSavedUser": "لم يتم العثور على إذن إعداد الشركة. الإعدادات المحفوظة على مستوى المستخدم.",
+            "runtimeSaveFailed": "فشل في حفظ إعدادات وقت التشغيل"
+        },
+        "defaultImage": {
+            "title": "الصورة الافتراضية",
+            "description": "قم بتعيين الصورة الافتراضية التي سيتم عرضها عند مسح ذاكرة الجهاز. يمكنك تحديد صور مختلفة حسب حجم الشاشة.",
+            "upload": "تحميل الصورة",
+            "uploadTitle": "تحميل الصورة الافتراضية",
+            "uploadInfo": "سيتم تحميل هذه الصورة تلقائيًا عند مسح ذاكرة الجهاز. يوصى باختيار صورة مناسبة لحجم الشاشة.",
+            "gateway": "بوابة",
+            "general": "عام",
+            "noGateways": "يجب عليك أولاً إضافة بوابة",
+            "selectGateway": "اختر البوابة...",
+            "gatewayHint": "سيتم عرض هذه الصورة على أجهزة البوابة المحددة",
+            "imageType": "نوع الصورة",
+            "typeHint": "حدد حجم/اتجاه الشاشة الذي سيتم استخدامه من أجله",
+            "file": "ملف الصورة",
+            "dropzone": "قم بالسحب والإسقاط أو النقر",
+            "formats": "JPG أو PNG، بحد أقصى 5 ميغابايت",
+            "selectFile": "الرجاء اختيار صورة",
+            "empty": "لم تتم إضافة أي صورة افتراضية حتى الآن",
+            "uploaded": "تم تحميل الصورة الافتراضية",
+            "uploadFailed": "فشل تحميل الصورة: {error}",
+            "deleteTitle": "حذف الصورة",
+            "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذه الصورة الافتراضية؟",
+            "deleted": "تم حذف الصورة الافتراضية",
+            "deleteFailed": "فشل حذف الصورة",
+            "types": {
+                "default": "الافتراضي العام (جميع الأجهزة)",
+                "portrait": "شاشات صورة",
+                "landscape": "شاشات المناظر الطبيعية"
+            }
+        }
+    },
+    "time": {
+        "justNow": "الآن",
+        "minutesAgo": "{count} قبل دقائق",
+        "hoursAgo": "{count} قبل ساعات",
+        "daysAgo": "{count} قبل أيام"
+    },
+    "messages": {
+        "unknownError": "حدث خطأ غير معروف",
+        "loadFailed": "فشل تحميل البيانات",
+        "saveFailed": "فشلت عملية الحفظ"
+    }
+}

@@ -1,0 +1,164 @@
+{
+    "title": "Web Şablonları",
+    "subtitle": "HTML tabanlı dijital tabela şablonlarını yönetin",
+    "breadcrumb": {
+        "panel": "Panel",
+        "webTemplates": "Web Şablonları",
+        "editor": "Editör",
+        "new": "Yeni Web Şablonu",
+        "edit": "Düzenle"
+    },
+    "list": {
+        "title": "Web Şablonları",
+        "subtitle": "VvvebJs ile HTML tabanlı şablonlar oluşturun",
+        "newTemplate": "Yeni Web Şablonu",
+        "empty": "Henüz web şablonu oluşturulmamış",
+        "emptyHint": "HTML tabanlı dijital tabela şablonları oluşturmak için başlayın",
+        "searchPlaceholder": "Şablon ara...",
+        "total": "Toplam {count} şablon"
+    },
+    "filters": {
+        "status": "Durum",
+        "type": "Tür",
+        "all": "Tümü",
+        "search": "Ara",
+        "searchPlaceholder": "Şablon ara..."
+    },
+    "table": {
+        "name": "Şablon Adı",
+        "type": "Tür",
+        "status": "Durum",
+        "dimensions": "Boyut",
+        "devices": "Cihaz Sayısı",
+        "createdAt": "Oluşturulma",
+        "updatedAt": "Güncelleme",
+        "preview": "Önizleme"
+    },
+    "form": {
+        "name": "Şablon Adı",
+        "description": "Açıklama",
+        "type": "Şablon Türü",
+        "status": "Durum",
+        "width": "Genişlik",
+        "height": "Yükseklik",
+        "orientation": "Yön",
+        "category": "Kategori",
+        "tags": "Etiketler",
+        "placeholders": {
+            "name": "Şablon adını girin",
+            "description": "Şablon açıklaması (opsiyonel)",
+            "tags": "Etiketler (virgülle ayırın)"
+        }
+    },
+    "types": {
+        "signage": "Dijital Tabela",
+        "webpage": "Web Sayfası",
+        "dashboard": "Dashboard",
+        "menu": "Menü Panosu"
+    },
+    "status": {
+        "draft": "Taslak",
+        "published": "Yayında",
+        "archived": "Arşivlenmiş"
+    },
+    "orientations": {
+        "landscape": "Yatay",
+        "portrait": "Dikey"
+    },
+    "actions": {
+        "new": "Yeni Şablon",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "duplicate": "Çoğalt",
+        "clone": "Çoğalt",
+        "preview": "Önizle",
+        "publish": "Yayınla",
+        "unpublish": "Yayından Kaldır",
+        "assignDevices": "Cihazlara Ata",
+        "viewVersions": "Versiyonları Görüntüle",
+        "retry": "Tekrar Dene",
+        "createFirst": "İlk Şablonu Oluştur",
+        "cancel": "İptal"
+    },
+    "editor": {
+        "title": "Web Şablon Editörü",
+        "newTitle": "Yeni Web Şablonu",
+        "editTitle": "Web Şablonunu Düzenle",
+        "subtitle": "HTML tabanlı dijital tabela tasarlayın",
+        "loading": "Editör yükleniyor...",
+        "loadError": "Editör yüklenemedi",
+        "redirecting": "Editöre yönlendiriliyor..."
+    },
+    "widgets": {
+        "title": "Omnex Widget'ları",
+        "productCard": "Ürün Kartı",
+        "priceList": "Fiyat Listesi",
+        "ticker": "Kayan Yazı",
+        "clock": "Saat",
+        "countdown": "Geri Sayım",
+        "qrcode": "QR Kod",
+        "weather": "Hava Durumu",
+        "news": "Haber Akışı"
+    },
+    "assignment": {
+        "title": "Cihaz Ataması",
+        "selectDevices": "Cihazları Seçin",
+        "noDevices": "Henüz cihaz atanmamış",
+        "assignedDevices": "Atanmış Cihazlar",
+        "priority": "Öncelik",
+        "schedule": "Zamanlama",
+        "startDate": "Başlangıç Tarihi",
+        "endDate": "Bitiş Tarihi"
+    },
+    "versions": {
+        "title": "Versiyon Geçmişi",
+        "current": "Mevcut",
+        "version": "Versiyon",
+        "createdAt": "Oluşturulma",
+        "createdBy": "Oluşturan",
+        "notes": "Notlar",
+        "restore": "Geri Yükle",
+        "compare": "Karşılaştır"
+    },
+    "messages": {
+        "loading": "Yükleniyor...",
+        "noTemplates": "Henüz web şablonu yok",
+        "noTemplatesHint": "HTML tabanlı dijital tabela şablonları oluşturmak için başlayın",
+        "noResults": "Sonuç bulunamadı",
+        "loadError": "Şablonlar yüklenirken hata oluştu",
+        "redirecting": "Editöre yönlendiriliyor...",
+        "deleted": "Web şablonu silindi",
+        "deleteError": "Silme sırasında hata oluştu",
+        "duplicated": "Web şablonu kopyalandı",
+        "duplicateError": "Kopyalama sırasında hata oluştu"
+    },
+    "toast": {
+        "created": "Web şablonu oluşturuldu",
+        "updated": "Web şablonu güncellendi",
+        "deleted": "Web şablonu silindi",
+        "cloned": "Web şablonu çoğaltıldı",
+        "published": "Web şablonu yayınlandı",
+        "unpublished": "Web şablonu yayından kaldırıldı",
+        "assigned": "Cihazlara atandı",
+        "versionRestored": "Versiyon geri yüklendi"
+    },
+    "confirm": {
+        "deleteTitle": "Şablonu Sil",
+        "deleteMessage": "\"{name}\" şablonunu silmek istediğinize emin misiniz?",
+        "delete": "Bu web şablonunu silmek istediğinize emin misiniz?",
+        "deleteWarning": "Bu işlem geri alınamaz. Şablona bağlı cihaz atamaları da silinecektir.",
+        "publish": "Bu şablonu yayınlamak istediğinize emin misiniz?",
+        "unpublish": "Bu şablonu yayından kaldırmak istediğinize emin misiniz?",
+        "restoreVersion": "Bu versiyonu geri yüklemek istediğinize emin misiniz?"
+    },
+    "validation": {
+        "nameRequired": "Şablon adı zorunludur",
+        "nameTooLong": "Şablon adı en fazla 255 karakter olabilir",
+        "typeRequired": "Şablon türü seçiniz"
+    },
+    "filter": {
+        "allTypes": "Tüm Türler",
+        "allStatus": "Tüm Durumlar",
+        "search": "Ara..."
+    }
+}

@@ -1,0 +1,150 @@
+{
+    "title": "Medya Kütüphanesi",
+    "subtitle": {
+        "default": "Görsel ve video dosyalarını yönetin",
+        "directory": "Dizin",
+        "notSelected": "Seçilmedi"
+    },
+    "breadcrumb": {
+        "panel": "Panel",
+        "media": "Medya Kütüphanesi"
+    },
+    "toolbar": {
+        "upload": "Yükle",
+        "browse": "Dizin Gözat",
+        "library": "Kütüphane",
+        "browseMode": "Dizin gezgini moduna geç",
+        "search": "Dosya ara...",
+        "parentFolder": "Üst Klasör",
+        "gridView": "Grid Görünümü",
+        "listView": "Liste Görünümü",
+        "scanSamples": "Ortak Kütüphaneyi Tara"
+    },
+    "filter": {
+        "all": "Tüm Dosyalar",
+        "images": "Görseller",
+        "videos": "Videolar",
+        "documents": "Dokümanlar"
+    },
+    "filters": {
+        "advancedFilters": "Gelişmiş Filtreler",
+        "apply": "Uygula",
+        "applied": "Filtreler uygulandı",
+        "searchPlaceholder": "Dosya adı ara...",
+        "sizeRange": "Dosya Boyutu",
+        "minSize": "Min (KB)",
+        "maxSize": "Max (KB)"
+    },
+    "type": {
+        "image": "Görsel",
+        "video": "Video",
+        "document": "Doküman",
+        "folder": "Klasör"
+    },
+    "bulk": {
+        "selected": "dosya seçildi",
+        "delete": "Sil",
+        "import": "İçe Aktar",
+        "clear": "Seçimi Temizle"
+    },
+    "actions": {
+        "preview": "Önizle",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "import": "İçe Aktar",
+        "download": "İndir"
+    },
+    "table": {
+        "name": "Dosya Adı",
+        "type": "Tür",
+        "size": "Boyut",
+        "date": "Tarih"
+    },
+    "upload": {
+        "uploading": "Yükleniyor..."
+    },
+    "settings": {
+        "title": "Kütüphane Ayarları",
+        "fields": {
+            "defaultPath": "Varsayılan Dizin Yolu",
+            "maxFileSize": "Maksimum Dosya Boyutu (MB)",
+            "allowedTypes": "İzin Verilen Dosya Türleri"
+        },
+        "hints": {
+            "defaultPath": "Dizin gezgini bu yoldan başlar"
+        },
+        "scan": {
+            "title": "Dizini Tara",
+            "description": "Dosyaları veritabanına aktar",
+            "button": "Tara"
+        },
+        "fileTypes": {
+            "images": "Resimler",
+            "videos": "Videolar",
+            "documents": "Belgeler"
+        }
+    },
+    "preview": {
+        "title": "Dosya Önizleme",
+        "fields": {
+            "fileName": "Dosya Adı",
+            "size": "Boyut",
+            "type": "Tür",
+            "date": "Tarih",
+            "path": "Dosya Yolu"
+        },
+        "actions": {
+            "import": "Kütüphaneye Aktar",
+            "download": "İndir",
+            "delete": "Sil"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Dosyayı Sil",
+            "confirm": "Bu dosyayı silmek istediğinize emin misiniz?"
+        },
+        "bulk": {
+            "title": "Dosyaları Sil",
+            "confirm": "{count} dosyayı silmek istediğinize emin misiniz?"
+        }
+    },
+    "empty": {
+        "title": "Dosya bulunamadı",
+        "uploadHint": "Dosya yüklemek için Yükle butonuna tıklayın",
+        "browseHint": "Dizin içeriğini görüntülemek için bir klasör açın"
+    },
+    "modal": {
+        "close": "Kapat",
+        "cancel": "İptal",
+        "delete": "Sil"
+    },
+    "toast": {
+        "uploaded": "Dosya yüklendi",
+        "uploadFailed": "Dosyalar yüklenemedi",
+        "deleted": "Dosya silindi",
+        "imported": "Dosya kütüphaneye aktarıldı",
+        "importFailed": "Dosya eklenemedi",
+        "scanned": "Dizin taraması tamamlandı",
+        "samplesScanned": "{imported} dosya aktarıldı, {skipped} dosya zaten mevcut (toplam {total} dosya bulundu)",
+        "copied": "Kopyalandı",
+        "settingsSaved": "Ayarlar kaydedildi",
+        "pathRequired": "Dizin yolu girin",
+        "bulkImported": "{count} dosya içe aktarıldı"
+    },
+    "messages": {
+        "enterPath": "Lütfen dizin yolu girin",
+        "scanFailed": "Dizin taraması başarısız oldu",
+        "importFailed": "İçe aktarma başarısız oldu",
+        "deleteFailed": "Silme işlemi başarısız oldu",
+        "loadFailed": "Dosyalar yüklenemedi",
+        "setDirectoryPath": "Lütfen önce ayarlardan dizin yolunu belirleyin",
+        "uploadFailed": "yüklenemedi"
+    },
+    "pagination": {
+        "items": "öğe",
+        "page": "Sayfa",
+        "previous": "Önceki",
+        "next": "Sonraki"
+    }
+}

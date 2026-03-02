@@ -1,0 +1,30 @@
+{
+    "title": "Haqqında",
+    "subtitle": "Platforma məlumatları və versiya tarixçəsi",
+    "breadcrumb": {
+        "panel": "Panel"
+    },
+    "features": {
+        "multiDevice": "Çox Cihaz Dəstəyi",
+        "multiDeviceDesc": "ESL, TV, planşet və bütün rəqəmsal displeylər bir platformada",
+        "multiLanguage": "Çoxdilli Quruluş",
+        "multiLanguageDesc": "7 dil dəstəyi ilə qlobal istifadə",
+        "security": "Təhlükəsiz Aktivləşdirmə",
+        "securityDesc": "İdarə olunan cihaz inteqrasiyası və avtorizasiya",
+        "templates": "Qabaqcıl Şablonlar",
+        "templatesDesc": "Çək və burax dizayn redaktoru"
+    },
+    "changelog": {
+        "title": "Versiya Tarixçəsi",
+        "expand": "Genişləndirin",
+        "collapse": "Yıxılma",
+        "noContent": "Versiya tarixçəsi tapılmadı"
+    },
+    "footer": {
+        "allRightsReserved": "Bütün hüquqlar qorunur",
+        "developedBy": "Tərtibatçı"
+    },
+    "messages": {
+        "loading": "Yüklənir..."
+    }
+}

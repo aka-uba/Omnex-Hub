@@ -1,0 +1,30 @@
+{
+    "title": "Hakkında",
+    "subtitle": "Platform bilgileri ve versiyon geçmişi",
+    "breadcrumb": {
+        "panel": "Panel"
+    },
+    "features": {
+        "multiDevice": "Çoklu Cihaz Desteği",
+        "multiDeviceDesc": "ESL, TV, tablet ve tüm dijital ekranlar tek platformda",
+        "multiLanguage": "Çok Dilli Yapı",
+        "multiLanguageDesc": "7 dil desteği ile global kullanım",
+        "security": "Güvenli Aktivasyon",
+        "securityDesc": "Kontrollü cihaz entegrasyonu ve yetkilendirme",
+        "templates": "Gelişmiş Şablonlar",
+        "templatesDesc": "Sürükle-bırak tasarım editörü"
+    },
+    "changelog": {
+        "title": "Versiyon Geçmişi",
+        "expand": "Genişlet",
+        "collapse": "Daralt",
+        "noContent": "Versiyon geçmişi bulunamadı"
+    },
+    "footer": {
+        "allRightsReserved": "Tüm hakları saklıdır",
+        "developedBy": "Geliştirici"
+    },
+    "messages": {
+        "loading": "Yükleniyor..."
+    }
+}

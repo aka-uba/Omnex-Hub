@@ -1,0 +1,390 @@
+{
+    "title": "Rəqəmsal İşarə",
+    "subtitle": "Rəqəmsal işarə məzmununu idarə edin",
+    "playlists": {
+        "title": "Pleylistlər",
+        "subtitle": "Pleylistləri idarə edin",
+        "addPlaylist": "Yeni Pleylist",
+        "editPlaylist": "Pleylistə düzəliş edin",
+        "deletePlaylist": "Pleylistini silin",
+        "deleteConfirm": "Bu pleylisti silmək istədiyinizə əminsiniz?",
+        "detail": "Pleylist təfərrüatları",
+        "empty": "Hələ heç bir pleylist yaradılmayıb",
+        "selectMedia": "Media seçin",
+        "itemCount": "maddələr",
+        "columns": {
+            "orientation": "Ekran Orientasiyası",
+            "template": "Şablon",
+            "layoutType": "Layout növü",
+            "assignedDevice": "Təyin edilmiş Cihaz",
+            "devicesCount": "Cihazlar ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - Təyin edilmiş Cihazlar",
+            "noDevices": "Heç bir təyin edilmiş cihaz tapılmadı",
+            "removeDevice": "Sil",
+            "removeConfirm": "Bu cihazı pleylist təyinatından silmək istəyirsiniz?",
+            "removed": "Cihaz təyinatı silindi"
+        },
+        "orientations": {
+            "landscape": "Landşaft (1920x1080)",
+            "portrait": "Portret (1080x1920)"
+        },
+        "layouts": {
+            "full": "Tam Ekran",
+            "grid2": "2-Sütunlu Grid",
+            "grid3": "3 sütunlu şəbəkə",
+            "grid4": "4-Sütunlu Grid",
+            "hybrid": "Hibrid (Əsas + Yan)"
+        },
+        "mediaTypes": {
+            "image": "Şəkil",
+            "video": "Video",
+            "template": "Şablon",
+            "webpage": "Veb",
+            "stream": "Yayım"
+        },
+        "templatePreview": "Şablona ön baxış",
+        "noTemplateSelected": "Şablon seçilməyib",
+        "transitions": {
+            "none": "Heç biri",
+            "fade": "Solmaq",
+            "slideLeft": "Sola sürüşdürün",
+            "slideRight": "Sağa sürüşdürün",
+            "slideUp": "Yuxarı sürüşdürün",
+            "slideDown": "Aşağı sürüşdürün",
+            "zoom": "Zoom",
+            "crossfade": "Çarpaz keçid"
+        },
+        "form": {
+            "fields": {
+                "name": "Pleylist Adı",
+                "description": "Təsvir",
+                "duration": "Müddət (san)",
+                "transition": "Keçid effekti",
+                "transitionDuration": "Keçid müddəti",
+                "loop": "Döngə",
+                "orientation": "Ekran Orientasiyası",
+                "template": "Şablon",
+                "layoutType": "Layout növü"
+            },
+            "infoTitle": "Siyahı məlumatı",
+            "itemsTitle": "Mündəricat Siyahı",
+            "addItem": "Məzmun əlavə edin",
+            "createDesc": "Yeni pleylist yaradın",
+            "editDesc": "Pleylistə düzəliş edin",
+            "namePlaceholder": "Misal: Kampaniya Şəkilləri",
+            "descPlaceholder": "Siyahı haqqında qısa məlumat",
+            "durationHint": "Hər məzmun üçün defolt ekran müddəti",
+            "selectTemplate": "Şablonu seçin...",
+            "noPreview": "Önizləmə yoxdur",
+            "noItems": "Hələ heç bir məzmun əlavə edilməyib",
+            "noItemsHint": "Məzmun əlavə etmək üçün yuxarıdakı düyməni istifadə edin",
+            "emptyMedia": "Media kitabxanası boşdur",
+            "uploadMedia": "Media yükləyin",
+            "tabMedia": "Media",
+            "tabTemplates": "Şablonlar",
+            "tabWebpage": "Veb səhifə",
+            "tabStream": "Canlı Yayım",
+            "webpageTitle": "Veb səhifə əlavə edin",
+            "webpageHint": "Göstərmək istədiyiniz veb səhifənin URL-ni daxil edin. Səhifə iframe-də göstəriləcək.",
+            "webpageUrl": "Veb səhifənin URL-i",
+            "webpageName": "Görünən Adı",
+            "webpageNamePlaceholder": "Misal: Hava",
+            "addWebpage": "Veb səhifə əlavə edin",
+            "webpageWarning": "Qeyd: Bəzi veb-saytlar iframe-də (X-Frame-Options) ekranı bloklaya bilər. Bu halda, səhifə göstərilə bilməz.",
+            "webpageUrlRequired": "Lütfən, URL daxil edin",
+            "webpageUrlInvalid": "URL http:// və ya https:// ilə başlamalıdır",
+            "webpageAlreadyAdded": "Bu URL artıq əlavə edilib",
+            "webpageAdded": "Veb səhifə əlavə edildi",
+            "streamTitle": "Canlı yayım əlavə et",
+            "streamHint": "HLS (m3u8), RTSP və ya digər yayım URL-ni daxil edin. Cihazlarda hls.js vasitəsilə oynadılacaq.",
+            "streamUrl": "Yayım URL",
+            "streamName": "Yayım adı",
+            "streamNamePlaceholder": "Məs.: Kamera 1, TV yayımı",
+            "streamDurationHint": "0 = müddətsiz (davamlı yayım)",
+            "streamMuted": "Səs",
+            "streamMutedYes": "Səssiz",
+            "streamMutedNo": "Səsli",
+            "streamAdd": "Yayım əlavə et",
+            "streamFormats": "Dəstəklənən formatlar: HLS (.m3u8), MP4, WebM. RTSP birbaşa dəstəklənmir, HLS-ə çevrilməlidir.",
+            "streamUrlRequired": "Yayım URL-ni daxil edin",
+            "streamUrlInvalid": "Yanlış URL formatı",
+            "streamAlreadyAdded": "Bu yayım artıq əlavə edilib",
+            "streamAdded": "Canlı yayım əlavə edildi",
+            "emptyTemplates": "Şablon tapılmadı",
+            "emptyTemplatesHint": "İşarələr və ya TV şablonları yaradın",
+            "createTemplate": "Şablon yaradın",
+            "seconds": "san",
+            "loop": "Döngə",
+            "loopHint": "Video bitdikdə onu yenidən başladın",
+            "loopCountHint": "Neçə dəfə təkrarlamaq lazımdır",
+            "soundOn": "Səs Aktivdir",
+            "soundOff": "Səs Söndürülür",
+            "durationHintVideo": "Boş qalarsa, video öz müddətində oxudulur",
+            "durationHintImage": "Ekran müddəti (saniyə)",
+            "itemsHint": "Müddət: Boş qalsa, video öz müddətində oxunur. Döngə: Aktiv edilərsə, məzmun müəyyən edilmiş sayda təkrarlanır, müddət bitdikdə növbətiyə keçir.",
+            "editItem": "Elementi redaktə et",
+            "itemName": "ad",
+            "itemUpdated": "Element yeniləndi",
+            "duration": "Müddət",
+            "autoForVideo": "Avtomatik",
+            "loopVideo": "Video döngəsi",
+            "loopCount": "Təkrar sayı",
+            "selectDevice": "Cihazı seçin",
+            "selectDevices": "Cihazlar seçin",
+            "selectedDevices": "Seçilmiş Cihazlar",
+            "assignToMultiple": "Birdən çox cihaza təyin edə bilərsiniz",
+            "selectDevicePlaceholder": "Cihaz seçin...",
+            "noDevices": "Uyğun cihazlar tapılmadı. Əvvəlcə bir işarə cihazı əlavə edin.",
+            "willBeAssigned": "pleylist seçilmiş cihaza təyin ediləcək.",
+            "selectDeviceRequired": "Zəhmət olmasa cihaz seçin",
+            "confirmUnassign": "Heç bir cihaz seçilməyib. Bu pleylist bütün cihazlardan silinəcək. Davam edilsin?",
+            "currentlyAssigned": "Hazırda {device} cihazına təyin edilib",
+            "currentlyAssignedCount": "Hazırda {count} cihazlarına təyin edilib",
+            "aDevice": "bir cihaz"
+        },
+        "assignToDevice": "Cihaza təyin edin",
+        "toast": {
+            "created": "Pleylist yaradıldı",
+            "updated": "Pleylist yeniləndi",
+            "deleted": "Pleylist silindi",
+            "mediaAdded": "Media əlavə edildi",
+            "assigned": "Pleylist cihaza təyin edildi",
+            "assignedCount": "{count} cihaz təyin edildi",
+            "assignFailedCount": "{count} cihaz təyinləri uğursuz oldu"
+        },
+        "commands": {
+            "start": "Yayım başlayın",
+            "stop": "Yayımı dayandırın",
+            "refresh": "Cihazı Yeniləyin",
+            "reboot": "Cihazı yenidən başladın",
+            "device": "Cihaz",
+            "send": "Göndər",
+            "sentCount": "{count} əmrləri cihazlara göndərildi",
+            "failedCount": "{count} əmrləri göndərmək alınmadı",
+            "confirmMessage": "\"{command}\" əmri <strong>{device}</strong> ünvanına göndəriləcək.",
+            "sent": "Komanda göndərildi: {device}",
+            "failed": "Komanda göndərmək alınmadı"
+        },
+        "actions": {
+            "startBroadcast": "Yayım başlayın",
+            "stopBroadcast": "Yayımı dayandırın",
+            "refreshDevice": "Cihazı Yeniləyin"
+        }
+    },
+    "schedules": {
+        "title": "Cədvəllər",
+        "subtitle": "Yayım cədvəllərini idarə edin",
+        "addSchedule": "Yeni Cədvəl",
+        "editSchedule": "Cədvəli redaktə edin",
+        "deleteSchedule": "Cədvəli silin",
+        "deleteConfirm": "\"{name}\" cədvəlini silmək istədiyinizə əminsiniz?",
+        "empty": "Hələ heç bir cədvəl yaradılmayıb",
+        "historyFeature": "Tarix funksiyası tezliklə gələcək",
+        "searchPlaceholder": "Axtarış cədvəli...",
+        "emptyText": "Cədvəl tapılmadı",
+        "columns": {
+            "preview": "Önizləmə",
+            "name": "Cədvəlin Adı",
+            "playlist": "Pleylist",
+            "devices": "Cihazlar",
+            "deviceCount": "{count} cihazları",
+            "startDate": "Başlayın",
+            "endDate": "Son",
+            "continuous": "Davamlı",
+            "status": "Vəziyyət"
+        },
+        "status": {
+            "active": "Aktiv",
+            "scheduled": "Planlaşdırılıb",
+            "inactive": "Qeyri-aktiv",
+            "completed": "Tamamlandı"
+        },
+        "actions": {
+            "history": "Tarix",
+            "view": "Baxın",
+            "edit": "Redaktə et",
+            "delete": "Sil"
+        },
+        "newSchedule": "Yeni Cədvəl",
+        "createDesc": "Yeni cədvəl yaradın",
+        "editDesc": "Cədvəl parametrlərini redaktə edin",
+        "scheduleInfo": "Cədvəl Məlumatı",
+        "targetDevices": "Hədəf Cihazları",
+        "selectedCount": "{count} seçildi",
+        "searchDevice": "Cihazı axtarın...",
+        "noMatch": "Uyğun tapılmadı",
+        "noTvDevices": "Heç bir TV/İşarə cihazı tapılmadı",
+        "locationNotSpecified": "Məkan göstərilməyib",
+        "form": {
+            "fields": {
+                "name": "Cədvəlin Adı",
+                "playlist": "Pleylist",
+                "startDate": "Başlama tarixi",
+                "endDate": "Bitmə tarixi",
+                "startTime": "Başlama vaxtı",
+                "endTime": "Bitmə vaxtı",
+                "repeat": "təkrarlayın",
+                "weekdays": "Günlər",
+                "status": "Vəziyyət",
+                "devices": "Cihazlar",
+                "priority": "Prioritet"
+            },
+            "placeholders": {
+                "name": "Misal: Həftə sonu kampaniyası",
+                "selectPlaylist": "Siyahı seçin"
+            },
+            "hints": {
+                "endDate": "Boş qalsa, davamlı oynayır",
+                "priority": "Daha yüksək dəyər = Daha yüksək prioritet"
+            },
+            "repeat": {
+                "none": "Təkrar yoxdur",
+                "daily": "Gündəlik",
+                "weekly": "Həftəlik",
+                "monthly": "Aylıq"
+            },
+            "weekdays": {
+                "mon": "Bazar ertəsi",
+                "tue": "Çərşənbə axşamı",
+                "wed": "Çərşənbə",
+                "thu": "Cr",
+                "fri": "Cümə",
+                "sat": "şənbə",
+                "sun": "Günəş"
+            },
+            "status": {
+                "active": "Aktiv",
+                "scheduled": "Planlaşdırılıb",
+                "inactive": "Qeyri-aktiv"
+            }
+        },
+        "toast": {
+            "created": "Cədvəl yaradıldı",
+            "updated": "Cədvəl yeniləndi",
+            "deleted": "Cədvəl silindi",
+            "loadFailed": "Cədvəli yükləmək alınmadı",
+            "requiredFields": "Zəhmət olmasa tələb olunan sahələri doldurun",
+            "selectDevice": "Ən azı bir cihaz seçməlisiniz",
+            "saveFailed": "Saxla xətası"
+        }
+    },
+    "template": {
+        "title": "Ekran şablonları",
+        "subtitle": "Televiziya və lövhələrin ekran planlarını idarə edin",
+        "addTemplate": "Şablon əlavə edin",
+        "editTemplate": "Şablonu redaktə edin",
+        "types": {
+            "signage": "İşarə",
+            "tv": "TV",
+            "label": "Etiket"
+        },
+        "layoutTypes": {
+            "full": "Tam Ekran",
+            "grid2": "2-Sütun Bölməsi",
+            "grid3": "3-Sütun Bölməsi",
+            "grid4": "4-Sütun Bölməsi",
+            "hybrid": "Hibrid"
+        },
+        "slots": {
+            "main": "Əsas Sahə",
+            "slot1": "Sahə 1",
+            "slot2": "Sahə 2",
+            "slot3": "Sahə 3",
+            "slot4": "Sahə 4",
+            "sidebar": "Yan panel",
+            "banner": "Aşağı Banner"
+        },
+        "preview": "Önizləmə",
+        "previewDescription": "Şablon ekranda necə görünəcək"
+    },
+    "deviceTree": {
+        "title": "Cihaz Vəziyyəti",
+        "subtitle": "Bütün signage cihazlarının iyerarxik görünüşü",
+        "expandAll": "Hamısını Aç",
+        "collapseAll": "Hamısını Bağla",
+        "summary": {
+            "total": "Cəmi",
+            "online": "Onlayn",
+            "offline": "Oflayn",
+            "warning": "Xəbərdarlıq",
+            "devices": "cihaz"
+        },
+        "filter": {
+            "search": "Cihaz, IP və ya filial axtar...",
+            "all": "Hamısı",
+            "online": "Onlayn",
+            "offline": "Oflayn",
+            "warning": "Xəbərdarlıqlar"
+        },
+        "columns": {
+            "name": "Ad",
+            "status": "Vəziyyət",
+            "playlist": "Oxudulan",
+            "lastSeen": "Son Görülmə",
+            "actions": "Əməliyyatlar"
+        },
+        "node": {
+            "devices": "{count} cihaz",
+            "unassigned": "Təyin Edilməmiş Cihazlar",
+            "noBranch": "Filialsız"
+        },
+        "commands": {
+            "start": "Başlat",
+            "stop": "Dayandır",
+            "refresh": "Yenilə",
+            "reboot": "Yenidən Başlat",
+            "startAll": "Hamısını Başlat",
+            "stopAll": "Hamısını Dayandır",
+            "refreshAll": "Hamısını Yenilə",
+            "confirmCascade": "{count} cihaza \"{command}\" əmri göndəriləcək. Davam edilsin?",
+            "sending": "Əmrlər göndərilir...",
+            "progress": "{sent}/{total} göndərildi",
+            "resultSuccess": "{success} uğurlu",
+            "resultFailed": "{failed} uğursuz",
+            "resultSummary": "Əmr Nəticəsi"
+        },
+        "toast": {
+            "started": "Yayım başladıldı: {device}",
+            "stopped": "Yayım dayandırıldı: {device}",
+            "refreshed": "Cihaz yeniləndi: {device}",
+            "rebooted": "Yenidən başladılır: {device}",
+            "failed": "Əmr göndərilə bilmədi: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Planşet",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "indicə",
+            "secondsAgo": "{n}sn əvvəl",
+            "minutesAgo": "{n}dq əvvəl",
+            "hoursAgo": "{n}s əvvəl",
+            "daysAgo": "{n}g əvvəl",
+            "never": "Heç vaxt"
+        },
+        "empty": "Signage cihazı tapılmadı",
+        "emptyHint": "Cihazlar səhifəsindən TV və ya signage cihazı əlavə edin",
+        "autoRefresh": "Avtomatik yeniləmə: {seconds}sn",
+        "refreshing": "Yenilənir...",
+        "noPlaylist": "Pleylist təyin edilməyib",
+        "loading": "Cihaz ağacı yüklənir..."
+    },
+    "player": {
+        "title": "PWA Oyunçusu",
+        "syncCode": "Sinxronizasiya kodu",
+        "enterSyncCode": "Sinxronizasiya kodunu daxil edin",
+        "connecting": "Qoşulur...",
+        "connected": "Qoşuldu",
+        "disconnected": "Bağlantı kəsildi",
+        "nowPlaying": "İndi oynayır",
+        "nextItem": "Sonrakı",
+        "rotation": "Fırlanma müddəti",
+        "seconds": "saniyə"
+    }
+}

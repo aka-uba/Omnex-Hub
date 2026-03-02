@@ -1,0 +1,94 @@
+{
+    "title": "Kunye Distributiecentrum",
+    "subtitle": "Verdeel kunye vanuit HAL-meldingen",
+    "breadcrumb": {
+        "panel": "Dashboard",
+        "products": "Producten",
+        "distribution": "Kunye Distributie"
+    },
+    "steps": {
+        "query": "Meldingen opvragen",
+        "select": "Documentselectie",
+        "assign": "Productkoppeling",
+        "result": "Resultaat"
+    },
+    "form": {
+        "startDate": "Startdatum",
+        "endDate": "Einddatum",
+        "sifat": "Functie",
+        "onlyRemaining": "Alleen resterende hoeveelheid > 0",
+        "query": "Opvragen",
+        "querying": "Wordt opgevraagd..."
+    },
+    "belge": {
+        "title": "Documentnr.",
+        "plaka": "Kenteken",
+        "items": "artikelen",
+        "selectAll": "Alles selecteren",
+        "totalMiktar": "Totale hoeveelheid",
+        "totalKalan": "Totaal resterend",
+        "noSelection": "Selecteer ten minste één kunye"
+    },
+    "assign": {
+        "halProduct": "HAL-product",
+        "systemProduct": "Systeemproduct",
+        "type": "Distributietype",
+        "full": "Enkel (Volledig)",
+        "split": "Dubbel (Gesplitst)",
+        "miktar": "Hoeveelheid",
+        "kalan": "Resterend",
+        "birim": "Eenheid",
+        "search": "Product zoeken...",
+        "autoMatch": "Automatisch koppelen",
+        "distribute": "Verdelen",
+        "distributing": "Wordt verdeeld...",
+        "noMatch": "Geen overeenkomst gevonden",
+        "selectProduct": "Product selecteren",
+        "matched": "Gekoppeld",
+        "splitMiktar1": "Deel 1 hoeveelheid",
+        "splitMiktar2": "Deel 2 hoeveelheid",
+        "nextStep": "Naar koppeling",
+        "prevStep": "Terug",
+        "belgeNo": "Documentnr.",
+        "bildirimTarihi": "Meldingsdatum",
+        "searchHint": "Zoek op naam, SKU of barcode. Zoeken zonder rekening te houden met Turkse tekens wordt ondersteund."
+    },
+    "result": {
+        "title": "Distributieresultaat",
+        "success": "{count} kunye succesvol verdeeld",
+        "skipped": "{count} kunye overgeslagen",
+        "error": "{count} kunye met fouten",
+        "viewProducts": "Producten bekijken",
+        "newDistribution": "Nieuwe distributie"
+    },
+    "errors": {
+        "noCredentials": "HAL-instellingen niet geconfigureerd",
+        "noResults": "Geen meldingen gevonden voor opgegeven criteria",
+        "fetchFailed": "Meldingenopvraag mislukt",
+        "distributeFailed": "Fout opgetreden tijdens distributie",
+        "noSelection": "Selecteer ten minste één kunye",
+        "noProduct": "Voltooi alle productkoppelingen",
+        "dateRequired": "Start- en einddatum zijn vereist",
+        "dateRange": "Datumbereik mag niet meer dan 31 dagen zijn"
+    },
+    "sifat": [
+        "Selecteer",
+        "Industrieel",
+        "Exporteur",
+        "Importeur",
+        "Producent",
+        "Makelaar",
+        "Handelaar",
+        "Markt",
+        "Groenteboer",
+        "Magazijn/Sortering",
+        "Producentenorganisatie",
+        "Straatverkoper",
+        "Hotel",
+        "Restaurant",
+        "Studentenhuis",
+        "Voedselfabriek",
+        "Ziekenhuis",
+        "Handelaar (Extern)"
+    ]
+}

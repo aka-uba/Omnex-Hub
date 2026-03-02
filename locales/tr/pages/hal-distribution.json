@@ -1,0 +1,90 @@
+{
+    "title": "Künye Dağıtım Merkezi",
+    "subtitle": "HAL bildirimlerinden künye dağıtımı yapın",
+    "breadcrumb": { "panel": "Panel", "products": "Ürünler", "distribution": "Künye Dağıtım" },
+    "steps": {
+        "query": "Bildirim Sorgulama",
+        "select": "Belge Seçimi",
+        "assign": "Ürün Eşleştirme",
+        "result": "Sonuç"
+    },
+    "form": {
+        "startDate": "Başlangıç Tarihi",
+        "endDate": "Bitiş Tarihi",
+        "sifat": "Sıfat",
+        "onlyRemaining": "Sadece kalan miktarı > 0",
+        "query": "Sorgula",
+        "querying": "Sorgulanıyor..."
+    },
+    "belge": {
+        "title": "Belge No",
+        "plaka": "Plaka",
+        "items": "ürün",
+        "selectAll": "Tümünü Seç",
+        "totalMiktar": "Toplam Miktar",
+        "totalKalan": "Toplam Kalan",
+        "noSelection": "Lütfen en az bir künye seçin"
+    },
+    "assign": {
+        "halProduct": "HAL Ürün",
+        "systemProduct": "Sistem Ürünü",
+        "type": "Dağıtım Tipi",
+        "full": "1'li (Tam)",
+        "split": "2'li (Bölünmüş)",
+        "miktar": "Miktar",
+        "kalan": "Kalan",
+        "birim": "Birim",
+        "search": "Ürün ara (ad, SKU, barkod)...",
+        "searchHint": "Ad, SKU veya barkod ile arayın. Türkçe karakter duyarsız arama desteklenir.",
+        "autoMatch": "Otomatik Eşleştir",
+        "distribute": "Dağıt",
+        "distributing": "Dağıtılıyor...",
+        "noMatch": "Eşleşme bulunamadı",
+        "selectProduct": "Ürün Seç",
+        "matched": "Eşleştirildi",
+        "splitMiktar1": "1. Parça Miktar",
+        "splitMiktar2": "2. Parça Miktar",
+        "nextStep": "Eşleştirmeye Geç",
+        "prevStep": "Geri",
+        "belgeNo": "Belge No",
+        "bildirimTarihi": "Bildirim Tarihi"
+    },
+    "result": {
+        "title": "Dağıtım Sonucu",
+        "success": "{count} künye başarıyla dağıtıldı",
+        "skipped": "{count} künye atlandı",
+        "error": "{count} künye hata verdi",
+        "viewProducts": "Ürünlere Git",
+        "newDistribution": "Yeni Dağıtım"
+    },
+    "errors": {
+        "noCredentials": "HAL ayarları yapılandırılmamış",
+        "noResults": "Belirtilen kriterlerde bildirim bulunamadı",
+        "fetchFailed": "Bildirim sorgusu başarısız",
+        "distributeFailed": "Dağıtım sırasında hata oluştu",
+        "noSelection": "Lütfen en az bir künye seçin",
+        "noProduct": "Lütfen tüm ürün eşleştirmelerini tamamlayın",
+        "dateRequired": "Başlangıç ve bitiş tarihi gerekli",
+        "dateRange": "Tarih aralığı en fazla 31 gün olabilir"
+    },
+    "sifat": {
+        "0": "Seçiniz",
+        "1": "Sanayici",
+        "2": "İhracatçı",
+        "3": "İthalatçı",
+        "4": "Üretici",
+        "5": "Komisyoncu",
+        "6": "Tüccar",
+        "7": "Market",
+        "8": "Manav",
+        "9": "Depo/Tasnif",
+        "10": "Üretici Örgütü",
+        "11": "Pazarcı",
+        "12": "Otel",
+        "13": "Lokanta",
+        "14": "Yurt",
+        "15": "Yemek Fabrikası",
+        "16": "Hastane",
+        "17": "Tüccar (Hal Dışı)"
+    }
+}

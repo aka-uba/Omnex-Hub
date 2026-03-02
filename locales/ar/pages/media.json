@@ -1,0 +1,150 @@
+{
+    "title": "مكتبة الوسائط",
+    "subtitle": {
+        "default": "إدارة ملفات الصور والفيديو",
+        "directory": "دليل",
+        "notSelected": "غير محدد"
+    },
+    "breadcrumb": {
+        "panel": "لوحة",
+        "media": "مكتبة الوسائط"
+    },
+    "toolbar": {
+        "upload": "رفع",
+        "browse": "تصفح الدليل",
+        "library": "مكتبة",
+        "browseMode": "قم بالتبديل إلى وضع مستكشف الدليل",
+        "search": "بحث في الملفات...",
+        "parentFolder": "مجلد الوالدين",
+        "gridView": "عرض الشبكة",
+        "listView": "عرض القائمة",
+        "scanSamples": "مسح المكتبة العامة"
+    },
+    "filter": {
+        "all": "جميع الملفات",
+        "images": "الصور",
+        "videos": "فيديوهات",
+        "documents": "وثائق"
+    },
+    "filters": {
+        "advancedFilters": "مرشحات متقدمة",
+        "apply": "يتقدم",
+        "applied": "تم تطبيق المرشحات",
+        "searchPlaceholder": "اسم ملف البحث...",
+        "sizeRange": "حجم الملف",
+        "minSize": "الحد الأدنى (كيلو بايت)",
+        "maxSize": "الحد الأقصى (كيلو بايت)"
+    },
+    "type": {
+        "image": "صورة",
+        "video": "فيديو",
+        "document": "وثيقة",
+        "folder": "مجلد"
+    },
+    "bulk": {
+        "selected": "الملفات المختارة",
+        "delete": "يمسح",
+        "import": "يستورد",
+        "clear": "مسح التحديد"
+    },
+    "actions": {
+        "preview": "معاينة",
+        "edit": "يحرر",
+        "delete": "يمسح",
+        "import": "يستورد",
+        "download": "تحميل"
+    },
+    "table": {
+        "name": "اسم الملف",
+        "type": "يكتب",
+        "size": "مقاس",
+        "date": "تاريخ"
+    },
+    "upload": {
+        "uploading": "جارٍ التحميل..."
+    },
+    "settings": {
+        "title": "إعدادات المكتبة",
+        "fields": {
+            "defaultPath": "مسار الدليل الافتراضي",
+            "maxFileSize": "الحد الأقصى لحجم الملف (ميجابايت)",
+            "allowedTypes": "أنواع الملفات المسموح بها"
+        },
+        "hints": {
+            "defaultPath": "يبدأ مستكشف الدليل من هذا المسار"
+        },
+        "scan": {
+            "title": "دليل المسح",
+            "description": "استيراد الملفات إلى قاعدة البيانات",
+            "button": "مسح"
+        },
+        "fileTypes": {
+            "images": "الصور",
+            "videos": "فيديوهات",
+            "documents": "وثائق"
+        }
+    },
+    "preview": {
+        "title": "معاينة الملف",
+        "fields": {
+            "fileName": "اسم الملف",
+            "size": "مقاس",
+            "type": "يكتب",
+            "date": "تاريخ",
+            "path": "مسار الملف"
+        },
+        "actions": {
+            "import": "استيراد إلى المكتبة",
+            "download": "تحميل",
+            "delete": "يمسح"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "حذف الملف",
+            "confirm": "هل أنت متأكد أنك تريد حذف هذا الملف؟"
+        },
+        "bulk": {
+            "title": "حذف الملفات",
+            "confirm": "هل أنت متأكد أنك تريد حذف ملفات {count}؟"
+        }
+    },
+    "empty": {
+        "title": "لم يتم العثور على ملفات",
+        "uploadHint": "انقر فوق زر تحميل لتحميل الملفات",
+        "browseHint": "افتح مجلدًا لعرض محتويات الدليل"
+    },
+    "modal": {
+        "close": "يغلق",
+        "cancel": "يلغي",
+        "delete": "يمسح"
+    },
+    "toast": {
+        "uploaded": "تم تحميل الملف",
+        "uploadFailed": "فشل تحميل الملفات",
+        "deleted": "تم حذف الملف",
+        "imported": "تم استيراد الملف إلى المكتبة",
+        "importFailed": "فشلت إضافة الملف",
+        "scanned": "اكتمل فحص الدليل",
+        "samplesScanned": "{imported} من الملفات التي تم استيرادها، {skipped} من الملفات موجودة بالفعل (إجمالي {total} من الملفات التي تم العثور عليها)",
+        "copied": "منقول",
+        "settingsSaved": "تم حفظ الإعدادات",
+        "pathRequired": "أدخل مسار الدليل",
+        "bulkImported": "{count} الملفات المستوردة"
+    },
+    "messages": {
+        "enterPath": "الرجاء إدخال مسار الدليل",
+        "scanFailed": "فشل فحص الدليل",
+        "importFailed": "فشل الاستيراد",
+        "deleteFailed": "فشلت عملية الحذف",
+        "loadFailed": "فشل تحميل الملفات",
+        "setDirectoryPath": "يرجى ضبط مسار الدليل في الإعدادات أولاً",
+        "uploadFailed": "فشل التحميل"
+    },
+    "pagination": {
+        "items": "أغراض",
+        "page": "صفحة",
+        "previous": "سابق",
+        "next": "التالي"
+    }
+}

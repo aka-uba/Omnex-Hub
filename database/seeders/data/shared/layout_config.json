@@ -1,0 +1,37 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.01",
+    "description": "Default layout configuration",
+    "generated_at": "2026-01-25",
+    "data": [
+        {
+            "key": "default.layout.default",
+            "scope": "default",
+            "config": {
+                "sidebar": {
+                    "collapsed": false,
+                    "width": 280,
+                    "theme": "dark"
+                },
+                "header": {
+                    "fixed": true,
+                    "height": 60
+                },
+                "theme": {
+                    "mode": "light",
+                    "primaryColor": "#3b82f6",
+                    "fontSize": "medium"
+                },
+                "table": {
+                    "pageSize": 25,
+                    "density": "normal"
+                },
+                "dashboard": {
+                    "widgets": ["stats", "recent-products", "device-status", "quick-actions"]
+                }
+            },
+            "is_demo": false,
+            "is_default": true
+        }
+    ]
+}

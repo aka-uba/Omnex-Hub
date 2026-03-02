@@ -1,0 +1,764 @@
+/**
+ * About Page Styles
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================
+   About Content Container
+   ============================================ */
+
+.about-content {
+    /* Diğer sayfalarla aynı genişlikte */
+}
+
+/* ============================================
+   Main Card
+   ============================================ */
+
+.about-main-card {
+    margin-bottom: 1.5rem;
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+
+.about-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.about-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.about-logo {
+    max-height: 60px;
+    width: auto;
+}
+
+.about-logo.dark-logo {
+    display: none;
+}
+
+.dark .about-logo.light-logo {
+    display: none;
+}
+
+.dark .about-logo.dark-logo {
+    display: block;
+}
+
+.about-version-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
+}
+
+.version-label {
+    opacity: 0.8;
+}
+
+.version-number {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+/* ============================================
+   Description Section
+   ============================================ */
+
+.about-description {
+    margin-bottom: 2rem;
+}
+
+.about-description p {
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    text-align: justify;
+}
+
+.about-description p:last-child {
+    margin-bottom: 0;
+}
+
+/* More specific selector to override .about-description p styles */
+.about-description p.about-changelog-intro {
+    font-style: italic;
+    color: var(--text-muted);
+    border-left: 3px solid var(--color-primary);
+    padding-left: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* ============================================
+   Features Grid
+   ============================================ */
+
+.about-features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.about-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.about-feature:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.about-feature-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.about-feature-icon.blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.about-feature-icon.green {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.about-feature-icon.purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.about-feature-icon.orange {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: white;
+}
+
+.about-feature-text h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.about-feature-text p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ============================================
+   Branding Section
+   ============================================ */
+
+.about-branding {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.about-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+}
+
+.about-section-title i {
+    color: var(--color-primary);
+}
+
+.about-branding-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.about-branding-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.about-branding-preview {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.about-branding-preview.light-bg {
+    background: #ffffff;
+}
+
+.about-branding-preview.dark-bg {
+    background: #0d1117;
+}
+
+.about-branding-preview.icon-bg {
+    background: var(--bg-secondary);
+}
+
+.about-branding-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.about-branding-preview i {
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.about-branding-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* ============================================
+   Changelog Card
+   ============================================ */
+
+.about-changelog-card {
+    margin-bottom: 1.5rem;
+}
+
+.about-changelog-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    padding: 1rem 1.25rem;
+}
+
+.about-changelog-card .card-header:hover {
+    background: var(--bg-secondary);
+}
+
+.about-changelog-card .card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.about-changelog-card .card-title i {
+    color: var(--color-primary);
+}
+
+.changelog-body {
+    padding: 1.25rem;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.changelog-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.changelog-loading .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* @keyframes spin - global.css'de tanımlı */
+
+/* ============================================
+   Changelog Content Styling
+   ============================================ */
+
+.changelog-parsed {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.changelog-h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 1.5rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.changelog-h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1.25rem 0 0.75rem 0;
+}
+
+.changelog-version {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1.5rem 0 0.75rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border-left: 4px solid var(--color-primary);
+}
+
+.changelog-version .version-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.changelog-version .version-date {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.changelog-h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1rem 0 0.5rem 0;
+}
+
+.changelog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.changelog-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.changelog-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+.changelog-code {
+    display: block;
+    padding: 1rem;
+    margin: 0.75rem 0;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8125rem;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+}
+
+.changelog-inline-code {
+    padding: 0.125rem 0.375rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8125rem;
+    color: var(--color-primary);
+}
+
+.changelog-hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1.5rem 0;
+}
+
+.changelog-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    color: var(--text-secondary);
+}
+
+.changelog-checkbox i {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.changelog-checkbox.checked i {
+    color: var(--color-success);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.about-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.about-copyright {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.about-separator {
+    color: var(--border-color);
+}
+
+.about-developer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.about-developer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.about-developer-contact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.about-developer-contact a {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    transition: color 0.2s ease;
+}
+
+.about-developer-contact a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+.about-developer-contact a i {
+    font-size: 1rem;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+    .about-hero {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .about-features {
+        grid-template-columns: 1fr;
+    }
+
+    .about-branding-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .about-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .changelog-body {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Hero section compact */
+    .about-hero {
+        flex-direction: column;
+        gap: var(--space-3);
+        text-align: center;
+        align-items: center;
+    }
+
+    .about-logo-container {
+        justify-content: center;
+    }
+
+    .about-logo {
+        max-height: 50px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .about-title {
+        font-size: 1.375rem;
+    }
+
+    .about-version-badge {
+        font-size: var(--text-xs);
+        padding: 0.2rem 0.6rem;
+    }
+
+    /* Description compact - logo düzgün orantılanır */
+    .about-description {
+        margin-bottom: var(--space-4);
+    }
+
+    .about-description p {
+        font-size: var(--text-sm);
+        text-align: left;
+    }
+
+    .about-description img {
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+    }
+
+    /* Features grid compact - padding kaldır (ana card'da var) */
+    .about-features {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+        padding: 0;
+        background: transparent;
+    }
+
+    /* Feature items - mobilde ortalı */
+    .about-feature {
+        padding: var(--space-3);
+        gap: var(--space-2);
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .about-feature-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.25rem;
+    }
+
+    .about-feature-text {
+        text-align: center;
+    }
+
+    .about-feature-text h4 {
+        font-size: var(--text-sm);
+    }
+
+    .about-feature-text p {
+        font-size: var(--text-xs);
+    }
+
+    /* Branding section compact */
+    .about-branding {
+        margin-bottom: var(--space-4);
+    }
+
+    .about-branding h3 {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-3);
+    }
+
+    .about-branding-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-2);
+    }
+
+    .about-branding-preview {
+        height: 60px;
+        padding: var(--space-2);
+    }
+
+    .about-branding-preview img {
+        max-width: 80%;
+        max-height: 36px;
+    }
+
+    .about-branding-info h4 {
+        font-size: var(--text-xs);
+    }
+
+    .about-branding-info p {
+        font-size: 10px;
+    }
+
+    /* Changelog section compact */
+    .about-changelog {
+        margin-bottom: var(--space-4);
+    }
+
+    .about-changelog h3 {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-3);
+    }
+
+    .changelog-header {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .changelog-title {
+        font-size: var(--text-sm);
+    }
+
+    .changelog-toggle {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.875rem;
+    }
+
+    .changelog-body {
+        max-height: 300px;
+        padding: var(--space-3);
+    }
+
+    .changelog-version {
+        padding: var(--space-2) var(--space-3);
+        margin-bottom: var(--space-3);
+    }
+
+    .changelog-version h4 {
+        font-size: var(--text-sm);
+    }
+
+    .changelog-version span {
+        font-size: var(--text-xs);
+    }
+
+    .changelog-list {
+        padding-left: var(--space-4);
+    }
+
+    .changelog-list li {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-1);
+    }
+
+    /* Developer section compact */
+    .about-developer {
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .about-developer-info h4 {
+        font-size: var(--text-sm);
+    }
+
+    .about-developer-info p {
+        font-size: var(--text-xs);
+    }
+
+    .about-developer-contact {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .about-developer-contact a {
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
+
+    /* Footer compact */
+    .about-footer {
+        flex-direction: column;
+        gap: var(--space-2);
+        text-align: center;
+        padding-top: var(--space-3);
+    }
+
+    .about-footer p {
+        font-size: var(--text-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    .about-description p {
+        text-align: left;
+    }
+
+    /* Zaten 640px'de ortalandı, burada sadece teyit */
+    .about-feature {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .about-branding-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

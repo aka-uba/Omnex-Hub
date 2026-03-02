@@ -1,0 +1,269 @@
+{
+    "name": "Varsayılan Mapping",
+    "version": "2.0",
+    "description": "Standart ERP/TXT/JSON/CSV/XLSX veri formatı için varsayılan alan eşlemesi - Türkçe ve İngilizce alan adları destekli",
+    "format": "auto",
+    "encoding": "UTF-8",
+    "options": {
+        "txt": {
+            "delimiter": "\t",
+            "autoDetectDelimiter": true,
+            "hasHeader": true,
+            "skipLines": 0,
+            "encoding": "UTF-8"
+        },
+        "csv": {
+            "delimiter": ";",
+            "autoDetectDelimiter": true,
+            "hasHeader": true,
+            "enclosure": "\"",
+            "escape": "\\"
+        },
+        "json": {
+            "dataPath": null,
+            "encoding": "UTF-8"
+        },
+        "xml": {
+            "rootElement": "products",
+            "itemElement": "product"
+        },
+        "xlsx": {
+            "sheetIndex": 0,
+            "hasHeader": true,
+            "skipRows": 0
+        }
+    },
+    "fieldMapping": {
+        "sku": {
+            "field": "STOK_KODU",
+            "alternates": ["SKU", "URUN_KODU", "PRODUCT_CODE", "kod", "code", "Kod", "KOD", "ÜRÜN KODU", "Ürün Kodu", "urun_kodu", "stok_kodu", "StokKodu", "ProductCode", "ItemCode", "item_code", "malzeme_kodu"],
+            "required": true,
+            "transform": "trim",
+            "maxLength": 50
+        },
+        "barcode": {
+            "field": "BARKOD",
+            "alternates": ["BARKOD_NO", "EAN", "UPC", "GTIN", "barcode", "ean13", "Barkod", "BARKOD NO", "Barkod No", "barkod_no", "BarkodNo", "EAN13", "EAN-13", "ean", "upc_code"],
+            "transform": "trim",
+            "maxLength": 20
+        },
+        "name": {
+            "field": "URUN_ADI",
+            "alternates": ["AD", "URUN", "NAME", "PRODUCT_NAME", "name", "title", "Adı", "ADI", "Ürün Adı", "ÜRÜN ADI", "urun_adi", "UrunAdi", "ProductName", "product_name", "ItemName", "item_name", "aciklama", "tanim", "Tanım", "TANIM", "ürün", "Ürün"],
+            "required": true,
+            "transform": "trim",
+            "maxLength": 255
+        },
+        "current_price": {
+            "field": "SATIS_FIYATI",
+            "alternates": ["FIYAT", "PRICE", "SATIS", "PERAKENDE_FIYAT", "price", "amount", "Fiyat", "FİYAT", "Satış Fiyatı", "SATIŞ FİYATI", "satis_fiyati", "SatisFiyati", "UnitPrice", "unit_price", "ListPrice", "list_price", "perakende", "tutar", "Tutar", "TUTAR"],
+            "required": true,
+            "transform": "number"
+        },
+        "previous_price": {
+            "field": "ESKI_FIYAT",
+            "alternates": ["ONCEKI_FIYAT", "OLD_PRICE", "LISTE_FIYATI", "original_price", "Eski Fiyat", "ESKİ FİYAT", "Önceki Fiyat", "eski_fiyat", "EskiFiyat", "OldPrice", "old_price", "liste_fiyati", "ListeFiyati"],
+            "transform": "number",
+            "default": null
+        },
+        "unit": {
+            "field": "BIRIM",
+            "alternates": ["OLCU_BIRIMI", "UNIT", "UOM", "unit", "Birim", "BİRİM", "Ölçü Birimi", "ÖLÇÜ BİRİMİ", "olcu_birimi", "OlcuBirimi", "UnitOfMeasure", "satış_birimi", "SatisBirimi"],
+            "default": "adet",
+            "transform": "lowercase",
+            "valueMap": {
+                "KG": "kg",
+                "KILOGRAM": "kg",
+                "Kilogram": "kg",
+                "ADET": "adet",
+                "Adet": "adet",
+                "AD": "adet",
+                "Ad": "adet",
+                "PCS": "adet",
+                "Piece": "adet",
+                "LT": "lt",
+                "Lt": "lt",
+                "LITRE": "lt",
+                "Litre": "lt",
+                "L": "lt",
+                "ML": "ml",
+                "Ml": "ml",
+                "GR": "gr",
+                "Gr": "gr",
+                "GRAM": "gr",
+                "Gram": "gr",
+                "G": "gr",
+                "PAKET": "paket",
+                "Paket": "paket",
+                "PKT": "paket",
+                "KUTU": "kutu",
+                "Kutu": "kutu",
+                "BOX": "kutu",
+                "METRE": "m",
+                "Metre": "m",
+                "M": "m",
+                "CM": "cm",
+                "Cm": "cm",
+                "DEMET": "demet",
+                "Demet": "demet",
+                "BAĞLA": "bağ",
+                "Bağla": "bağ",
+                "BAĞ": "bağ",
+                "Bağ": "bağ",
+                "TANE": "adet",
+                "Tane": "adet"
+            }
+        },
+        "category": {
+            "field": "KATEGORI",
+            "alternates": ["GRUP", "GROUP", "CATEGORY", "CAT", "category", "group", "Kategori", "KATEGORİ", "Grup", "GRUP", "grup", "kategori", "CategoryName", "category_name", "GroupName", "group_name", "urun_grubu", "ÜrünGrubu"],
+            "transform": "trim"
+        },
+        "subcategory": {
+            "field": "ALT_KATEGORI",
+            "alternates": ["SUBGROUP", "SUBCATEGORY", "SUB_CAT", "Alt Kategori", "ALT KATEGORİ", "alt_kategori", "AltKategori", "SubCategory", "sub_category", "AltGrup", "alt_grup"],
+            "transform": "trim"
+        },
+        "brand": {
+            "field": "MARKA",
+            "alternates": ["BRAND", "URETICI", "MANUFACTURER", "brand", "Marka", "MARKA", "Üretici", "ÜRETİCİ", "uretici", "marka", "BrandName", "brand_name", "Manufacturer", "manufacturer"],
+            "transform": "trim"
+        },
+        "origin": {
+            "field": "MENSEI",
+            "alternates": ["ORIGIN", "COUNTRY", "ULKE", "origin", "Menşei", "MENŞEİ", "Menşe", "mensei", "menşei", "Ülke", "ÜLKE", "ulke", "Country", "country", "CountryOfOrigin", "country_of_origin", "kaynak", "Kaynak"],
+            "transform": "trim"
+        },
+        "description": {
+            "field": "ACIKLAMA",
+            "alternates": ["DESC", "DESCRIPTION", "DETAY", "description", "details", "Açıklama", "AÇIKLAMA", "aciklama", "Detay", "DETAY", "detay", "Description", "Notes", "notes", "not", "Not", "bilgi", "Bilgi"],
+            "transform": "trim",
+            "maxLength": 1000
+        },
+        "image_url": {
+            "field": "RESIM",
+            "alternates": ["IMAGE", "IMG", "PHOTO", "GORSEL", "image", "picture", "Resim", "RESİM", "Görsel", "GÖRSEL", "gorsel", "resim", "ImageUrl", "image_url", "PhotoUrl", "photo_url", "foto", "Foto", "FOTO"],
+            "transform": "trim"
+        },
+        "stock": {
+            "field": "STOK",
+            "alternates": ["MIKTAR", "QUANTITY", "QTY", "STOCK", "stock", "qty", "Stok", "STOK", "Miktar", "MİKTAR", "miktar", "stok", "Quantity", "quantity", "Adet", "StockQuantity", "stock_quantity", "envanter", "Envanter"],
+            "transform": "number",
+            "default": 0
+        },
+        "vat_rate": {
+            "field": "KDV_ORANI",
+            "alternates": ["KDV", "VAT", "TAX_RATE", "vat", "Kdv Oranı", "KDV ORANI", "kdv_orani", "KdvOrani", "VatRate", "vat_rate", "TaxRate", "tax_rate", "vergi", "Vergi", "VERGİ"],
+            "transform": "number",
+            "default": 20
+        },
+        "discount_percent": {
+            "field": "INDIRIM_ORANI",
+            "alternates": ["DISCOUNT", "INDIRIM", "discount", "İndirim", "İNDİRİM", "İndirim Oranı", "İNDİRİM ORANI", "indirim_orani", "IndirimOrani", "DiscountPercent", "discount_percent", "DiscountRate", "discount_rate", "iskonto", "İskonto", "İSKONTO"],
+            "transform": "number"
+        },
+        "campaign_text": {
+            "field": "KAMPANYA",
+            "alternates": ["PROMO", "CAMPAIGN", "PROMOSYON", "campaign", "Kampanya", "KAMPANYA", "kampanya", "Promosyon", "PROMOSYON", "promosyon", "CampaignText", "campaign_text", "PromoText", "promo_text", "etkinlik", "Etkinlik"],
+            "transform": "trim"
+        },
+        "weight": {
+            "field": "AGIRLIK",
+            "alternates": ["WEIGHT", "NET_AGIRLIK", "weight", "Ağırlık", "AĞIRLIK", "agirlik", "Net Ağırlık", "NET AĞIRLIK", "net_agirlik", "NetAgirlik", "Weight", "NetWeight", "net_weight", "gram", "Gram"],
+            "transform": "number"
+        },
+        "kunye_no": {
+            "field": "KUNYE_NO",
+            "alternates": ["TANITIM_NO", "LABEL_ID", "ESL_ID", "label_id", "Künye No", "KÜNYE NO", "kunye_no", "KunyeNo", "Tanıtım No", "TANITIM NO", "tanitim_no", "TanitimNo", "LabelId", "EslId", "esl_id", "etiket_no", "EtiketNo"],
+            "transform": "trim"
+        },
+        "shelf_location": {
+            "field": "RAF_KONUM",
+            "alternates": ["SHELF", "LOCATION", "KONUM", "location", "Raf Konum", "RAF KONUM", "raf_konum", "RafKonum", "Konum", "KONUM", "konum", "ShelfLocation", "shelf_location", "Location", "raf", "Raf", "RAF"],
+            "transform": "trim"
+        },
+        "supplier_code": {
+            "field": "TEDARIKCI_KODU",
+            "alternates": ["SUPPLIER", "VENDOR_CODE", "supplier", "Tedarikçi Kodu", "TEDARİKÇİ KODU", "tedarikci_kodu", "TedarikciKodu", "SupplierCode", "supplier_code", "VendorCode", "vendor_code", "tedarikci", "Tedarikçi", "TEDARİKÇİ"],
+            "transform": "trim"
+        },
+        "is_active": {
+            "field": "AKTIF",
+            "alternates": ["ACTIVE", "STATUS", "DURUM", "active", "Aktif", "AKTİF", "aktif", "Durum", "DURUM", "durum", "Status", "status", "IsActive", "is_active", "enabled", "Enabled"],
+            "transform": "boolean",
+            "default": true
+        },
+        "is_featured": {
+            "field": "ONE_CIKAN",
+            "alternates": ["FEATURED", "VITRIN", "featured", "Öne Çıkan", "ÖNE ÇIKAN", "one_cikan", "OneCikan", "Vitrin", "VİTRİN", "vitrin", "IsFeatured", "is_featured", "Featured", "ozel", "Özel", "ÖZEL"],
+            "transform": "boolean",
+            "default": false
+        },
+        "valid_from": {
+            "field": "GECERLILIK_BASLANGIC",
+            "alternates": ["START_DATE", "VALID_FROM", "start_date", "Geçerlilik Başlangıç", "GEÇERLİLİK BAŞLANGIÇ", "gecerlilik_baslangic", "GecerlilikBaslangic", "StartDate", "ValidFrom", "valid_from", "baslangic_tarihi", "BaslangicTarihi"],
+            "transform": "date"
+        },
+        "valid_until": {
+            "field": "GECERLILIK_BITIS",
+            "alternates": ["END_DATE", "VALID_UNTIL", "end_date", "Geçerlilik Bitiş", "GEÇERLİLİK BİTİŞ", "gecerlilik_bitis", "GecerlilikBitis", "EndDate", "ValidUntil", "valid_until", "bitis_tarihi", "BitisTarihi", "son_tarih", "SonTarih"],
+            "transform": "date"
+        },
+        "production_type": {
+            "field": "URETIM_SEKLI",
+            "alternates": ["PRODUCTION_TYPE", "production_type", "Üretim Şekli", "ÜRETİM ŞEKLİ", "uretim_sekli", "UretimSekli", "ProductionType", "Type", "type", "tur", "Tür", "TÜR", "uretim_turu", "UretimTuru", "organik", "Organik", "ORGANİK"],
+            "transform": "trim"
+        },
+        "price_updated_at": {
+            "field": "FIYAT_GUNCELLEME",
+            "alternates": ["PRICE_DATE", "price_date", "Fiyat Güncelleme", "FİYAT GÜNCELLEME", "fiyat_guncelleme", "FiyatGuncelleme", "PriceDate", "price_updated_at", "fiyat_tarihi", "FiyatTarihi"],
+            "transform": "date"
+        },
+        "previous_price_updated_at": {
+            "field": "ESKI_FIYAT_GUNCELLEME",
+            "alternates": ["OLD_PRICE_DATE", "old_price_date", "Eski Fiyat Güncelleme", "ESKİ FİYAT GÜNCELLEME", "eski_fiyat_guncelleme", "EskiFiyatGuncelleme", "OldPriceDate", "previous_price_updated_at", "eski_fiyat_tarihi", "EskiFiyatTarihi"],
+            "transform": "date"
+        }
+    },
+    "validation": {
+        "sku": {
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "unique": true
+        },
+        "barcode": {
+            "pattern": "^[0-9]{8,14}$"
+        },
+        "current_price": {
+            "min": 0,
+            "max": 9999999.99
+        },
+        "previous_price": {
+            "min": 0,
+            "max": 9999999.99
+        },
+        "vat_rate": {
+            "min": 0,
+            "max": 100
+        },
+        "discount_percent": {
+            "min": 0,
+            "max": 100
+        }
+    },
+    "hooks": {
+        "beforeParse": null,
+        "afterParse": null,
+        "beforeImport": null,
+        "afterImport": null,
+        "onError": "log",
+        "onDuplicate": "update"
+    },
+    "importOptions": {
+        "mode": "upsert",
+        "batchSize": 100,
+        "continueOnError": true,
+        "logErrors": true,
+        "updateExisting": true,
+        "createNew": true
+    }
+}

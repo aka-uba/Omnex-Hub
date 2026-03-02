@@ -1,0 +1,128 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.01",
+    "description": "Default menu items - Language independent (uses i18n keys)",
+    "generated_at": "2026-01-25",
+    "data": [
+        {
+            "key": "default.menu.dashboard",
+            "location": "sidebar",
+            "label_key": "menu.dashboard",
+            "href": "/dashboard",
+            "icon": "dashboard",
+            "menu_group": "main",
+            "order_index": 0,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.products",
+            "location": "sidebar",
+            "label_key": "menu.products",
+            "href": "/products",
+            "icon": "package",
+            "menu_group": "main",
+            "order_index": 1,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.categories",
+            "location": "sidebar",
+            "label_key": "menu.categories",
+            "href": "/categories",
+            "icon": "category",
+            "menu_group": "main",
+            "order_index": 2,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.templates",
+            "location": "sidebar",
+            "label_key": "menu.templates",
+            "href": "/templates",
+            "icon": "layout",
+            "menu_group": "main",
+            "order_index": 3,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.devices",
+            "location": "sidebar",
+            "label_key": "menu.devices",
+            "href": "/devices",
+            "icon": "device-tablet",
+            "menu_group": "main",
+            "order_index": 4,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.media",
+            "location": "sidebar",
+            "label_key": "menu.media",
+            "href": "/media",
+            "icon": "photo",
+            "menu_group": "main",
+            "order_index": 5,
+            "roles": ["SuperAdmin", "Admin", "User"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.users",
+            "location": "sidebar",
+            "label_key": "menu.users",
+            "href": "/admin/users",
+            "icon": "users",
+            "menu_group": "admin",
+            "order_index": 10,
+            "roles": ["SuperAdmin", "Admin"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.companies",
+            "location": "sidebar",
+            "label_key": "menu.companies",
+            "href": "/admin/companies",
+            "icon": "building",
+            "menu_group": "admin",
+            "order_index": 11,
+            "roles": ["SuperAdmin"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.settings",
+            "location": "sidebar",
+            "label_key": "menu.settings",
+            "href": "/settings",
+            "icon": "settings",
+            "menu_group": "system",
+            "order_index": 20,
+            "roles": ["SuperAdmin", "Admin"],
+            "is_demo": false,
+            "is_default": true
+        },
+        {
+            "key": "default.menu.integrations",
+            "location": "sidebar",
+            "label_key": "menu.integrations",
+            "href": "/settings/integrations",
+            "icon": "plug-connected",
+            "menu_group": "system",
+            "order_index": 21,
+            "roles": ["SuperAdmin", "Admin"],
+            "is_demo": false,
+            "is_default": true
+        }
+    ]
+}

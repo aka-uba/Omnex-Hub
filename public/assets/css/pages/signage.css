@@ -1,0 +1,723 @@
+/**
+ * Omnex Display Hub - Signage Page Styles
+ * Playlist and Schedule management styles
+ */
+
+/* Device count badge - clickable for multiple devices */
+.device-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: linear-gradient(135deg, rgba(34, 139, 230, 0.1) 0%, rgba(34, 139, 230, 0.15) 100%);
+    border: 1px solid rgba(34, 139, 230, 0.3);
+    border-radius: 6px;
+    color: var(--color-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.device-count-badge:hover {
+    background: linear-gradient(135deg, rgba(34, 139, 230, 0.15) 0%, rgba(34, 139, 230, 0.25) 100%);
+    border-color: rgba(34, 139, 230, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(34, 139, 230, 0.2);
+}
+
+.device-count-badge i {
+    font-size: 1rem;
+}
+
+/* Assigned devices modal list */
+.assigned-devices-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.assigned-device-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+
+.assigned-device-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--color-primary-alpha);
+}
+
+.assigned-device-item .device-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.assigned-device-item .device-info > i {
+    font-size: 1.25rem;
+    color: var(--color-primary);
+}
+
+.assigned-device-item .device-info > div {
+    display: flex;
+    flex-direction: column;
+}
+
+.assigned-device-item .device-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.assigned-device-item .device-ip {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* No devices state */
+.no-devices {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.no-devices i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+}
+
+/* ✅ Playlist item volume control */
+.playlist-item-volume {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+}
+
+.playlist-item-volume .btn {
+    padding: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.playlist-item-volume .btn:hover {
+    transform: scale(1.1);
+}
+
+.playlist-item-volume .btn i {
+    font-size: 1.125rem;
+}
+
+/* ============================================================
+   Signage Device Tree - Hierarchical view
+   ============================================================ */
+
+/* Loading state */
+.signage-tree-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.signage-tree-loading .spin {
+    animation: sdt-spin 1s linear infinite;
+}
+
+@keyframes sdt-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Summary bar */
+.signage-tree-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+
+.sdt-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.sdt-stat strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sdt-stat-total i { color: var(--color-primary); }
+.sdt-stat-online i { color: var(--color-success); font-size: 0.625rem; }
+.sdt-stat-offline i { color: var(--color-danger); font-size: 0.625rem; }
+.sdt-stat-warning i { color: var(--color-warning); }
+
+/* Filter bar */
+.signage-tree-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.sdt-filter-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.sdt-search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 320px;
+}
+
+.sdt-search-wrap > i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    pointer-events: none;
+}
+
+.sdt-search-wrap .form-input {
+    padding-left: 2.25rem;
+}
+
+.sdt-filter-right {
+    display: flex;
+    gap: 0.375rem;
+}
+
+/* Empty state */
+.signage-tree-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.signage-tree-empty > i {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.4;
+}
+
+.signage-tree-empty > p {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.signage-tree-empty > span {
+    font-size: 0.8125rem;
+}
+
+/* Table wrapper */
+.signage-tree-table-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    position: relative;
+}
+
+/* Tree table */
+.signage-tree-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.signage-tree-table thead th {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    color: var(--text-muted);
+    padding: 0.625rem 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Column widths */
+.sdt-col-name { min-width: 280px; }
+.sdt-col-status { width: 100px; text-align: center; }
+.sdt-col-playlist { width: 200px; }
+.sdt-col-lastseen { width: 100px; }
+.sdt-col-actions { width: 140px; text-align: center; }
+
+.signage-tree-table thead .sdt-col-status,
+.signage-tree-table thead .sdt-col-actions { text-align: center; }
+
+/* Rows */
+.sdt-row {
+    transition: background 0.15s ease;
+}
+
+.sdt-row:hover {
+    background: var(--bg-hover);
+}
+
+.sdt-row td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.8125rem;
+    vertical-align: middle;
+}
+
+.sdt-row td.sdt-col-status {
+    text-align: center;
+}
+
+.sdt-row td.sdt-col-actions {
+    text-align: center;
+}
+
+/* Row type styling */
+.sdt-row-company {
+    background: var(--bg-secondary);
+}
+
+.sdt-row-company td {
+    font-weight: 600;
+    border-bottom-width: 2px;
+}
+
+.sdt-row-region td {
+    font-weight: 500;
+}
+
+/* Name inner */
+.sdt-name-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Toggle icon */
+.sdt-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.sdt-toggle:hover {
+    background: var(--bg-hover);
+}
+
+.sdt-toggle i {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.sdt-toggle-placeholder {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+/* Node icons */
+.sdt-node-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.sdt-icon-company { color: var(--color-primary); }
+.sdt-icon-region { color: var(--color-warning); }
+.sdt-icon-branch { color: var(--color-success); }
+.sdt-icon-unassigned { color: var(--text-muted); }
+
+/* Node name & meta */
+.sdt-node-name {
+    font-weight: inherit;
+    color: var(--text-primary);
+}
+
+.sdt-node-code {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+}
+
+.sdt-node-count {
+    font-size: 0.6875rem;
+    font-weight: 400;
+}
+
+/* Status badges */
+.sdt-status-badges {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+.badge-sm {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.375rem;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Status dots */
+.sdt-status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.sdt-status-online {
+    background: var(--color-success);
+    box-shadow: 0 0 6px rgba(64, 192, 87, 0.5);
+}
+
+.sdt-status-offline {
+    background: var(--color-danger);
+}
+
+.sdt-status-warning {
+    background: var(--color-warning);
+    animation: sdt-pulse-warning 2s infinite;
+}
+
+@keyframes sdt-pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Device thumbnail */
+.sdt-device-thumb {
+    width: 60px;
+    height: 34px;
+    border-radius: 4px;
+    overflow: visible;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.sdt-device-thumb > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.sdt-device-thumb > i {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* Thumbnail hover popup */
+.sdt-device-popup {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 12px);
+    transform: translateY(-50%);
+    width: 320px;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.sdt-device-thumb:hover .sdt-device-popup {
+    display: block;
+}
+
+.sdt-device-popup img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Device info */
+.sdt-device-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sdt-device-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sdt-device-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.sdt-device-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    background: rgba(34, 139, 230, 0.1);
+    color: var(--color-primary);
+    border: 1px solid rgba(34, 139, 230, 0.25);
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.sdt-device-ip {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+/* Playlist info */
+.sdt-playlist-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sdt-playlist-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sdt-playlist-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.sdt-playlist-progress {
+    color: var(--color-primary);
+    font-size: 0.75rem;
+}
+
+.sdt-playlist-orient {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.sdt-playlist-orient i {
+    font-size: 0.75rem;
+}
+
+/* Action buttons */
+.sdt-actions {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+
+.sdt-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.sdt-action-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.sdt-action-btn i {
+    font-size: 0.9375rem;
+}
+
+/* Command type colors on hover */
+.sdt-action-btn[data-device-cmd="start"]:hover,
+.sdt-action-btn[data-cascade-cmd="start"]:hover { color: var(--color-success); }
+.sdt-action-btn[data-device-cmd="stop"]:hover,
+.sdt-action-btn[data-cascade-cmd="stop"]:hover { color: var(--color-danger); }
+.sdt-action-btn[data-device-cmd="refresh"]:hover,
+.sdt-action-btn[data-cascade-cmd="refresh"]:hover { color: var(--color-primary); }
+.sdt-action-btn[data-device-cmd="reboot"]:hover { color: var(--color-warning); }
+
+/* ---- Dark mode overrides ---- */
+.dark .signage-tree-summary {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.dark .signage-tree-filters {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.dark .sdt-row-company {
+    background: var(--bg-tertiary);
+}
+
+.dark .sdt-row-region {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.dark .sdt-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .sdt-node-code {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.dark .sdt-device-thumb {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+}
+
+.dark .sdt-device-popup {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+}
+
+.dark .signage-tree-table thead th {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+.dark .sdt-row {
+    border-color: var(--border-color);
+}
+
+.dark .sdt-action-btn {
+    color: var(--text-muted);
+}
+
+.dark .sdt-action-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+.dark .signage-tree-empty {
+    color: var(--text-muted);
+}
+
+.dark .sdt-status-badges .badge {
+    opacity: 0.9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .device-count-badge {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .device-count-badge i {
+        font-size: 0.875rem;
+    }
+
+    .assigned-device-item {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .assigned-device-item .device-info > i {
+        font-size: 1rem;
+    }
+
+    .playlist-item-volume {
+        min-width: 36px;
+    }
+
+    /* Tree table responsive */
+    .signage-tree-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sdt-filter-left {
+        flex-direction: column;
+    }
+
+    .sdt-search-wrap {
+        max-width: none;
+    }
+
+    .sdt-col-playlist,
+    .sdt-col-lastseen {
+        display: none;
+    }
+
+    .sdt-device-thumb {
+        display: none;
+    }
+
+    .sdt-col-name { min-width: 160px; }
+    .sdt-col-actions { width: 100px; }
+
+    .sdt-action-btn {
+        width: 24px;
+        height: 24px;
+    }
+
+    .sdt-action-btn i { font-size: 0.8125rem; }
+}

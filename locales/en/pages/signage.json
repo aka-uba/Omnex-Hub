@@ -1,0 +1,390 @@
+{
+    "title": "Digital Signage",
+    "subtitle": "Manage digital signage content",
+    "playlists": {
+        "title": "Playlists",
+        "subtitle": "Manage playlists",
+        "addPlaylist": "New Playlist",
+        "editPlaylist": "Edit Playlist",
+        "deletePlaylist": "Delete Playlist",
+        "deleteConfirm": "Are you sure you want to delete this playlist?",
+        "detail": "Playlist Details",
+        "empty": "No playlists created yet",
+        "selectMedia": "Select Media",
+        "itemCount": "items",
+        "columns": {
+            "orientation": "Screen Orientation",
+            "template": "Template",
+            "layoutType": "Layout Type",
+            "assignedDevice": "Assigned Device",
+            "devicesCount": "Devices ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - Assigned Devices",
+            "noDevices": "No assigned devices found",
+            "removeDevice": "Remove",
+            "removeConfirm": "Do you want to remove this device from playlist assignment?",
+            "removed": "Device assignment removed"
+        },
+        "orientations": {
+            "landscape": "Landscape (1920x1080)",
+            "portrait": "Portrait (1080x1920)"
+        },
+        "layouts": {
+            "full": "Full Screen",
+            "grid2": "2-Column Grid",
+            "grid3": "3-Column Grid",
+            "grid4": "4-Column Grid",
+            "hybrid": "Hybrid (Main + Side)"
+        },
+        "mediaTypes": {
+            "image": "Image",
+            "video": "Video",
+            "template": "Template",
+            "webpage": "Web",
+            "stream": "Live Stream"
+        },
+        "templatePreview": "Template Preview",
+        "noTemplateSelected": "No template selected",
+        "transitions": {
+            "none": "None",
+            "fade": "Fade",
+            "slideLeft": "Slide Left",
+            "slideRight": "Slide Right",
+            "slideUp": "Slide Up",
+            "slideDown": "Slide Down",
+            "zoom": "Zoom",
+            "crossfade": "Crossfade"
+        },
+        "form": {
+            "fields": {
+                "name": "Playlist Name",
+                "description": "Description",
+                "duration": "Duration (sec)",
+                "transition": "Transition Effect",
+                "transitionDuration": "Transition Duration",
+                "loop": "Loop",
+                "orientation": "Screen Orientation",
+                "template": "Template",
+                "layoutType": "Layout Type"
+            },
+            "infoTitle": "List Information",
+            "itemsTitle": "List Contents",
+            "addItem": "Add Content",
+            "createDesc": "Create a new playlist",
+            "editDesc": "Edit the playlist",
+            "namePlaceholder": "Example: Campaign Images",
+            "descPlaceholder": "Brief description about the list",
+            "durationHint": "Default display duration for each content",
+            "selectTemplate": "Select template...",
+            "noPreview": "No preview",
+            "noItems": "No content added yet",
+            "noItemsHint": "Use the button above to add content",
+            "emptyMedia": "Media library is empty",
+            "uploadMedia": "Upload Media",
+            "tabMedia": "Media",
+            "tabTemplates": "Templates",
+            "tabWebpage": "Web Page",
+            "tabStream": "Live Stream",
+            "webpageTitle": "Add Web Page",
+            "webpageHint": "Enter the URL of the web page you want to display. The page will be shown in an iframe.",
+            "webpageUrl": "Web Page URL",
+            "webpageName": "Display Name",
+            "webpageNamePlaceholder": "Example: Weather",
+            "addWebpage": "Add Web Page",
+            "webpageWarning": "Note: Some websites may block display in iframe (X-Frame-Options). In this case, the page cannot be displayed.",
+            "webpageUrlRequired": "Please enter a URL",
+            "webpageUrlInvalid": "URL must start with http:// or https://",
+            "webpageAlreadyAdded": "This URL is already added",
+            "webpageAdded": "Web page added",
+            "streamTitle": "Add Live Stream",
+            "streamHint": "Enter HLS (m3u8), RTSP or other stream URL. It will be played via hls.js on devices.",
+            "streamUrl": "Stream URL",
+            "streamName": "Stream Name",
+            "streamNamePlaceholder": "E.g.: Camera 1, TV Broadcast",
+            "streamDurationHint": "0 = indefinite (continuous stream)",
+            "streamMuted": "Audio",
+            "streamMutedYes": "Muted",
+            "streamMutedNo": "Sound On",
+            "streamAdd": "Add Stream",
+            "streamFormats": "Supported formats: HLS (.m3u8), MP4, WebM. RTSP is not directly supported, must be converted to HLS.",
+            "streamUrlRequired": "Please enter a stream URL",
+            "streamUrlInvalid": "Invalid URL format",
+            "streamAlreadyAdded": "This stream is already added",
+            "streamAdded": "Live stream added",
+            "emptyTemplates": "No templates found",
+            "emptyTemplatesHint": "Create signage or TV templates",
+            "createTemplate": "Create Template",
+            "seconds": "sec",
+            "loop": "Loop",
+            "loopHint": "Restart video when it ends",
+            "loopCountHint": "How many times to repeat",
+            "soundOn": "Sound On",
+            "soundOff": "Sound Off",
+            "durationHintVideo": "If left empty, video plays at its own duration",
+            "durationHintImage": "Display duration (seconds)",
+            "itemsHint": "Duration: If left empty, video plays at its own duration. Loop: If enabled, content repeats specified number of times, moves to next when duration expires.",
+            "editItem": "Edit Item",
+            "itemName": "Name",
+            "itemUpdated": "Item updated",
+            "duration": "Duration",
+            "autoForVideo": "Auto",
+            "loopVideo": "Video Loop",
+            "loopCount": "Repeat Count",
+            "selectDevice": "Select Device",
+            "selectDevices": "Select Devices",
+            "selectedDevices": "Selected Devices",
+            "assignToMultiple": "You can assign to multiple devices",
+            "selectDevicePlaceholder": "Select device...",
+            "noDevices": "No suitable devices found. First add a signage device.",
+            "willBeAssigned": "playlist will be assigned to selected device.",
+            "selectDeviceRequired": "Please select a device",
+            "confirmUnassign": "No devices selected. This playlist will be removed from all devices. Continue?",
+            "currentlyAssigned": "Currently assigned to {device} device",
+            "currentlyAssignedCount": "Currently assigned to {count} devices",
+            "aDevice": "a device"
+        },
+        "assignToDevice": "Assign to Device",
+        "toast": {
+            "created": "Playlist created",
+            "updated": "Playlist updated",
+            "deleted": "Playlist deleted",
+            "mediaAdded": "Media added",
+            "assigned": "Playlist assigned to device",
+            "assignedCount": "{count} devices assigned",
+            "assignFailedCount": "{count} device assignments failed"
+        },
+        "commands": {
+            "start": "Start Broadcast",
+            "stop": "Stop Broadcast",
+            "refresh": "Refresh Device",
+            "reboot": "Reboot Device",
+            "device": "Device",
+            "send": "Send",
+            "sentCount": "{count} commands sent to devices",
+            "failedCount": "{count} commands failed to send",
+            "confirmMessage": "\"{command}\" command will be sent to <strong>{device}</strong>.",
+            "sent": "Command sent: {device}",
+            "failed": "Failed to send command"
+        },
+        "actions": {
+            "startBroadcast": "Start Broadcast",
+            "stopBroadcast": "Stop Broadcast",
+            "refreshDevice": "Refresh Device"
+        }
+    },
+    "schedules": {
+        "title": "Schedules",
+        "subtitle": "Manage broadcast schedules",
+        "addSchedule": "New Schedule",
+        "editSchedule": "Edit Schedule",
+        "deleteSchedule": "Delete Schedule",
+        "deleteConfirm": "Are you sure you want to delete the schedule \"{name}\"?",
+        "empty": "No schedules created yet",
+        "historyFeature": "History feature coming soon",
+        "searchPlaceholder": "Search schedule...",
+        "emptyText": "Schedule not found",
+        "columns": {
+            "preview": "Preview",
+            "name": "Schedule Name",
+            "playlist": "Playlist",
+            "devices": "Devices",
+            "deviceCount": "{count} devices",
+            "startDate": "Start",
+            "endDate": "End",
+            "continuous": "Continuous",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Active",
+            "scheduled": "Scheduled",
+            "inactive": "Inactive",
+            "completed": "Completed"
+        },
+        "actions": {
+            "history": "History",
+            "view": "View",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "newSchedule": "New Schedule",
+        "createDesc": "Create a new schedule",
+        "editDesc": "Edit schedule settings",
+        "scheduleInfo": "Schedule Information",
+        "targetDevices": "Target Devices",
+        "selectedCount": "{count} selected",
+        "searchDevice": "Search device...",
+        "noMatch": "No match found",
+        "noTvDevices": "No TV/Signage devices found",
+        "locationNotSpecified": "Location not specified",
+        "form": {
+            "fields": {
+                "name": "Schedule Name",
+                "playlist": "Playlist",
+                "startDate": "Start Date",
+                "endDate": "End Date",
+                "startTime": "Start Time",
+                "endTime": "End Time",
+                "repeat": "Repeat",
+                "weekdays": "Days",
+                "status": "Status",
+                "devices": "Devices",
+                "priority": "Priority"
+            },
+            "placeholders": {
+                "name": "Example: Weekend Campaign",
+                "selectPlaylist": "Select List"
+            },
+            "hints": {
+                "endDate": "If left empty, plays continuously",
+                "priority": "Higher value = Higher priority"
+            },
+            "repeat": {
+                "none": "No Repeat",
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly"
+            },
+            "weekdays": {
+                "mon": "Mon",
+                "tue": "Tue",
+                "wed": "Wed",
+                "thu": "Thu",
+                "fri": "Fri",
+                "sat": "Sat",
+                "sun": "Sun"
+            },
+            "status": {
+                "active": "Active",
+                "scheduled": "Scheduled",
+                "inactive": "Inactive"
+            }
+        },
+        "toast": {
+            "created": "Schedule created",
+            "updated": "Schedule updated",
+            "deleted": "Schedule deleted",
+            "loadFailed": "Failed to load schedule",
+            "requiredFields": "Please fill required fields",
+            "selectDevice": "You must select at least one device",
+            "saveFailed": "Save error"
+        }
+    },
+    "template": {
+        "title": "Screen Templates",
+        "subtitle": "Manage TV and signage screen layouts",
+        "addTemplate": "Add Template",
+        "editTemplate": "Edit Template",
+        "types": {
+            "signage": "Signage",
+            "tv": "TV",
+            "label": "Label"
+        },
+        "layoutTypes": {
+            "full": "Full Screen",
+            "grid2": "2-Column Split",
+            "grid3": "3-Column Split",
+            "grid4": "4-Column Split",
+            "hybrid": "Hybrid"
+        },
+        "slots": {
+            "main": "Main Area",
+            "slot1": "Area 1",
+            "slot2": "Area 2",
+            "slot3": "Area 3",
+            "slot4": "Area 4",
+            "sidebar": "Sidebar",
+            "banner": "Bottom Banner"
+        },
+        "preview": "Preview",
+        "previewDescription": "How the template will appear on screen"
+    },
+    "deviceTree": {
+        "title": "Device Status",
+        "subtitle": "Hierarchical view of all signage devices",
+        "expandAll": "Expand All",
+        "collapseAll": "Collapse All",
+        "summary": {
+            "total": "Total",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Warning",
+            "devices": "devices"
+        },
+        "filter": {
+            "search": "Search device, IP or branch...",
+            "all": "All",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Warnings"
+        },
+        "columns": {
+            "name": "Name",
+            "status": "Status",
+            "playlist": "Now Playing",
+            "lastSeen": "Last Seen",
+            "actions": "Actions"
+        },
+        "node": {
+            "devices": "{count} devices",
+            "unassigned": "Unassigned Devices",
+            "noBranch": "No Branch"
+        },
+        "commands": {
+            "start": "Start",
+            "stop": "Stop",
+            "refresh": "Refresh",
+            "reboot": "Reboot",
+            "startAll": "Start All",
+            "stopAll": "Stop All",
+            "refreshAll": "Refresh All",
+            "confirmCascade": "\"{command}\" command will be sent to {count} devices. Continue?",
+            "sending": "Sending commands...",
+            "progress": "{sent}/{total} sent",
+            "resultSuccess": "{success} successful",
+            "resultFailed": "{failed} failed",
+            "resultSummary": "Command Result"
+        },
+        "toast": {
+            "started": "Broadcast started: {device}",
+            "stopped": "Broadcast stopped: {device}",
+            "refreshed": "Device refreshed: {device}",
+            "rebooted": "Rebooting: {device}",
+            "failed": "Command failed: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Tablet",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "just now",
+            "secondsAgo": "{n}s ago",
+            "minutesAgo": "{n}m ago",
+            "hoursAgo": "{n}h ago",
+            "daysAgo": "{n}d ago",
+            "never": "Never"
+        },
+        "empty": "No signage devices found",
+        "emptyHint": "Add a TV or signage device from the Devices page",
+        "autoRefresh": "Auto refresh: {seconds}s",
+        "refreshing": "Refreshing...",
+        "noPlaylist": "No playlist assigned",
+        "loading": "Loading device tree..."
+    },
+    "player": {
+        "title": "PWA Player",
+        "syncCode": "Sync Code",
+        "enterSyncCode": "Enter sync code",
+        "connecting": "Connecting...",
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "nowPlaying": "Now Playing",
+        "nextItem": "Next",
+        "rotation": "Rotation Duration",
+        "seconds": "seconds"
+    }
+}

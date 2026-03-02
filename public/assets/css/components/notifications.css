@@ -1,0 +1,1274 @@
+/**
+ * Omnex Display Hub - Notifications Stylesheet
+ * Notification dropdown and notification-related components
+ *
+ * Structure:
+ * 1. Notification Dropdown Wrapper & Button
+ * 2. Notification Badge
+ * 3. Dropdown Panel
+ * 4. Dropdown Header
+ * 5. Notification List
+ * 6. Notification Item Parts
+ * 7. Dropdown Footer
+ * 8. Empty State
+ * 9. Dark Mode Overrides
+ * 10. Responsive Adjustments
+ */
+
+/* ===========================================
+   1. NOTIFICATION DROPDOWN WRAPPER & BUTTON
+   =========================================== */
+
+.notification-dropdown-wrapper {
+    position: relative;
+}
+
+/* Notification button extends header-btn styling */
+.notification-dropdown-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.notification-dropdown-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.notification-dropdown-btn:hover {
+    color: var(--text-primary);
+    border-color: rgba(99, 102, 241, 0.3);
+    background: var(--bg-primary);
+    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.15),
+                0 2px 6px -1px rgba(99, 102, 241, 0.1);
+    transform: translateY(-1px);
+}
+
+.notification-dropdown-btn:hover::before {
+    opacity: 1;
+}
+
+.notification-dropdown-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+.notification-dropdown-btn i {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+
+.notification-dropdown-btn:hover i {
+    transform: scale(1.1);
+}
+
+
+/* ===========================================
+   2. NOTIFICATION BADGE
+   =========================================== */
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.notification-badge:empty,
+.notification-badge[data-count="0"] {
+    display: none;
+}
+
+/* Animated badge for new notifications */
+.notification-badge.pulse {
+    animation: badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ===========================================
+   3. DROPDOWN PANEL
+   =========================================== */
+
+.notification-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: var(--z-notification, 700);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.notification-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Arrow indicator (optional) */
+.notification-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+    transform: rotate(45deg);
+    z-index: 1;
+}
+
+/* ===========================================
+   4. DROPDOWN HEADER
+   =========================================== */
+
+.notification-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.notification-dropdown-title {
+    font-weight: 600;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.notification-mark-all-read {
+    font-size: 0.875rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.notification-mark-all-read:hover {
+    text-decoration: underline;
+    color: var(--color-primary-hover);
+}
+
+.notification-mark-all-read:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* ===========================================
+   5. NOTIFICATION LIST
+   =========================================== */
+
+.notification-dropdown-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 320px;
+}
+
+.notification-dropdown-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.15s;
+    text-decoration: none;
+}
+
+.notification-dropdown-item:hover {
+    background: var(--bg-hover, var(--bg-tertiary));
+}
+
+.notification-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.notification-dropdown-item.unread {
+    background: var(--bg-primary-subtle, rgba(34, 139, 230, 0.05));
+}
+
+.notification-dropdown-item.unread:hover {
+    background: var(--bg-primary-subtle-hover, rgba(34, 139, 230, 0.1));
+}
+
+/* Unread indicator dot */
+.notification-dropdown-item.unread::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+}
+
+.notification-dropdown-item {
+    position: relative;
+}
+
+/* ===========================================
+   6. NOTIFICATION ITEM PARTS
+   =========================================== */
+
+.notification-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+
+.notification-item-icon.type-info,
+.notification-item-icon.notification-icon-info {
+    background: rgba(34, 139, 230, 0.1) !important;
+    color: #228be6 !important;
+}
+
+.notification-item-icon.type-success,
+.notification-item-icon.notification-icon-success {
+    background: rgba(64, 192, 87, 0.1) !important;
+    color: #40c057 !important;
+}
+
+.notification-item-icon.type-warning,
+.notification-item-icon.notification-icon-warning {
+    background: rgba(250, 176, 5, 0.1) !important;
+    color: #fab005 !important;
+}
+
+.notification-item-icon.type-error,
+.notification-item-icon.notification-icon-error {
+    background: rgba(250, 82, 82, 0.1) !important;
+    color: #fa5252 !important;
+}
+
+.notification-item-icon.type-system,
+.notification-item-icon.notification-icon-system {
+    background: rgba(34, 139, 230, 0.1) !important;
+    color: #228be6 !important;
+}
+
+.notification-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-item-title {
+    font-weight: 500;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-item-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.notification-item-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Action buttons on notification item */
+.notification-item-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.notification-item-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.notification-item-action:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.notification-item-action.primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.notification-item-action.primary:hover {
+    background: var(--color-primary-hover);
+}
+
+/* ===========================================
+   7. DROPDOWN FOOTER
+   =========================================== */
+
+.notification-dropdown-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    background: var(--bg-primary);
+}
+
+.notification-dropdown-footer a {
+    color: var(--color-primary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.notification-dropdown-footer a:hover {
+    text-decoration: underline;
+    color: var(--color-primary-hover);
+}
+
+/* ===========================================
+   8. EMPTY STATE
+   =========================================== */
+
+.notification-dropdown-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.notification-dropdown-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+    display: block;
+}
+
+.notification-dropdown-empty p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+.notification-dropdown-empty .empty-title {
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.notification-dropdown-empty .empty-subtitle {
+    color: var(--text-muted);
+}
+
+/* ===========================================
+   9. RESPONSIVE ADJUSTMENTS
+   =========================================== */
+
+@media (max-width: 640px) {
+    .notification-dropdown {
+        position: fixed;
+        top: var(--header-height);
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-height: calc(100vh - var(--header-height) - 1rem);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        border-top: none;
+    }
+
+    .notification-dropdown::before {
+        display: none;
+    }
+
+    .notification-dropdown-list {
+        max-height: calc(100vh - var(--header-height) - 140px);
+    }
+
+    .notification-dropdown-item {
+        padding: 1rem;
+    }
+
+    .notification-item-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+    }
+
+    .notification-item-title {
+        font-size: var(--text-base);
+    }
+
+    /* ===== NOTIFICATION LIST PAGE MOBILE ===== */
+
+    /* Filter tabs - horizontal scroll */
+    .card-body .flex.items-center.gap-2 {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-bottom: 0.25rem;
+    }
+
+    .card-body .flex.items-center.gap-2::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 0.5rem 0.75rem;
+        font-size: var(--text-sm);
+    }
+
+    .filter-tab span {
+        display: none;
+    }
+
+    .filter-tab i {
+        margin-right: 0;
+    }
+
+    /* Bulk actions bar - stack on mobile */
+    #bulk-actions-bar .flex.items-center.justify-between {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    #bulk-actions-bar .flex.items-center.gap-2 {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #bulk-actions-bar .btn-sm {
+        flex: 1;
+        min-width: calc(50% - 0.25rem);
+        justify-content: center;
+    }
+
+    /* Notification modal - full width */
+    .notification-modal-details {
+        grid-template-columns: 1fr;
+    }
+
+    .notification-modal-header-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .notification-modal-icon {
+        margin: 0 auto;
+    }
+
+    .notification-modal-meta {
+        text-align: center;
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 768px) {
+    .notification-dropdown {
+        width: 340px;
+    }
+}
+
+/* Large screen adjustments */
+@media (min-width: 1200px) {
+    .notification-dropdown {
+        width: 380px;
+    }
+}
+
+/* ===========================================
+   LOADING STATE
+   =========================================== */
+
+.notification-dropdown-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.notification-dropdown-loading .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ===========================================
+   NOTIFICATION GROUPS (by date)
+   =========================================== */
+
+.notification-group-header {
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* ===========================================
+   NOTIFICATION LIST PAGE FILTER TABS
+   =========================================== */
+
+.filter-tab {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.filter-tab:hover {
+    background: var(--bg-hover, var(--bg-tertiary));
+    color: var(--text-primary);
+}
+
+.filter-tab.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.filter-tab i {
+    font-size: 1rem;
+}
+
+/* ===========================================
+   NOTIFICATION SETTINGS PAGE STYLES
+   =========================================== */
+
+.notification-settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.notification-setting-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-setting-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.notification-setting-icon.blue {
+    background: rgba(34, 139, 230, 0.1);
+    color: #228be6;
+}
+
+.notification-setting-icon.indigo {
+    background: rgba(102, 88, 221, 0.1);
+    color: #6658dd;
+}
+
+.notification-setting-icon.green {
+    background: rgba(64, 192, 87, 0.1);
+    color: #40c057;
+}
+
+.notification-setting-icon.amber {
+    background: rgba(250, 176, 5, 0.1);
+    color: #fab005;
+}
+
+.notification-setting-icon.rose {
+    background: rgba(250, 82, 82, 0.1);
+    color: #fa5252;
+}
+
+.notification-setting-item h4 {
+    font-weight: 500;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.notification-setting-item p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0.25rem 0 0 0;
+}
+
+/* Notification type icon in table */
+.notification-type-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+
+/* ===========================================
+   NOTIFICATION MODAL STYLES
+   =========================================== */
+
+.notification-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.notification-modal-header-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.notification-modal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.notification-modal-icon.notification-icon-info {
+    background: rgba(34, 139, 230, 0.1);
+    color: #228be6;
+}
+
+.notification-modal-icon.notification-icon-success {
+    background: rgba(64, 192, 87, 0.1);
+    color: #40c057;
+}
+
+.notification-modal-icon.notification-icon-warning {
+    background: rgba(250, 176, 5, 0.1);
+    color: #fab005;
+}
+
+.notification-modal-icon.notification-icon-error {
+    background: rgba(250, 82, 82, 0.1);
+    color: #fa5252;
+}
+
+.notification-modal-icon.notification-icon-system {
+    background: rgba(34, 139, 230, 0.1);
+    color: #228be6;
+}
+
+.notification-modal-meta {
+    flex: 1;
+}
+
+.notification-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.notification-modal-time {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.notification-modal-message {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+}
+
+.notification-modal-message p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.notification-modal-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.notification-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.notification-detail-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.notification-detail-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.notification-modal-action {
+    padding-top: 0.5rem;
+}
+
+
+/* ===========================================
+   USER SEARCH DROPDOWN (Create Notification Modal)
+   =========================================== */
+
+.user-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky, 100);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 0.25rem;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.user-search-dropdown.hidden {
+    display: none;
+}
+
+.user-search-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-search-item:last-child {
+    border-bottom: none;
+}
+
+.user-search-item:hover {
+    background: var(--bg-hover, var(--bg-tertiary));
+}
+
+.user-search-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.user-search-avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: white;
+    font-size: 1rem;
+}
+
+.user-search-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-search-item-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-search-item-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0.125rem 0 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-search-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.user-search-error {
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-danger);
+}
+
+/* Selected user badge */
+.selected-user-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.selected-user-badge.hidden {
+    display: none;
+}
+
+.selected-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.selected-user-info i {
+    color: var(--color-primary);
+}
+
+
+/* ===========================================
+   NOTIFICATION SETTINGS PAGE MOBILE
+   =========================================== */
+
+@media (max-width: 640px) {
+    /* Settings list compact */
+    .notification-settings-list {
+        gap: var(--space-3);
+    }
+
+    /* Setting item - tek satırda, toggle sağda */
+    .notification-setting-item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        padding: var(--space-3);
+    }
+
+    .notification-setting-info {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-setting-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .notification-setting-info > div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-setting-item h4 {
+        font-size: var(--text-sm);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .notification-setting-item p {
+        font-size: var(--text-xs);
+        display: none; /* Mobilde açıklamayı gizle, yer kazanmak için */
+    }
+
+    /* Toggle switch sağda sabit */
+    .notification-setting-item .toggle-switch {
+        flex-shrink: 0;
+    }
+
+    /* Settings grid (DND times etc) */
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    /* Card body padding for settings page */
+    .notification-settings-page .card-body {
+        padding: var(--space-3);
+    }
+
+    /* Section dividers compact */
+    .notification-settings-page .border-t {
+        margin-top: var(--space-4);
+        padding-top: var(--space-4);
+    }
+
+    /* Time inputs */
+    .notification-settings-page input[type="time"] {
+        padding: var(--space-2);
+        font-size: var(--text-sm);
+    }
+
+    /* Save button full width */
+    .notification-settings-page .card-footer {
+        padding: var(--space-3);
+    }
+
+    .notification-settings-page .card-footer .btn {
+        width: 100%;
+    }
+
+    /* ===== NOTIFICATION TYPES TABLE MOBILE ===== */
+
+    /* Card body - sadece 10px padding */
+    .card:has(#notification-types-table) .card-body {
+        padding: 10px !important;
+    }
+
+    /* Table responsive - padding kaldır (card-body'de var) */
+    .card:has(#notification-types-table) .table-responsive {
+        overflow: visible;
+        padding: 0 !important;
+    }
+
+    .card:has(#notification-types-table) table {
+        display: block;
+    }
+
+    .card:has(#notification-types-table) thead {
+        display: none;
+    }
+
+    .card:has(#notification-types-table) tbody {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: 0;
+    }
+
+    .card:has(#notification-types-table) tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        padding: var(--space-3);
+        gap: var(--space-2);
+    }
+
+    .card:has(#notification-types-table) tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0;
+        border: none;
+    }
+
+    /* İlk hücre - tip bilgisi */
+    .card:has(#notification-types-table) tbody td:first-child {
+        padding-bottom: var(--space-2);
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: var(--space-1);
+    }
+
+    /* Diğer hücreler - toggle'lar */
+    .card:has(#notification-types-table) tbody td:not(:first-child) {
+        font-size: var(--text-sm);
+    }
+
+    /* Her toggle hücresi için label göster */
+    .card:has(#notification-types-table) tbody td:nth-child(2)::before,
+    .card:has(#notification-types-table) tbody td:nth-child(3)::before,
+    .card:has(#notification-types-table) tbody td:nth-child(4)::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: var(--text-xs);
+        display: block;
+        margin-bottom: var(--space-1);
+    }
+
+    /* Toggle checkbox görünür yap */
+    .card:has(#notification-types-table) tbody td .toggle-switch {
+        flex-shrink: 0;
+    }
+}
+
+/* ===========================================
+   NOTIFICATION LIST PAGE - TABLE CELLS
+   =========================================== */
+
+/* Notification cell in table */
+.notification-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.notification-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-title.font-bold {
+    font-weight: 600;
+}
+
+.notification-message {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    margin: 0;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-unread-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+/* Type icon cell */
+.data-table-icon-cell {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+}
+
+.data-table-icon-cell.type-info { background: rgba(34, 139, 230, 0.1); color: #228be6; }
+.data-table-icon-cell.type-success { background: rgba(64, 192, 87, 0.1); color: #40c057; }
+.data-table-icon-cell.type-warning { background: rgba(250, 176, 5, 0.1); color: #fab005; }
+.data-table-icon-cell.type-error { background: rgba(250, 82, 82, 0.1); color: #fa5252; }
+.data-table-icon-cell.type-system { background: rgba(134, 142, 150, 0.1); color: #868e96; }
+.data-table-icon-cell.type-product { background: rgba(121, 80, 242, 0.1); color: #7950f2; }
+.data-table-icon-cell.type-device { background: rgba(32, 201, 151, 0.1); color: #20c997; }
+.data-table-icon-cell.type-user { background: rgba(230, 73, 128, 0.1); color: #e64980; }
+
+/* ===========================================
+   NOTIFICATION LIST PAGE MOBILE
+   =========================================== */
+
+@media (max-width: 640px) {
+    /* Page header buttons - wrap with text visible */
+    .notification-list-page .page-header-right {
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    .notification-list-page .page-header-right .btn {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+        justify-content: center;
+    }
+
+    /* Filter tabs - horizontal scroll */
+    .filter-tab-container,
+    .card-body:has(.filter-tab) {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .filter-tab-container .flex,
+    .card-body .flex:has(.filter-tab) {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: var(--space-2);
+        padding-bottom: var(--space-1);
+    }
+
+    .filter-tab-container .flex::-webkit-scrollbar,
+    .card-body .flex:has(.filter-tab)::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-tab {
+        flex-shrink: 0;
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+        white-space: nowrap;
+    }
+
+    .filter-tab span {
+        display: none;
+    }
+
+    .filter-tab i {
+        margin: 0;
+    }
+
+    /* Bulk actions bar - stack */
+    #bulk-actions-bar .card-body {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    #bulk-actions-bar .flex {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    #bulk-actions-bar .flex > span {
+        text-align: center;
+    }
+
+    #bulk-actions-bar .flex > .flex {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #bulk-actions-bar .btn {
+        flex: 1;
+        min-width: calc(33% - var(--space-1));
+    }
+
+    #bulk-actions-bar .btn span {
+        display: none;
+    }
+
+    /* Notification cell compact */
+    .notification-cell {
+        gap: 0.125rem;
+        max-width: 180px;
+    }
+
+    .notification-title {
+        font-size: var(--text-xs);
+        gap: 0.25rem;
+        max-width: 160px;
+    }
+
+    .notification-message {
+        font-size: 10px;
+        max-width: 160px;
+    }
+
+    .notification-unread-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    /* Hide date column on mobile */
+    .notification-list-page .data-table th:nth-child(3),
+    .notification-list-page .data-table td:nth-child(3) {
+        display: none;
+    }
+}

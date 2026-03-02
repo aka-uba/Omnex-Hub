@@ -1,0 +1,150 @@
+{
+    "title": "Media Kitabxanası",
+    "subtitle": {
+        "default": "Şəkil və video faylları idarə edin",
+        "directory": "kataloq",
+        "notSelected": "Seçilməyib"
+    },
+    "breadcrumb": {
+        "panel": "Panel",
+        "media": "Media Kitabxanası"
+    },
+    "toolbar": {
+        "upload": "Yüklə",
+        "browse": "Kataloqu nəzərdən keçirin",
+        "library": "Kitabxana",
+        "browseMode": "Kataloq kəşfiyyatçı rejiminə keçin",
+        "search": "Faylları axtarın...",
+        "parentFolder": "Ana Qovluq",
+        "gridView": "Şəbəkə Görünüşü",
+        "listView": "Siyahı Görünüşü",
+        "scanSamples": "İctimai Kitabxananı skan edin"
+    },
+    "filter": {
+        "all": "Bütün Fayllar",
+        "images": "Şəkillər",
+        "videos": "Videolar",
+        "documents": "Sənədlər"
+    },
+    "filters": {
+        "advancedFilters": "Qabaqcıl Filtrlər",
+        "apply": "Müraciət edin",
+        "applied": "Filtrlər tətbiq olundu",
+        "searchPlaceholder": "Fayl adını axtarın...",
+        "sizeRange": "Fayl ölçüsü",
+        "minSize": "Min (KB)",
+        "maxSize": "Maks (KB)"
+    },
+    "type": {
+        "image": "Şəkil",
+        "video": "Video",
+        "document": "Sənəd",
+        "folder": "Qovluq"
+    },
+    "bulk": {
+        "selected": "fayllar seçilmişdir",
+        "delete": "Sil",
+        "import": "İdxal",
+        "clear": "Seçimi təmizləyin"
+    },
+    "actions": {
+        "preview": "Önizləmə",
+        "edit": "Redaktə et",
+        "delete": "Sil",
+        "import": "İdxal",
+        "download": "Yüklə"
+    },
+    "table": {
+        "name": "Fayl adı",
+        "type": "Növ",
+        "size": "Ölçü",
+        "date": "Tarix"
+    },
+    "upload": {
+        "uploading": "Yüklənir..."
+    },
+    "settings": {
+        "title": "Kitabxana Parametrləri",
+        "fields": {
+            "defaultPath": "Defolt Kataloq Yolu",
+            "maxFileSize": "Maksimum Fayl Ölçüsü (MB)",
+            "allowedTypes": "İcazə verilən fayl növləri"
+        },
+        "hints": {
+            "defaultPath": "Kataloq tədqiqatçısı bu yoldan başlayır"
+        },
+        "scan": {
+            "title": "Skan kataloqu",
+            "description": "Faylları verilənlər bazasına idxal edin",
+            "button": "Skan edin"
+        },
+        "fileTypes": {
+            "images": "Şəkillər",
+            "videos": "Videolar",
+            "documents": "Sənədlər"
+        }
+    },
+    "preview": {
+        "title": "Fayl önizləmə",
+        "fields": {
+            "fileName": "Fayl adı",
+            "size": "Ölçü",
+            "type": "Növ",
+            "date": "Tarix",
+            "path": "Fayl yolu"
+        },
+        "actions": {
+            "import": "Kitabxanaya idxal edin",
+            "download": "Yüklə",
+            "delete": "Sil"
+        }
+    },
+    "delete": {
+        "single": {
+            "title": "Faylı Sil",
+            "confirm": "Bu faylı silmək istədiyinizə əminsiniz?"
+        },
+        "bulk": {
+            "title": "Faylları Sil",
+            "confirm": "{count} faylı silmək istədiyinizə əminsiniz?"
+        }
+    },
+    "empty": {
+        "title": "Heç bir fayl tapılmadı",
+        "uploadHint": "Faylları yükləmək üçün Yüklə düyməsini klikləyin",
+        "browseHint": "Kataloq məzmununa baxmaq üçün qovluğu açın"
+    },
+    "modal": {
+        "close": "Bağlayın",
+        "cancel": "Ləğv et",
+        "delete": "Sil"
+    },
+    "toast": {
+        "uploaded": "Fayl yükləndi",
+        "uploadFailed": "Faylları yükləmək alınmadı",
+        "deleted": "Fayl silindi",
+        "imported": "Fayl kitabxanaya idxal edildi",
+        "importFailed": "Fayl əlavə etmək alınmadı",
+        "scanned": "Kataloq skanı tamamlandı",
+        "samplesScanned": "{imported} fayl idxal edildi, {skipped} fayl artıq mövcuddur (cəmi {total} fayl tapıldı)",
+        "copied": "Kopyalandı",
+        "settingsSaved": "Parametrlər yadda saxlanıldı",
+        "pathRequired": "Kataloq yolunu daxil edin",
+        "bulkImported": "{count} fayl idxal edildi"
+    },
+    "messages": {
+        "enterPath": "Lütfən, kataloq yolunu daxil edin",
+        "scanFailed": "Kataloq skan edilmədi",
+        "importFailed": "Import alınmadı",
+        "deleteFailed": "Silinmə əməliyyatı alınmadı",
+        "loadFailed": "Faylları yükləmək alınmadı",
+        "setDirectoryPath": "Əvvəlcə parametrlərdə kataloq yolunu təyin edin",
+        "uploadFailed": "yükləmək alınmadı"
+    },
+    "pagination": {
+        "items": "maddələr",
+        "page": "Səhifə",
+        "previous": "Əvvəlki",
+        "next": "Sonrakı"
+    }
+}

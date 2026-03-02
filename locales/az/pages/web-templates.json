@@ -1,0 +1,164 @@
+{
+    "title": "Veb Şablonları",
+    "subtitle": "HTML əsaslı rəqəmsal işarə şablonlarını idarə edin",
+    "breadcrumb": {
+        "panel": "Panel",
+        "webTemplates": "Veb Şablonları",
+        "editor": "redaktor",
+        "new": "Yeni Veb Şablonu",
+        "edit": "Redaktə et"
+    },
+    "list": {
+        "title": "Veb Şablonları",
+        "subtitle": "VvvebJs ilə HTML əsaslı şablonlar yaradın",
+        "newTemplate": "Yeni Veb Şablonu",
+        "empty": "Hələ heç bir veb şablon yaradılmayıb",
+        "emptyHint": "HTML əsaslı rəqəmsal işarə şablonları yaratmağa başlayın",
+        "searchPlaceholder": "Şablon axtar...",
+        "total": "Cəmi {count} şablon"
+    },
+    "filters": {
+        "status": "Vəziyyət",
+        "type": "Növ",
+        "all": "Hamısı",
+        "search": "Axtar",
+        "searchPlaceholder": "Şablon axtar..."
+    },
+    "table": {
+        "name": "Şablon Adı",
+        "type": "Növ",
+        "status": "Vəziyyət",
+        "dimensions": "Ölçülər",
+        "devices": "Cihaz sayı",
+        "createdAt": "yaradılmışdır",
+        "updatedAt": "Yenilənib",
+        "preview": "Önizləmə"
+    },
+    "form": {
+        "name": "Şablon Adı",
+        "description": "Təsvir",
+        "type": "Şablon növü",
+        "status": "Vəziyyət",
+        "width": "Genişlik",
+        "height": "Hündürlük",
+        "orientation": "Orientasiya",
+        "category": "Kateqoriya",
+        "tags": "Teqlər",
+        "placeholders": {
+            "name": "Şablon adını daxil edin",
+            "description": "Şablon təsviri (istəyə görə)",
+            "tags": "Teqlər (vergüllə ayrılmış)"
+        }
+    },
+    "types": {
+        "signage": "Rəqəmsal İşarə",
+        "webpage": "Veb səhifə",
+        "dashboard": "İdarə paneli",
+        "menu": "Menyu lövhəsi"
+    },
+    "status": {
+        "draft": "Qaralama",
+        "published": "Nəşr edilmişdir",
+        "archived": "Arxivləşdirilib"
+    },
+    "orientations": {
+        "landscape": "Mənzərə",
+        "portrait": "Portret"
+    },
+    "actions": {
+        "new": "Yeni Şablon",
+        "edit": "Redaktə et",
+        "delete": "Sil",
+        "duplicate": "Dublikat",
+        "clone": "Klon",
+        "preview": "Önizləmə",
+        "publish": "Nəşr et",
+        "unpublish": "Dərcdən çıxarın",
+        "assignDevices": "Cihazları təyin edin",
+        "viewVersions": "Versiyalara baxın",
+        "retry": "Yenidən cəhd edin",
+        "createFirst": "İlk Şablon Yaradın",
+        "cancel": "Ləğv et"
+    },
+    "editor": {
+        "title": "Veb Şablon Redaktoru",
+        "newTitle": "Yeni Veb Şablonu",
+        "editTitle": "Veb Şablonunu Redaktə edin",
+        "subtitle": "HTML əsaslı rəqəmsal lövhə dizaynı",
+        "loading": "Redaktor yüklənir...",
+        "loadError": "Redaktoru yükləmək alınmadı",
+        "redirecting": "Redaktora yönləndirilir..."
+    },
+    "widgets": {
+        "title": "Omnex Vidjetləri",
+        "productCard": "Məhsul Kartı",
+        "priceList": "Qiymət siyahısı",
+        "ticker": "Ticker",
+        "clock": "Saat",
+        "countdown": "Geri sayım",
+        "qrcode": "QR kodu",
+        "weather": "Hava",
+        "news": "Xəbər lenti"
+    },
+    "assignment": {
+        "title": "Cihaz Təyinatı",
+        "selectDevices": "Cihazlar seçin",
+        "noDevices": "Hələ heç bir cihaz təyin edilməyib",
+        "assignedDevices": "Təyin edilmiş Cihazlar",
+        "priority": "Prioritet",
+        "schedule": "Cədvəl",
+        "startDate": "Başlama tarixi",
+        "endDate": "Bitmə tarixi"
+    },
+    "versions": {
+        "title": "Versiya Tarixçəsi",
+        "current": "Cari",
+        "version": "Versiya",
+        "createdAt": "yaradılmışdır",
+        "createdBy": "Yaradıb",
+        "notes": "Qeydlər",
+        "restore": "Bərpa et",
+        "compare": "Müqayisə et"
+    },
+    "messages": {
+        "loading": "Yüklənir...",
+        "noTemplates": "Hələ veb şablonları yoxdur",
+        "noTemplatesHint": "HTML əsaslı rəqəmsal işarə şablonları yaratmağa başlayın",
+        "noResults": "Heç bir nəticə tapılmadı",
+        "loadError": "Şablonları yükləyərkən xəta baş verdi",
+        "redirecting": "Redaktora yönləndirilir...",
+        "deleted": "Veb şablonu silindi",
+        "deleteError": "Silinmə zamanı xəta baş verdi",
+        "duplicated": "Veb şablonu dublikatlandı",
+        "duplicateError": "Dublikasiya zamanı xəta baş verdi"
+    },
+    "toast": {
+        "created": "Veb şablon yaradıldı",
+        "updated": "Veb şablonu yeniləndi",
+        "deleted": "Veb şablonu silindi",
+        "cloned": "Veb şablonu dublikatlandı",
+        "published": "Veb şablon nəşr olundu",
+        "unpublished": "Veb şablon dərc olunmayıb",
+        "assigned": "Cihazlara təyin edilmişdir",
+        "versionRestored": "Versiya bərpa edildi"
+    },
+    "confirm": {
+        "deleteTitle": "Şablonu silin",
+        "deleteMessage": "\"{name}\" şablonunu silmək istədiyinizə əminsiniz?",
+        "delete": "Bu veb şablonunu silmək istədiyinizə əminsiniz?",
+        "deleteWarning": "Bu əməliyyat geri qaytarıla bilməz. Bu şablonla əlaqələndirilmiş cihaz təyinatları da silinəcək.",
+        "publish": "Bu şablonu dərc etmək istədiyinizə əminsiniz?",
+        "unpublish": "Bu şablonu dərcdən çıxarmaq istədiyinizə əminsiniz?",
+        "restoreVersion": "Bu versiyanı bərpa etmək istədiyinizə əminsiniz?"
+    },
+    "validation": {
+        "nameRequired": "Şablon adı tələb olunur",
+        "nameTooLong": "Şablon adı 255 simvoldan çox ola bilməz",
+        "typeRequired": "Lütfən, şablon növünü seçin"
+    },
+    "filter": {
+        "allTypes": "Bütün Növlər",
+        "allStatus": "Bütün Status",
+        "search": "Axtar..."
+    }
+}

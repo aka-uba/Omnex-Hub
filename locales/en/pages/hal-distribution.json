@@ -1,0 +1,90 @@
+{
+    "title": "Kunye Distribution Center",
+    "subtitle": "Distribute kunye from HAL notifications",
+    "breadcrumb": { "panel": "Dashboard", "products": "Products", "distribution": "Kunye Distribution" },
+    "steps": {
+        "query": "Query Notifications",
+        "select": "Document Selection",
+        "assign": "Product Matching",
+        "result": "Result"
+    },
+    "form": {
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "sifat": "Title",
+        "onlyRemaining": "Only remaining quantity > 0",
+        "query": "Query",
+        "querying": "Querying..."
+    },
+    "belge": {
+        "title": "Document No",
+        "plaka": "Plate",
+        "items": "items",
+        "selectAll": "Select All",
+        "totalMiktar": "Total Quantity",
+        "totalKalan": "Total Remaining",
+        "noSelection": "Please select at least one kunye"
+    },
+    "assign": {
+        "halProduct": "HAL Product",
+        "systemProduct": "System Product",
+        "type": "Distribution Type",
+        "full": "Single (Full)",
+        "split": "Dual (Split)",
+        "miktar": "Quantity",
+        "kalan": "Remaining",
+        "birim": "Unit",
+        "search": "Search product (name, SKU, barcode)...",
+        "searchHint": "Search by name, SKU or barcode. Turkish character insensitive search supported.",
+        "autoMatch": "Auto Match",
+        "distribute": "Distribute",
+        "distributing": "Distributing...",
+        "noMatch": "No match found",
+        "selectProduct": "Select Product",
+        "matched": "Matched",
+        "splitMiktar1": "Part 1 Quantity",
+        "splitMiktar2": "Part 2 Quantity",
+        "nextStep": "Go to Matching",
+        "prevStep": "Back",
+        "belgeNo": "Document No",
+        "bildirimTarihi": "Notification Date"
+    },
+    "result": {
+        "title": "Distribution Result",
+        "success": "{count} kunye successfully distributed",
+        "skipped": "{count} kunye skipped",
+        "error": "{count} kunye had errors",
+        "viewProducts": "View Products",
+        "newDistribution": "New Distribution"
+    },
+    "errors": {
+        "noCredentials": "HAL settings not configured",
+        "noResults": "No notifications found for specified criteria",
+        "fetchFailed": "Notification query failed",
+        "distributeFailed": "Error occurred during distribution",
+        "noSelection": "Please select at least one kunye",
+        "noProduct": "Please complete all product matchings",
+        "dateRequired": "Start and end date are required",
+        "dateRange": "Date range cannot exceed 31 days"
+    },
+    "sifat": {
+        "0": "Select",
+        "1": "Industrialist",
+        "2": "Exporter",
+        "3": "Importer",
+        "4": "Producer",
+        "5": "Broker",
+        "6": "Merchant",
+        "7": "Market",
+        "8": "Greengrocer",
+        "9": "Warehouse/Sorting",
+        "10": "Producer Organization",
+        "11": "Street Vendor",
+        "12": "Hotel",
+        "13": "Restaurant",
+        "14": "Dormitory",
+        "15": "Food Factory",
+        "16": "Hospital",
+        "17": "Merchant (Outside)"
+    }
+}

@@ -1,0 +1,325 @@
+{
+    "title": "Tableau de bord",
+    "subtitle": "Vue d'ensemble",
+    "breadcrumb": {
+        "panel": "Panneau",
+        "analytics": "Analyses et rapports"
+    },
+    "welcome": "Bienvenue, {name}",
+    "welcomeDefault": "Utilisateur",
+    "header": {
+        "systemAnalytics": "Analyses système",
+        "downloadReport": "Télécharger le rapport",
+        "refresh": "Actualiser"
+    },
+    "stats": {
+        "totalProducts": "Total des produits",
+        "updatedIn24h": "Mis à jour dans les dernières 24 heures",
+        "inLast30Days": "Dans les 30 derniers jours",
+        "inThisPeriod": "Dans cette période",
+        "activeDevices": "Appareils actifs",
+        "online": "En ligne",
+        "offline": "Hors ligne",
+        "labelUpdates": "Mises à jour d'étiquettes",
+        "licenseStatus": "Statut de la licence",
+        "critical": "Critique",
+        "licensesExpiring": "{count} licences expirant",
+        "allLicensesActive": "Toutes les licences actives",
+        "storage": "Stockage",
+        "unlimited": "Illimité",
+        "unlimitedStorage": "Stockage illimité",
+        "used": "Utilisé",
+        "remaining": "Restant",
+        "errorRate": "Taux d'erreur",
+        "belowIndustryAvg": "En dessous de la moyenne de l'industrie"
+    },
+    "gateways": {
+        "noDevices": "Aucun appareil enregistré pour le moment",
+        "addDevice": "Ajouter un appareil",
+        "onlineDevices": "Appareils en ligne",
+        "deviceActive": "{count} appareils actifs",
+        "offlineDevices": "Appareils hors ligne",
+        "deviceOffline": "{count} appareils hors ligne",
+        "waitingConnection": "En attente de connexion",
+        "allOnline": "Tous en ligne",
+        "totalDevices": "Total des appareils",
+        "registeredDevices": "{count} appareils enregistrés",
+        "manage": "Gérer",
+        "deviceGroups": "Groupes d'appareils",
+        "devices": "{count} appareils"
+    },
+    "widgets": {
+        "products": {
+            "title": "Total des produits",
+            "subtitle": "Nombre de produits enregistrés"
+        },
+        "devices": {
+            "title": "Appareils",
+            "online": "En ligne",
+            "offline": "Hors ligne",
+            "pending": "En attente"
+        },
+        "templates": {
+            "title": "Modèles",
+            "subtitle": "Nombre de modèles actifs"
+        },
+        "users": {
+            "title": "Utilisateurs",
+            "subtitle": "Nombre d'utilisateurs actifs"
+        },
+        "queue": {
+            "title": "File d'attente",
+            "pending": "En attente"
+        },
+        "sync": {
+            "title": "Synchronisation",
+            "today": "Aujourd'hui",
+            "success": "Réussi",
+            "pending": "En attente",
+            "failed": "Échoué"
+        }
+    },
+    "recentActivity": {
+        "title": "Activités récentes",
+        "empty": "Aucun enregistrement d'activité pour le moment",
+        "emptyHint": "Les transactions système seront listées ici",
+        "viewAll": "Voir tout",
+        "exportAll": "EXPORTER TOUS LES ENREGISTREMENTS"
+    },
+    "quickActions": {
+        "title": "Actions rapides",
+        "addProduct": "Ajouter un produit",
+        "addDevice": "Ajouter un appareil",
+        "createTemplate": "Créer un modèle",
+        "importProducts": "Importer des produits"
+    },
+    "charts": {
+        "productsByCategory": "Produits par catégorie",
+        "deviceStatus": "Statut des appareils",
+        "syncActivity": "Activité de synchronisation",
+        "labelSync": "Synchronisation des étiquettes",
+        "labelUpdates": "Mises à jour d'étiquettes",
+        "loading": "Chargement des données du graphique...",
+        "loadingDays": "Chargement des données des {days} derniers jours...",
+        "noData": "Aucune donnée trouvée",
+        "noChartData": "Aucune donnée de graphique trouvée",
+        "loadError": "Échec du chargement des données du graphique",
+        "onlineDevices": "En ligne",
+        "offlineDevices": "Hors ligne",
+        "barTooltip": "{date} : {online} en ligne, {offline} hors ligne",
+        "totalUpdates": "Total des mises à jour",
+        "dailyAverage": "Moyenne quotidienne",
+        "updates": "mises à jour",
+        "noDevices": "Aucun appareil enregistré pour le moment"
+    },
+    "period": {
+        "last7Days": "7 derniers jours",
+        "last30Days": "30 derniers jours",
+        "last90Days": "90 derniers jours",
+        "today": "Aujourd'hui",
+        "yesterday": "Hier",
+        "daysAgo": "il y a {count} jours"
+    },
+    "activity": {
+        "titles": {
+            "login": "Connexion utilisateur",
+            "logout": "Déconnexion utilisateur",
+            "create": "Nouvel enregistrement",
+            "update": "Mise à jour",
+            "delete": "Suppression",
+            "sync": "Synchronisation",
+            "import": "Importation",
+            "export": "Exportation",
+            "send": "Envoi",
+            "error": "Erreur",
+            "system": "Opération système",
+            "bulkPriceUpdate": "Mise à jour de prix en masse",
+            "deviceSync": "Synchronisation d'appareil",
+            "productImport": "Importation de produit",
+            "connectionWarning": "Avertissement de connexion"
+        },
+        "resources": {
+            "products": "produit",
+            "devices": "appareil",
+            "templates": "modèle",
+            "users": "utilisateur",
+            "companies": "entreprise",
+            "categories": "catégorie",
+            "media": "média",
+            "playlists": "liste de lecture",
+            "schedules": "planification"
+        },
+        "descriptions": {
+            "login": "{user} s'est connecté",
+            "logout": "{user} s'est déconnecté",
+            "create": "{user} a créé un nouveau {resource}",
+            "update": "{user} a mis à jour {resource}",
+            "delete": "{user} a supprimé {resource}",
+            "import": "{user} a importé {resource}",
+            "send": "{user} a envoyé du contenu à l'appareil",
+            "export": "{user} a exporté des données",
+            "sync": "{user} a effectué une synchronisation"
+        },
+        "messages": {
+            "productCreated": "{count} nouveaux produits ajoutés",
+            "productUpdated": "{count} produits mis à jour",
+            "productDeleted": "{count} produits supprimés",
+            "deviceCreated": "Nouvel appareil ajouté",
+            "deviceUpdated": "Appareil mis à jour",
+            "syncCompleted": "Synchronisation terminée",
+            "importCompleted": "{count} enregistrements importés",
+            "bulkPriceUpdate": "Mise à jour de prix effectuée pour {count} produits.",
+            "allDevicesSynced": "Tous les appareils ESL synchronisés avec succès.",
+            "productsImportedFromERP": "{count} nouveaux produits importés du système ERP.",
+            "gatewayConnectionIssue": "Connexion {gateway} temporairement interrompue et rétablie."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Statut des appareils",
+            "online": "En ligne",
+            "offline": "Hors ligne",
+            "offlineDevices": "Appareils hors ligne",
+            "noOffline": "Tous les appareils en ligne",
+            "lastSeen": "Vu pour la dernière fois",
+            "viewAll": "Voir tout",
+            "noDevices": "Aucun appareil pour le moment"
+        },
+        "recentActivities": {
+            "title": "Activités récentes",
+            "viewAll": "Voir tout",
+            "empty": "Aucune activité pour le moment"
+        },
+        "renderQueue": {
+            "title": "File d'attente de rendu",
+            "successRate": "Taux de succès",
+            "avgTime": "Temps moyen",
+            "pending": "En attente",
+            "priorityDistribution": "Distribution des priorités",
+            "urgent": "Urgent",
+            "high": "Élevé",
+            "normal": "Normal",
+            "low": "Faible",
+            "detail": "Détail",
+            "noData": "Aucune donnée de file d'attente",
+            "seconds": "sec"
+        },
+        "products": {
+            "title": "Produits",
+            "total": "Total des produits",
+            "deviceAssigned": "Assigné à l'appareil",
+            "templateAssigned": "Assigné au modèle",
+            "categories": "Catégories",
+            "lastUpdated": "Dernière mise à jour",
+            "viewAll": "Voir tout"
+        },
+        "templates": {
+            "title": "Modèles",
+            "total": "Total des modèles",
+            "system": "Modèles système",
+            "byType": "Par type",
+            "label": "Étiquette",
+            "signage": "Affichage numérique",
+            "tv": "TV",
+            "poster": "Affiche",
+            "manage": "Gérer"
+        },
+        "media": {
+            "title": "Bibliothèque multimédia",
+            "totalFiles": "Total des fichiers",
+            "shared": "Partagé",
+            "companyOnly": "Entreprise uniquement",
+            "storageUsage": "Utilisation du stockage",
+            "browse": "Parcourir"
+        },
+        "detailedDevice": {
+            "title": "Informations détaillées sur l'appareil",
+            "byType": "Par type",
+            "byBranch": "Par succursale",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android TV",
+            "tablet": "Tablette",
+            "webDisplay": "Affichage Web",
+            "pwaPlayer": "Lecteur PWA",
+            "manage": "Gérer",
+            "noBranch": "Aucune information de succursale"
+        },
+        "signage": {
+            "title": "Affichage numérique",
+            "connectedDevices": "Appareils connectés",
+            "totalPlaylists": "Total des listes de lecture",
+            "active": "Actif",
+            "inactive": "Inactif",
+            "playlistItems": "Éléments de liste de lecture",
+            "assignedDevices": "Appareils assignés",
+            "manage": "Gérer",
+            "noData": "Aucune donnée d'affichage"
+        },
+        "companyLicense": {
+            "title": "Entreprise et licence",
+            "company": "Entreprise",
+            "license": "Licence",
+            "branches": "Succursales",
+            "users": "Utilisateurs",
+            "activeSessions": "sessions actives",
+            "eslLimit": "Limite ESL",
+            "tvLimit": "Limite TV",
+            "deviceLimit": "Limite d'appareils",
+            "storageLimit": "Stockage",
+            "daysRemaining": "{count} jours restants",
+            "expired": "Expiré",
+            "unlimited": "Illimité",
+            "noLimit": "Aucune limite",
+            "noLicense": "Aucune information de licence",
+            "noCompany": "Aucune information d'entreprise"
+        },
+        "integrations": {
+            "title": "Intégrations",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "Badge HAL",
+            "hanshow": "Hanshow ESL",
+            "payment": "Système de paiement",
+            "active": "Actif",
+            "configured": "Configuré",
+            "notConfigured": "Non configuré",
+            "disabled": "Désactivé",
+            "lastSync": "Dernière synchronisation"
+        }
+    },
+    "toast": {
+        "refreshed": "Tableau de bord mis à jour",
+        "refreshError": "Erreur lors de la mise à jour du tableau de bord",
+        "reportPreparing": "Préparation du rapport...",
+        "reportDownloaded": "Rapport téléchargé avec succès",
+        "reportError": "Échec du téléchargement du rapport",
+        "downloading": "Téléchargement...",
+        "activityPreparing": "Préparation des enregistrements d'activité...",
+        "activityExported": "{count} enregistrements d'activité exportés",
+        "activityExportError": "Échec de l'exportation des enregistrements d'activité",
+        "noActivityToExport": "Aucun enregistrement d'activité trouvé à exporter",
+        "loadError": "Une erreur s'est produite lors du chargement des données"
+    },
+    "export": {
+        "headers": {
+            "date": "Date",
+            "user": "Utilisateur",
+            "action": "Action",
+            "resource": "Ressource",
+            "details": "Détails",
+            "ipAddress": "IP Address",
+            "metric": "Métrique",
+            "value": "Valeur",
+            "totalProduct": "Total des produits",
+            "totalDevice": "Total des appareils",
+            "onlineDevice": "Appareils en ligne",
+            "labelUpdate": "Mises à jour d'étiquettes",
+            "todayUpdates": "Mises à jour d'aujourd'hui",
+            "templateCount": "Nombre de modèles",
+            "categoryCount": "Nombre de catégories",
+            "errorRate": "Taux d'erreur"
+        },
+        "system": "Système"
+    }
+}

@@ -1,0 +1,164 @@
+{
+    "title": "Modèles Web",
+    "subtitle": "Gérer les modèles d'affichage numérique basés sur HTML",
+    "breadcrumb": {
+        "panel": "Panneau",
+        "webTemplates": "Modèles Web",
+        "editor": "Éditeur",
+        "new": "Nouveau modèle Web",
+        "edit": "Modifier"
+    },
+    "list": {
+        "title": "Modèles Web",
+        "subtitle": "Créer des modèles basés sur HTML avec VvvebJs",
+        "newTemplate": "Nouveau modèle Web",
+        "empty": "Aucun modèle Web créé pour le moment",
+        "emptyHint": "Commencez à créer des modèles d'affichage numérique basés sur HTML",
+        "searchPlaceholder": "Rechercher un modèle...",
+        "total": "Total {count} modèles"
+    },
+    "filters": {
+        "status": "Statut",
+        "type": "Type",
+        "all": "Tous",
+        "search": "Rechercher",
+        "searchPlaceholder": "Rechercher un modèle..."
+    },
+    "table": {
+        "name": "Nom du modèle",
+        "type": "Type",
+        "status": "Statut",
+        "dimensions": "Dimensions",
+        "devices": "Nombre d'appareils",
+        "createdAt": "Créé",
+        "updatedAt": "Mis à jour",
+        "preview": "Aperçu"
+    },
+    "form": {
+        "name": "Nom du modèle",
+        "description": "Description",
+        "type": "Type de modèle",
+        "status": "Statut",
+        "width": "Largeur",
+        "height": "Hauteur",
+        "orientation": "Orientation",
+        "category": "Catégorie",
+        "tags": "Tags",
+        "placeholders": {
+            "name": "Entrez le nom du modèle",
+            "description": "Description du modèle (optionnel)",
+            "tags": "Tags (séparés par des virgules)"
+        }
+    },
+    "types": {
+        "signage": "Affichage numérique",
+        "webpage": "Page Web",
+        "dashboard": "Tableau de bord",
+        "menu": "Menu numérique"
+    },
+    "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+    },
+    "orientations": {
+        "landscape": "Paysage",
+        "portrait": "Portrait"
+    },
+    "actions": {
+        "new": "Nouveau modèle",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "duplicate": "Dupliquer",
+        "clone": "Cloner",
+        "preview": "Aperçu",
+        "publish": "Publier",
+        "unpublish": "Dépublier",
+        "assignDevices": "Assigner des appareils",
+        "viewVersions": "Voir les versions",
+        "retry": "Réessayer",
+        "createFirst": "Créer le premier modèle",
+        "cancel": "Annuler"
+    },
+    "editor": {
+        "title": "Éditeur de modèles Web",
+        "newTitle": "Nouveau modèle Web",
+        "editTitle": "Modifier le modèle Web",
+        "subtitle": "Concevoir un affichage numérique basé sur HTML",
+        "loading": "Chargement de l'éditeur...",
+        "loadError": "Échec du chargement de l'éditeur",
+        "redirecting": "Redirection vers l'éditeur..."
+    },
+    "widgets": {
+        "title": "Widgets Omnex",
+        "productCard": "Carte produit",
+        "priceList": "Liste de prix",
+        "ticker": "Défilement",
+        "clock": "Horloge",
+        "countdown": "Compte à rebours",
+        "qrcode": "QR Code",
+        "weather": "Météo",
+        "news": "Flux d'actualités"
+    },
+    "assignment": {
+        "title": "Assignation d'appareils",
+        "selectDevices": "Sélectionner des appareils",
+        "noDevices": "Aucun appareil assigné pour le moment",
+        "assignedDevices": "Appareils assignés",
+        "priority": "Priorité",
+        "schedule": "Planification",
+        "startDate": "Date de début",
+        "endDate": "Date de fin"
+    },
+    "versions": {
+        "title": "Historique des versions",
+        "current": "Actuel",
+        "version": "Version",
+        "createdAt": "Créé",
+        "createdBy": "Créé par",
+        "notes": "Notes",
+        "restore": "Restaurer",
+        "compare": "Comparer"
+    },
+    "messages": {
+        "loading": "Chargement...",
+        "noTemplates": "Aucun modèle Web pour le moment",
+        "noTemplatesHint": "Commencez à créer des modèles d'affichage numérique basés sur HTML",
+        "noResults": "Aucun résultat trouvé",
+        "loadError": "Erreur lors du chargement des modèles",
+        "redirecting": "Redirection vers l'éditeur...",
+        "deleted": "Modèle Web supprimé",
+        "deleteError": "Erreur lors de la suppression",
+        "duplicated": "Modèle Web dupliqué",
+        "duplicateError": "Erreur lors de la duplication"
+    },
+    "toast": {
+        "created": "Modèle Web créé",
+        "updated": "Modèle Web mis à jour",
+        "deleted": "Modèle Web supprimé",
+        "cloned": "Modèle Web dupliqué",
+        "published": "Modèle Web publié",
+        "unpublished": "Modèle Web dépublié",
+        "assigned": "Assigné aux appareils",
+        "versionRestored": "Version restaurée"
+    },
+    "confirm": {
+        "deleteTitle": "Supprimer le modèle",
+        "deleteMessage": "Êtes-vous sûr de vouloir supprimer le modèle \"{name}\" ?",
+        "delete": "Êtes-vous sûr de vouloir supprimer ce modèle Web ?",
+        "deleteWarning": "Cette action ne peut pas être annulée. Les assignations d'appareils liées à ce modèle seront également supprimées.",
+        "publish": "Êtes-vous sûr de vouloir publier ce modèle ?",
+        "unpublish": "Êtes-vous sûr de vouloir dépublier ce modèle ?",
+        "restoreVersion": "Êtes-vous sûr de vouloir restaurer cette version ?"
+    },
+    "validation": {
+        "nameRequired": "Le nom du modèle est obligatoire",
+        "nameTooLong": "Le nom du modèle ne peut pas dépasser 255 caractères",
+        "typeRequired": "Veuillez sélectionner le type de modèle"
+    },
+    "filter": {
+        "allTypes": "Tous les types",
+        "allStatus": "Tous les statuts",
+        "search": "Rechercher..."
+    }
+}

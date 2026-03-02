@@ -1,0 +1,387 @@
+/**
+ * Setup Wizard CSS
+ * Kurulum sihirbazı stilleri
+ */
+
+/* Status Grid */
+.setup-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.setup-status-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.setup-status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.setup-status-card.loading {
+    justify-content: center;
+}
+
+.setup-status-card.error {
+    border-color: rgba(250, 82, 82, 0.3);
+    background: rgba(250, 82, 82, 0.05);
+}
+
+.status-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.status-card-icon.blue {
+    background: rgba(34, 139, 230, 0.15);
+    color: #228be6;
+}
+
+.status-card-icon.green {
+    background: rgba(64, 192, 87, 0.15);
+    color: #40c057;
+}
+
+.status-card-icon.orange {
+    background: rgba(255, 146, 43, 0.15);
+    color: #ff922b;
+}
+
+.status-card-icon.purple {
+    background: rgba(132, 94, 247, 0.15);
+    color: #845ef7;
+}
+
+.status-card-icon.indigo {
+    background: rgba(66, 99, 235, 0.15);
+    color: #4263eb;
+}
+
+.status-card-icon.teal {
+    background: rgba(18, 184, 134, 0.15);
+    color: #12b886;
+}
+
+.status-card-icon.red {
+    background: rgba(250, 82, 82, 0.15);
+    color: #fa5252;
+}
+
+.status-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.status-card-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* Spin animation */
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* @keyframes spin - global.css'de tanımlı */
+
+/* Seed Type Grid */
+.seed-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.seed-type-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-primary);
+}
+
+.seed-type-card:hover {
+    border-color: var(--color-primary);
+    background: rgba(34, 139, 230, 0.03);
+}
+
+.seed-type-card:has(input:checked) {
+    border-color: var(--color-primary);
+    background: rgba(34, 139, 230, 0.08);
+}
+
+.seed-type-card input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.seed-type-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: var(--bg-secondary);
+    color: var(--color-primary);
+}
+
+.seed-type-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.seed-type-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.seed-type-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Seed Options */
+.seed-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.seed-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.seed-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.seed-option span {
+    color: var(--text-primary);
+}
+
+/* Progress */
+.seed-progress {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.seed-progress.hidden {
+    display: none;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+#progress-text {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+#progress-percent {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), #4dabf7);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-details {
+    margin-top: 1rem;
+}
+
+/* Seed Results */
+.seed-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.seed-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-primary);
+    border-radius: 6px;
+}
+
+.result-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.result-stats {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.result-stats .stat {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+}
+
+.result-stats .stat.created {
+    background: rgba(64, 192, 87, 0.15);
+    color: #40c057;
+}
+
+.result-stats .stat.updated {
+    background: rgba(34, 139, 230, 0.15);
+    color: #228be6;
+}
+
+.result-stats .stat.skipped {
+    background: rgba(134, 142, 150, 0.15);
+    color: #868e96;
+}
+
+.result-stats .stat.errors {
+    background: rgba(250, 82, 82, 0.15);
+    color: #fa5252;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Info Box */
+.info-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 10px;
+}
+
+.info-box-blue {
+    background: rgba(34, 139, 230, 0.1);
+    border: 1px solid rgba(34, 139, 230, 0.2);
+}
+
+.info-box-icon {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
+.info-box-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.info-box-content p {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.info-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.info-list li {
+    margin-bottom: 0.25rem;
+}
+
+/* Dark mode */
+.dark .setup-status-card,
+.dark .seed-type-card {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-light, #21262d);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .setup-status-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .seed-type-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .setup-status-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .seed-options-grid {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}

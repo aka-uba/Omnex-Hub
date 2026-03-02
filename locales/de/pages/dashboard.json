@@ -1,0 +1,325 @@
+{
+    "title": "Dashboard",
+    "subtitle": "Übersicht",
+    "breadcrumb": {
+        "panel": "Panel",
+        "analytics": "Analysen & Berichte"
+    },
+    "welcome": "Willkommen, {name}",
+    "welcomeDefault": "Benutzer",
+    "header": {
+        "systemAnalytics": "Systemanalysen",
+        "downloadReport": "Bericht herunterladen",
+        "refresh": "Aktualisieren"
+    },
+    "stats": {
+        "totalProducts": "Gesamtanzahl Produkte",
+        "updatedIn24h": "In den letzten 24 Stunden aktualisiert",
+        "inLast30Days": "In den letzten 30 Tagen",
+        "inThisPeriod": "In diesem Zeitraum",
+        "activeDevices": "Aktive Geräte",
+        "online": "Online",
+        "offline": "Offline",
+        "labelUpdates": "Etikettenaktualisierungen",
+        "licenseStatus": "Lizenzstatus",
+        "critical": "Kritisch",
+        "licensesExpiring": "{count} Lizenzen laufen ab",
+        "allLicensesActive": "Alle Lizenzen aktiv",
+        "storage": "Speicher",
+        "unlimited": "Unbegrenzt",
+        "unlimitedStorage": "Unbegrenzter Speicher",
+        "used": "Verwendet",
+        "remaining": "Verbleibend",
+        "errorRate": "Fehlerrate",
+        "belowIndustryAvg": "Unter dem Branchendurchschnitt"
+    },
+    "gateways": {
+        "noDevices": "Noch keine registrierten Geräte",
+        "addDevice": "Gerät hinzufügen",
+        "onlineDevices": "Online-Geräte",
+        "deviceActive": "{count} Geräte aktiv",
+        "offlineDevices": "Offline-Geräte",
+        "deviceOffline": "{count} Geräte offline",
+        "waitingConnection": "Warten auf Verbindung",
+        "allOnline": "Alle online",
+        "totalDevices": "Gesamtanzahl Geräte",
+        "registeredDevices": "{count} registrierte Geräte",
+        "manage": "Verwalten",
+        "deviceGroups": "Gerätegruppen",
+        "devices": "{count} Geräte"
+    },
+    "widgets": {
+        "products": {
+            "title": "Gesamtanzahl Produkte",
+            "subtitle": "Anzahl der registrierten Produkte"
+        },
+        "devices": {
+            "title": "Geräte",
+            "online": "Online",
+            "offline": "Offline",
+            "pending": "Ausstehend"
+        },
+        "templates": {
+            "title": "Vorlagen",
+            "subtitle": "Anzahl der aktiven Vorlagen"
+        },
+        "users": {
+            "title": "Benutzer",
+            "subtitle": "Anzahl der aktiven Benutzer"
+        },
+        "queue": {
+            "title": "Warteschlange",
+            "pending": "Ausstehend"
+        },
+        "sync": {
+            "title": "Synchronisierung",
+            "today": "Heute",
+            "success": "Erfolgreich",
+            "pending": "Ausstehend",
+            "failed": "Fehlgeschlagen"
+        }
+    },
+    "recentActivity": {
+        "title": "Letzte Aktivitäten",
+        "empty": "Noch keine Aktivitätsprotokolle",
+        "emptyHint": "Systemtransaktionen werden hier aufgelistet",
+        "viewAll": "Alle anzeigen",
+        "exportAll": "ALLE DATENSÄTZE EXPORTIEREN"
+    },
+    "quickActions": {
+        "title": "Schnellaktionen",
+        "addProduct": "Produkt hinzufügen",
+        "addDevice": "Gerät hinzufügen",
+        "createTemplate": "Vorlage erstellen",
+        "importProducts": "Produkte importieren"
+    },
+    "charts": {
+        "productsByCategory": "Produkte nach Kategorie",
+        "deviceStatus": "Gerätestatus",
+        "syncActivity": "Synchronisierungsaktivität",
+        "labelSync": "Etikettensynchronisierung",
+        "labelUpdates": "Etikettenaktualisierungen",
+        "loading": "Diagrammdaten werden geladen...",
+        "loadingDays": "Lade Daten der letzten {days} Tage...",
+        "noData": "Keine Daten gefunden",
+        "noChartData": "Keine Diagrammdaten gefunden",
+        "loadError": "Diagrammdaten konnten nicht geladen werden",
+        "onlineDevices": "Online",
+        "offlineDevices": "Offline",
+        "barTooltip": "{date}: {online} online, {offline} offline",
+        "totalUpdates": "Gesamtanzahl Aktualisierungen",
+        "dailyAverage": "Tagesdurchschnitt",
+        "updates": "Aktualisierungen",
+        "noDevices": "Noch keine registrierten Geräte"
+    },
+    "period": {
+        "last7Days": "Letzte 7 Tage",
+        "last30Days": "Letzte 30 Tage",
+        "last90Days": "Letzte 90 Tage",
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "daysAgo": "vor {count} Tagen"
+    },
+    "activity": {
+        "titles": {
+            "login": "Benutzeranmeldung",
+            "logout": "Benutzerabmeldung",
+            "create": "Neuer Datensatz",
+            "update": "Aktualisierung",
+            "delete": "Löschung",
+            "sync": "Synchronisierung",
+            "import": "Import",
+            "export": "Export",
+            "send": "Versand",
+            "error": "Fehler",
+            "system": "Systemvorgang",
+            "bulkPriceUpdate": "Massenpreisaktualisierung",
+            "deviceSync": "Gerätesynchronisierung",
+            "productImport": "Produktimport",
+            "connectionWarning": "Verbindungswarnung"
+        },
+        "resources": {
+            "products": "Produkt",
+            "devices": "Gerät",
+            "templates": "Vorlage",
+            "users": "Benutzer",
+            "companies": "Unternehmen",
+            "categories": "Kategorie",
+            "media": "Medium",
+            "playlists": "Playlist",
+            "schedules": "Zeitplan"
+        },
+        "descriptions": {
+            "login": "{user} hat sich angemeldet",
+            "logout": "{user} hat sich abgemeldet",
+            "create": "{user} hat neues {resource} erstellt",
+            "update": "{user} hat {resource} aktualisiert",
+            "delete": "{user} hat {resource} gelöscht",
+            "import": "{user} hat {resource} importiert",
+            "send": "{user} hat Inhalte an Gerät gesendet",
+            "export": "{user} hat Daten exportiert",
+            "sync": "{user} hat Synchronisierung durchgeführt"
+        },
+        "messages": {
+            "productCreated": "{count} neue Produkte hinzugefügt",
+            "productUpdated": "{count} Produkte aktualisiert",
+            "productDeleted": "{count} Produkte gelöscht",
+            "deviceCreated": "Neues Gerät hinzugefügt",
+            "deviceUpdated": "Gerät aktualisiert",
+            "syncCompleted": "Synchronisierung abgeschlossen",
+            "importCompleted": "{count} Datensätze importiert",
+            "bulkPriceUpdate": "Preisaktualisierung für {count} Produkte durchgeführt.",
+            "allDevicesSynced": "Alle ESL-Geräte erfolgreich synchronisiert.",
+            "productsImportedFromERP": "{count} neue Produkte aus ERP-System importiert.",
+            "gatewayConnectionIssue": "{gateway} Verbindung vorübergehend unterbrochen und wiederhergestellt."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "Gerätestatus",
+            "online": "Online",
+            "offline": "Offline",
+            "offlineDevices": "Offline-Geräte",
+            "noOffline": "Alle Geräte online",
+            "lastSeen": "Zuletzt gesehen",
+            "viewAll": "Alle anzeigen",
+            "noDevices": "Noch keine Geräte"
+        },
+        "recentActivities": {
+            "title": "Letzte Aktivitäten",
+            "viewAll": "Alle anzeigen",
+            "empty": "Noch keine Aktivitäten"
+        },
+        "renderQueue": {
+            "title": "Render-Warteschlange",
+            "successRate": "Erfolgsrate",
+            "avgTime": "Durchschn. Zeit",
+            "pending": "Ausstehend",
+            "priorityDistribution": "Prioritätsverteilung",
+            "urgent": "Dringend",
+            "high": "Hoch",
+            "normal": "Normal",
+            "low": "Niedrig",
+            "detail": "Detail",
+            "noData": "Keine Warteschlangendaten",
+            "seconds": "Sek"
+        },
+        "products": {
+            "title": "Produkte",
+            "total": "Gesamtanzahl Produkte",
+            "deviceAssigned": "Gerät zugewiesen",
+            "templateAssigned": "Vorlage zugewiesen",
+            "categories": "Kategorien",
+            "lastUpdated": "Zuletzt aktualisiert",
+            "viewAll": "Alle anzeigen"
+        },
+        "templates": {
+            "title": "Vorlagen",
+            "total": "Gesamtanzahl Vorlagen",
+            "system": "Systemvorlagen",
+            "byType": "Nach Typ",
+            "label": "Etikett",
+            "signage": "Signage",
+            "tv": "TV",
+            "poster": "Poster",
+            "manage": "Verwalten"
+        },
+        "media": {
+            "title": "Medienbibliothek",
+            "totalFiles": "Gesamtanzahl Dateien",
+            "shared": "Geteilt",
+            "companyOnly": "Nur Unternehmen",
+            "storageUsage": "Speichernutzung",
+            "browse": "Durchsuchen"
+        },
+        "detailedDevice": {
+            "title": "Detaillierte Geräteinformationen",
+            "byType": "Nach Typ",
+            "byBranch": "Nach Filiale",
+            "esl": "ESL",
+            "eslAndroid": "Android ESL",
+            "eslRtos": "RTOS ESL",
+            "androidTv": "Android TV",
+            "tablet": "Tablet",
+            "webDisplay": "Web-Display",
+            "pwaPlayer": "PWA Player",
+            "manage": "Verwalten",
+            "noBranch": "Keine Filialinformationen"
+        },
+        "signage": {
+            "title": "Digital Signage",
+            "connectedDevices": "Verbundene Geräte",
+            "totalPlaylists": "Gesamtanzahl Playlists",
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "playlistItems": "Playlist-Elemente",
+            "assignedDevices": "Zugewiesene Geräte",
+            "manage": "Verwalten",
+            "noData": "Keine Signage-Daten"
+        },
+        "companyLicense": {
+            "title": "Unternehmen & Lizenz",
+            "company": "Unternehmen",
+            "license": "Lizenz",
+            "branches": "Filialen",
+            "users": "Benutzer",
+            "activeSessions": "aktive Sitzungen",
+            "eslLimit": "ESL-Limit",
+            "tvLimit": "TV-Limit",
+            "deviceLimit": "Gerätelimit",
+            "storageLimit": "Speicher",
+            "daysRemaining": "{count} Tage verbleibend",
+            "expired": "Abgelaufen",
+            "unlimited": "Unbegrenzt",
+            "noLimit": "Kein Limit",
+            "noLicense": "Keine Lizenzinformationen",
+            "noCompany": "Keine Unternehmensinformationen"
+        },
+        "integrations": {
+            "title": "Integrationen",
+            "tamsoft": "TAMSOFT ERP",
+            "hal": "HAL Badge",
+            "hanshow": "Hanshow ESL",
+            "payment": "Zahlungssystem",
+            "active": "Aktiv",
+            "configured": "Konfiguriert",
+            "notConfigured": "Nicht konfiguriert",
+            "disabled": "Deaktiviert",
+            "lastSync": "Letzte Synchronisierung"
+        }
+    },
+    "toast": {
+        "refreshed": "Dashboard aktualisiert",
+        "refreshError": "Fehler beim Aktualisieren des Dashboards",
+        "reportPreparing": "Bericht wird vorbereitet...",
+        "reportDownloaded": "Bericht erfolgreich heruntergeladen",
+        "reportError": "Bericht konnte nicht heruntergeladen werden",
+        "downloading": "Wird heruntergeladen...",
+        "activityPreparing": "Aktivitätsprotokolle werden vorbereitet...",
+        "activityExported": "{count} Aktivitätsprotokolle exportiert",
+        "activityExportError": "Aktivitätsprotokolle konnten nicht exportiert werden",
+        "noActivityToExport": "Keine Aktivitätsprotokolle zum Exportieren gefunden",
+        "loadError": "Beim Laden der Daten ist ein Fehler aufgetreten"
+    },
+    "export": {
+        "headers": {
+            "date": "Datum",
+            "user": "Benutzer",
+            "action": "Aktion",
+            "resource": "Ressource",
+            "details": "Details",
+            "ipAddress": "IP-Adresse",
+            "metric": "Metrik",
+            "value": "Wert",
+            "totalProduct": "Gesamtanzahl Produkte",
+            "totalDevice": "Gesamtanzahl Geräte",
+            "onlineDevice": "Online-Geräte",
+            "labelUpdate": "Etikettenaktualisierungen",
+            "todayUpdates": "Heutige Aktualisierungen",
+            "templateCount": "Anzahl Vorlagen",
+            "categoryCount": "Anzahl Kategorien",
+            "errorRate": "Fehlerrate"
+        },
+        "system": "System"
+    }
+}

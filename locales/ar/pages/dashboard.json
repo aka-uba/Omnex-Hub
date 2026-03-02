@@ -1,0 +1,325 @@
+{
+    "title": "لوحة القيادة",
+    "subtitle": "ملخص",
+    "breadcrumb": {
+        "panel": "لوحة",
+        "analytics": "التحليلات والتقارير"
+    },
+    "welcome": "مرحبًا، {name}",
+    "welcomeDefault": "مستخدم",
+    "header": {
+        "systemAnalytics": "تحليلات النظام",
+        "downloadReport": "تنزيل التقرير",
+        "refresh": "ينعش"
+    },
+    "stats": {
+        "totalProducts": "إجمالي المنتجات",
+        "updatedIn24h": "تم التحديث خلال 24 ساعة الماضية",
+        "inLast30Days": "في آخر 30 يومًا",
+        "inThisPeriod": "في هذه الفترة",
+        "activeDevices": "الأجهزة النشطة",
+        "online": "متصل",
+        "offline": "غير متصل",
+        "labelUpdates": "تحديثات التسمية",
+        "licenseStatus": "حالة الترخيص",
+        "critical": "شديد الأهمية",
+        "licensesExpiring": "{count} التراخيص على وشك الانتهاء",
+        "allLicensesActive": "جميع التراخيص نشطة",
+        "storage": "تخزين",
+        "unlimited": "غير محدود",
+        "unlimitedStorage": "تخزين غير محدود",
+        "used": "مستخدم",
+        "remaining": "متبقي",
+        "errorRate": "معدل الخطأ",
+        "belowIndustryAvg": "أقل من متوسط ​​الصناعة"
+    },
+    "gateways": {
+        "noDevices": "لا توجد أجهزة مسجلة حتى الآن",
+        "addDevice": "إضافة جهاز",
+        "onlineDevices": "أجهزة الانترنت",
+        "deviceActive": "{count} الأجهزة النشطة",
+        "offlineDevices": "الأجهزة غير المتصلة بالإنترنت",
+        "deviceOffline": "{count} الأجهزة غير متصلة بالإنترنت",
+        "waitingConnection": "في انتظار الاتصال",
+        "allOnline": "كل ذلك عبر الإنترنت",
+        "totalDevices": "إجمالي الأجهزة",
+        "registeredDevices": "{count} الأجهزة المسجلة",
+        "manage": "يدير",
+        "deviceGroups": "مجموعات الأجهزة",
+        "devices": "{count} الأجهزة"
+    },
+    "widgets": {
+        "products": {
+            "title": "إجمالي المنتجات",
+            "subtitle": "عدد المنتجات المسجلة"
+        },
+        "devices": {
+            "title": "الأجهزة",
+            "online": "متصل",
+            "offline": "غير متصل",
+            "pending": "قيد الانتظار"
+        },
+        "templates": {
+            "title": "قوالب",
+            "subtitle": "عدد القوالب النشطة"
+        },
+        "users": {
+            "title": "المستخدمين",
+            "subtitle": "عدد المستخدمين النشطين"
+        },
+        "queue": {
+            "title": "طابور",
+            "pending": "قيد الانتظار"
+        },
+        "sync": {
+            "title": "التزامن",
+            "today": "اليوم",
+            "success": "ناجح",
+            "pending": "قيد الانتظار",
+            "failed": "فشل"
+        }
+    },
+    "recentActivity": {
+        "title": "الأنشطة الأخيرة",
+        "empty": "لا توجد سجلات النشاط حتى الآن",
+        "emptyHint": "سيتم إدراج معاملات النظام هنا",
+        "viewAll": "عرض الكل",
+        "exportAll": "تصدير كافة السجلات"
+    },
+    "quickActions": {
+        "title": "إجراءات سريعة",
+        "addProduct": "أضف منتج",
+        "addDevice": "إضافة جهاز",
+        "createTemplate": "إنشاء قالب",
+        "importProducts": "استيراد المنتجات"
+    },
+    "charts": {
+        "productsByCategory": "المنتجات حسب الفئة",
+        "deviceStatus": "حالة الجهاز",
+        "syncActivity": "نشاط المزامنة",
+        "labelSync": "مزامنة التسمية",
+        "labelUpdates": "تحديثات التسمية",
+        "loading": "جارٍ تحميل بيانات المخطط...",
+        "loadingDays": "جارٍ تحميل آخر {days} يوم من البيانات...",
+        "noData": "لم يتم العثور على بيانات",
+        "noChartData": "لم يتم العثور على بيانات الرسم البياني",
+        "loadError": "فشل تحميل بيانات المخطط",
+        "onlineDevices": "متصل",
+        "offlineDevices": "غير متصل",
+        "barTooltip": "{date}: {online} متصل، {offline} غير متصل",
+        "totalUpdates": "إجمالي التحديثات",
+        "dailyAverage": "المتوسط ​​اليومي",
+        "updates": "التحديثات",
+        "noDevices": "لا توجد أجهزة مسجلة حتى الآن"
+    },
+    "period": {
+        "last7Days": "آخر 7 أيام",
+        "last30Days": "آخر 30 يومًا",
+        "last90Days": "آخر 90 يومًا",
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "daysAgo": "{count} قبل أيام"
+    },
+    "activity": {
+        "titles": {
+            "login": "تسجيل دخول المستخدم",
+            "logout": "تسجيل خروج المستخدم",
+            "create": "سجل جديد",
+            "update": "تحديث",
+            "delete": "الحذف",
+            "sync": "التزامن",
+            "import": "يستورد",
+            "export": "يصدّر",
+            "send": "يرسل",
+            "error": "خطأ",
+            "system": "تشغيل النظام",
+            "bulkPriceUpdate": "تحديث الأسعار بالجملة",
+            "deviceSync": "مزامنة الجهاز",
+            "productImport": "استيراد المنتج",
+            "connectionWarning": "تحذير الاتصال"
+        },
+        "resources": {
+            "products": "منتج",
+            "devices": "جهاز",
+            "templates": "نموذج",
+            "users": "مستخدم",
+            "companies": "شركة",
+            "categories": "فئة",
+            "media": "وسائط",
+            "playlists": "قائمة التشغيل",
+            "schedules": "جدول"
+        },
+        "descriptions": {
+            "login": "{user} تم تسجيل الدخول",
+            "logout": "{user} تم تسجيل الخروج",
+            "create": "{user} تم إنشاء {resource} جديد",
+            "update": "تم تحديث {user} {resource}",
+            "delete": "{user} تم حذفه {resource}",
+            "import": "{user} مستورد {resource}",
+            "send": "{user} أرسل محتوى إلى الجهاز",
+            "export": "{user} قام بتصدير البيانات",
+            "sync": "{user} أجرى المزامنة"
+        },
+        "messages": {
+            "productCreated": "تمت إضافة {count} منتجات جديدة",
+            "productUpdated": "تم تحديث منتجات {count}",
+            "productDeleted": "{count} تم حذف المنتجات",
+            "deviceCreated": "تمت إضافة جهاز جديد",
+            "deviceUpdated": "تم تحديث الجهاز",
+            "syncCompleted": "اكتملت المزامنة",
+            "importCompleted": "{count} السجلات المستوردة",
+            "bulkPriceUpdate": "تم إجراء تحديث الأسعار لمنتجات {count}.",
+            "allDevicesSynced": "تمت مزامنة جميع أجهزة ESL بنجاح.",
+            "productsImportedFromERP": "{count} المنتجات الجديدة المستوردة من نظام تخطيط موارد المؤسسات (ERP).",
+            "gatewayConnectionIssue": "{gateway} انقطع الاتصال مؤقتًا وأعيد تأسيسه."
+        }
+    },
+    "cards": {
+        "deviceStatus": {
+            "title": "حالة الجهاز",
+            "online": "متصل",
+            "offline": "غير متصل",
+            "offlineDevices": "الأجهزة غير المتصلة بالإنترنت",
+            "noOffline": "جميع الأجهزة على الانترنت",
+            "lastSeen": "شوهد آخر مرة",
+            "viewAll": "عرض الكل",
+            "noDevices": "لا توجد أجهزة حتى الآن"
+        },
+        "recentActivities": {
+            "title": "الأنشطة الأخيرة",
+            "viewAll": "عرض الكل",
+            "empty": "لا توجد أنشطة حتى الآن"
+        },
+        "renderQueue": {
+            "title": "تقديم قائمة الانتظار",
+            "successRate": "معدل النجاح",
+            "avgTime": "متوسط وقت",
+            "pending": "قيد الانتظار",
+            "priorityDistribution": "توزيع الأولويات",
+            "urgent": "عاجل",
+            "high": "عالي",
+            "normal": "طبيعي",
+            "low": "قليل",
+            "detail": "التفاصيل",
+            "noData": "لا توجد بيانات قائمة الانتظار",
+            "seconds": "ثانية"
+        },
+        "products": {
+            "title": "منتجات",
+            "total": "إجمالي المنتجات",
+            "deviceAssigned": "المخصصة للجهاز",
+            "templateAssigned": "المخصصة للقالب",
+            "categories": "فئات",
+            "lastUpdated": "آخر تحديث",
+            "viewAll": "عرض الكل"
+        },
+        "templates": {
+            "title": "قوالب",
+            "total": "إجمالي القوالب",
+            "system": "قوالب النظام",
+            "byType": "حسب النوع",
+            "label": "ملصق",
+            "signage": "لافتات",
+            "tv": "تلفزيون",
+            "poster": "ملصق",
+            "manage": "يدير"
+        },
+        "media": {
+            "title": "مكتبة الوسائط",
+            "totalFiles": "إجمالي الملفات",
+            "shared": "مشترك",
+            "companyOnly": "الشركة فقط",
+            "storageUsage": "استخدام التخزين",
+            "browse": "تصفح"
+        },
+        "detailedDevice": {
+            "title": "معلومات الجهاز التفصيلية",
+            "byType": "حسب النوع",
+            "byBranch": "حسب الفرع",
+            "esl": "اللغة الإنجليزية كلغة ثانية",
+            "eslAndroid": "الروبوت الإنجليزية كلغة ثانية",
+            "eslRtos": "آرتوس الإنجليزية كلغة ثانية",
+            "androidTv": "تلفزيون أندرويد",
+            "tablet": "قرص",
+            "webDisplay": "عرض الويب",
+            "pwaPlayer": "مشغل بي دبليو ايه",
+            "manage": "يدير",
+            "noBranch": "لا توجد معلومات الفرع"
+        },
+        "signage": {
+            "title": "اللافتات الرقمية",
+            "connectedDevices": "الأجهزة المتصلة",
+            "totalPlaylists": "إجمالي قوائم التشغيل",
+            "active": "نشيط",
+            "inactive": "غير نشط",
+            "playlistItems": "عناصر قائمة التشغيل",
+            "assignedDevices": "الأجهزة المخصصة",
+            "manage": "يدير",
+            "noData": "لا توجد بيانات لافتات"
+        },
+        "companyLicense": {
+            "title": "الشركة والترخيص",
+            "company": "شركة",
+            "license": "رخصة",
+            "branches": "الفروع",
+            "users": "المستخدمين",
+            "activeSessions": "جلسات نشطة",
+            "eslLimit": "حد اللغة الإنجليزية كلغة ثانية",
+            "tvLimit": "حد التلفزيون",
+            "deviceLimit": "حد الجهاز",
+            "storageLimit": "تخزين",
+            "daysRemaining": "{count} من الأيام المتبقية",
+            "expired": "منتهي الصلاحية",
+            "unlimited": "غير محدود",
+            "noLimit": "لا يوجد حد",
+            "noLicense": "لا توجد معلومات الترخيص",
+            "noCompany": "لا توجد معلومات الشركة"
+        },
+        "integrations": {
+            "title": "التكامل",
+            "tamsoft": "تامسوفت لتخطيط موارد المؤسسات",
+            "hal": "شارة هال",
+            "hanshow": "هانشو ESL",
+            "payment": "نظام الدفع",
+            "active": "نشيط",
+            "configured": "تم تكوينه",
+            "notConfigured": "لم يتم تكوينه",
+            "disabled": "عاجز",
+            "lastSync": "آخر مزامنة"
+        }
+    },
+    "toast": {
+        "refreshed": "تم تحديث لوحة المعلومات",
+        "refreshError": "حدث خطأ أثناء تحديث لوحة القيادة",
+        "reportPreparing": "جارٍ إعداد التقرير...",
+        "reportDownloaded": "تم تنزيل التقرير بنجاح",
+        "reportError": "فشل في تنزيل التقرير",
+        "downloading": "جارٍ التنزيل...",
+        "activityPreparing": "تحضير سجلات النشاط...",
+        "activityExported": "{count} تم تصدير سجلات النشاط",
+        "activityExportError": "فشل تصدير سجلات النشاط",
+        "noActivityToExport": "لم يتم العثور على سجلات نشاط للتصدير",
+        "loadError": "حدث خطأ أثناء تحميل البيانات"
+    },
+    "export": {
+        "headers": {
+            "date": "تاريخ",
+            "user": "مستخدم",
+            "action": "فعل",
+            "resource": "الموارد",
+            "details": "تفاصيل",
+            "ipAddress": "عنوان IP",
+            "metric": "متري",
+            "value": "قيمة",
+            "totalProduct": "إجمالي المنتجات",
+            "totalDevice": "إجمالي الأجهزة",
+            "onlineDevice": "أجهزة الانترنت",
+            "labelUpdate": "تحديثات التسمية",
+            "todayUpdates": "تحديثات اليوم",
+            "templateCount": "عدد القالب",
+            "categoryCount": "عدد الفئات",
+            "errorRate": "معدل الخطأ"
+        },
+        "system": "نظام"
+    }
+}

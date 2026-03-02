@@ -1,0 +1,1203 @@
+{
+    "title": "Ayarlar",
+    "subtitle": "Sistem ayarlarını yapılandırın",
+    "breadcrumb": {
+        "panel": "Panel",
+        "settings": "Ayarlar",
+        "general": "Genel Ayarlar",
+        "users": "Kullanıcı Ayarları",
+        "integrations": "Entegrasyonlar",
+        "labels": "Etiket Boyutları"
+    },
+    "nav": {
+        "general": "Genel",
+        "users": "Kullanıcılar",
+        "integrations": "Entegrasyonlar"
+    },
+    "profile": {
+        "title": "Profil",
+        "subtitle": "Kişisel bilgilerinizi ve hesap ayarlarınızı yönetin",
+        "loadFailed": "Kullanıcı bilgileri yüklenemedi",
+        "personalInfo": "Kişisel Bilgiler",
+        "changePassword": "Şifre Değiştir",
+        "changePasswordBtn": "Şifre Değiştir",
+        "accountInfo": "Hesap Bilgileri",
+        "company": "Şirket",
+        "role": "Rol",
+        "createdAt": "Hesap Oluşturma",
+        "lastLogin": "Son Giriş",
+        "form": {
+            "firstName": "Ad",
+            "lastName": "Soyad",
+            "email": "E-posta",
+            "phone": "Telefon",
+            "currentPassword": "Mevcut Şifre",
+            "newPassword": "Yeni Şifre",
+            "confirmPassword": "Yeni Şifre (Tekrar)"
+        },
+        "avatar": {
+            "title": "Profil Fotoğrafı",
+            "selectFile": "Dosya Seç",
+            "remove": "Fotoğrafı Kaldır"
+        },
+        "toast": {
+            "updated": "Profil güncellendi",
+            "avatarUpdated": "Profil fotoğrafı güncellendi",
+            "avatarRemoved": "Profil fotoğrafı kaldırıldı",
+            "passwordChanged": "Şifre başarıyla değiştirildi"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "Süper Yönetici",
+        "Admin": "Yönetici",
+        "Manager": "Müdür",
+        "Editor": "Editör",
+        "Viewer": "İzleyici"
+    },
+    "users": {
+        "title": "Kullanıcılar",
+        "subtitle": "Kullanıcıları yönetin ve düzenleyin",
+        "addUser": "Kullanıcı Ekle",
+        "editUser": "Kullanıcı Düzenle",
+        "deleteUser": "Kullanıcı Sil",
+        "noUsers": "Henüz kullanıcı bulunmuyor",
+        "table": {
+            "user": "Kullanıcı",
+            "email": "E-posta",
+            "role": "Rol",
+            "status": "Durum"
+        },
+        "status": {
+            "active": "Aktif",
+            "inactive": "Pasif"
+        },
+        "fields": {
+            "firstName": "Ad",
+            "lastName": "Soyad",
+            "email": "E-posta",
+            "password": "Şifre",
+            "role": "Rol"
+        },
+        "placeholders": {
+            "selectRole": "Rol seçin"
+        },
+        "roles": {
+            "admin": "Yönetici",
+            "editor": "Editör",
+            "viewer": "İzleyici"
+        },
+        "deleteConfirm": "Bu kullanıcıyı silmek istediğinize emin misiniz?",
+        "toast": {
+            "created": "Kullanıcı oluşturuldu",
+            "updated": "Kullanıcı güncellendi",
+            "deleted": "Kullanıcı silindi"
+        }
+    },
+    "saveChanges": "Değişiklikleri Kaydet",
+    "tabs": {
+        "general": "Genel",
+        "branding": "Marka",
+        "email": "E-posta / SMTP",
+        "barcode": "Barkod"
+    },
+    "general": {
+        "title": "Genel Ayarlar",
+        "subtitle": "Sistem genel yapılandırma ayarları",
+        "sections": {
+            "company": "Şirket Bilgileri",
+            "system": "Sistem Ayarları",
+            "locale": "Bölgesel Ayarlar",
+            "appearance": "Görünüm"
+        },
+        "fields": {
+            "companyName": "Şirket Adı",
+            "companyPhone": "Telefon",
+            "companyAddress": "Adres",
+            "timezone": "Saat Dilimi",
+            "language": "Dil",
+            "currency": "Para Birimi",
+            "dateFormat": "Tarih Formatı",
+            "theme": "Tema"
+        },
+        "placeholders": {
+            "companyName": "Şirket adı",
+            "companyPhone": "+90 xxx xxx xx xx",
+            "companyAddress": "Şirket adresi"
+        },
+        "languages": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "currencies": {
+            "TRY": "Türk Lirası (₺)",
+            "USD": "ABD Doları ($)",
+            "EUR": "Euro (€)",
+            "GBP": "İngiliz Sterlini (£)",
+            "RUB": "Rus Rublesi (₽)",
+            "AZN": "Azerbaycan Manatı (₼)"
+        },
+        "themes": {
+            "light": "Aydınlık",
+            "dark": "Karanlık",
+            "auto": "Otomatik"
+        }
+    },
+    "branding": {
+        "title": "Sistem Marka Görselleri",
+        "description": "Sistemin varsayılan marka görselleri burada görüntülenmektedir. Bu görseller salt okunurdur ve sadece geliştirici tarafından public/branding klasöründen manuel olarak değiştirilebilir. Firma bazlı görseller için Firma Yönetimi sayfasını kullanın.",
+        "logoLight": "Logo (Açık Tema)",
+        "logoDark": "Logo (Koyu Tema)",
+        "favicon": "Favicon",
+        "pwaIcon": "PWA İkonu",
+        "file": "Dosya"
+    },
+    "email": {
+        "smtp": {
+            "title": "SMTP Ayarları",
+            "testButton": "Test Maili Gönder",
+            "testing": "Gönderiliyor...",
+            "fields": {
+                "host": "SMTP Sunucu",
+                "port": "Port",
+                "username": "Kullanıcı Adı",
+                "password": "Şifre",
+                "encryption": "Şifreleme",
+                "fromName": "Gönderen Adı",
+                "fromEmail": "Gönderen E-posta",
+                "testEmail": "Test E-posta Adresi"
+            },
+            "placeholders": {
+                "host": "smtp.example.com",
+                "port": "587",
+                "username": "user@example.com",
+                "password": "********",
+                "fromName": "Omnex Display Hub",
+                "fromEmail": "noreply@example.com",
+                "testEmail": "test@example.com"
+            },
+            "hints": {
+                "testEmail": "Boş bırakılırsa hesabınızdaki e-posta adresine gönderilir"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "SSL",
+                "none": "Yok"
+            }
+        },
+        "templates": {
+            "title": "E-posta Şablonları",
+            "comingSoon": "E-posta şablonu düzenleme özelliği yakında eklenecek",
+            "welcome": {
+                "title": "Hoşgeldiniz E-postası",
+                "description": "Yeni kullanıcı kayıtlarında gönderilir"
+            },
+            "passwordReset": {
+                "title": "Şifre Sıfırlama",
+                "description": "Şifre sıfırlama isteklerinde gönderilir"
+            },
+            "errorNotification": {
+                "title": "Hata Bildirimi",
+                "description": "Sistem hataları için gönderilir"
+            }
+        }
+    },
+    "integrations": {
+        "title": "Entegrasyonlar",
+        "subtitle": "Dış sistem entegrasyonlarını yapılandırın",
+        "configure": "Yapılandır",
+        "tabs": {
+            "esl": "ESL Sistemleri",
+            "erp": "ERP",
+            "api": "API",
+            "import": "Dosya Import",
+            "mqtt": "MQTT Broker",
+            "payment": "Ödeme Sistemi"
+        },
+        "import": {
+            "loading": "Yükleniyor...",
+            "settingsTitle": "Import Ayarları",
+            "settingsDescription": "ERP ve harici sistemlerden dosya tabanlı ürün aktarımı ayarlarını yapılandırın.",
+            "enabled": "Dosya Import Aktif",
+            "autoImport": "Otomatik Import",
+            "autoImportHint": "Aktif edildiğinde, import dizinindeki dosyalar belirlenen aralıklarla otomatik import edilir.",
+            "checkInterval": "Kontrol Aralığı",
+            "minutes": "dakika",
+            "maxFileSize": "Maksimum Dosya Boyutu",
+            "allowedFormats": "İzin Verilen Formatlar",
+            "importOptions": "Import Seçenekleri",
+            "updateExisting": "Mevcut ürünleri güncelle (SKU eşleşmesi)",
+            "createNew": "Yeni ürünler oluştur",
+            "skipErrors": "Hatalı satırları atla, diğerlerine devam et",
+            "triggerRender": "Import sonrası otomatik render tetikle",
+            "importDirectory": "Import Dizini",
+            "importDirectoryHint": "ERP dosyaları bu dizine gönderilmelidir. Otomatik import bu dizini tarar.",
+            "lastAutoImport": "Son Otomatik Import",
+            "testImport": "Dosya ile Test Et",
+            "redirectingToImport": "Ürün import sayfasına yönlendiriliyor...",
+            "settingsSaved": "Import ayarları kaydedildi",
+            "settingsSaveError": "Import ayarları kaydedilemedi",
+            "statusActive": "Aktif",
+            "statusAutoActive": "Otomatik Aktif",
+            "statusInactive": "Pasif",
+            "apiDocTitle": "ERP Dosya Gönderim API",
+            "apiDocDescription": "ERP sistemleri aşağıdaki API endpoint'ini kullanarak import dosyası gönderebilir.",
+            "apiEndpoint": "Upload Endpoint",
+            "apiAuth": "Kimlik Doğrulama",
+            "apiAuthHint": "API sekmesindeki API anahtarınızı kullanın.",
+            "apiAuthAlt": "Alternatif header:",
+            "apiExample": "cURL Örnekleri",
+            "apiExampleCsv": "CSV dosyası gönderme (Linux/Mac):",
+            "apiExampleJson": "JSON dosyası gönderme (alternatif header):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "Başarılı Yanıt (200)",
+            "apiResponseErrors": "Hata Yanıtları",
+            "apiErrorDesc": "Açıklama",
+            "apiError401": "Geçersiz veya eksik API anahtarı",
+            "apiError400": "Desteklenmeyen format, boyut aşımı veya dosya eksik",
+            "apiError403": "Dosya import bu firma için aktif değil",
+            "apiErrorDup": "Aynı dosya daha önce yüklenmiş (hash eşleşmesi)",
+            "apiFormats": "Desteklenen Formatlar",
+            "apiFormatsHint": "Dosyalar otomatik olarak format algılama ile parse edilir. Alan eşleştirmesi SmartFieldMapper ile otomatik yapılır.",
+            "apiFieldMapping": "Alan Eşleştirmesi",
+            "apiFieldMappingDesc": "Dosyanızdaki sütun başlıkları otomatik olarak ürün alanlarına eşleştirilir. Aşağıda yaygın örnekler:",
+            "apiFieldTarget": "Hedef Alan",
+            "apiFieldSample": "Tanınan Kaynak Sütun İsimleri",
+            "apiFieldMappingAuto": "SmartFieldMapper Türkçe, İngilizce ve yaygın ERP alan adlarını otomatik tanır. Varsayılan eşleştirmeler ayarlarda yapılandırılabilir.",
+            "historyTitle": "Import Geçmişi",
+            "historyLoading": "Geçmiş yükleniyor...",
+            "historyEmpty": "Henüz import geçmişi bulunmuyor.",
+            "historyFile": "Dosya",
+            "historySource": "Kaynak",
+            "historyStatus": "Durum",
+            "historyTotal": "Toplam",
+            "historyInserted": "Eklenen",
+            "historyUpdated": "Güncellenen",
+            "historyFailed": "Başarısız",
+            "historyDate": "Tarih",
+            "sourceAuto": "Otomatik",
+            "sourceManual": "Manuel",
+            "pendingFilesTitle": "Import Dizinindeki Dosyalar",
+            "pendingFilesDesc": "Firma import dizinindeki bekleyen dosyalar. Bir dosyayı seçerek manuel import başlatabilirsiniz.",
+            "pendingFilesEmpty": "Import dizininde bekleyen dosya bulunmuyor.",
+            "alreadyImported": "Zaten Import Edildi",
+            "importFile": "Import Et",
+            "fileFormat": "Format",
+            "fileSize": "Boyut",
+            "fileModified": "Değiştirilme",
+            "fileAction": "İşlem",
+            "defaultImportOptions": "Varsayılan Import Seçenekleri",
+            "defaultImportOptionsHint": "Bu seçenekler dosya import edilirken varsayılan olarak kullanılır. Her import sırasında değiştirilebilir.",
+            "importModalTitle": "Dosya Import",
+            "importModalOptions": "Import Seçenekleri",
+            "importModalDefaultsHint": "Seçenekler ayarlardaki varsayılan değerlerle önceden işaretlenmiştir. İsterseniz bu import için değiştirebilirsiniz.",
+            "savedMappingsWillBeUsed": "{count} kayıtlı alan eşleştirmesi kullanılacak",
+            "noSavedMappingsAutoDetect": "Kayıtlı eşleştirme yok, otomatik algılama kullanılacak",
+            "startImport": "Import Başlat",
+            "importConfirmTitle": "Dosya Import Onayı",
+            "importConfirmMessage": "\"{filename}\" dosyası import edilecek. Devam etmek istiyor musunuz?",
+            "importing": "Import ediliyor...",
+            "importError": "Import işlemi başarısız",
+            "importErrors": "Hatalar",
+            "importResultTitle": "Import Sonucu",
+            "mappingSource": "Eşleştirme Kaynağı",
+            "mappingSaved": "Kayıtlı Eşleştirmeler",
+            "mappingAuto": "Otomatik Algılama",
+            "configureMappings": "Alan Eşleştirmesi",
+            "configureMappingsTitle": "Varsayılan Alan Eşleştirmesi",
+            "configureMappingsDesc": "Import dosyalarındaki sütun başlıklarının hangi ürün alanlarına karşılık geldiğini belirleyin. Örnek bir dosya yükleyerek otomatik algılama yapabilirsiniz.",
+            "configureMappingsHint": "Kaynak sütun adlarını dosyanızdaki başlıklara göre girin. Boş bırakılan alanlar SmartFieldMapper ile otomatik eşleştirilmeye çalışılır.",
+            "mappingSourcePlaceholder": "Kaynak sütun adı (ör: STOK_KODU)",
+            "uploadSampleFile": "Örnek Dosya Yükle",
+            "autoDetectedMappings": "{count} alan otomatik eşleştirildi ({total} sütundan)",
+            "noAutoDetect": "Otomatik eşleştirme yapılamadı. Lütfen manuel olarak girin.",
+            "sampleFileFailed": "Örnek dosya analiz edilemedi",
+            "mappingsSaved": "{count} alan eşleştirmesi kaydedildi",
+            "savedMappings": "{count} alan eşleştirmesi kayıtlı",
+            "noMapping": "-- Eşleştirme Yok --",
+            "noPreviewData": "Önizleme verisi bulunamadı",
+            "mappingDragDrop": "Örnek dosyanızı buraya sürükleyin veya seçin",
+            "mappingFileHint": "Dosyanız analiz edilerek sütun başlıkları otomatik algılanacaktır.",
+            "mappingGridTitle": "Alan Eşleştirmesi",
+            "mappingPreviewTitle": "Veri Önizleme",
+            "fields": {
+                "sku": "SKU / Stok Kodu",
+                "name": "Ürün Adı",
+                "barcode": "Barkod",
+                "slug": "Slug",
+                "kunyeNo": "Künye No",
+                "category": "Kategori",
+                "subcategory": "Alt Kategori",
+                "brand": "Marka",
+                "origin": "Menşei",
+                "productionType": "Üretim Şekli",
+                "description": "Açıklama",
+                "currentPrice": "Satış Fiyatı",
+                "previousPrice": "Eski Fiyat",
+                "priceValidUntil": "Fiyat Geçerlilik",
+                "priceUpdatedAt": "Fiyat Güncelleme",
+                "previousPriceUpdatedAt": "Eski Fiyat Güncelleme",
+                "vatRate": "KDV Oranı",
+                "discountPercent": "İndirim %",
+                "campaignText": "Kampanya Metni",
+                "unit": "Birim",
+                "stock": "Stok",
+                "weight": "Ağırlık",
+                "shelfLocation": "Raf Konumu",
+                "supplierCode": "Tedarikçi Kodu",
+                "validFrom": "Geçerlilik Başlangıcı",
+                "validUntil": "Geçerlilik Bitişi",
+                "status": "Durum",
+                "isFeatured": "Öne Çıkan",
+                "imageUrl": "Görsel URL",
+                "images": "Görseller",
+                "videos": "Videolar",
+                "videoUrl": "Video URL",
+                "storageInfo": "Depolama Bilgisi",
+                "group": "Grup",
+                "erpId": "ERP ID"
+            },
+            "status": {
+                "pending": "Bekliyor",
+                "processing": "İşleniyor",
+                "completed": "Tamamlandı",
+                "failed": "Başarısız",
+                "skipped": "Atlandı"
+            }
+        },
+        "mqtt": {
+            "title": "MQTT Broker Ayarları",
+            "description": "MQTT modunda çalışan ESL cihazları için broker bağlantı ayarları",
+            "brokerUrl": "Broker URL",
+            "brokerUrlPlaceholder": "localhost veya IP adresi",
+            "brokerPort": "Port",
+            "useTls": "TLS Kullan",
+            "useTlsHelp": "Şifreli bağlantı için aktifleştirin (port 8883)",
+            "username": "Kullanıcı Adı",
+            "usernamePlaceholder": "Opsiyonel",
+            "password": "Şifre",
+            "passwordPlaceholder": "Opsiyonel",
+            "topicPrefix": "Topic Prefix",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "Sağlayıcı",
+            "providers": {
+                "mosquitto": "Mosquitto (Lokal)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "Özel"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "Otomatik oluşturulur",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "Opsiyonel - Sign doğrulama için",
+            "contentServerUrl": "İçerik Sunucu URL",
+            "contentServerUrlPlaceholder": "Otomatik doldurulur",
+            "reportServerUrl": "Rapor Sunucu URL",
+            "reportServerUrlPlaceholder": "Otomatik doldurulur",
+            "status": "Durum",
+            "statuses": {
+                "active": "Aktif",
+                "testing": "Test",
+                "disabled": "Devre Dışı"
+            },
+            "testConnection": "Bağlantıyı Test Et",
+            "testing": "Test ediliyor...",
+            "connectionSuccess": "Broker bağlantısı başarılı ({time}ms)",
+            "connectionFailed": "Broker bağlantısı başarısız",
+            "saved": "MQTT ayarları kaydedildi",
+            "saveFailed": "MQTT ayarları kaydedilemedi",
+            "loading": "Yükleniyor...",
+            "notConfigured": "Yapılandırılmadı",
+            "configured": "Yapılandırıldı",
+            "lastConnected": "Son Bağlantı",
+            "never": "Hiç bağlanılmadı",
+            "save": "Kaydet",
+            "infoTitle": "MQTT Hakkında",
+            "infoText": "MQTT, IoT cihazları için hafif bir mesajlaşma protokolüdür. CLIENT modunda çalışan ESL cihazları (sunucu portu açmayan) MQTT broker üzerinden komut alır ve durum bildirir.",
+            "setupSteps": "Kurulum Adımları",
+            "step1": "Mosquitto veya başka bir MQTT broker kurun",
+            "step2": "Broker URL ve port bilgilerini girin",
+            "step3": "Bağlantıyı test edin",
+            "step4": "Cihazları BLE ile MQTT moduna yapılandırın"
+        },
+        "debug": {
+            "tooltip": "API Debug - Stok Listesi yanıtını test et",
+            "modalTitle": "TAMSOFT API Debug - StokListesi",
+            "loading": "Yükleniyor...",
+            "title": "TAMSOFT Ayarları",
+            "defaultDepo": "Varsayılan Depo",
+            "lastSync": "Son Sync",
+            "neverSynced": "Hiç yapılmadı",
+            "rawApiResponse": "Ham API Yanıtı (cURL)",
+            "responseSize": "Yanıt Boyutu",
+            "jsonParse": "JSON Parse",
+            "parseSuccess": "Başarılı",
+            "parseFailed": "Başarısız",
+            "isArray": "Array mı",
+            "yes": "Evet",
+            "no": "Hayır",
+            "elementCount": "Eleman Sayısı",
+            "numericArray": "Numeric Array",
+            "firstKeys": "İlk 10 Key",
+            "doubleJsonDetected": "Çift JSON Tespit Edildi!",
+            "rawResponse": "Ham Yanıt (İlk 500 karakter)",
+            "firstItem": "İlk Öğe",
+            "firstItemUnwrapped": "İlk Öğe (unwrap sonrası)",
+            "depoCount": "Depo Sayısı",
+            "debugError": "Debug hatası: {error}",
+            "debugRequestFailed": "Debug isteği başarısız",
+            "apiNoResponse": "API yanıt vermedi"
+        },
+        "depotMapping": {
+            "newBranches": "{count} yeni şube oluşturuldu",
+            "existingMappings": "{count} mevcut eşleşme",
+            "mapped": "{count} depo → şube eşleştirildi ({details})"
+        },
+        "companyOverride": "Firma Ayarı",
+        "systemDefault": "Sistem Varsayılanı",
+        "hanshow": {
+            "title": "Hanshow ESL",
+            "description": "Hanshow elektronik raf etiketi entegrasyonu (ESL-Working v2.5.3 API)",
+            "loading": "Yükleniyor...",
+            "active": "Aktif",
+            "inactive": "Pasif",
+            "connectionStatus": "Bağlantı durumu kontrol ediliyor...",
+            "fields": {
+                "eslworkingUrl": "ESL-Working API URL",
+                "userId": "Kullanıcı ID",
+                "callbackUrl": "Callback URL",
+                "defaultPriority": "Varsayılan Öncelik",
+                "syncInterval": "Senkronizasyon Aralığı (sn)",
+                "ledColor": "LED Rengi",
+                "maxRetryAttempts": "Maks Tekrar Deneme",
+                "options": "Seçenekler",
+                "ledFlashOnUpdate": "Güncellemede LED yak",
+                "autoRetry": "Otomatik tekrar deneme",
+                "enabled": "Entegrasyon aktif"
+            },
+            "hints": {
+                "eslworkingUrl": "Hanshow ESL-Working servisinin adresi",
+                "callbackUrl": "Async geri bildirim URL'i"
+            },
+            "ledColors": {
+                "green": "Yeşil",
+                "blue": "Mavi",
+                "red": "Kırmızı",
+                "yellow": "Sarı",
+                "white": "Beyaz"
+            },
+            "buttons": {
+                "testConnection": "Bağlantı Testi",
+                "save": "Kaydet",
+                "testing": "Test ediliyor...",
+                "saving": "Kaydediliyor..."
+            },
+            "connection": {
+                "online": "ESL-Working Bağlantısı Aktif",
+                "offline": "ESL-Working Bağlantısı Yok",
+                "responseTime": "Yanıt süresi: {time}ms",
+                "connectedGateways": "Bağlı Gateway'ler ({count})",
+                "startCommand": "ESL-Working Başlatma Komutu"
+            },
+            "connectionSuccess": "ESL-Working bağlantısı başarılı ({time}ms) - {count} AP bağlı",
+            "connectionFailed": "ESL-Working bağlantısı başarısız: {error}",
+            "testFailed": "Bağlantı testi başarısız: {error}",
+            "testConnection": "Bağlantı Testi",
+            "saveSuccess": "Hanshow ayarları kaydedildi",
+            "saveFailed": "Ayarlar kaydedilemedi: {error}",
+            "toast": {
+                "testSuccess": "ESL-Working bağlantısı başarılı ({time}ms) - {count} AP bağlı",
+                "testFailed": "ESL-Working bağlantısı başarısız: {error}",
+                "saved": "Hanshow ayarları kaydedildi",
+                "saveFailed": "Ayarlar kaydedilemedi: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "PavoDisplay",
+            "description": "PavoDisplay Android elektronik fiyat etiketi entegrasyonu (HTTP-SERVER)",
+            "active": "Aktif",
+            "integrated": "PavoDisplay entegrasyonu yerleşik olarak aktif",
+            "deviceManagement": "Cihaz yönetimi için {link} sayfasını ziyaret edin.",
+            "devicesLink": "Cihazlar"
+        },
+        "hal": {
+            "title": "HAL Kayıt Sistemi",
+            "description": "T.C. Ticaret Bakanlığı Hal Kayıt Sistemi (HKS) künye sorgulama entegrasyonu",
+            "loading": "Yükleniyor...",
+            "active": "Aktif",
+            "inactive": "Pasif",
+            "configured": "Yapılandırıldı",
+            "notConfigured": "Yapılandırılmamış",
+            "connectionStatus": "Bağlantı durumu kontrol ediliyor...",
+            "connectionConfigured": "HAL ayarları yapılandırıldı",
+            "connectionNotConfigured": "HAL ayarları yapılandırılmamış",
+            "enterCredentials": "Künye sorgulama için HAL kullanıcı bilgilerinizi girin",
+            "credentialsRequired": "HAL kullanıcı bilgileri gerekli",
+            "responseTime": "Yanıt süresi",
+            "fields": {
+                "username": "Kullanıcı Adı",
+                "password": "Şifre",
+                "servicePassword": "Servis Şifresi",
+                "tcVergiNo": "TC Kimlik / Vergi No",
+                "sifatId": "Bildirimci Sıfatı",
+                "sifat2Id": "İkinci Kişi Sıfatı",
+                "enabled": "Entegrasyon aktif"
+            },
+            "hints": {
+                "username": "HKS sistemine kayıtlı kullanıcı adınız",
+                "password": "HKS kullanıcı şifreniz",
+                "servicePassword": "HKS web servisi şifresi",
+                "tcVergiNo": "Sorgu yapmak istediğiniz TC Kimlik veya Vergi numarası (opsiyonel)",
+                "sifatId": "HAL sistemine kayıtlı işletme sıfatınızı seçin",
+                "sifat2Id": "İkinci kişi sıfatını seçin (opsiyonel)",
+                "howToGet": "HAL kullanıcı bilgileriniz yoksa, hal.gov.tr adresinden veya E-Devlet üzerinden kayıt olabilirsiniz."
+            },
+            "sifatOptions": {
+                "select": "Seçiniz...",
+                "sanayici": "Sanayici",
+                "ihracat": "İhracat",
+                "ithalat": "İthalat",
+                "uretici": "Üretici",
+                "komisyoncu": "Komisyoncu",
+                "tuccarHalIci": "Tüccar (Hal İçi)",
+                "market": "Market",
+                "manav": "Manav",
+                "depoTasnif": "Depo/Tasnif ve Ambalaj",
+                "ureticiOrgutu": "Üretici Örgütü",
+                "pazarci": "Pazarcı",
+                "otel": "Otel",
+                "lokanta": "Lokanta",
+                "yurt": "Yurt",
+                "yemekFabrikasi": "Yemek Fabrikası",
+                "hastane": "Hastane",
+                "tuccarHalDisi": "Tüccar (Hal Dışı)"
+            },
+            "buttons": {
+                "testConnection": "Bağlantı Testi",
+                "save": "Kaydet",
+                "testing": "Test ediliyor...",
+                "saving": "Kaydediliyor..."
+            },
+            "connection": {
+                "online": "HKS Bağlantısı Aktif",
+                "offline": "HKS Bağlantısı Yok",
+                "responseTime": "Yanıt süresi: {time}ms"
+            },
+            "toast": {
+                "connectionSuccess": "HKS bağlantısı başarılı",
+                "connectionFailed": "HKS bağlantısı başarısız",
+                "testSuccess": "HKS bağlantısı başarılı",
+                "testFailed": "HKS bağlantısı başarısız: {error}",
+                "saved": "HAL ayarları kaydedildi",
+                "saveFailed": "Ayarlar kaydedilemedi",
+                "servicePasswordMissing": "Servis şifresi girilmemiş - bazı özellikler sınırlı olabilir"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "HAL ayarları yapılandırılmamış. Lütfen ayarları kaydedin.",
+                "MISSING_CREDENTIALS": "Kullanıcı adı veya şifre eksik",
+                "SOAP_NOT_AVAILABLE": "PHP SOAP eklentisi yüklü değil. Sunucu yöneticinizle iletişime geçin.",
+                "SOAP_CONNECTION_FAILED": "HAL sunucusuna bağlanılamadı. Sunucu erişilebilir olmayabilir veya ağ sorunu olabilir.",
+                "AUTH_ERROR": "HAL kimlik doğrulama hatası: {detail}",
+                "UNEXPECTED_RESPONSE": "HAL sunucusundan beklenmeyen yanıt alındı",
+                "SOAP_FAULT": "SOAP protokol hatası: {detail}",
+                "CONNECTION_ERROR": "Bağlantı hatası: {detail}",
+                "HAL_ERROR_1": "İşlem başarısız. HAL servisi isteği işleyemedi.",
+                "HAL_ERROR_11": "Kullanıcı bilgileri yanlış. Kullanıcı adı veya şifre hatalı.",
+                "HAL_ERROR_13": "Kimlik doğrulama başarısız. Kullanıcı adı veya şifre hatalı.",
+                "HAL_ERROR_UNEXPECTED": "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+                "HAL_ERROR_GENERIC": "HAL servisi hata döndürdü (Kod: {code})"
+            },
+            "infoBox": {
+                "title": "HAL Kayıt Sistemi Hakkında",
+                "description": "HAL Kayıt Sistemi, sebze ve meyvelerin üretimden tüketime kadar takibini sağlayan resmi sistemdir. Künye sorgulama özelliği ile ürünlerin menşei, üretici bilgileri ve işlem geçmişini görebilirsiniz.",
+                "apiInfo": "Bu entegrasyon HAL SOAP Web Servisleri (BildirimService) kullanır.",
+                "registerLink": "HKS'ye kayıt olmak için hal.gov.tr adresini ziyaret edin."
+            }
+        },
+        "tamsoft": {
+            "title": "TAMSOFT ERP",
+            "description": "TAMSOFT ERP sistemi entegrasyonu. Ürün, stok ve fiyat bilgilerini senkronize edin.",
+            "loading": "Yükleniyor...",
+            "active": "Aktif",
+            "inactive": "Pasif",
+            "connectionStatus": "Bağlantı durumu kontrol ediliyor...",
+            "connectionSuccess": "TAMSOFT ERP bağlantısı başarılı",
+            "connectionFailed": "TAMSOFT ERP bağlantısı başarısız",
+            "lastSync": "Son Senkronizasyon",
+            "fields": {
+                "apiUrl": "API URL",
+                "username": "Kullanıcı Adı",
+                "password": "Şifre",
+                "defaultDepo": "Varsayılan Depo",
+                "syncInterval": "Senkronizasyon Aralığı (dk)",
+                "autoSync": "Otomatik senkronizasyon",
+                "onlyStockPositive": "Sadece stokta olanlar",
+                "onlyEcommerce": "Sadece e-ticaret ürünleri",
+                "singleBarcode": "Tek barkod kullan"
+            },
+            "hints": {
+                "apiUrl": "TAMSOFT Web Servisi URL adresi",
+                "username": "TAMSOFT kullanıcı adınız",
+                "defaultDepo": "Varsayılan depo seçin. Depo listesi yüklemek için bağlantı testi yapın.",
+                "loadDepos": "Önce bağlantı testi yapın",
+                "syncInterval": "Otomatik senkronizasyon aralığı (dakika)"
+            },
+            "buttons": {
+                "loadDepolar": "Depoları Yükle",
+                "syncNow": "Şimdi Senkronize Et"
+            },
+            "sync": {
+                "title": "TAMSOFT Senkronizasyon",
+                "start": "Senkronize Et",
+                "syncing": "Senkronize ediliyor...",
+                "syncingAll": "Tüm depolar senkronize ediliyor...",
+                "allDepots": "Tüm Depolar",
+                "noDepoWarning": "Lütfen önce \"Depoları Yükle\" ile depo seçin.",
+                "depoHint": "Ürünlerin çekileceği depoyu seçin veya tüm depoları senkronize edin",
+                "selectAndSave": "Seç ve Kaydet",
+                "infoTitle": "Senkronizasyon Bilgisi",
+                "infoNew": "Yeni ürünler otomatik eklenir",
+                "infoUpdate": "Mevcut ürünlerin fiyat ve stok bilgileri güncellenir",
+                "infoSafe": "Yerel olarak değiştirilen görseller korunur",
+                "infoAllDepots": "\"Tüm Depolar\" seçilirse her depodan ürünler sırayla çekilir",
+                "fullSync": "Tam Senkronizasyon"
+            },
+            "toast": {
+                "connectionSuccess": "TAMSOFT bağlantısı başarılı",
+                "connectionFailed": "TAMSOFT bağlantısı başarısız",
+                "saved": "TAMSOFT ayarları kaydedildi",
+                "saveFailed": "Ayarlar kaydedilemedi",
+                "depoLoaded": "depo yüklendi",
+                "depoLoadFailed": "Depo listesi yüklenemedi",
+                "syncSuccess": "Senkronizasyon tamamlandı: {inserted} eklendi, {updated} güncellendi, {failed} başarısız",
+                "syncAllSuccess": "{depo_count} depo senkronize edildi: {inserted} eklendi, {updated} güncellendi, {failed} başarısız",
+                "syncFailed": "Senkronizasyon başarısız"
+            },
+            "debug": {
+                "tooltip": "API Debug - Stok Listesi yanıtını test et",
+                "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "Ödeme Sistemi",
+            "adminOnly": "Bu ayarlar sadece SuperAdmin tarafından değiştirilebilir.",
+            "selectProvider": "Ödeme sağlayıcı seçin",
+            "connectionStatus": "Bağlantı durumu kontrol ediliyor...",
+            "loading": "Yükleniyor...",
+            "providers": {
+                "iyzico": {
+                    "name": "Iyzico",
+                    "description": "Türkiye'nin lider ödeme altyapısı"
+                },
+                "paynet": {
+                    "name": "Paynet",
+                    "description": "Güvenli sanal pos çözümü"
+                }
+            },
+            "providerStatus": {
+                "active": "Aktif",
+                "inactive": "Pasif",
+                "configured": "Yapılandırılmış",
+                "notConfigured": "Yapılandırılmamış",
+                "test": "Test",
+                "live": "Canlı"
+            },
+            "statusBadge": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Aktif (Canlı)",
+                "inactive": "Pasif"
+            },
+            "fields": {
+                "apiKey": "API Key",
+                "secretKey": "Secret Key",
+                "publishableKey": "Publishable Key",
+                "environment": "Ortam",
+                "testMode": "Test Modu",
+                "apiUrl": "API URL",
+                "callbackUrl": "Callback URL",
+                "currency": "Para Birimi",
+                "installmentEnabled": "Taksitli ödeme aktif",
+                "maxInstallments": "Maksimum taksit:",
+                "statusActive": "Ödeme sistemi aktif",
+                "iyzicoSettings": "Iyzico Ayarları",
+                "paynetSettings": "Paynet Ayarları",
+                "installmentSettings": "Taksit Ayarları",
+                "installmentActive": "Taksit aktif",
+                "maxInstallment": "Maks taksit:",
+                "status": "Durum",
+                "iyzicoActive": "Iyzico aktif",
+                "paynetActive": "Paynet aktif"
+            },
+            "hints": {
+                "apiKey": "Iyzico panelinden alınan API anahtarı",
+                "secretKey": "Panelden alınan gizli anahtar",
+                "publishableKey": "Paynet panelinden alınan Publishable Key",
+                "environment": "Test için sandbox, canlı işlemler için production seçin",
+                "testMode": "Test modunda gerçek işlem yapılmaz",
+                "apiUrl": "Paynet API sunucu adresi",
+                "callbackUrl": "3D Secure geri dönüş URL'i (otomatik)",
+                "iyzicoMerchant": "Iyzico merchant panelinden alınır",
+                "paynetMerchant": "Paynet merchant panelinden alınan public key",
+                "secretKeyHint": "Gizli anahtar (API istekleri için)",
+                "testModeHint": "Test modunda gerçek ödeme alınmaz",
+                "callbackReadonly": "3D Secure dönüş adresi (salt okunur)"
+            },
+            "placeholders": {
+                "apiKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "secretKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (Mevcut)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Production (Canlı)",
+                "testMode": "Test Modu",
+                "liveMode": "Canlı Mod"
+            },
+            "currencies": {
+                "TRY": "TRY - Türk Lirası",
+                "USD": "USD - Amerikan Doları",
+                "EUR": "EUR - Euro"
+            },
+            "testing": "Test ediliyor...",
+            "buttons": {
+                "testConnection": "Bağlantı Testi",
+                "save": "Kaydet",
+                "showHide": "Göster/Gizle",
+                "testing": "Test ediliyor...",
+                "saving": "Kaydediliyor..."
+            },
+            "connectionSuccess": "{provider} bağlantısı başarılı ({env} modu)",
+            "connectionFailed": "{provider} bağlantısı başarısız: {error}",
+            "connectionTestFailed": "Bağlantı testi başarısız: {error}",
+            "saveSuccess": "{provider} ödeme ayarları kaydedildi",
+            "saveFailed": "Ayarlar kaydedilemedi: {error}",
+            "connection": {
+                "configured": "Iyzico bağlantısı yapılandırılmış",
+                "notConfigured": "Iyzico bağlantısı yapılandırılmamış",
+                "missingKeys": "API anahtarları eksik"
+            },
+            "toast": {
+                "testSuccess": "{provider} bağlantısı başarılı - {environment} modu",
+                "testFailed": "{provider} bağlantısı başarısız: {error}",
+                "saved": "{provider} ödeme ayarları kaydedildi",
+                "saveFailed": "Ayarlar kaydedilemedi: {error}",
+                "apiKeyRequired": "Ödeme sistemini aktif etmek için API Key gerekli",
+                "secretKeyRequired": "Ödeme sistemini aktif etmek için Secret Key gerekli",
+                "publishableKeyRequired": "Ödeme sistemini aktif etmek için Publishable Key gerekli"
+            },
+            "validation": {
+                "apiKeyRequired": "Ödeme sistemini aktif etmek için API Key gerekli",
+                "secretKeyRequired": "Ödeme sistemini aktif etmek için Secret Key gerekli",
+                "publishableKeyRequired": "Ödeme sistemini aktif etmek için Publishable Key gerekli"
+            }
+        },
+        "licensePlans": {
+            "title": "Lisans Planları",
+            "description": "Müşterilere sunulan lisans planları",
+            "loading": "Yükleniyor...",
+            "empty": "Henüz lisans planı tanımlanmamış",
+            "recommended": "Önerilen",
+            "enterprise": "Kurumsal",
+            "inactive": "Pasif",
+            "months": "ay",
+            "addPlan": "Yeni Plan",
+            "editPlan": "Planı Düzenle",
+            "notFound": "Plan bulunamadı",
+            "created": "Plan oluşturuldu",
+            "updated": "Plan güncellendi",
+            "deleted": "Plan silindi",
+            "limits": {
+                "users": "Kullanıcı",
+                "devices": "Cihaz",
+                "products": "Ürün",
+                "templates": "Şablon",
+                "storage": "Depolama",
+                "branches": "Şube"
+            },
+            "form": {
+                "name": "Plan Adı",
+                "slug": "Slug",
+                "slugPlaceholder": "plan-adi",
+                "description": "Açıklama",
+                "price": "Fiyat",
+                "currency": "Para Birimi",
+                "duration": "Süre (Ay)",
+                "maxUsers": "Maks. Kullanıcı",
+                "maxDevices": "Maks. Cihaz",
+                "maxProducts": "Maks. Ürün",
+                "maxTemplates": "Maks. Şablon",
+                "maxBranches": "Maks. Şube",
+                "storageLimit": "Depolama Limiti (MB)",
+                "features": "Özellikler",
+                "featuresHint": "Her satıra bir özellik yazın",
+                "isPopular": "Önerilen Plan",
+                "isEnterprise": "Kurumsal",
+                "isActive": "Aktif",
+                "sortOrder": "Sıralama",
+                "unlimited": "Sınırsız için 0 girin",
+                "unlimitedZero": "Sınırsız için 0 girin"
+            },
+            "deleteConfirm": {
+                "title": "Planı Sil",
+                "message": "{name} planını silmek istediğinizden emin misiniz?"
+            },
+            "validation": {
+                "nameRequired": "Plan adı zorunludur"
+            },
+            "features": {
+                "esl_support": "ESL Desteği",
+                "basic_templates": "Temel Şablonlar",
+                "email_support": "E-posta Desteği",
+                "signage_support": "Dijital Tabela Desteği",
+                "advanced_templates": "Gelişmiş Şablonlar",
+                "priority_support": "Öncelikli Destek",
+                "api_access": "API Erişimi",
+                "custom_branding": "Özel Marka",
+                "multi_location": "Çoklu Lokasyon",
+                "dedicated_support": "Özel Destek",
+                "sla_guarantee": "SLA Garantisi",
+                "custom_integration": "Özel Entegrasyon",
+                "white_label": "Beyaz Etiket",
+                "unlimited_users": "Sınırsız Kullanıcı",
+                "unlimited_devices": "Sınırsız Cihaz",
+                "analytics": "Analitik Raporlar",
+                "export_reports": "Rapor Dışa Aktarma",
+                "bulk_import": "Toplu İçe Aktarma",
+                "scheduler": "Zamanlayıcı",
+                "notifications": "Bildirimler"
+            }
+        },
+        "paymentInfo": {
+            "title": "Ödeme Entegrasyonu Hakkında",
+            "features": {
+                "title": "Desteklenen Özellikler",
+                "singlePayment": "Tek çekim ödeme",
+                "installment": "Taksitli ödeme (2-12 taksit)",
+                "secure3d": "3D Secure güvenli ödeme",
+                "refund": "İade ve iptal işlemleri",
+                "cardSaving": "Kart saklama (opsiyonel)",
+                "items": {
+                    "singlePayment": "Kredi kartı ile tek çekim",
+                    "installment": "Taksitli ödeme (2-12 taksit)",
+                    "secure3d": "3D Secure güvenli ödeme",
+                    "refund": "İade ve iptal işlemleri",
+                    "bkmExpress": "BKM Express entegrasyonu"
+                }
+            },
+            "cards": {
+                "title": "Desteklenen Kartlar"
+            },
+            "testCard": {
+                "title": "Test Kartı (Iyzico)",
+                "cardNo": "Kart No:",
+                "expiry": "SKT:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "Test Kart Bilgileri (Sandbox)",
+                    "cardNo": "Kart No:",
+                    "expiry": "SKT:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "API Dokümantasyonları",
+                "link": "Iyzico API Dokümantasyonu",
+                "iyzicoLink": "Iyzico API Dokümantasyonu",
+                "paynetLink": "Paynet API Dokümantasyonu"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "ERP Entegrasyonu",
+                "description": "SAP, Oracle, Dynamics, Logo, Netsis",
+                "fields": {
+                    "type": "ERP Tipi",
+                    "endpoint": "API Endpoint",
+                    "username": "Kullanıcı Adı",
+                    "password": "Şifre",
+                    "syncInterval": "Senkronizasyon Aralığı (dk)"
+                },
+                "types": {
+                    "sap": "SAP",
+                    "oracle": "Oracle",
+                    "dynamics": "Microsoft Dynamics",
+                    "logo": "Logo",
+                    "netsis": "Netsis",
+                    "other": "Diğer"
+                }
+            },
+            "pos": {
+                "title": "POS Entegrasyonu",
+                "description": "Wolvox, Sentez, Nebim",
+                "fields": {
+                    "type": "POS Tipi",
+                    "endpoint": "API Endpoint",
+                    "apiKey": "API Key",
+                    "storeId": "Mağaza ID"
+                },
+                "types": {
+                    "wolvox": "Wolvox",
+                    "sentez": "Sentez",
+                    "nebim": "Nebim",
+                    "other": "Diğer"
+                }
+            },
+            "wms": {
+                "title": "WMS Entegrasyonu",
+                "description": "Depo yönetim sistemi",
+                "fields": {
+                    "endpoint": "API Endpoint",
+                    "apiKey": "API Key",
+                    "warehouseId": "Depo ID",
+                    "stockSync": "Stok Senkronizasyonu",
+                    "active": "Aktif"
+                }
+            },
+            "api": {
+                "title": "API Erişimi",
+                "description": "Harici API entegrasyonu",
+                "fields": {
+                    "apiKey": "API Key",
+                    "rateLimit": "Rate Limit (istek/dk)",
+                    "webhookUrl": "Webhook URL"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.example.com/api",
+                    "webhookUrl": "https://your-app.com/webhook"
+                },
+                "docs": {
+                    "title": "API Dokümantasyonu",
+                    "subtitle": "API kullanımı için hızlı başlangıç",
+                    "auth": "Kimlik Doğrulama",
+                    "exampleRequest": "Örnek İstek"
+                }
+            }
+        },
+        "toast": {
+            "saved": "Entegrasyon ayarları kaydedildi",
+            "testSuccess": "Bağlantı testi başarılı",
+            "testFailed": "Bağlantı testi başarısız",
+            "apiKeyGenerated": "Yeni API key oluşturuldu"
+        },
+        "messages": {
+            "connectionSuccess": "Bağlantı başarılı",
+            "connectionFailed": "Bağlantı başarısız",
+            "testSuccess": "Bağlantı testi başarılı",
+            "testFailed": "Bağlantı testi başarısız",
+            "saved": "Ayarlar kaydedildi",
+            "settingsSaved": "Ayarlar kaydedildi",
+            "saveFailed": "Ayarlar kaydedilemedi",
+            "settingsSaveError": "Ayarlar kaydedilemedi",
+            "unknownError": "Bilinmeyen bir hata oluştu",
+            "invalidIntegrationType": "Geçersiz entegrasyon tipi",
+            "apiKeyCopied": "API anahtarı panoya kopyalandı",
+            "apiKeyGenerated": "Yeni API anahtarı oluşturuldu",
+            "settingsLoadFailed": "Ayarlar yüklenemedi",
+            "paymentConfigured": "{providers} yapılandırılmış. Bağlantı testini çalıştırın.",
+            "noPaymentConfigured": "Henüz hiçbir ödeme sağlayıcı yapılandırılmamış"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "Tartı Ürün Barkodu",
+            "description": "Tartılı ürünler için barkod ayarları. Bayrak kodu + terazi kodu = 7 haneli barkod.",
+            "flagCode": "Bayrak Kodu",
+            "flagCodeHint": "Terazilerde kullanılan 2 haneli bayrak kodu (20-29)",
+            "barcodeFormat": "Barkod Formatı",
+            "formatHint": "Tasarımlarda kullanılacak barkod formatı",
+            "preview": "Önizleme",
+            "scaleCode": "Terazi Kodu",
+            "resultBarcode": "Oluşan Barkod",
+            "previewHint": "Örnek: Bayrak kodu (27) + Terazi kodu (09337) = 7 haneli barkod (2709337)"
+        },
+        "info": {
+            "title": "Barkod Bilgisi",
+            "howItWorks": "Nasıl Çalışır?",
+            "description": "Tartılı ürünlerde barkod, bayrak kodu ve terazi kodunun birleşiminden oluşur. Terazide tartıldığında ağırlık bilgisi eklenerek tam barkod üretilir.",
+            "flag": "Bayrak",
+            "scaleCode": "Terazi Kodu",
+            "result": "Sonuç",
+            "note": "Not: Teraziden çıkan tam barkod formatı: 27XXXXX QQ qqq + Check Digit (QQ=kg, qqq=gram)"
+        }
+    },
+    "labels": {
+        "title": "Etiket Boyutları",
+        "subtitle": "Yazdırma için etiket boyutlarını yönetin",
+        "addNew": "Yeni Ekle",
+        "listTitle": "Etiket Boyutları Listesi",
+        "noData": "Etiket boyutu bulunamadı",
+        "infoTitle": "Etiket Boyutları Hakkında",
+        "infoText": "Sistem varsayılan boyutları düzenlenemez ve silinemez. Kendi özel boyutlarınızı ekleyebilir ve yönetebilirsiniz. Eklediğiniz boyutlar ürün yazdırma ekranında görünecektir.",
+        "system": "Sistem",
+        "columns": {
+            "name": "İsim",
+            "dimensions": "Boyutlar",
+            "inchDimensions": "İnç",
+            "status": "Durum"
+        },
+        "status": {
+            "active": "Aktif",
+            "inactive": "Pasif"
+        },
+        "form": {
+            "name": "İsim (Opsiyonel)",
+            "nameHint": "Boş bırakırsanız boyutlardan otomatik oluşturulur",
+            "width": "Genişlik",
+            "height": "Yükseklik",
+            "unit": "Birim",
+            "active": "Aktif",
+            "activeHint": "Pasif boyutlar yazdırma listesinde görünmez"
+        },
+        "placeholders": {
+            "name": "Otomatik oluşturulur"
+        },
+        "validation": {
+            "dimensionsRequired": "Geçerli genişlik ve yükseklik girin"
+        },
+        "addTitle": "Yeni Etiket Boyutu",
+        "editTitle": "Etiket Boyutu Düzenle",
+        "editSystemTitle": "Sistem Etiket Boyutu",
+        "systemEditInfo": "Bu bir sistem varsayılan boyutudur. Sadece aktif/pasif durumunu değiştirebilirsiniz.",
+        "deleteTitle": "Etiket Boyutu Sil",
+        "deleteConfirm": "\"{name}\" etiket boyutu silinecek. Devam etmek istiyor musunuz?",
+        "toast": {
+            "created": "Etiket boyutu eklendi",
+            "updated": "Etiket boyutu güncellendi",
+            "deleted": "Etiket boyutu silindi",
+            "loadFailed": "Etiket boyutları yüklenemedi",
+            "saveFailed": "İşlem başarısız",
+            "statusChanged": "Etiket boyutu durumu güncellendi"
+        },
+        "units": {
+            "mm": "mm",
+            "cm": "cm",
+            "inch": "inç"
+        }
+    },
+    "toast": {
+        "saved": "Ayarlar kaydedildi",
+        "saveFailed": "Ayarlar kaydedilemedi",
+        "smtpSuccess": "SMTP bağlantısı başarılı!",
+        "smtpFailed": "SMTP bağlantısı başarısız"
+    },
+    "gateway": {
+        "title": "Gateway Ayarları",
+        "subtitle": "Lokal ağ cihazları için gateway yönetimi",
+        "newGateway": "Yeni Gateway",
+        "systemTitle": "Gateway Sistemi",
+        "systemDescription": "Gateway sistemini aktif veya pasif yapabilirsiniz. Pasif olduğunda cihazlara içerik gönderilmez.",
+        "statusActive": "Aktif",
+        "statusInactive": "Pasif",
+        "runtime": {
+            "title": "Gateway Runtime Ayarları",
+            "description": "Worker/Gateway timeout, poll ve retry backoff değerlerini bu bölümden yönetebilirsiniz.",
+            "retryBaseDelay": "Retry Başlangıç (sn)",
+            "retryMaxDelay": "Retry Maksimum (sn)",
+            "retryMultiplier": "Retry Çarpanı",
+            "heartbeatTimeout": "Heartbeat Timeout (sn)",
+            "commandTimeout": "Komut Timeout (sn)",
+            "pollInterval": "Gateway Poll (ms)",
+            "scopeCompany": "Kapsam: Firma ayarı. Worker ve sunucu gönderim akışları bu değerleri kullanır.",
+            "scopeUser": "Kapsam: Kullanıcı ayarı. Worker akışına yansıması için Admin/SuperAdmin ile firma kapsamında kaydedin."
+        },
+        "neverConnected": "Henüz bağlanmadı",
+        "lastSeen": "Son görülme",
+        "devices": "Cihaz",
+        "device": "Cihaz",
+        "pendingCommands": "Bekleyen komut",
+        "details": "Detaylar",
+        "credentials": "Kimlik Bilgileri",
+        "createTitle": "Yeni Gateway Oluştur",
+        "credentialsTitle": "Gateway Kimlik Bilgileri",
+        "credentialsWarning": "Bu bilgiler sadece bir kez gösterilecektir. Lütfen güvenli bir yere kaydedin.",
+        "credentialsSecretHidden": "Bu gateway daha önce oluşturulmuş. Güvenlik nedeniyle secret key sadece oluşturma sırasında gösterilir.",
+        "copyConfig": "Config'i Kopyala",
+        "hidden": "[GİZLİ]",
+        "statusInfo": "Gateway Durumu",
+        "statusLabel": "Durum",
+        "lastHeartbeat": "Son Heartbeat",
+        "never": "Hiçbir zaman",
+        "connectedDevices": "Bağlı Cihazlar",
+        "noDevices": "Bağlı cihaz yok",
+        "deleteTitle": "Gateway Sil",
+        "deleteConfirm": "\"{name}\" gateway'i silinecek. Devam etmek istiyor musunuz?",
+        "status": {
+            "online": "Çevrimiçi",
+            "error": "Hata",
+            "offline": "Çevrimdışı"
+        },
+        "form": {
+            "name": "Gateway Adı",
+            "namePlaceholder": "Örn: Mağaza Gateway",
+            "description": "Açıklama",
+            "descriptionPlaceholder": "Gateway hakkında kısa açıklama",
+            "pollingInterval": "Polling Aralığı (sn)",
+            "commandTimeout": "Komut Timeout (sn)"
+        },
+        "empty": {
+            "title": "Gateway Bulunamadı",
+            "description": "Henüz hiç gateway eklenmemiş. Yeni bir gateway oluşturarak başlayın.",
+            "createFirst": "İlk Gateway'i Oluştur"
+        },
+        "toast": {
+            "enabled": "Gateway sistemi aktifleştirildi",
+            "disabled": "Gateway sistemi pasifleştirildi",
+            "saveFailed": "Gateway durumu kaydedilemedi",
+            "loadFailed": "Gateway'ler yüklenemedi",
+            "nameRequired": "Gateway adı gereklidir",
+            "created": "Gateway oluşturuldu",
+            "configCopied": "Config kopyalandı",
+            "detailsFailed": "Gateway detayları yüklenemedi",
+            "deleted": "Gateway silindi",
+            "deleteFailed": "Gateway silinemedi",
+            "createFailed": "Gateway oluşturulamadı: {error}",
+            "savedUserLevel": "Firma ayarı yetkisi bulunamadı. Değişiklik kullanıcı seviyesinde kaydedildi.",
+            "runtimeSavedCompany": "Gateway runtime ayarları firma seviyesinde kaydedildi.",
+            "runtimeSavedUser": "Firma ayarı yetkisi bulunamadı. Ayarlar kullanıcı seviyesinde kaydedildi.",
+            "runtimeSaveFailed": "Runtime ayarları kaydedilemedi"
+        },
+        "defaultImage": {
+            "title": "Varsayılan Görsel",
+            "description": "Cihaz belleği temizlendiğinde gösterilecek varsayılan görseli belirleyin. Ekran boyutuna göre farklı görseller tanımlayabilirsiniz.",
+            "upload": "Görsel Yükle",
+            "uploadTitle": "Varsayılan Görsel Yükle",
+            "uploadInfo": "Bu görsel, cihaz belleği temizlendiğinde otomatik olarak yüklenecektir. Ekran boyutuna uygun bir görsel seçmeniz önerilir.",
+            "gateway": "Gateway",
+            "general": "Genel",
+            "noGateways": "Önce bir gateway eklemelisiniz",
+            "selectGateway": "Gateway seçin...",
+            "gatewayHint": "Bu görsel seçilen gateway'in cihazlarında gösterilecek",
+            "noGateways": "Önce bir gateway eklemelisiniz",
+            "imageType": "Görsel Tipi",
+            "typeHint": "Hangi ekran boyutu/yönelim için kullanılacağını seçin",
+            "file": "Görsel Dosyası",
+            "dropzone": "Sürükleyip bırakın veya tıklayın",
+            "formats": "JPG veya PNG, maks 5MB",
+            "selectFile": "Lütfen bir görsel seçin",
+            "empty": "Henüz varsayılan görsel eklenmemiş",
+            "uploaded": "Varsayılan görsel yüklendi",
+            "uploadFailed": "Görsel yüklenemedi: {error}",
+            "deleteTitle": "Görseli Sil",
+            "deleteConfirm": "Bu varsayılan görseli silmek istediğinize emin misiniz?",
+            "deleted": "Varsayılan görsel silindi",
+            "deleteFailed": "Görsel silinemedi",
+            "types": {
+                "default": "Genel Varsayılan (Tüm cihazlar)",
+                "portrait": "Dikey Ekranlar",
+                "landscape": "Yatay Ekranlar"
+            }
+        }
+    },
+    "time": {
+        "justNow": "Az önce",
+        "minutesAgo": "{count} dakika önce",
+        "hoursAgo": "{count} saat önce",
+        "daysAgo": "{count} gün önce"
+    },
+    "messages": {
+        "unknownError": "Bilinmeyen bir hata oluştu",
+        "loadFailed": "Veriler yüklenemedi",
+        "saveFailed": "Kaydetme işlemi başarısız"
+    }
+}

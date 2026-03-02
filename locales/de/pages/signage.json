@@ -1,0 +1,390 @@
+{
+    "title": "Digital Signage",
+    "subtitle": "Verwalten Sie Digital-Signage-Inhalte",
+    "playlists": {
+        "title": "Playlists",
+        "subtitle": "Playlists verwalten",
+        "addPlaylist": "Neue Playlist",
+        "editPlaylist": "Playlist bearbeiten",
+        "deletePlaylist": "Playlist löschen",
+        "deleteConfirm": "Sind Sie sicher, dass Sie diese Playlist löschen möchten?",
+        "detail": "Playlist-Details",
+        "empty": "Noch keine Playlists erstellt",
+        "selectMedia": "Medium auswählen",
+        "itemCount": "Elemente",
+        "columns": {
+            "orientation": "Bildschirmausrichtung",
+            "template": "Vorlage",
+            "layoutType": "Layout-Typ",
+            "assignedDevice": "Zugewiesenes Gerät",
+            "devicesCount": "Geräte ({count})"
+        },
+        "modal": {
+            "assignedDevices": "{name} - Zugewiesene Geräte",
+            "noDevices": "Keine zugewiesenen Geräte gefunden",
+            "removeDevice": "Entfernen",
+            "removeConfirm": "Möchten Sie dieses Gerät von der Playlist-Zuweisung entfernen?",
+            "removed": "Gerätezuweisung entfernt"
+        },
+        "orientations": {
+            "landscape": "Querformat (1920x1080)",
+            "portrait": "Hochformat (1080x1920)"
+        },
+        "layouts": {
+            "full": "Vollbild",
+            "grid2": "2-Spalten-Grid",
+            "grid3": "3-Spalten-Grid",
+            "grid4": "4-Spalten-Grid",
+            "hybrid": "Hybrid (Haupt + Seite)"
+        },
+        "mediaTypes": {
+            "image": "Bild",
+            "video": "Video",
+            "template": "Vorlage",
+            "webpage": "Web",
+            "stream": "Stream"
+        },
+        "templatePreview": "Vorlagenvorschau",
+        "noTemplateSelected": "Keine Vorlage ausgewählt",
+        "transitions": {
+            "none": "Keine",
+            "fade": "Einblenden",
+            "slideLeft": "Nach links schieben",
+            "slideRight": "Nach rechts schieben",
+            "slideUp": "Nach oben schieben",
+            "slideDown": "Nach unten schieben",
+            "zoom": "Zoomen",
+            "crossfade": "Überblendung"
+        },
+        "form": {
+            "fields": {
+                "name": "Playlistname",
+                "description": "Beschreibung",
+                "duration": "Dauer (Sek)",
+                "transition": "Übergangseffekt",
+                "transitionDuration": "Übergangsdauer",
+                "loop": "Schleife",
+                "orientation": "Bildschirmausrichtung",
+                "template": "Vorlage",
+                "layoutType": "Layout-Typ"
+            },
+            "infoTitle": "Listeninformationen",
+            "itemsTitle": "Listeninhalt",
+            "addItem": "Inhalt hinzufügen",
+            "createDesc": "Neue Playlist erstellen",
+            "editDesc": "Playlist bearbeiten",
+            "namePlaceholder": "Beispiel: Kampagnenbilder",
+            "descPlaceholder": "Kurze Beschreibung über die Liste",
+            "durationHint": "Standardanzeigedauer für jeden Inhalt",
+            "selectTemplate": "Vorlage auswählen...",
+            "noPreview": "Keine Vorschau",
+            "noItems": "Noch kein Inhalt hinzugefügt",
+            "noItemsHint": "Verwenden Sie die Schaltfläche oben, um Inhalt hinzuzufügen",
+            "emptyMedia": "Medienbibliothek ist leer",
+            "uploadMedia": "Medium hochladen",
+            "tabMedia": "Medien",
+            "tabTemplates": "Vorlagen",
+            "tabWebpage": "Webseite",
+            "tabStream": "Livestream",
+            "webpageTitle": "Webseite hinzufügen",
+            "webpageHint": "Geben Sie die URL der anzuzeigenden Webseite ein. Die Seite wird in einem iframe angezeigt.",
+            "webpageUrl": "Webseiten-URL",
+            "webpageName": "Anzeigename",
+            "webpageNamePlaceholder": "Beispiel: Wetter",
+            "addWebpage": "Webseite hinzufügen",
+            "webpageWarning": "Hinweis: Einige Websites können die Anzeige in iframe blockieren (X-Frame-Options). In diesem Fall kann die Seite nicht angezeigt werden.",
+            "webpageUrlRequired": "Bitte geben Sie eine URL ein",
+            "webpageUrlInvalid": "URL muss mit http:// oder https:// beginnen",
+            "webpageAlreadyAdded": "Diese URL wurde bereits hinzugefügt",
+            "webpageAdded": "Webseite hinzugefügt",
+            "streamTitle": "Livestream hinzufügen",
+            "streamHint": "Geben Sie die HLS (m3u8), RTSP oder andere Stream-URL ein. Wird über hls.js auf Geräten abgespielt.",
+            "streamUrl": "Stream-URL",
+            "streamName": "Stream-Name",
+            "streamNamePlaceholder": "Z.B.: Kamera 1, TV-Übertragung",
+            "streamDurationHint": "0 = unbegrenzt (Dauerstream)",
+            "streamMuted": "Audio",
+            "streamMutedYes": "Stumm",
+            "streamMutedNo": "Ton an",
+            "streamAdd": "Stream hinzufügen",
+            "streamFormats": "Unterstützte Formate: HLS (.m3u8), MP4, WebM. RTSP wird nicht direkt unterstützt, muss in HLS konvertiert werden.",
+            "streamUrlRequired": "Bitte geben Sie eine Stream-URL ein",
+            "streamUrlInvalid": "Ungültiges URL-Format",
+            "streamAlreadyAdded": "Dieser Stream ist bereits hinzugefügt",
+            "streamAdded": "Livestream hinzugefügt",
+            "emptyTemplates": "Keine Vorlagen gefunden",
+            "emptyTemplatesHint": "Signage- oder TV-Vorlagen erstellen",
+            "createTemplate": "Vorlage erstellen",
+            "seconds": "Sek",
+            "loop": "Schleife",
+            "loopHint": "Video neu starten, wenn es endet",
+            "loopCountHint": "Wie oft wiederholen",
+            "soundOn": "Ton an",
+            "soundOff": "Ton aus",
+            "durationHintVideo": "Wenn leer gelassen, spielt Video in eigener Dauer",
+            "durationHintImage": "Anzeigedauer (Sekunden)",
+            "itemsHint": "Dauer: Wenn leer gelassen, spielt Video in eigener Dauer. Schleife: Wenn aktiviert, wiederholt Inhalt angegebene Anzahl von Malen, wechselt zu nächstem, wenn Dauer abläuft.",
+            "editItem": "Element bearbeiten",
+            "itemName": "Name",
+            "itemUpdated": "Element aktualisiert",
+            "duration": "Dauer",
+            "autoForVideo": "Automatisch",
+            "loopVideo": "Video-Schleife",
+            "loopCount": "Wiederholungsanzahl",
+            "selectDevice": "Gerät auswählen",
+            "selectDevices": "Geräte auswählen",
+            "selectedDevices": "Ausgewählte Geräte",
+            "assignToMultiple": "Sie können mehreren Geräten zuweisen",
+            "selectDevicePlaceholder": "Gerät auswählen...",
+            "noDevices": "Keine geeigneten Geräte gefunden. Fügen Sie zuerst ein Signage-Gerät hinzu.",
+            "willBeAssigned": "Playlist wird dem ausgewählten Gerät zugewiesen.",
+            "selectDeviceRequired": "Bitte wählen Sie ein Gerät aus",
+            "confirmUnassign": "Keine Geräte ausgewählt. Diese Playlist wird von allen Geräten entfernt. Fortfahren?",
+            "currentlyAssigned": "Derzeit {device} Gerät zugewiesen",
+            "currentlyAssignedCount": "Derzeit {count} Geräten zugewiesen",
+            "aDevice": "ein Gerät"
+        },
+        "assignToDevice": "Gerät zuweisen",
+        "toast": {
+            "created": "Playlist erstellt",
+            "updated": "Playlist aktualisiert",
+            "deleted": "Playlist gelöscht",
+            "mediaAdded": "Medium hinzugefügt",
+            "assigned": "Playlist Gerät zugewiesen",
+            "assignedCount": "{count} Geräte zugewiesen",
+            "assignFailedCount": "{count} Gerätezuweisungen fehlgeschlagen"
+        },
+        "commands": {
+            "start": "Übertragung starten",
+            "stop": "Übertragung stoppen",
+            "refresh": "Gerät aktualisieren",
+            "reboot": "Gerät neu starten",
+            "device": "Gerät",
+            "send": "Senden",
+            "sentCount": "{count} Befehle an Geräte gesendet",
+            "failedCount": "{count} Befehle konnten nicht gesendet werden",
+            "confirmMessage": "\"{command}\" Befehl wird an <strong>{device}</strong> gesendet.",
+            "sent": "Befehl gesendet: {device}",
+            "failed": "Befehl konnte nicht gesendet werden"
+        },
+        "actions": {
+            "startBroadcast": "Übertragung starten",
+            "stopBroadcast": "Übertragung stoppen",
+            "refreshDevice": "Gerät aktualisieren"
+        }
+    },
+    "schedules": {
+        "title": "Zeitpläne",
+        "subtitle": "Übertragungszeitpläne verwalten",
+        "addSchedule": "Neuer Zeitplan",
+        "editSchedule": "Zeitplan bearbeiten",
+        "deleteSchedule": "Zeitplan löschen",
+        "deleteConfirm": "Sind Sie sicher, dass Sie den Zeitplan \"{name}\" löschen möchten?",
+        "empty": "Noch keine Zeitpläne erstellt",
+        "historyFeature": "Historie-Funktion kommt bald",
+        "searchPlaceholder": "Zeitplan suchen...",
+        "emptyText": "Zeitplan nicht gefunden",
+        "columns": {
+            "preview": "Vorschau",
+            "name": "Zeitplanname",
+            "playlist": "Playlist",
+            "devices": "Geräte",
+            "deviceCount": "{count} Geräte",
+            "startDate": "Start",
+            "endDate": "Ende",
+            "continuous": "Kontinuierlich",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Aktiv",
+            "scheduled": "Geplant",
+            "inactive": "Inaktiv",
+            "completed": "Abgeschlossen"
+        },
+        "actions": {
+            "history": "Historie",
+            "view": "Anzeigen",
+            "edit": "Bearbeiten",
+            "delete": "Löschen"
+        },
+        "newSchedule": "Neuer Zeitplan",
+        "createDesc": "Neuen Zeitplan erstellen",
+        "editDesc": "Zeitplaneinstellungen bearbeiten",
+        "scheduleInfo": "Zeitplaninformationen",
+        "targetDevices": "Zielgeräte",
+        "selectedCount": "{count} ausgewählt",
+        "searchDevice": "Gerät suchen...",
+        "noMatch": "Keine Übereinstimmung gefunden",
+        "noTvDevices": "Keine TV/Signage-Geräte gefunden",
+        "locationNotSpecified": "Standort nicht angegeben",
+        "form": {
+            "fields": {
+                "name": "Zeitplanname",
+                "playlist": "Playlist",
+                "startDate": "Startdatum",
+                "endDate": "Enddatum",
+                "startTime": "Startzeit",
+                "endTime": "Endzeit",
+                "repeat": "Wiederholen",
+                "weekdays": "Tage",
+                "status": "Status",
+                "devices": "Geräte",
+                "priority": "Priorität"
+            },
+            "placeholders": {
+                "name": "Beispiel: Wochenendkampagne",
+                "selectPlaylist": "Liste auswählen"
+            },
+            "hints": {
+                "endDate": "Wenn leer gelassen, spielt kontinuierlich",
+                "priority": "Höherer Wert = Höhere Priorität"
+            },
+            "repeat": {
+                "none": "Keine Wiederholung",
+                "daily": "Täglich",
+                "weekly": "Wöchentlich",
+                "monthly": "Monatlich"
+            },
+            "weekdays": {
+                "mon": "Mo",
+                "tue": "Di",
+                "wed": "Mi",
+                "thu": "Do",
+                "fri": "Fr",
+                "sat": "Sa",
+                "sun": "So"
+            },
+            "status": {
+                "active": "Aktiv",
+                "scheduled": "Geplant",
+                "inactive": "Inaktiv"
+            }
+        },
+        "toast": {
+            "created": "Zeitplan erstellt",
+            "updated": "Zeitplan aktualisiert",
+            "deleted": "Zeitplan gelöscht",
+            "loadFailed": "Zeitplan konnte nicht geladen werden",
+            "requiredFields": "Bitte füllen Sie die erforderlichen Felder aus",
+            "selectDevice": "Sie müssen mindestens ein Gerät auswählen",
+            "saveFailed": "Speicherfehler"
+        }
+    },
+    "template": {
+        "title": "Bildschirmvorlagen",
+        "subtitle": "Verwalten Sie TV- und Signage-Bildschirmlayouts",
+        "addTemplate": "Vorlage hinzufügen",
+        "editTemplate": "Vorlage bearbeiten",
+        "types": {
+            "signage": "Signage",
+            "tv": "TV",
+            "label": "Etikett"
+        },
+        "layoutTypes": {
+            "full": "Vollbild",
+            "grid2": "2-Spalten-Aufteilung",
+            "grid3": "3-Spalten-Aufteilung",
+            "grid4": "4-Spalten-Aufteilung",
+            "hybrid": "Hybrid"
+        },
+        "slots": {
+            "main": "Hauptbereich",
+            "slot1": "Bereich 1",
+            "slot2": "Bereich 2",
+            "slot3": "Bereich 3",
+            "slot4": "Bereich 4",
+            "sidebar": "Seitenleiste",
+            "banner": "Unteres Banner"
+        },
+        "preview": "Vorschau",
+        "previewDescription": "Wie die Vorlage auf dem Bildschirm erscheinen wird"
+    },
+    "deviceTree": {
+        "title": "Gerätestatus",
+        "subtitle": "Hierarchische Ansicht aller Signage-Geräte",
+        "expandAll": "Alle aufklappen",
+        "collapseAll": "Alle zuklappen",
+        "summary": {
+            "total": "Gesamt",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Warnung",
+            "devices": "Geräte"
+        },
+        "filter": {
+            "search": "Gerät, IP oder Filiale suchen...",
+            "all": "Alle",
+            "online": "Online",
+            "offline": "Offline",
+            "warning": "Warnungen"
+        },
+        "columns": {
+            "name": "Name",
+            "status": "Status",
+            "playlist": "Wiedergabe",
+            "lastSeen": "Zuletzt gesehen",
+            "actions": "Aktionen"
+        },
+        "node": {
+            "devices": "{count} Geräte",
+            "unassigned": "Nicht zugewiesene Geräte",
+            "noBranch": "Keine Filiale"
+        },
+        "commands": {
+            "start": "Starten",
+            "stop": "Stoppen",
+            "refresh": "Aktualisieren",
+            "reboot": "Neustart",
+            "startAll": "Alle starten",
+            "stopAll": "Alle stoppen",
+            "refreshAll": "Alle aktualisieren",
+            "confirmCascade": "Der Befehl \"{command}\" wird an {count} Geräte gesendet. Fortfahren?",
+            "sending": "Befehle werden gesendet...",
+            "progress": "{sent}/{total} gesendet",
+            "resultSuccess": "{success} erfolgreich",
+            "resultFailed": "{failed} fehlgeschlagen",
+            "resultSummary": "Befehlsergebnis"
+        },
+        "toast": {
+            "started": "Übertragung gestartet: {device}",
+            "stopped": "Übertragung gestoppt: {device}",
+            "refreshed": "Gerät aktualisiert: {device}",
+            "rebooted": "Neustart läuft: {device}",
+            "failed": "Befehl fehlgeschlagen: {device}"
+        },
+        "deviceTypes": {
+            "android_tv": "APK Player",
+            "web_display": "Web Player",
+            "pwa_player": "PWA Player",
+            "stream_player": "Stream Player",
+            "tablet": "Tablet",
+            "streaming": "Stream"
+        },
+        "time": {
+            "justNow": "gerade eben",
+            "secondsAgo": "vor {n}s",
+            "minutesAgo": "vor {n}min",
+            "hoursAgo": "vor {n}h",
+            "daysAgo": "vor {n}T",
+            "never": "Nie"
+        },
+        "empty": "Keine Signage-Geräte gefunden",
+        "emptyHint": "Fügen Sie ein TV- oder Signage-Gerät von der Geräteseite hinzu",
+        "autoRefresh": "Auto-Aktualisierung: {seconds}s",
+        "refreshing": "Wird aktualisiert...",
+        "noPlaylist": "Keine Playlist zugewiesen",
+        "loading": "Gerätebaum wird geladen..."
+    },
+    "player": {
+        "title": "PWA Player",
+        "syncCode": "Synchronisierungscode",
+        "enterSyncCode": "Synchronisierungscode eingeben",
+        "connecting": "Wird verbunden...",
+        "connected": "Verbunden",
+        "disconnected": "Nicht verbunden",
+        "nowPlaying": "Wird gerade abgespielt",
+        "nextItem": "Nächster",
+        "rotation": "Rotationsdauer",
+        "seconds": "Sekunden"
+    }
+}

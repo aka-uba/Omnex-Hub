@@ -1,0 +1,164 @@
+{
+    "title": "قوالب الويب",
+    "subtitle": "إدارة قوالب اللافتات الرقمية المستندة إلى HTML",
+    "breadcrumb": {
+        "panel": "لوحة",
+        "webTemplates": "قوالب الويب",
+        "editor": "محرر",
+        "new": "قالب ويب جديد",
+        "edit": "يحرر"
+    },
+    "list": {
+        "title": "قوالب الويب",
+        "subtitle": "قم بإنشاء قوالب مستندة إلى HTML باستخدام VvvebJs",
+        "newTemplate": "قالب ويب جديد",
+        "empty": "لم يتم إنشاء قوالب ويب حتى الآن",
+        "emptyHint": "ابدأ في إنشاء قوالب اللافتات الرقمية المستندة إلى HTML",
+        "searchPlaceholder": "قالب البحث...",
+        "total": "إجمالي {count} قوالب"
+    },
+    "filters": {
+        "status": "حالة",
+        "type": "يكتب",
+        "all": "الجميع",
+        "search": "يبحث",
+        "searchPlaceholder": "قالب البحث..."
+    },
+    "table": {
+        "name": "اسم القالب",
+        "type": "يكتب",
+        "status": "حالة",
+        "dimensions": "أبعاد",
+        "devices": "عدد الأجهزة",
+        "createdAt": "مخلوق",
+        "updatedAt": "تم التحديث",
+        "preview": "معاينة"
+    },
+    "form": {
+        "name": "اسم القالب",
+        "description": "وصف",
+        "type": "نوع القالب",
+        "status": "حالة",
+        "width": "عرض",
+        "height": "ارتفاع",
+        "orientation": "توجيه",
+        "category": "فئة",
+        "tags": "العلامات",
+        "placeholders": {
+            "name": "أدخل اسم القالب",
+            "description": "وصف القالب (اختياري)",
+            "tags": "العلامات (مفصولة بفواصل)"
+        }
+    },
+    "types": {
+        "signage": "اللافتات الرقمية",
+        "webpage": "صفحة على الإنترنت",
+        "dashboard": "لوحة التحكم",
+        "menu": "لوحة القائمة"
+    },
+    "status": {
+        "draft": "مسودة",
+        "published": "تم النشر",
+        "archived": "مؤرشف"
+    },
+    "orientations": {
+        "landscape": "منظر جمالي",
+        "portrait": "لَوحَة"
+    },
+    "actions": {
+        "new": "قالب جديد",
+        "edit": "يحرر",
+        "delete": "يمسح",
+        "duplicate": "ينسخ",
+        "clone": "استنساخ",
+        "preview": "معاينة",
+        "publish": "نشر",
+        "unpublish": "إلغاء النشر",
+        "assignDevices": "تعيين الأجهزة",
+        "viewVersions": "عرض الإصدارات",
+        "retry": "أعد المحاولة",
+        "createFirst": "إنشاء القالب الأول",
+        "cancel": "يلغي"
+    },
+    "editor": {
+        "title": "محرر قوالب الويب",
+        "newTitle": "قالب ويب جديد",
+        "editTitle": "تحرير قالب الويب",
+        "subtitle": "تصميم اللافتات الرقمية المستندة إلى HTML",
+        "loading": "جارٍ تحميل المحرر...",
+        "loadError": "فشل تحميل المحرر",
+        "redirecting": "إعادة التوجيه إلى المحرر..."
+    },
+    "widgets": {
+        "title": "أومنيكس الحاجيات",
+        "productCard": "بطاقة المنتج",
+        "priceList": "قائمة الأسعار",
+        "ticker": "شريط",
+        "clock": "ساعة",
+        "countdown": "العد التنازلي",
+        "qrcode": "رمز الاستجابة السريعة",
+        "weather": "طقس",
+        "news": "تغذية الأخبار"
+    },
+    "assignment": {
+        "title": "تعيين الجهاز",
+        "selectDevices": "حدد الأجهزة",
+        "noDevices": "لم يتم تعيين أي أجهزة حتى الآن",
+        "assignedDevices": "الأجهزة المخصصة",
+        "priority": "أولوية",
+        "schedule": "جدول",
+        "startDate": "تاريخ البدء",
+        "endDate": "تاريخ الانتهاء"
+    },
+    "versions": {
+        "title": "تاريخ الإصدار",
+        "current": "حاضِر",
+        "version": "إصدار",
+        "createdAt": "مخلوق",
+        "createdBy": "تم الإنشاء بواسطة",
+        "notes": "ملحوظات",
+        "restore": "يعيد",
+        "compare": "يقارن"
+    },
+    "messages": {
+        "loading": "تحميل...",
+        "noTemplates": "لا توجد قوالب ويب حتى الآن",
+        "noTemplatesHint": "ابدأ في إنشاء قوالب اللافتات الرقمية المستندة إلى HTML",
+        "noResults": "لم يتم العثور على نتائج",
+        "loadError": "حدث خطأ أثناء تحميل القوالب",
+        "redirecting": "إعادة التوجيه إلى المحرر...",
+        "deleted": "تم حذف قالب الويب",
+        "deleteError": "حدث خطأ أثناء الحذف",
+        "duplicated": "قالب الويب مكرر",
+        "duplicateError": "حدث خطأ أثناء التكرار"
+    },
+    "toast": {
+        "created": "تم إنشاء قالب الويب",
+        "updated": "تم تحديث قالب الويب",
+        "deleted": "تم حذف قالب الويب",
+        "cloned": "قالب الويب مكرر",
+        "published": "تم نشر قالب الويب",
+        "unpublished": "تم إلغاء نشر قالب الويب",
+        "assigned": "المخصصة للأجهزة",
+        "versionRestored": "تمت استعادة الإصدار"
+    },
+    "confirm": {
+        "deleteTitle": "حذف القالب",
+        "deleteMessage": "هل أنت متأكد أنك تريد حذف القالب \"{name}\"؟",
+        "delete": "هل أنت متأكد أنك تريد حذف قالب الويب هذا؟",
+        "deleteWarning": "لا يمكن التراجع عن هذا الإجراء. سيتم أيضًا حذف تعيينات الأجهزة المرتبطة بهذا القالب.",
+        "publish": "هل أنت متأكد أنك تريد نشر هذا القالب؟",
+        "unpublish": "هل أنت متأكد أنك تريد إلغاء نشر هذا القالب؟",
+        "restoreVersion": "هل أنت متأكد أنك تريد استعادة هذا الإصدار؟"
+    },
+    "validation": {
+        "nameRequired": "اسم القالب مطلوب",
+        "nameTooLong": "لا يمكن أن يتجاوز اسم القالب 255 حرفًا",
+        "typeRequired": "الرجاء تحديد نوع القالب"
+    },
+    "filter": {
+        "allTypes": "جميع الأنواع",
+        "allStatus": "كل الحالة",
+        "search": "يبحث..."
+    }
+}

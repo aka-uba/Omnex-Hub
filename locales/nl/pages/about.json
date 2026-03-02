@@ -1,0 +1,30 @@
+{
+    "title": "Over",
+    "subtitle": "Platforminformatie en versiegeschiedenis",
+    "breadcrumb": {
+        "panel": "Paneel"
+    },
+    "features": {
+        "multiDevice": "Ondersteuning voor meerdere apparaten",
+        "multiDeviceDesc": "ESL, TV, tablet en alle digitale displays op één platform",
+        "multiLanguage": "Meertalige structuur",
+        "multiLanguageDesc": "Wereldwijd gebruik met ondersteuning voor 7 talen",
+        "security": "Veilige activering",
+        "securityDesc": "Gecontroleerde apparaatintegratie en autorisatie",
+        "templates": "Geavanceerde sjablonen",
+        "templatesDesc": "Ontwerpeditor met slepen en neerzetten"
+    },
+    "changelog": {
+        "title": "Versiegeschiedenis",
+        "expand": "Uitbreiden",
+        "collapse": "Instorten",
+        "noContent": "Versiegeschiedenis niet gevonden"
+    },
+    "footer": {
+        "allRightsReserved": "Alle rechten voorbehouden",
+        "developedBy": "Ontwikkelaar"
+    },
+    "messages": {
+        "loading": "Laden..."
+    }
+}

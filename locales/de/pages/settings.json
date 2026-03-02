@@ -1,0 +1,1202 @@
+{
+    "title": "Einstellungen",
+    "subtitle": "Systemeinstellungen konfigurieren",
+    "breadcrumb": {
+        "panel": "Panel",
+        "settings": "Einstellungen",
+        "general": "Allgemeine Einstellungen",
+        "users": "Benutzereinstellungen",
+        "integrations": "Integrationen",
+        "labels": "Etikettgrößen"
+    },
+    "nav": {
+        "general": "Allgemein",
+        "users": "Benutzer",
+        "integrations": "Integrationen"
+    },
+    "profile": {
+        "title": "Profil",
+        "subtitle": "Verwalten Sie Ihre persönlichen Informationen und Kontoeinstellungen",
+        "loadFailed": "Benutzerinformationen konnten nicht geladen werden",
+        "personalInfo": "Persönliche Informationen",
+        "changePassword": "Passwort ändern",
+        "changePasswordBtn": "Passwort ändern",
+        "accountInfo": "Kontoinformationen",
+        "company": "Unternehmen",
+        "role": "Rolle",
+        "createdAt": "Konto erstellt",
+        "lastLogin": "Letzte Anmeldung",
+        "form": {
+            "firstName": "Vorname",
+            "lastName": "Nachname",
+            "email": "E-Mail",
+            "phone": "Telefon",
+            "currentPassword": "Aktuelles Passwort",
+            "newPassword": "Neues Passwort",
+            "confirmPassword": "Neues Passwort (Bestätigen)"
+        },
+        "avatar": {
+            "title": "Profilfoto",
+            "selectFile": "Datei auswählen",
+            "remove": "Foto entfernen"
+        },
+        "toast": {
+            "updated": "Profil aktualisiert",
+            "avatarUpdated": "Profilfoto aktualisiert",
+            "avatarRemoved": "Profilfoto entfernt",
+            "passwordChanged": "Passwort erfolgreich geändert"
+        }
+    },
+    "roles": {
+        "SuperAdmin": "Super-Administrator",
+        "Admin": "Administrator",
+        "Manager": "Manager",
+        "Editor": "Editor",
+        "Viewer": "Betrachter"
+    },
+    "users": {
+        "title": "Benutzer",
+        "subtitle": "Benutzer verwalten und bearbeiten",
+        "addUser": "Benutzer hinzufügen",
+        "editUser": "Benutzer bearbeiten",
+        "deleteUser": "Benutzer löschen",
+        "noUsers": "Noch keine Benutzer gefunden",
+        "table": {
+            "user": "Benutzer",
+            "email": "E-Mail",
+            "role": "Rolle",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Aktiv",
+            "inactive": "Inaktiv"
+        },
+        "fields": {
+            "firstName": "Vorname",
+            "lastName": "Nachname",
+            "email": "E-Mail",
+            "password": "Passwort",
+            "role": "Rolle"
+        },
+        "placeholders": {
+            "selectRole": "Rolle auswählen"
+        },
+        "roles": {
+            "admin": "Administrator",
+            "editor": "Editor",
+            "viewer": "Betrachter"
+        },
+        "deleteConfirm": "Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?",
+        "toast": {
+            "created": "Benutzer erstellt",
+            "updated": "Benutzer aktualisiert",
+            "deleted": "Benutzer gelöscht"
+        }
+    },
+    "saveChanges": "Änderungen speichern",
+    "tabs": {
+        "general": "Allgemein",
+        "branding": "Branding",
+        "email": "E-Mail / SMTP",
+        "barcode": "Barcode"
+    },
+    "general": {
+        "title": "Allgemeine Einstellungen",
+        "subtitle": "Systemweite Konfigurationseinstellungen",
+        "sections": {
+            "company": "Unternehmensinformationen",
+            "system": "Systemeinstellungen",
+            "locale": "Regionale Einstellungen",
+            "appearance": "Erscheinungsbild"
+        },
+        "fields": {
+            "companyName": "Firmenname",
+            "companyPhone": "Telefon",
+            "companyAddress": "Adresse",
+            "timezone": "Zeitzone",
+            "language": "Sprache",
+            "currency": "Währung",
+            "dateFormat": "Datumsformat",
+            "theme": "Design"
+        },
+        "placeholders": {
+            "companyName": "Firmenname",
+            "companyPhone": "+90 xxx xxx xx xx",
+            "companyAddress": "Unternehmensadresse"
+        },
+        "languages": {
+            "tr": "Türkisch",
+            "en": "Englisch"
+        },
+        "currencies": {
+            "TRY": "Türkische Lira (₺)",
+            "USD": "US-Dollar ($)",
+            "EUR": "Euro (€)",
+            "GBP": "Britisches Pfund (£)",
+            "RUB": "Russischer Rubel (₽)",
+            "AZN": "Aserbaidschanischer Manat (₼)"
+        },
+        "themes": {
+            "light": "Hell",
+            "dark": "Dunkel",
+            "auto": "Automatisch"
+        }
+    },
+    "branding": {
+        "title": "System-Branding-Assets",
+        "description": "System-Standard-Branding-Assets werden hier angezeigt. Diese Assets sind schreibgeschützt und können nur manuell vom Entwickler aus dem Ordner public/branding geändert werden. Verwenden Sie die Seite Unternehmensverwaltung für unternehmensbasierte Assets.",
+        "logoLight": "Logo (Helles Design)",
+        "logoDark": "Logo (Dunkles Design)",
+        "favicon": "Favicon",
+        "pwaIcon": "PWA-Icon",
+        "file": "Datei"
+    },
+    "email": {
+        "smtp": {
+            "title": "SMTP-Einstellungen",
+            "testButton": "Test-E-Mail senden",
+            "testing": "Wird gesendet...",
+            "fields": {
+                "host": "SMTP-Server",
+                "port": "Port",
+                "username": "Benutzername",
+                "password": "Passwort",
+                "encryption": "Verschlüsselung",
+                "fromName": "Absendername",
+                "fromEmail": "Absender-E-Mail",
+                "testEmail": "Test-E-Mail-Adresse"
+            },
+            "placeholders": {
+                "host": "smtp.beispiel.com",
+                "port": "587",
+                "username": "benutzer@beispiel.com",
+                "password": "********",
+                "fromName": "Omnex Display Hub",
+                "fromEmail": "noreply@beispiel.com",
+                "testEmail": "test@beispiel.com"
+            },
+            "hints": {
+                "testEmail": "Wenn leer gelassen, wird an die E-Mail-Adresse in Ihrem Konto gesendet"
+            },
+            "encryption": {
+                "tls": "TLS",
+                "ssl": "SSL",
+                "none": "Keine"
+            }
+        },
+        "templates": {
+            "title": "E-Mail-Vorlagen",
+            "comingSoon": "E-Mail-Vorlagenbearbeitungsfunktion wird bald hinzugefügt",
+            "welcome": {
+                "title": "Willkommens-E-Mail",
+                "description": "Wird bei neuen Benutzerregistrierungen gesendet"
+            },
+            "passwordReset": {
+                "title": "Passwort zurücksetzen",
+                "description": "Wird bei Passwort-Reset-Anfragen gesendet"
+            },
+            "errorNotification": {
+                "title": "Fehlerbenachrichtigung",
+                "description": "Wird für Systemfehler gesendet"
+            }
+        }
+    },
+    "integrations": {
+        "title": "Integrationen",
+        "subtitle": "Externe Systemintegrationen konfigurieren",
+        "configure": "Konfigurieren",
+        "tabs": {
+            "esl": "ESL-Systeme",
+            "erp": "ERP",
+            "api": "API",
+            "import": "Datei-Import",
+            "payment": "Zahlungssystem",
+            "mqtt": "MQTT Broker"
+        },
+        "import": {
+            "loading": "Laden...",
+            "settingsTitle": "Import-Einstellungen",
+            "settingsDescription": "Konfigurieren Sie dateibasierte Produktimport-Einstellungen von ERP- und externen Systemen.",
+            "enabled": "Datei-Import aktiviert",
+            "autoImport": "Automatischer Import",
+            "autoImportHint": "Bei Aktivierung werden Dateien im Import-Verzeichnis automatisch im festgelegten Intervall importiert.",
+            "checkInterval": "Prüfintervall",
+            "minutes": "Minuten",
+            "maxFileSize": "Maximale Dateigröße",
+            "allowedFormats": "Erlaubte Formate",
+            "importOptions": "Import-Optionen",
+            "updateExisting": "Vorhandene Produkte aktualisieren (SKU-Abgleich)",
+            "createNew": "Neue Produkte erstellen",
+            "skipErrors": "Fehlerhafte Zeilen überspringen, mit anderen fortfahren",
+            "triggerRender": "Automatisches Rendern nach Import auslösen",
+            "importDirectory": "Import-Verzeichnis",
+            "importDirectoryHint": "ERP-Dateien sollten in dieses Verzeichnis gesendet werden. Der Auto-Import durchsucht dieses Verzeichnis.",
+            "lastAutoImport": "Letzter automatischer Import",
+            "testImport": "Mit Datei testen",
+            "redirectingToImport": "Weiterleitung zur Produktimport-Seite...",
+            "settingsSaved": "Import-Einstellungen gespeichert",
+            "settingsSaveError": "Import-Einstellungen konnten nicht gespeichert werden",
+            "statusActive": "Aktiv",
+            "statusAutoActive": "Auto Aktiv",
+            "statusInactive": "Inaktiv",
+            "apiDocTitle": "ERP Datei-Push-API",
+            "apiDocDescription": "ERP-Systeme können Import-Dateien über den folgenden API-Endpunkt senden.",
+            "apiEndpoint": "Upload-Endpunkt",
+            "apiAuth": "Authentifizierung",
+            "apiAuthHint": "Verwenden Sie den API-Schlüssel aus dem API-Tab.",
+            "apiAuthAlt": "Alternativer Header:",
+            "apiExample": "cURL Beispiele",
+            "apiExampleCsv": "CSV-Datei senden (Linux/Mac):",
+            "apiExampleJson": "JSON-Datei senden (alternativer Header):",
+            "apiExamplePowershell": "PowerShell (Windows):",
+            "apiResponseSuccess": "Erfolgreiche Antwort (200)",
+            "apiResponseErrors": "Fehlerantworten",
+            "apiErrorDesc": "Beschreibung",
+            "apiError401": "Ungültiger oder fehlender API-Schlüssel",
+            "apiError400": "Nicht unterstütztes Format, Größenüberschreitung oder fehlende Datei",
+            "apiError403": "Dateiimport ist für dieses Unternehmen nicht aktiviert",
+            "apiErrorDup": "Dieselbe Datei wurde bereits hochgeladen (Hash-Übereinstimmung)",
+            "apiFormats": "Unterstützte Formate",
+            "apiFormatsHint": "Dateien werden automatisch mit Formaterkennung geparst. Feldzuordnung erfolgt automatisch mit SmartFieldMapper.",
+            "apiFieldMapping": "Feldzuordnung",
+            "apiFieldMappingDesc": "Spaltenüberschriften in Ihrer Datei werden automatisch Produktfeldern zugeordnet. Häufige Beispiele unten:",
+            "apiFieldTarget": "Zielfeld",
+            "apiFieldSample": "Erkannte Quellspaltennamen",
+            "apiFieldMappingAuto": "SmartFieldMapper erkennt automatisch türkische, englische und gängige ERP-Feldnamen. Standardzuordnungen können in den Einstellungen konfiguriert werden.",
+            "historyTitle": "Import-Verlauf",
+            "historyLoading": "Verlauf wird geladen...",
+            "historyEmpty": "Noch kein Import-Verlauf vorhanden.",
+            "historyFile": "Datei",
+            "historySource": "Quelle",
+            "historyStatus": "Status",
+            "historyTotal": "Gesamt",
+            "historyInserted": "Eingefügt",
+            "historyUpdated": "Aktualisiert",
+            "historyFailed": "Fehlgeschlagen",
+            "historyDate": "Datum",
+            "sourceAuto": "Automatisch",
+            "sourceManual": "Manuell",
+            "pendingFilesTitle": "Dateien im Importverzeichnis",
+            "pendingFilesDesc": "Wartende Dateien im Firmen-Importverzeichnis. Sie können eine Datei auswählen, um den manuellen Import zu starten.",
+            "pendingFilesEmpty": "Keine wartenden Dateien im Importverzeichnis.",
+            "alreadyImported": "Bereits importiert",
+            "importFile": "Importieren",
+            "fileFormat": "Format",
+            "fileSize": "Größe",
+            "fileModified": "Geändert",
+            "fileAction": "Aktion",
+            "defaultImportOptions": "Standard-Importoptionen",
+            "defaultImportOptionsHint": "Diese Optionen werden beim Importieren von Dateien als Standard verwendet. Sie können bei jedem Import geändert werden.",
+            "importModalTitle": "Datei-Import",
+            "importModalOptions": "Importoptionen",
+            "importModalDefaultsHint": "Optionen sind mit den Standardwerten aus den Einstellungen vorausgewählt. Sie können sie für diesen Import ändern.",
+            "savedMappingsWillBeUsed": "{count} gespeicherte Feldzuordnungen werden verwendet",
+            "noSavedMappingsAutoDetect": "Keine gespeicherten Zuordnungen, automatische Erkennung wird verwendet",
+            "startImport": "Import starten",
+            "importConfirmTitle": "Import-Bestätigung",
+            "importConfirmMessage": "Datei \"{filename}\" wird importiert. Möchten Sie fortfahren?",
+            "importing": "Wird importiert...",
+            "importError": "Import fehlgeschlagen",
+            "importErrors": "Fehler",
+            "importResultTitle": "Import-Ergebnis",
+            "mappingSource": "Zuordnungsquelle",
+            "mappingSaved": "Gespeicherte Zuordnungen",
+            "mappingAuto": "Automatische Erkennung",
+            "configureMappings": "Feldzuordnung",
+            "configureMappingsTitle": "Standard-Feldzuordnung",
+            "configureMappingsDesc": "Definieren Sie, welche Produktfelder den Spaltenüberschriften in Importdateien entsprechen. Sie können eine Beispieldatei für die automatische Erkennung hochladen.",
+            "configureMappingsHint": "Geben Sie Quellspaltennamen gemäß Ihren Dateiüberschriften ein. Leere Felder werden automatisch mit SmartFieldMapper abgeglichen.",
+            "mappingSourcePlaceholder": "Quellspaltenname (z.B. STOCK_CODE)",
+            "uploadSampleFile": "Beispieldatei hochladen",
+            "autoDetectedMappings": "{count} Felder automatisch zugeordnet (von {total} Spalten)",
+            "noAutoDetect": "Automatische Erkennung fehlgeschlagen. Bitte manuell eingeben.",
+            "sampleFileFailed": "Beispieldatei konnte nicht analysiert werden",
+            "mappingsSaved": "{count} Feldzuordnungen gespeichert",
+            "savedMappings": "{count} Feldzuordnungen gespeichert",
+            "noMapping": "-- Keine Zuordnung --",
+            "noPreviewData": "Keine Vorschaudaten gefunden",
+            "mappingDragDrop": "Ziehen Sie Ihre Beispieldatei hierher oder wählen Sie sie aus",
+            "mappingFileHint": "Ihre Datei wird analysiert und Spaltenüberschriften werden automatisch erkannt.",
+            "mappingGridTitle": "Feldzuordnung",
+            "mappingPreviewTitle": "Datenvorschau",
+            "fields": {
+                "sku": "SKU / Artikelnummer",
+                "name": "Produktname",
+                "barcode": "Barcode",
+                "slug": "Slug",
+                "kunyeNo": "Zertifikat-Nr.",
+                "category": "Kategorie",
+                "subcategory": "Unterkategorie",
+                "brand": "Marke",
+                "origin": "Herkunft",
+                "productionType": "Produktionsart",
+                "description": "Beschreibung",
+                "currentPrice": "Verkaufspreis",
+                "previousPrice": "Alter Preis",
+                "priceValidUntil": "Preis gültig bis",
+                "priceUpdatedAt": "Preis aktualisiert am",
+                "previousPriceUpdatedAt": "Alter Preis aktualisiert",
+                "vatRate": "MwSt-Satz",
+                "discountPercent": "Rabatt %",
+                "campaignText": "Kampagnentext",
+                "unit": "Einheit",
+                "stock": "Bestand",
+                "weight": "Gewicht",
+                "shelfLocation": "Regalplatz",
+                "supplierCode": "Lieferantencode",
+                "validFrom": "Gültig ab",
+                "validUntil": "Gültig bis",
+                "status": "Status",
+                "isFeatured": "Hervorgehoben",
+                "imageUrl": "Bild-URL",
+                "images": "Bilder",
+                "videos": "Videos",
+                "videoUrl": "Video-URL",
+                "storageInfo": "Lagerinformation",
+                "group": "Gruppe",
+                "erpId": "ERP-ID"
+            },
+            "status": {
+                "pending": "Ausstehend",
+                "processing": "Verarbeitung",
+                "completed": "Abgeschlossen",
+                "failed": "Fehlgeschlagen",
+                "skipped": "Übersprungen"
+            }
+        },
+        "debug": {
+            "tooltip": "API-Debug - Test StokListesi-Antwort",
+            "modalTitle": "TAMSOFT API Debug - StokListesi",
+            "loading": "Wird geladen...",
+            "title": "TAMSOFT-Einstellungen",
+            "defaultDepo": "Standardlager",
+            "lastSync": "Letzte Synchronisierung",
+            "neverSynced": "Nie synchronisiert",
+            "rawApiResponse": "Roh-API-Antwort (cURL)",
+            "responseSize": "Antwortgröße",
+            "jsonParse": "JSON-Parse",
+            "parseSuccess": "Erfolgreich",
+            "parseFailed": "Fehlgeschlagen",
+            "isArray": "Ist Array",
+            "yes": "Ja",
+            "no": "Nein",
+            "elementCount": "Elementanzahl",
+            "numericArray": "Numerisches Array",
+            "firstKeys": "Erste 10 Schlüssel",
+            "doubleJsonDetected": "Doppeltes JSON erkannt!",
+            "rawResponse": "Roh-Antwort (Erste 500 Zeichen)",
+            "firstItem": "Erstes Element",
+            "firstItemUnwrapped": "Erstes Element (nach Entpacken)",
+            "depoCount": "Lageranzahl",
+            "debugError": "Debug-Fehler: {error}",
+            "debugRequestFailed": "Debug-Anfrage fehlgeschlagen",
+            "apiNoResponse": "API hat nicht geantwortet"
+        },
+        "depotMapping": {
+            "newBranches": "{count} neue Filialen erstellt",
+            "existingMappings": "{count} vorhandene Zuordnungen",
+            "mapped": "{count} Lager → Filialen zugeordnet ({details})"
+        },
+        "companyOverride": "Unternehmenseinstellung",
+        "systemDefault": "Systemstandard",
+        "hanshow": {
+            "title": "Hanshow ESL",
+            "description": "Hanshow elektronisches Regaletikett-Integration (ESL-Working v2.5.3 API)",
+            "loading": "Wird geladen...",
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "connectionStatus": "Verbindungsstatus wird überprüft...",
+            "fields": {
+                "eslworkingUrl": "ESL-Working API URL",
+                "userId": "Benutzer-ID",
+                "callbackUrl": "Callback-URL",
+                "defaultPriority": "Standardpriorität",
+                "syncInterval": "Synchronisierungsintervall (Sek)",
+                "ledColor": "LED-Farbe",
+                "maxRetryAttempts": "Max. Wiederholungsversuche",
+                "options": "Optionen",
+                "ledFlashOnUpdate": "LED bei Aktualisierung blinken",
+                "autoRetry": "Automatische Wiederholung",
+                "enabled": "Integration aktiv"
+            },
+            "hints": {
+                "eslworkingUrl": "Adresse des Hanshow ESL-Working-Dienstes",
+                "callbackUrl": "Asynchrone Callback-URL"
+            },
+            "ledColors": {
+                "green": "Grün",
+                "blue": "Blau",
+                "red": "Rot",
+                "yellow": "Gelb",
+                "white": "Weiß"
+            },
+            "buttons": {
+                "testConnection": "Verbindung testen",
+                "save": "Speichern",
+                "testing": "Wird getestet...",
+                "saving": "Wird gespeichert..."
+            },
+            "connection": {
+                "online": "ESL-Working-Verbindung aktiv",
+                "offline": "ESL-Working-Verbindung offline",
+                "responseTime": "Antwortzeit: {time}ms",
+                "connectedGateways": "Verbundene Gateways ({count})",
+                "startCommand": "ESL-Working-Startbefehl"
+            },
+            "connectionSuccess": "ESL-Working-Verbindung erfolgreich ({time}ms) - {count} APs verbunden",
+            "connectionFailed": "ESL-Working-Verbindung fehlgeschlagen: {error}",
+            "testFailed": "Verbindungstest fehlgeschlagen: {error}",
+            "testConnection": "Verbindung testen",
+            "saveSuccess": "Hanshow-Einstellungen gespeichert",
+            "saveFailed": "Einstellungen konnten nicht gespeichert werden: {error}",
+            "toast": {
+                "testSuccess": "ESL-Working-Verbindung erfolgreich ({time}ms) - {count} APs verbunden",
+                "testFailed": "ESL-Working-Verbindung fehlgeschlagen: {error}",
+                "saved": "Hanshow-Einstellungen gespeichert",
+                "saveFailed": "Einstellungen konnten nicht gespeichert werden: {error}"
+            }
+        },
+        "pavoDisplay": {
+            "title": "PavoDisplay",
+            "description": "PavoDisplay Android elektronisches Preisschild-Integration (HTTP-SERVER)",
+            "active": "Aktiv",
+            "integrated": "PavoDisplay-Integration ist integriert und aktiv",
+            "deviceManagement": "Besuchen Sie die Seite {link} für Geräteverwaltung.",
+            "devicesLink": "Geräte"
+        },
+        "hal": {
+            "title": "HAL-Registrierungssystem",
+            "description": "Republik Türkei Handelsministerium HAL-Registrierungssystem (HKS) Registrierungsabfrage-Integration",
+            "loading": "Wird geladen...",
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "configured": "Konfiguriert",
+            "notConfigured": "Nicht konfiguriert",
+            "connectionStatus": "Verbindungsstatus wird überprüft...",
+            "connectionConfigured": "HAL-Einstellungen konfiguriert",
+            "connectionNotConfigured": "HAL-Einstellungen nicht konfiguriert",
+            "enterCredentials": "Geben Sie Ihre HAL-Benutzeranmeldedaten für Registrierungsabfrage ein",
+            "credentialsRequired": "HAL-Benutzeranmeldedaten erforderlich",
+            "responseTime": "Antwortzeit",
+            "fields": {
+                "username": "Benutzername",
+                "password": "Passwort",
+                "servicePassword": "Dienstpasswort",
+                "tcVergiNo": "TC-ID / Steuernummer",
+                "sifatId": "Benachrichtiger-Titel",
+                "sifat2Id": "Zweite Personenbezeichnung",
+                "enabled": "Integration aktiv"
+            },
+            "hints": {
+                "username": "Ihr im HKS-System registrierter Benutzername",
+                "password": "Ihr HKS-Benutzerpasswort",
+                "servicePassword": "HKS-Webdienst-Passwort",
+                "tcVergiNo": "TC-ID oder Steuernummer, die Sie abfragen möchten (optional)",
+                "sifatId": "Wählen Sie Ihren im HAL-System registrierten Geschäftstitel aus",
+                "sifat2Id": "Zweite Personenbezeichnung auswählen (optional)",
+                "howToGet": "Wenn Sie keine HAL-Benutzeranmeldedaten haben, können Sie sich von hal.gov.tr oder über E-Government registrieren."
+            },
+            "sifatOptions": {
+                "select": "Auswählen...",
+                "sanayici": "Hersteller",
+                "ihracat": "Export",
+                "ithalat": "Import",
+                "uretici": "Produzent",
+                "komisyoncu": "Kommissionär",
+                "tuccarHalIci": "Händler (Innerhalb HAL)",
+                "market": "Markt",
+                "manav": "Obst- und Gemüsehändler",
+                "depoTasnif": "Lager/Sortierung und Verpackung",
+                "ureticiOrgutu": "Produzentenorganisation",
+                "pazarci": "Markthändler",
+                "otel": "Hotel",
+                "lokanta": "Restaurant",
+                "yurt": "Wohnheim",
+                "yemekFabrikasi": "Lebensmittelfabrik",
+                "hastane": "Krankenhaus",
+                "tuccarHalDisi": "Händler (Außerhalb HAL)"
+            },
+            "buttons": {
+                "testConnection": "Verbindung testen",
+                "save": "Speichern",
+                "testing": "Wird getestet...",
+                "saving": "Wird gespeichert..."
+            },
+            "connection": {
+                "online": "HKS-Verbindung aktiv",
+                "offline": "HKS-Verbindung offline",
+                "responseTime": "Antwortzeit: {time}ms"
+            },
+            "toast": {
+                "connectionSuccess": "HKS-Verbindung erfolgreich",
+                "connectionFailed": "HKS-Verbindung fehlgeschlagen",
+                "testSuccess": "HKS-Verbindung erfolgreich",
+                "testFailed": "HKS-Verbindung fehlgeschlagen: {error}",
+                "saved": "HAL-Einstellungen gespeichert",
+                "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+                "servicePasswordMissing": "Dienstpasswort nicht eingegeben - einige Funktionen können eingeschränkt sein"
+            },
+            "errors": {
+                "SETTINGS_NOT_CONFIGURED": "HAL-Einstellungen nicht konfiguriert. Bitte speichern Sie die Einstellungen.",
+                "MISSING_CREDENTIALS": "Benutzername oder Passwort fehlt",
+                "SOAP_NOT_AVAILABLE": "PHP SOAP-Erweiterung nicht installiert. Kontaktieren Sie Ihren Serveradministrator.",
+                "SOAP_CONNECTION_FAILED": "Konnte nicht mit HAL-Server verbinden. Server möglicherweise nicht erreichbar oder Netzwerkproblem.",
+                "AUTH_ERROR": "HAL-Authentifizierungsfehler: {detail}",
+                "UNEXPECTED_RESPONSE": "Unerwartete Antwort vom HAL-Server erhalten",
+                "SOAP_FAULT": "SOAP-Protokollfehler: {detail}",
+                "CONNECTION_ERROR": "Verbindungsfehler: {detail}",
+                "HAL_ERROR_1": "Operation fehlgeschlagen. HAL-Dienst konnte die Anfrage nicht verarbeiten.",
+                "HAL_ERROR_11": "Benutzeranmeldedaten falsch. Benutzername oder Passwort ist falsch.",
+                "HAL_ERROR_13": "Authentifizierung fehlgeschlagen. Benutzername oder Passwort ist falsch.",
+                "HAL_ERROR_UNEXPECTED": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
+                "HAL_ERROR_GENERIC": "HAL-Dienst gab Fehler zurück (Code: {code})"
+            },
+            "infoBox": {
+                "title": "Über HAL-Registrierungssystem",
+                "description": "HAL-Registrierungssystem ist das offizielle System, das Gemüse und Obst von der Produktion bis zum Verbrauch verfolgt. Mit der Registrierungsabfrage-Funktion können Sie Produktherkunft, Produzenteninformationen und Transaktionshistorie anzeigen.",
+                "apiInfo": "Diese Integration verwendet HAL SOAP Web Services (BildirimService).",
+                "registerLink": "Besuchen Sie hal.gov.tr, um sich für HKS zu registrieren."
+            }
+        },
+        "tamsoft": {
+            "title": "TAMSOFT ERP",
+            "description": "TAMSOFT ERP-System-Integration. Synchronisieren Sie Produkt-, Bestands- und Preisinformationen.",
+            "loading": "Wird geladen...",
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "connectionStatus": "Verbindungsstatus wird überprüft...",
+            "connectionSuccess": "TAMSOFT ERP-Verbindung erfolgreich",
+            "connectionFailed": "TAMSOFT ERP-Verbindung fehlgeschlagen",
+            "lastSync": "Letzte Synchronisierung",
+            "fields": {
+                "apiUrl": "API URL",
+                "username": "Benutzername",
+                "password": "Passwort",
+                "defaultDepo": "Standardlager",
+                "syncInterval": "Synchronisierungsintervall (Min)",
+                "autoSync": "Automatische Synchronisierung",
+                "onlyStockPositive": "Nur Artikel auf Lager",
+                "onlyEcommerce": "Nur E-Commerce-Produkte",
+                "singleBarcode": "Einzelnen Barcode verwenden"
+            },
+            "hints": {
+                "apiUrl": "TAMSOFT Web Service URL-Adresse",
+                "username": "Ihr TAMSOFT-Benutzername",
+                "defaultDepo": "Standardlager auswählen. Verbindungstest ausführen, um Lagerliste zu laden.",
+                "loadDepos": "Zuerst Verbindungstest ausführen",
+                "syncInterval": "Automatisches Synchronisierungsintervall (Minuten)"
+            },
+            "buttons": {
+                "loadDepolar": "Lager laden",
+                "syncNow": "Jetzt synchronisieren"
+            },
+            "sync": {
+                "title": "TAMSOFT-Synchronisierung",
+                "start": "Synchronisieren",
+                "syncing": "Wird synchronisiert...",
+                "syncingAll": "Alle Lager werden synchronisiert...",
+                "allDepots": "Alle Lager",
+                "noDepoWarning": "Bitte wählen Sie zuerst Lager mit \"Lager laden\" aus.",
+                "depoHint": "Lager auswählen, von dem Produkte abgerufen werden sollen, oder alle Lager synchronisieren",
+                "selectAndSave": "Auswählen und speichern",
+                "infoTitle": "Synchronisierungsinformationen",
+                "infoNew": "Neue Produkte werden automatisch hinzugefügt",
+                "infoUpdate": "Preis- und Bestandsinformationen vorhandener Produkte werden aktualisiert",
+                "infoSafe": "Lokal geänderte Bilder werden beibehalten",
+                "infoAllDepots": "Wenn \"Alle Lager\" ausgewählt ist, werden Produkte nacheinander aus jedem Lager abgerufen",
+                "fullSync": "Vollständige Synchronisierung"
+            },
+            "toast": {
+                "connectionSuccess": "TAMSOFT-Verbindung erfolgreich",
+                "connectionFailed": "TAMSOFT-Verbindung fehlgeschlagen",
+                "saved": "TAMSOFT-Einstellungen gespeichert",
+                "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+                "depoLoaded": "Lager geladen",
+                "depoLoadFailed": "Lagerliste konnte nicht geladen werden",
+                "syncSuccess": "Synchronisierung abgeschlossen: {inserted} hinzugefügt, {updated} aktualisiert, {failed} fehlgeschlagen",
+                "syncAllSuccess": "{depo_count} Lager synchronisiert: {inserted} hinzugefügt, {updated} aktualisiert, {failed} fehlgeschlagen",
+                "syncFailed": "Synchronisierung fehlgeschlagen"
+            },
+            "debug": {
+                "tooltip": "API-Debug - Test StokListesi-Antwort",
+                "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "payment": {
+            "title": "Zahlungssystem",
+            "adminOnly": "Diese Einstellungen können nur von SuperAdmin geändert werden.",
+            "selectProvider": "Zahlungsanbieter auswählen",
+            "connectionStatus": "Verbindungsstatus wird überprüft...",
+            "loading": "Wird geladen...",
+            "providers": {
+                "iyzico": {
+                    "name": "Iyzico",
+                    "description": "Türkei's führende Zahlungsinfrastruktur"
+                },
+                "paynet": {
+                    "name": "Paynet",
+                    "description": "Sichere virtuelle POS-Lösung"
+                }
+            },
+            "providerStatus": {
+                "active": "Aktiv",
+                "inactive": "Inaktiv",
+                "configured": "Konfiguriert",
+                "notConfigured": "Nicht konfiguriert",
+                "test": "Test",
+                "live": "Live"
+            },
+            "statusBadge": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Aktiv (Live)",
+                "inactive": "Inaktiv"
+            },
+            "fields": {
+                "apiKey": "API-Schlüssel",
+                "secretKey": "Geheimer Schlüssel",
+                "publishableKey": "Veröffentlichbarer Schlüssel",
+                "environment": "Umgebung",
+                "testMode": "Testmodus",
+                "apiUrl": "API URL",
+                "callbackUrl": "Callback-URL",
+                "currency": "Währung",
+                "installmentEnabled": "Ratenzahlung aktiv",
+                "maxInstallments": "Max. Raten:",
+                "statusActive": "Zahlungssystem aktiv",
+                "iyzicoSettings": "Iyzico-Einstellungen",
+                "paynetSettings": "Paynet-Einstellungen",
+                "installmentSettings": "Ratenzahlungseinstellungen",
+                "installmentActive": "Ratenzahlung aktiv",
+                "maxInstallment": "Max. Rate:",
+                "status": "Status",
+                "iyzicoActive": "Iyzico aktiv",
+                "paynetActive": "Paynet aktiv"
+            },
+            "hints": {
+                "apiKey": "API-Schlüssel aus Iyzico-Panel",
+                "secretKey": "Geheimer Schlüssel aus Panel",
+                "publishableKey": "Veröffentlichbarer Schlüssel aus Paynet-Panel",
+                "environment": "Sandbox für Test, Production für Live-Transaktionen auswählen",
+                "testMode": "Keine echten Transaktionen im Testmodus",
+                "apiUrl": "Paynet API-Serveradresse",
+                "callbackUrl": "3D Secure-Rückgabe-URL (automatisch)",
+                "iyzicoMerchant": "Aus Iyzico-Händler-Panel",
+                "paynetMerchant": "Öffentlicher Schlüssel aus Paynet-Händler-Panel",
+                "secretKeyHint": "Geheimer Schlüssel (für API-Anfragen)",
+                "testModeHint": "Keine echte Zahlung im Testmodus",
+                "callbackReadonly": "3D Secure-Rückgabeadresse (schreibgeschützt)"
+            },
+            "placeholders": {
+                "apiKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "secretKey": "sandbox-xxxxxxxxxxxxxxxx",
+                "publishableKey": "pbk_xxxxxxxxxxxxxxxx",
+                "secretKeyExists": "******** (Vorhanden)",
+                "apiUrl": "https://pts-api.paynet.com.tr"
+            },
+            "environments": {
+                "sandbox": "Sandbox (Test)",
+                "production": "Production (Live)",
+                "testMode": "Testmodus",
+                "liveMode": "Live-Modus"
+            },
+            "currencies": {
+                "TRY": "TRY - Türkische Lira",
+                "USD": "USD - US-Dollar",
+                "EUR": "EUR - Euro"
+            },
+            "testing": "Wird getestet...",
+            "buttons": {
+                "testConnection": "Verbindung testen",
+                "save": "Speichern",
+                "showHide": "Anzeigen/Verbergen",
+                "testing": "Wird getestet...",
+                "saving": "Wird gespeichert..."
+            },
+            "connectionSuccess": "{provider} Verbindung erfolgreich ({env} Modus)",
+            "connectionFailed": "{provider} Verbindung fehlgeschlagen: {error}",
+            "connectionTestFailed": "Verbindungstest fehlgeschlagen: {error}",
+            "saveSuccess": "{provider} Zahlungseinstellungen gespeichert",
+            "saveFailed": "Einstellungen konnten nicht gespeichert werden: {error}",
+            "connection": {
+                "configured": "Iyzico-Verbindung konfiguriert",
+                "notConfigured": "Iyzico-Verbindung nicht konfiguriert",
+                "missingKeys": "API-Schlüssel fehlen"
+            },
+            "toast": {
+                "testSuccess": "{provider} Verbindung erfolgreich - {environment} Modus",
+                "testFailed": "{provider} Verbindung fehlgeschlagen: {error}",
+                "saved": "{provider} Zahlungseinstellungen gespeichert",
+                "saveFailed": "Einstellungen konnten nicht gespeichert werden: {error}",
+                "apiKeyRequired": "API-Schlüssel erforderlich, um Zahlungssystem zu aktivieren",
+                "secretKeyRequired": "Geheimer Schlüssel erforderlich, um Zahlungssystem zu aktivieren",
+                "publishableKeyRequired": "Veröffentlichbarer Schlüssel erforderlich, um Zahlungssystem zu aktivieren"
+            },
+            "validation": {
+                "apiKeyRequired": "API-Schlüssel erforderlich, um Zahlungssystem zu aktivieren",
+                "secretKeyRequired": "Geheimer Schlüssel erforderlich, um Zahlungssystem zu aktivieren",
+                "publishableKeyRequired": "Veröffentlichbarer Schlüssel erforderlich, um Zahlungssystem zu aktivieren"
+            }
+        },
+        "licensePlans": {
+            "title": "Lizenzpläne",
+            "description": "Kunden angebotene Lizenzpläne",
+            "loading": "Wird geladen...",
+            "empty": "Noch keine Lizenzpläne definiert",
+            "recommended": "Empfohlen",
+            "enterprise": "Enterprise",
+            "inactive": "Inaktiv",
+            "months": "Monate",
+            "addPlan": "Neuer Plan",
+            "editPlan": "Plan bearbeiten",
+            "notFound": "Plan nicht gefunden",
+            "created": "Plan erstellt",
+            "updated": "Plan aktualisiert",
+            "deleted": "Plan gelöscht",
+            "limits": {
+                "users": "Benutzer",
+                "devices": "Geräte",
+                "products": "Produkte",
+                "templates": "Vorlagen",
+                "storage": "Speicher",
+                "branches": "Filialen"
+            },
+            "form": {
+                "name": "Planname",
+                "slug": "Slug",
+                "slugPlaceholder": "plan-name",
+                "description": "Beschreibung",
+                "price": "Preis",
+                "currency": "Währung",
+                "duration": "Dauer (Monate)",
+                "maxUsers": "Max. Benutzer",
+                "maxDevices": "Max. Geräte",
+                "maxProducts": "Max. Produkte",
+                "maxTemplates": "Max. Vorlagen",
+                "maxBranches": "Max. Filialen",
+                "storageLimit": "Speicherlimit (MB)",
+                "features": "Funktionen",
+                "featuresHint": "Eine Funktion pro Zeile schreiben",
+                "isPopular": "Empfohlener Plan",
+                "isEnterprise": "Enterprise",
+                "isActive": "Aktiv",
+                "sortOrder": "Sortierreihenfolge",
+                "unlimited": "Geben Sie 0 für unbegrenzt ein",
+                "unlimitedZero": "Geben Sie 0 für unbegrenzt ein"
+            },
+            "deleteConfirm": {
+                "title": "Plan löschen",
+                "message": "Sind Sie sicher, dass Sie den Plan {name} löschen möchten?"
+            },
+            "validation": {
+                "nameRequired": "Planname ist erforderlich"
+            },
+            "features": {
+                "esl_support": "ESL-Support",
+                "basic_templates": "Grundvorlagen",
+                "email_support": "E-Mail-Support",
+                "signage_support": "Digital-Signage-Support",
+                "advanced_templates": "Erweiterte Vorlagen",
+                "priority_support": "Prioritätssupport",
+                "api_access": "API-Zugriff",
+                "custom_branding": "Benutzerdefiniertes Branding",
+                "multi_location": "Mehrere Standorte",
+                "dedicated_support": "Dedizierter Support",
+                "sla_guarantee": "SLA-Garantie",
+                "custom_integration": "Benutzerdefinierte Integration",
+                "white_label": "White Label",
+                "unlimited_users": "Unbegrenzte Benutzer",
+                "unlimited_devices": "Unbegrenzte Geräte",
+                "analytics": "Analysenberichte",
+                "export_reports": "Berichtsexport",
+                "bulk_import": "Massenimport",
+                "scheduler": "Zeitplaner",
+                "notifications": "Benachrichtigungen"
+            }
+        },
+        "paymentInfo": {
+            "title": "Über Zahlungsintegration",
+            "features": {
+                "title": "Unterstützte Funktionen",
+                "singlePayment": "Einmalzahlung",
+                "installment": "Ratenzahlung (2-12 Raten)",
+                "secure3d": "3D Secure sichere Zahlung",
+                "refund": "Rückerstattungs- und Stornierungsvorgänge",
+                "cardSaving": "Kartenspeicherung (optional)",
+                "items": {
+                    "singlePayment": "Einmalzahlung mit Kreditkarte",
+                    "installment": "Ratenzahlung (2-12 Raten)",
+                    "secure3d": "3D Secure sichere Zahlung",
+                    "refund": "Rückerstattungs- und Stornierungsvorgänge",
+                    "bkmExpress": "BKM Express-Integration"
+                }
+            },
+            "cards": {
+                "title": "Unterstützte Karten"
+            },
+            "testCard": {
+                "title": "Testkarte (Iyzico)",
+                "cardNo": "Kartennummer:",
+                "expiry": "Ablaufdatum:",
+                "cvv": "CVV:",
+                "items": {
+                    "title": "Testkarteninformationen (Sandbox)",
+                    "cardNo": "Kartennummer:",
+                    "expiry": "Ablaufdatum:",
+                    "cvv": "CVV:"
+                }
+            },
+            "docs": {
+                "title": "API-Dokumentation",
+                "link": "Iyzico API-Dokumentation",
+                "iyzicoLink": "Iyzico API-Dokumentation",
+                "paynetLink": "Paynet API-Dokumentation"
+            }
+        },
+        "types": {
+            "erp": {
+                "title": "ERP-Integration",
+                "description": "SAP, Oracle, Dynamics, Logo, Netsis",
+                "fields": {
+                    "type": "ERP-Typ",
+                    "endpoint": "API-Endpunkt",
+                    "username": "Benutzername",
+                    "password": "Passwort",
+                    "syncInterval": "Synchronisierungsintervall (Min)"
+                },
+                "types": {
+                    "sap": "SAP",
+                    "oracle": "Oracle",
+                    "dynamics": "Microsoft Dynamics",
+                    "logo": "Logo",
+                    "netsis": "Netsis",
+                    "other": "Andere"
+                }
+            },
+            "pos": {
+                "title": "POS-Integration",
+                "description": "Wolvox, Sentez, Nebim",
+                "fields": {
+                    "type": "POS-Typ",
+                    "endpoint": "API-Endpunkt",
+                    "apiKey": "API-Schlüssel",
+                    "storeId": "Geschäfts-ID"
+                },
+                "types": {
+                    "wolvox": "Wolvox",
+                    "sentez": "Sentez",
+                    "nebim": "Nebim",
+                    "other": "Andere"
+                }
+            },
+            "wms": {
+                "title": "WMS-Integration",
+                "description": "Lagerverwaltungssystem",
+                "fields": {
+                    "endpoint": "API-Endpunkt",
+                    "apiKey": "API-Schlüssel",
+                    "warehouseId": "Lager-ID",
+                    "stockSync": "Bestandssynchronisierung",
+                    "active": "Aktiv"
+                }
+            },
+            "api": {
+                "title": "API-Zugriff",
+                "description": "Externe API-Integration",
+                "fields": {
+                    "apiKey": "API-Schlüssel",
+                    "rateLimit": "Rate Limit (Anfragen/Min)",
+                    "webhookUrl": "Webhook-URL"
+                },
+                "placeholders": {
+                    "endpoint": "https://erp.beispiel.com/api",
+                    "webhookUrl": "https://ihre-app.com/webhook"
+                },
+                "docs": {
+                    "title": "API-Dokumentation",
+                    "subtitle": "Schnellstart für API-Verwendung",
+                    "auth": "Authentifizierung",
+                    "exampleRequest": "Beispielanfrage"
+                }
+            }
+        },
+        "toast": {
+            "saved": "Integrationseinstellungen gespeichert",
+            "testSuccess": "Verbindungstest erfolgreich",
+            "testFailed": "Verbindungstest fehlgeschlagen",
+            "apiKeyGenerated": "Neuer API-Schlüssel generiert"
+        },
+        "messages": {
+            "connectionSuccess": "Verbindung erfolgreich",
+            "connectionFailed": "Verbindung fehlgeschlagen",
+            "testSuccess": "Verbindungstest erfolgreich",
+            "testFailed": "Verbindungstest fehlgeschlagen",
+            "saved": "Einstellungen gespeichert",
+            "settingsSaved": "Einstellungen gespeichert",
+            "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+            "settingsSaveError": "Einstellungen konnten nicht gespeichert werden",
+            "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+            "invalidIntegrationType": "Ungültiger Integrationstyp",
+            "apiKeyCopied": "API-Schlüssel in Zwischenablage kopiert",
+            "apiKeyGenerated": "Neuer API-Schlüssel generiert",
+            "settingsLoadFailed": "Einstellungen konnten nicht geladen werden",
+            "paymentConfigured": "{providers} konfiguriert. Verbindungstest ausführen.",
+            "noPaymentConfigured": "Noch kein Zahlungsanbieter konfiguriert"
+        },
+        "mqtt": {
+            "title": "MQTT-Broker-Einstellungen",
+            "description": "Broker-Verbindungseinstellungen für ESL-Geräte im MQTT-Modus",
+            "brokerUrl": "Broker-URL",
+            "brokerUrlPlaceholder": "localhost oder IP-Adresse",
+            "brokerPort": "Port",
+            "useTls": "TLS verwenden",
+            "useTlsHelp": "Für verschlüsselte Verbindung aktivieren (Port 8883)",
+            "username": "Benutzername",
+            "usernamePlaceholder": "Optional",
+            "password": "Passwort",
+            "passwordPlaceholder": "Optional",
+            "topicPrefix": "Topic-Präfix",
+            "topicPrefixPlaceholder": "omnex/esl",
+            "provider": "Anbieter",
+            "providers": {
+                "mosquitto": "Mosquitto (Lokal)",
+                "emqx": "EMQX",
+                "hivemq": "HiveMQ",
+                "custom": "Benutzerdefiniert"
+            },
+            "appId": "App ID",
+            "appIdPlaceholder": "Automatisch generiert",
+            "appSecret": "App Secret",
+            "appSecretPlaceholder": "Optional - Für Signaturprüfung",
+            "contentServerUrl": "Content-Server-URL",
+            "contentServerUrlPlaceholder": "Automatisch ausgefüllt",
+            "reportServerUrl": "Berichtsserver-URL",
+            "reportServerUrlPlaceholder": "Automatisch ausgefüllt",
+            "status": "Status",
+            "statuses": {
+                "active": "Aktiv",
+                "testing": "Test",
+                "disabled": "Deaktiviert"
+            },
+            "testConnection": "Verbindung testen",
+            "testing": "Wird getestet...",
+            "connectionSuccess": "Broker-Verbindung erfolgreich ({time}ms)",
+            "connectionFailed": "Broker-Verbindung fehlgeschlagen",
+            "saved": "MQTT-Einstellungen gespeichert",
+            "saveFailed": "MQTT-Einstellungen konnten nicht gespeichert werden",
+            "loading": "Wird geladen...",
+            "notConfigured": "Nicht konfiguriert",
+            "configured": "Konfiguriert",
+            "lastConnected": "Letzte Verbindung",
+            "never": "Nie verbunden",
+            "save": "Speichern",
+            "infoTitle": "Über MQTT",
+            "infoText": "MQTT ist ein leichtgewichtiges Nachrichtenprotokoll für IoT-Geräte. ESL-Geräte im CLIENT-Modus empfangen Befehle und melden ihren Status über den MQTT-Broker.",
+            "setupSteps": "Einrichtungsschritte",
+            "step1": "Installieren Sie Mosquitto oder einen anderen MQTT-Broker",
+            "step2": "Geben Sie Broker-URL und Port ein",
+            "step3": "Testen Sie die Verbindung",
+            "step4": "Konfigurieren Sie Geräte per BLE in den MQTT-Modus"
+        }
+    },
+    "barcode": {
+        "weighing": {
+            "title": "Wiege-Produkt-Barcode",
+            "description": "Barcode-Einstellungen für gewogene Produkte. Flaggencode + Waagencode = 7-stelliger Barcode.",
+            "flagCode": "Flaggencode",
+            "flagCodeHint": "2-stelliger Flaggencode, der in Waagen verwendet wird (20-29)",
+            "barcodeFormat": "Barcode-Format",
+            "formatHint": "Barcode-Format, das in Designs verwendet werden soll",
+            "preview": "Vorschau",
+            "scaleCode": "Waagencode",
+            "resultBarcode": "Generierter Barcode",
+            "previewHint": "Beispiel: Flaggencode (27) + Waagencode (09337) = 7-stelliger Barcode (2709337)"
+        },
+        "info": {
+            "title": "Barcode-Informationen",
+            "howItWorks": "Wie funktioniert es?",
+            "description": "Bei gewogenen Produkten besteht der Barcode aus Flaggencode- und Waagencode-Kombination. Beim Wiegen auf der Waage wird der vollständige Barcode durch Hinzufügen von Gewichtsinformationen generiert.",
+            "flag": "Flagge",
+            "scaleCode": "Waagencode",
+            "result": "Ergebnis",
+            "note": "Hinweis: Vollständiges Barcode-Format von Waage: 27XXXXX QQ qqq + Prüfziffer (QQ=kg, qqq=Gramm)"
+        }
+    },
+    "labels": {
+        "title": "Etikettgrößen",
+        "subtitle": "Etikettgrößen für Druck verwalten",
+        "addNew": "Neu hinzufügen",
+        "listTitle": "Etikettgrößen-Liste",
+        "noData": "Keine Etikettgrößen gefunden",
+        "infoTitle": "Über Etikettgrößen",
+        "infoText": "System-Standardgrößen können nicht bearbeitet oder gelöscht werden. Sie können Ihre eigenen benutzerdefinierten Größen hinzufügen und verwalten. Größen, die Sie hinzufügen, erscheinen im Produktdruckschirm.",
+        "system": "System",
+        "columns": {
+            "name": "Name",
+            "dimensions": "Abmessungen",
+            "inchDimensions": "Zoll",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Aktiv",
+            "inactive": "Inaktiv"
+        },
+        "form": {
+            "name": "Name (Optional)",
+            "nameHint": "Wenn leer gelassen, wird automatisch aus Abmessungen generiert",
+            "width": "Breite",
+            "height": "Höhe",
+            "unit": "Einheit",
+            "active": "Aktiv",
+            "activeHint": "Inaktive Größen erscheinen nicht in Druckliste"
+        },
+        "placeholders": {
+            "name": "Automatisch generiert"
+        },
+        "validation": {
+            "dimensionsRequired": "Geben Sie gültige Breite und Höhe ein"
+        },
+        "addTitle": "Neue Etikettgröße",
+        "editTitle": "Etikettgröße bearbeiten",
+        "editSystemTitle": "System-Etikettgröße",
+        "systemEditInfo": "Dies ist eine System-Standardgröße. Sie können nur den Status aktiv/inaktiv ändern.",
+        "deleteTitle": "Etikettgröße löschen",
+        "deleteConfirm": "Etikettgröße \"{name}\" wird gelöscht. Möchten Sie fortfahren?",
+        "toast": {
+            "created": "Etikettgröße hinzugefügt",
+            "updated": "Etikettgröße aktualisiert",
+            "deleted": "Etikettgröße gelöscht",
+            "loadFailed": "Etikettgrößen konnten nicht geladen werden",
+            "saveFailed": "Operation fehlgeschlagen",
+            "statusChanged": "Etikettgrößenstatus aktualisiert"
+        },
+        "units": {
+            "mm": "mm",
+            "cm": "cm",
+            "inch": "Zoll"
+        }
+    },
+    "toast": {
+        "saved": "Einstellungen gespeichert",
+        "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+        "smtpSuccess": "SMTP-Verbindung erfolgreich!",
+        "smtpFailed": "SMTP-Verbindung fehlgeschlagen"
+    },
+    "gateway": {
+        "title": "Gateway-Einstellungen",
+        "subtitle": "Gateway-Verwaltung für lokale Netzwerkgeräte",
+        "newGateway": "Neues Gateway",
+        "systemTitle": "Gateway-System",
+        "systemDescription": "Sie können das Gateway-System aktivieren oder deaktivieren. Wenn inaktiv, wird Inhalt nicht an Geräte gesendet.",
+        "statusActive": "Aktiv",
+        "statusInactive": "Inaktiv",
+        "runtime": {
+            "title": "Gateway-Laufzeit-Einstellungen",
+            "description": "Sie können Worker/Gateway-Timeout-, Poll- und Retry-Backoff-Werte aus diesem Abschnitt verwalten.",
+            "retryBaseDelay": "Wiederholungsstart (Sek)",
+            "retryMaxDelay": "Wiederholungsmaximum (Sek)",
+            "retryMultiplier": "Wiederholungsmultiplikator",
+            "heartbeatTimeout": "Heartbeat-Timeout (Sek)",
+            "commandTimeout": "Befehl-Timeout (Sek)",
+            "pollInterval": "Gateway-Poll (ms)",
+            "scopeCompany": "Bereich: Unternehmenseinstellung. Worker- und Server-Send-Flows verwenden diese Werte.",
+            "scopeUser": "Bereich: Benutzereinstellung. Speichern Sie mit Admin/SuperAdmin im Unternehmensbereich, damit es im Worker-Flow widergespiegelt wird."
+        },
+        "neverConnected": "Nie verbunden",
+        "lastSeen": "Zuletzt gesehen",
+        "devices": "Geräte",
+        "device": "Gerät",
+        "pendingCommands": "Ausstehende Befehle",
+        "details": "Details",
+        "credentials": "Anmeldedaten",
+        "createTitle": "Neues Gateway erstellen",
+        "credentialsTitle": "Gateway-Anmeldedaten",
+        "credentialsWarning": "Diese Informationen werden nur einmal angezeigt. Bitte speichern Sie sie an einem sicheren Ort.",
+        "credentialsSecretHidden": "Dieses Gateway wurde zuvor erstellt. Aus Sicherheitsgründen wird der geheime Schlüssel nur während der Erstellung angezeigt.",
+        "copyConfig": "Konfiguration kopieren",
+        "hidden": "[VERBORGEN]",
+        "statusInfo": "Gateway-Status",
+        "statusLabel": "Status",
+        "lastHeartbeat": "Letzter Heartbeat",
+        "never": "Nie",
+        "connectedDevices": "Verbundene Geräte",
+        "noDevices": "Keine verbundenen Geräte",
+        "deleteTitle": "Gateway löschen",
+        "deleteConfirm": "Gateway \"{name}\" wird gelöscht. Möchten Sie fortfahren?",
+        "status": {
+            "online": "Online",
+            "error": "Fehler",
+            "offline": "Offline"
+        },
+        "form": {
+            "name": "Gateway-Name",
+            "namePlaceholder": "Beispiel: Geschäfts-Gateway",
+            "description": "Beschreibung",
+            "descriptionPlaceholder": "Kurze Beschreibung über Gateway",
+            "pollingInterval": "Polling-Intervall (Sek)",
+            "commandTimeout": "Befehl-Timeout (Sek)"
+        },
+        "empty": {
+            "title": "Kein Gateway gefunden",
+            "description": "Noch keine Gateways hinzugefügt. Beginnen Sie mit der Erstellung eines neuen Gateways.",
+            "createFirst": "Erstes Gateway erstellen"
+        },
+        "toast": {
+            "enabled": "Gateway-System aktiviert",
+            "disabled": "Gateway-System deaktiviert",
+            "saveFailed": "Gateway-Status konnte nicht gespeichert werden",
+            "loadFailed": "Gateways konnten nicht geladen werden",
+            "nameRequired": "Gateway-Name ist erforderlich",
+            "created": "Gateway erstellt",
+            "configCopied": "Konfiguration kopiert",
+            "detailsFailed": "Gateway-Details konnten nicht geladen werden",
+            "deleted": "Gateway gelöscht",
+            "deleteFailed": "Gateway konnte nicht gelöscht werden",
+            "createFailed": "Gateway konnte nicht erstellt werden: {error}",
+            "savedUserLevel": "Unternehmenseinstellungsberechtigung nicht gefunden. Änderung auf Benutzerebene gespeichert.",
+            "runtimeSavedCompany": "Gateway-Laufzeit-Einstellungen auf Unternehmensebene gespeichert.",
+            "runtimeSavedUser": "Unternehmenseinstellungsberechtigung nicht gefunden. Einstellungen auf Benutzerebene gespeichert.",
+            "runtimeSaveFailed": "Laufzeit-Einstellungen konnten nicht gespeichert werden"
+        },
+        "defaultImage": {
+            "title": "Standardbild",
+            "description": "Legen Sie das Standardbild fest, das angezeigt wird, wenn Gerätespeicher gelöscht wird. Sie können verschiedene Bilder je nach Bildschirmgröße definieren.",
+            "upload": "Bild hochladen",
+            "uploadTitle": "Standardbild hochladen",
+            "uploadInfo": "Dieses Bild wird automatisch geladen, wenn Gerätespeicher gelöscht wird. Es wird empfohlen, ein Bild auszuwählen, das für die Bildschirmgröße geeignet ist.",
+            "gateway": "Gateway",
+            "general": "Allgemein",
+            "noGateways": "Sie müssen zuerst ein Gateway hinzufügen",
+            "selectGateway": "Gateway auswählen...",
+            "gatewayHint": "Dieses Bild wird auf Geräten des ausgewählten Gateways angezeigt",
+            "imageType": "Bildtyp",
+            "typeHint": "Wählen Sie aus, für welche Bildschirmgröße/Ausrichtung es verwendet wird",
+            "file": "Bilddatei",
+            "dropzone": "Ablegen oder klicken",
+            "formats": "JPG oder PNG, max. 5MB",
+            "selectFile": "Bitte wählen Sie ein Bild aus",
+            "empty": "Noch kein Standardbild hinzugefügt",
+            "uploaded": "Standardbild hochgeladen",
+            "uploadFailed": "Bild konnte nicht hochgeladen werden: {error}",
+            "deleteTitle": "Bild löschen",
+            "deleteConfirm": "Sind Sie sicher, dass Sie dieses Standardbild löschen möchten?",
+            "deleted": "Standardbild gelöscht",
+            "deleteFailed": "Bild konnte nicht gelöscht werden",
+            "types": {
+                "default": "Allgemein Standard (Alle Geräte)",
+                "portrait": "Hochformat-Bildschirme",
+                "landscape": "Querformat-Bildschirme"
+            }
+        }
+    },
+    "time": {
+        "justNow": "Gerade eben",
+        "minutesAgo": "vor {count} Minuten",
+        "hoursAgo": "vor {count} Stunden",
+        "daysAgo": "vor {count} Tagen"
+    },
+    "messages": {
+        "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+        "loadFailed": "Daten konnten nicht geladen werden",
+        "saveFailed": "Speichervorgang fehlgeschlagen"
+    }
+}

@@ -1,0 +1,588 @@
+/**
+ * Omnex Display Hub - Dark Mode Stylesheet
+ * Dark theme overrides for global.css
+ *
+ * This file overrides CSS variables for dark mode
+ * Apply by adding .dark class to <html> element
+ *
+ * Color Hierarchy (Unified blue-gray tone family):
+ * - Sidebar/Header: #080c12 (darkest - navigation, same blue tone)
+ * - Content background: #0d1117 (main content area)
+ * - Cards/Panels: #161b22 (card surfaces)
+ * - Elevated elements: #21262d (hover states, modals)
+ * - Borders: #30363d
+ *
+ * All colors maintain same blue-gray undertone (R < G < B ratio)
+ */
+
+/* ===========================================
+   DARK MODE VARIABLES
+   =========================================== */
+
+.dark,
+[data-theme="dark"] {
+    /* ---- Brand Colors (vibrant for dark mode) ---- */
+    --color-primary: #3b82f6;
+    --color-primary-hover: #60a5fa;
+    --color-primary-light: #1e3a5f;
+    --color-primary-dark: #93c5fd;
+
+    --color-secondary: #94a3b8;
+    --color-secondary-hover: #cbd5e1;
+
+    /* ---- Status Colors (vivid for dark) ---- */
+    --color-success: #22c55e;
+    --color-success-light: #14532d;
+    --color-success-dark: #4ade80;
+
+    --color-danger: #ef4444;
+    --color-danger-light: #450a0a;
+    --color-danger-dark: #f87171;
+
+    --color-warning: #f59e0b;
+    --color-warning-light: #451a03;
+    --color-warning-dark: #fbbf24;
+
+    --color-info: #3b82f6;
+    --color-info-light: #1e3a8a;
+    --color-info-dark: #60a5fa;
+
+    /* ---- Purple Color (Dark Mode) ---- */
+    --color-purple: #a78bfa;
+    --color-purple-light: #2e1065;
+    --color-purple-dark: #c4b5fd;
+
+    /* ---- Indigo Color (Dark Mode) ---- */
+    --color-indigo: #818cf8;
+    --color-indigo-light: #1e1b4b;
+    --color-indigo-dark: #a5b4fc;
+
+    /* ---- Card Background ---- */
+    --card-bg: #161b22;
+
+    /* ---- Gray Scale (Blue-tinted dark) ---- */
+    --gray-50: #0d1117;
+    --gray-100: #161b22;
+    --gray-200: #21262d;
+    --gray-300: #30363d;
+    --gray-400: #484f58;
+    --gray-500: #6e7681;
+    --gray-600: #8b949e;
+    --gray-700: #c9d1d9;
+    --gray-800: #e6edf3;
+    --gray-900: #f0f6fc;
+
+    /* ---- Theme Colors (Dark Mode - Unified Blue-Gray) ---- */
+    /* All areas use same blue-gray color family (R < G < B ratio) */
+    --bg-primary: #0d1117;
+    --bg-secondary: #080c12;
+    --bg-tertiary: #161b22;
+    --bg-elevated: #21262d;
+
+    --text-primary: #e6edf3;
+    --text-secondary: #c9d1d9;
+    --text-muted: #8b949e;
+    --text-inverse: #0d1117;
+
+    --border-color: #30363d;
+    --border-light: #21262d;
+    --border-dark: #484f58;
+
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --shadow-color-lg: rgba(0, 0, 0, 0.7);
+
+    /* ---- Header Specific (Unified blue-gray tone) ---- */
+    --header-bg: #080c12;
+    --header-text: #e6edf3;
+    --header-border: #21262d;
+    --header-border-color: #21262d;
+    --header-hover: rgba(56, 139, 253, 0.1);
+    --header-active: rgba(56, 139, 253, 0.15);
+    --header-active-text: #58a6ff;
+
+    /* ---- Header Dropdown ---- */
+    --header-dropdown-bg: #161b22;
+    --header-dropdown-text: #e6edf3;
+    --header-dropdown-border: #30363d;
+    --header-dropdown-hover: rgba(56, 139, 253, 0.1);
+    --header-dropdown-active: rgba(56, 139, 253, 0.15);
+    --header-dropdown-header-bg: #21262d;
+    --header-dropdown-icon-bg: rgba(56, 139, 253, 0.15);
+    --header-dropdown-icon-color: #58a6ff;
+    --header-dropdown-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.6), 0 8px 16px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* ===========================================
+   DARK MODE SCROLLBAR
+   =========================================== */
+
+.dark ::-webkit-scrollbar-track,
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+}
+
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: var(--gray-500);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+/* ===========================================
+   DARK MODE SELECTION
+   =========================================== */
+
+.dark ::selection,
+[data-theme="dark"] ::selection {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+/* ===========================================
+   DARK MODE CODE BLOCKS
+   =========================================== */
+
+.dark code,
+[data-theme="dark"] code {
+    background: var(--bg-tertiary);
+    color: #ff6b6b;
+}
+
+.dark pre,
+[data-theme="dark"] pre {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+}
+
+/* ===========================================
+   DARK MODE SPECIFIC OVERRIDES
+   =========================================== */
+
+/* Links - exclude buttons and nav items */
+.dark a:not(.btn):not(.nav-item),
+[data-theme="dark"] a:not(.btn):not(.nav-item) {
+    color: var(--color-primary);
+}
+
+.dark a:not(.btn):not(.nav-item):hover,
+[data-theme="dark"] a:not(.btn):not(.nav-item):hover {
+    color: var(--color-primary-hover);
+}
+
+/* Body/Content Background */
+.dark body,
+[data-theme="dark"] body {
+    background-color: var(--bg-primary);
+}
+
+/* Horizontal Rule */
+.dark hr,
+[data-theme="dark"] hr {
+    border-color: var(--border-color);
+}
+
+/* Blockquote */
+.dark blockquote,
+[data-theme="dark"] blockquote {
+    border-left-color: var(--color-primary);
+    color: var(--text-secondary);
+}
+
+/* ===========================================
+   DARK MODE UTILITY CLASSES
+   =========================================== */
+
+/* Dark-specific background utilities */
+.dark .dark\:bg-primary { background-color: var(--bg-primary); }
+.dark .dark\:bg-secondary { background-color: var(--bg-secondary); }
+.dark .dark\:bg-tertiary { background-color: var(--bg-tertiary); }
+
+.dark .dark\:bg-gray-700 { background-color: var(--gray-700); }
+.dark .dark\:bg-gray-800 { background-color: var(--gray-800); }
+.dark .dark\:bg-gray-900 { background-color: var(--gray-900); }
+
+/* Dark-specific text utilities */
+.dark .dark\:text-primary { color: var(--text-primary); }
+.dark .dark\:text-secondary { color: var(--text-secondary); }
+.dark .dark\:text-muted { color: var(--text-muted); }
+
+.dark .dark\:text-gray-100 { color: var(--gray-100); }
+.dark .dark\:text-gray-200 { color: var(--gray-200); }
+.dark .dark\:text-gray-300 { color: var(--gray-300); }
+
+/* Dark-specific border utilities */
+.dark .dark\:border-color { border-color: var(--border-color); }
+.dark .dark\:border-gray-700 { border-color: var(--gray-700); }
+.dark .dark\:border-gray-600 { border-color: var(--gray-600); }
+
+/* ===========================================
+   DARK MODE TRANSITIONS
+   =========================================== */
+
+/* Smooth transition when switching themes */
+html {
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+    transition-delay: 0s !important;
+}
+
+/* ===========================================
+   DARK MODE IMAGES & MEDIA
+   =========================================== */
+
+/* Slightly reduce brightness of images in dark mode */
+.dark img:not(.no-dark-filter),
+[data-theme="dark"] img:not(.no-dark-filter) {
+    filter: brightness(0.95);
+}
+
+/* Invert icons that are pure black (opt-in) */
+.dark .dark\:invert,
+[data-theme="dark"] .dark\:invert {
+    filter: invert(1);
+}
+
+/* ===========================================
+   DARK MODE FORM CONTROLS
+   (Base styles - components/forms.css adds more)
+   =========================================== */
+
+.dark input,
+.dark textarea,
+.dark select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(51, 154, 240, 0.2);
+}
+
+/* Disabled form controls */
+.dark input:disabled,
+.dark textarea:disabled,
+.dark select:disabled,
+[data-theme="dark"] input:disabled,
+[data-theme="dark"] textarea:disabled,
+[data-theme="dark"] select:disabled {
+    background-color: var(--bg-secondary);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ===========================================
+   DARK MODE SHADOWS
+   =========================================== */
+
+.dark .shadow-sm,
+[data-theme="dark"] .shadow-sm {
+    box-shadow: 0 1px 2px 0 var(--shadow-color);
+}
+
+.dark .shadow,
+[data-theme="dark"] .shadow {
+    box-shadow: 0 1px 3px 0 var(--shadow-color), 0 1px 2px -1px var(--shadow-color);
+}
+
+.dark .shadow-md,
+[data-theme="dark"] .shadow-md {
+    box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+}
+
+.dark .shadow-lg,
+[data-theme="dark"] .shadow-lg {
+    box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color);
+}
+
+.dark .shadow-xl,
+[data-theme="dark"] .shadow-xl {
+    box-shadow: 0 20px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color);
+}
+
+/* ===========================================
+   DARK MODE TABLES
+   (Base styles - components/tables.css adds more)
+   =========================================== */
+
+.dark table,
+[data-theme="dark"] table {
+    border-color: var(--border-color);
+}
+
+.dark th,
+[data-theme="dark"] th {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.dark td,
+[data-theme="dark"] td {
+    border-color: var(--border-color);
+}
+
+.dark tr:hover td,
+[data-theme="dark"] tr:hover td {
+    background-color: var(--bg-tertiary);
+}
+
+/* Zebra striping */
+.dark tbody tr:nth-child(even),
+[data-theme="dark"] tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ===========================================
+   DARK MODE HEADER
+   =========================================== */
+
+.dark .header,
+[data-theme="dark"] .header {
+    /* Header uses standard dark theme background - NOT affected by topnavigation theme settings */
+    background: var(--bg-primary);
+    border-bottom-color: var(--border-color);
+}
+
+.dark .header::before,
+[data-theme="dark"] .header::before {
+    background: linear-gradient(135deg, rgba(56, 139, 253, 0.04) 0%, rgba(56, 139, 253, 0.02) 50%, transparent 100%);
+}
+
+/* Header Search */
+.dark .header-search-input,
+[data-theme="dark"] .header-search-input {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-color, #30363d);
+    color: var(--text-primary);
+}
+
+.dark .header-search-input:focus,
+[data-theme="dark"] .header-search-input:focus {
+    background: var(--bg-elevated, #21262d);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.15);
+}
+
+/* Header Buttons */
+.dark .header-btn,
+[data-theme="dark"] .header-btn,
+.dark .notification-dropdown-btn,
+[data-theme="dark"] .notification-dropdown-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.dark .header-btn:hover,
+[data-theme="dark"] .header-btn:hover,
+.dark .notification-dropdown-btn:hover,
+[data-theme="dark"] .notification-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: var(--text-primary);
+}
+
+/* Header Dropdown Buttons (Language, Company, User) */
+.dark .language-selector-btn,
+[data-theme="dark"] .language-selector-btn,
+.dark .company-selector-btn,
+[data-theme="dark"] .company-selector-btn,
+.dark .user-menu,
+[data-theme="dark"] .user-menu {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .language-selector-btn:hover,
+[data-theme="dark"] .language-selector-btn:hover,
+.dark .company-selector-btn:hover,
+[data-theme="dark"] .company-selector-btn:hover,
+.dark .user-menu:hover,
+[data-theme="dark"] .user-menu:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* ===========================================
+   DARK MODE CARDS & PANELS
+   =========================================== */
+
+.dark .card,
+[data-theme="dark"] .card {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-light, #21262d);
+}
+
+.dark .card-header,
+[data-theme="dark"] .card-header {
+    border-bottom-color: var(--border-color, #30363d);
+}
+
+.dark .card-footer,
+[data-theme="dark"] .card-footer {
+    border-top-color: var(--border-color, #30363d);
+}
+
+/* Dashboard Stat Cards */
+.dark .stat-card,
+.dark .chart-card,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .chart-card {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-light, #21262d);
+}
+
+/* ===========================================
+   DARK MODE MODALS & DROPDOWNS
+   =========================================== */
+
+.dark .modal-content,
+[data-theme="dark"] .modal-content {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-color, #30363d);
+}
+
+.dark .modal-header,
+[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--border-color, #30363d);
+}
+
+.dark .modal-footer,
+[data-theme="dark"] .modal-footer {
+    border-top-color: var(--border-color, #30363d);
+}
+
+.dark .dropdown-menu,
+[data-theme="dark"] .dropdown-menu {
+    background: var(--bg-tertiary, #161b22);
+    border-color: var(--border-color, #30363d);
+}
+
+.dark .dropdown-item:hover,
+[data-theme="dark"] .dropdown-item:hover {
+    background: var(--bg-elevated, #21262d);
+}
+
+/* ===========================================
+   DARK MODE CONTENT AREA
+   =========================================== */
+
+.dark .main-content,
+[data-theme="dark"] .main-content {
+    background: var(--bg-primary, #0d1117);
+}
+
+.dark .content-area,
+.dark .page-content,
+[data-theme="dark"] .content-area,
+[data-theme="dark"] .page-content {
+    background: var(--bg-primary, #0d1117);
+}
+
+/* ===========================================
+   DARK MODE PAGE HEADER
+   =========================================== */
+
+.dark .page-header-icon,
+[data-theme="dark"] .page-header-icon {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #8b5cf6 100%);
+}
+
+/* ===========================================
+   DARK MODE STATUS BADGES
+   =========================================== */
+
+.dark .badge-success,
+[data-theme="dark"] .badge-success {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+}
+
+.dark .badge-danger,
+[data-theme="dark"] .badge-danger {
+    background: var(--color-danger-light);
+    color: var(--color-danger-dark);
+}
+
+.dark .badge-warning,
+[data-theme="dark"] .badge-warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+}
+
+.dark .badge-info,
+[data-theme="dark"] .badge-info {
+    background: var(--color-info-light);
+    color: var(--color-info-dark);
+}
+
+/* ===========================================
+   DARK MODE SIDEBAR LINKS
+   =========================================== */
+
+.dark .sidebar a,
+.dark .sidebar-menu-link,
+.dark .sidebar-submenu-link,
+[data-theme="dark"] .sidebar a,
+[data-theme="dark"] .sidebar-menu-link,
+[data-theme="dark"] .sidebar-submenu-link {
+    color: #e6edf3;
+}
+
+.dark .sidebar a:hover,
+.dark .sidebar-menu-link:hover,
+.dark .sidebar-submenu-link:hover,
+[data-theme="dark"] .sidebar a:hover,
+[data-theme="dark"] .sidebar-menu-link:hover,
+[data-theme="dark"] .sidebar-submenu-link:hover {
+    color: #ffffff;
+}
+
+.dark .sidebar-menu-link.active,
+.dark .sidebar-submenu-link.active,
+[data-theme="dark"] .sidebar-menu-link.active,
+[data-theme="dark"] .sidebar-submenu-link.active {
+    color: #58a6ff;
+}
+
+/* ===========================================
+   PRINT MODE - FORCE LIGHT THEME
+   =========================================== */
+
+@media print {
+    .dark,
+    [data-theme="dark"] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --text-primary: #212529;
+        --text-secondary: #495057;
+        --text-muted: #868e96;
+        --border-color: #dee2e6;
+    }
+}
