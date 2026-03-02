@@ -1,0 +1,90 @@
+# ========================================
+# Omnex Display Hub - Auto Deploy Pipeline
+# Triggers on push to main branch
+# SSH -> git pull -> docker build -> health check
+# ========================================
+
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 2222 }}
+          timeout: 60s
+          command_timeout: 10m
+          script: |
+            set -e
+
+            APP_DIR="/opt/omnex-hub"
+            COMPOSE_FILE="$APP_DIR/deploy/docker-compose.yml"
+            LOCK_FILE="/tmp/omnex_deploy.lock"
+
+            # Prevent concurrent deploys
+            if [ -f "$LOCK_FILE" ]; then
+              LOCK_AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_FILE") ))
+              if [ $LOCK_AGE -gt 600 ]; then
+                echo "Stale lock detected (${LOCK_AGE}s old), removing..."
+                rm -f "$LOCK_FILE"
+              else
+                echo "Deploy already in progress (${LOCK_AGE}s ago). Exiting."
+                exit 1
+              fi
+            fi
+
+            trap "rm -f $LOCK_FILE" EXIT
+            echo "$$" > "$LOCK_FILE"
+
+            echo "=== Pulling latest code ==="
+            cd "$APP_DIR"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "=== Building application ==="
+            docker compose -f "$COMPOSE_FILE" stop app
+            docker compose -f "$COMPOSE_FILE" build app --no-cache
+            docker compose -f "$COMPOSE_FILE" up -d app
+
+            echo "=== Running migrations ==="
+            docker compose -f "$COMPOSE_FILE" exec -T app php /var/www/html/tools/postgresql/migrate_seed.php || true
+
+            echo "=== Health check ==="
+            MAX_RETRIES=30
+            RETRY_INTERVAL=3
+            for i in $(seq 1 $MAX_RETRIES); do
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/health 2>/dev/null || echo "000")
+              if [ "$HTTP_CODE" = "200" ]; then
+                echo "Health check passed on attempt $i"
+                break
+              fi
+              if [ $i -eq $MAX_RETRIES ]; then
+                echo "Health check failed after $MAX_RETRIES attempts"
+                docker compose -f "$COMPOSE_FILE" logs app --tail=50
+                exit 1
+              fi
+              echo "Attempt $i/$MAX_RETRIES - HTTP $HTTP_CODE, retrying in ${RETRY_INTERVAL}s..."
+              sleep $RETRY_INTERVAL
+            done
+
+            echo "=== Cleanup ==="
+            docker image prune -f
+
+            echo "=== Deploy completed successfully ==="

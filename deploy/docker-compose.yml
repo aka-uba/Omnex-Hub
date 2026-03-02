@@ -1,0 +1,112 @@
+# ========================================
+# Omnex Display Hub - Production Docker Compose
+# 4 Services: PostgreSQL + App + Nginx + Certbot
+# ========================================
+
+services:
+  # ---- PostgreSQL Database ----
+  postgres:
+    image: postgres:18-alpine
+    container_name: omnex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${OMNEX_DB_NAME:-omnex_hub}
+      POSTGRES_USER: ${OMNEX_DB_USER:-omnex}
+      POSTGRES_PASSWORD: ${OMNEX_DB_PASSWORD:?Database password is required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${OMNEX_DB_USER:-omnex} -d ${OMNEX_DB_NAME:-omnex_hub}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - omnex-network
+
+  # ---- PHP Application (Apache) ----
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: omnex-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      OMNEX_DB_DRIVER: pgsql
+      OMNEX_DB_HOST: postgres
+      OMNEX_DB_PORT: 5432
+      OMNEX_DB_NAME: ${OMNEX_DB_NAME:-omnex_hub}
+      OMNEX_DB_USER: ${OMNEX_DB_USER:-omnex}
+      OMNEX_DB_PASSWORD: ${OMNEX_DB_PASSWORD:?Database password is required}
+      OMNEX_PRODUCTION: "true"
+      OMNEX_JWT_SECRET: ${OMNEX_JWT_SECRET:?JWT secret is required}
+      OMNEX_ADMIN_EMAIL: ${OMNEX_ADMIN_EMAIL:-admin@omnex.local}
+      OMNEX_ADMIN_PASSWORD: ${OMNEX_ADMIN_PASSWORD:-}
+      OMNEX_FORCE_HTTPS: ${OMNEX_FORCE_HTTPS:-false}
+      OMNEX_SKIP_CSRF: ${OMNEX_SKIP_CSRF:-false}
+    volumes:
+      - app_storage:/var/www/html/storage
+    ports:
+      - "127.0.0.1:8080:80"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      - omnex-network
+
+  # ---- Nginx Reverse Proxy + SSL ----
+  nginx:
+    image: nginx:alpine
+    container_name: omnex-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    networks:
+      - omnex-network
+
+  # ---- Certbot SSL Certificate Manager ----
+  certbot:
+    image: certbot/certbot
+    container_name: omnex-certbot
+    restart: unless-stopped
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    # Auto-renew every 12 hours
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 43200; done'"
+    networks:
+      - omnex-network
+
+volumes:
+  postgres_data:
+    driver: local
+  app_storage:
+    driver: local
+  certbot_certs:
+    driver: local
+  certbot_webroot:
+    driver: local
+
+networks:
+  omnex-network:
+    driver: bridge

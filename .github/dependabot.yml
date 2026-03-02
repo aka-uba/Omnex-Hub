@@ -1,0 +1,39 @@
+# ========================================
+# Omnex Display Hub - Dependabot Configuration
+# Weekly security scanning for Docker images and GitHub Actions
+# ========================================
+
+version: 2
+
+updates:
+  # Docker ecosystem - base image updates (php, postgres, nginx, certbot)
+  - package-ecosystem: "docker"
+    directory: "/deploy"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Istanbul"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "docker"
+    reviewers:
+      - "aka-uba"
+
+  # GitHub Actions ecosystem - workflow action updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Istanbul"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+    reviewers:
+      - "aka-uba"

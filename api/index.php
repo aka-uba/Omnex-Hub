@@ -140,6 +140,13 @@ $router->get('/api/csrf-token', function($request) {
     ]);
 });
 
+// =====================================================
+// Health Check Route (Public - no auth required)
+// =====================================================
+$router->get('/api/health', function($request) {
+    require API_PATH . '/health.php';
+});
+
 // API Routes
 
 // =====================================================

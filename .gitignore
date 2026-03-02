@@ -6,6 +6,7 @@
 .env.local
 .jwt_secret
 .production
+deploy/.env
 
 # ---- Database Files ----
 omnex.db
@@ -96,8 +97,8 @@ market_etiket_sistemi_hata_temizleme_ve_cloud_uyum_plani.md
 # ---- VBS Scripts ----
 *.vbs
 
-# ---- Deploy (production build copy) ----
-deploy/
+# ---- Deploy (secrets only - deploy/ config files ARE tracked) ----
+# deploy/.env is excluded above in Environment & Secrets section
 
 # ---- Local Gateway Manager (separate project) ----
 local-gateway-manager/

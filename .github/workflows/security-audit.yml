@@ -1,0 +1,119 @@
+# ========================================
+# Omnex Display Hub - Security Audit
+# Trivy container scanning + PHP security patterns
+# ========================================
+
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC (09:00 Istanbul)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  trivy-scan:
+    name: Trivy Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -f deploy/Dockerfile -t omnex-hub:audit .
+
+      - name: Run Trivy vulnerability scanner (image)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'omnex-hub:audit'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Upload Trivy image scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+          category: 'trivy-image'
+
+      - name: Run Trivy filesystem scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Upload Trivy filesystem scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy-filesystem'
+
+  php-security:
+    name: PHP Security Patterns
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for common PHP security issues
+        run: |
+          echo "=== Checking for potential security issues ==="
+          ISSUES=0
+
+          # Check for eval() usage (potential code injection)
+          if grep -rn 'eval\s*(' --include="*.php" api/ core/ middleware/ services/ 2>/dev/null | grep -v '// safe:'; then
+            echo "WARNING: eval() usage found"
+            ISSUES=$((ISSUES + 1))
+          fi
+
+          # Check for shell_exec/exec/system (potential command injection)
+          if grep -rn '\b\(shell_exec\|passthru\|proc_open\)\s*(' --include="*.php" api/ core/ middleware/ services/ 2>/dev/null | grep -v '// safe:'; then
+            echo "WARNING: Shell execution functions found"
+            ISSUES=$((ISSUES + 1))
+          fi
+
+          # Check for unserialize without allowed_classes
+          if grep -rn 'unserialize\s*(' --include="*.php" api/ core/ middleware/ services/ 2>/dev/null | grep -v 'allowed_classes' | grep -v '// safe:'; then
+            echo "WARNING: unserialize() without allowed_classes restriction"
+            ISSUES=$((ISSUES + 1))
+          fi
+
+          # Check for direct $_GET/$_POST in SQL queries (potential SQL injection)
+          if grep -rn '\$_\(GET\|POST\|REQUEST\)\[.*\].*query\|execute.*\$_\(GET\|POST\|REQUEST\)' --include="*.php" api/ core/ middleware/ services/ 2>/dev/null; then
+            echo "WARNING: Direct superglobal usage in database queries"
+            ISSUES=$((ISSUES + 1))
+          fi
+
+          # Check for hardcoded credentials
+          if grep -rn "password\s*=\s*['\"].\+['\"]" --include="*.php" api/ core/ services/ 2>/dev/null | grep -v 'PASSWORD_' | grep -v 'password_hash' | grep -v '// safe:' | grep -v 'example' | grep -v 'placeholder'; then
+            echo "WARNING: Potential hardcoded credentials"
+            ISSUES=$((ISSUES + 1))
+          fi
+
+          if [ $ISSUES -eq 0 ]; then
+            echo "No security issues detected"
+          else
+            echo "Found $ISSUES potential security concern(s) - review recommended"
+          fi
+
+          # Don't fail the build, just report
+          exit 0
