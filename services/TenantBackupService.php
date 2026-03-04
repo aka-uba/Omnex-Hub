@@ -1152,17 +1152,15 @@ class TenantBackupService
                 c.id as company_id,
                 c.name as company_name,
                 c.status as company_status,
-                COUNT(tb.id) as backup_count,
-                MAX(tb.created_at) as last_backup_at,
-                COALESCE(SUM(tb.file_size), 0) as total_size,
+                (SELECT COUNT(*) FROM tenant_backups WHERE company_id = c.id) as backup_count,
+                (SELECT MAX(created_at) FROM tenant_backups WHERE company_id = c.id) as last_backup_at,
+                COALESCE((SELECT SUM(file_size) FROM tenant_backups WHERE company_id = c.id AND status = 'completed'), 0) as total_size,
                 (SELECT status FROM tenant_backups WHERE company_id = c.id ORDER BY created_at DESC LIMIT 1) as last_status,
                 (SELECT COUNT(*) FROM products WHERE company_id = c.id) as product_count,
                 (SELECT COUNT(*) FROM devices WHERE company_id = c.id) as device_count,
                 (SELECT COUNT(*) FROM templates WHERE company_id = c.id) as template_count
              FROM companies c
-             LEFT JOIN tenant_backups tb ON tb.company_id = c.id AND tb.status = 'completed'
              WHERE c.status != 'deleted'
-             GROUP BY c.id, c.name, c.status
              ORDER BY c.name"
         );
     }

@@ -241,6 +241,7 @@ export class TenantBackupPage {
 
         this.companyTable = new DataTable({
             container: '#company-table-container',
+            rowKey: 'company_id',
             columns: [
                 { key: 'company_name', label: this.__('list.company_name'), sortable: true },
                 {
@@ -259,10 +260,19 @@ export class TenantBackupPage {
                     key: 'last_backup_at', label: this.__('list.last_backup'), sortable: true,
                     render: (val) => val ? new Date(val).toLocaleString() : `<span class="text-muted">${this.__('list.never')}</span>`
                 },
-                { key: 'backup_count', label: this.__('list.backup_count'), sortable: true },
+                {
+                    key: 'backup_count', label: this.__('list.backup_count'), sortable: true,
+                    render: (val) => {
+                        const n = parseInt(val) || 0;
+                        return n > 0 ? `<span class="badge badge-blue">${n}</span>` : `<span class="text-muted">0</span>`;
+                    }
+                },
                 {
                     key: 'total_size', label: this.__('list.total_size'), sortable: true,
-                    render: (val) => this.formatSize(val)
+                    render: (val) => {
+                        const bytes = parseInt(val) || 0;
+                        return bytes > 0 ? this.formatSize(bytes) : `<span class="text-muted">—</span>`;
+                    }
                 },
                 {
                     key: 'last_status', label: this.__('list.status'),
@@ -771,6 +781,9 @@ export class TenantBackupPage {
     // ==================== Utilities ====================
 
     renderStatusBadge(status) {
+        if (!status) {
+            return `<span class="text-muted">—</span>`;
+        }
         const map = {
             completed: { class: 'badge-green', key: 'status.completed' },
             running:   { class: 'badge-blue',  key: 'status.running' },
