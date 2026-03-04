@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Dashboard",
+        "fieldBinding": "Feldzuordnung"
+    },
+    "title": "Feldzuordnung",
+    "subtitle": "Geräte mit Produkten per Kamera-Scan verknüpfen",
+    "steps": {
+        "device": "Gerät scannen",
+        "product": "Produkt scannen",
+        "confirm": "Bestätigen"
+    },
+    "scanner": {
+        "scanDevice": "Scannen Sie den QR-Code auf dem ESL-Gerät",
+        "scanProduct": "Scannen Sie den Produkt-Barcode",
+        "scanning": "Wird gescannt...",
+        "processing": "Wird verarbeitet...",
+        "switchCamera": "Kamera wechseln",
+        "toggleTorch": "Taschenlampe",
+        "manualEntry": "Manuelle Eingabe",
+        "manualPlaceholder": "Barcode oder Code eingeben...",
+        "manualSearch": "Suchen",
+        "cameraPermission": "Kameraberechtigung erforderlich",
+        "cameraPermissionDesc": "Bitte erlauben Sie den Kamerazugriff zum Scannen von Barcodes",
+        "grantPermission": "Berechtigung erteilen",
+        "cameraNotSupported": "Kamera nicht unterstützt",
+        "cameraNotSupportedDesc": "Ihr Browser unterstützt keinen Kamerazugriff. Sie können die manuelle Eingabe verwenden."
+    },
+    "device": {
+        "found": "Gerät gefunden",
+        "name": "Gerätename",
+        "type": "Typ",
+        "ip": "IP-Adresse",
+        "mac": "MAC-Adresse",
+        "status": "Status",
+        "resolution": "Auflösung",
+        "model": "Modell",
+        "notFound": "Gerät nicht gefunden",
+        "notFoundDesc": "Kein Gerät mit diesem Code gefunden. Bitte versuchen Sie es erneut.",
+        "alreadyAssigned": "Dieses Gerät ist bereits einem Produkt zugeordnet",
+        "currentProduct": "Aktuelles Produkt",
+        "reassign": "Neu zuordnen"
+    },
+    "product": {
+        "found": "Produkt gefunden",
+        "name": "Produktname",
+        "sku": "Artikelnummer",
+        "barcode": "Barcode",
+        "price": "Preis",
+        "category": "Kategorie",
+        "notFound": "Produkt nicht gefunden",
+        "notFoundDesc": "Kein Produkt mit diesem Barcode gefunden. Bitte versuchen Sie es erneut.",
+        "alreadyBound": "Dieses Produkt ist bereits mit einem Gerät verknüpft",
+        "currentDevice": "Aktuelles Gerät"
+    },
+    "template": {
+        "title": "Vorlagenauswahl",
+        "recommended": "Empfohlen",
+        "autoSelected": "Automatisch ausgewählt",
+        "changeTemplate": "Ändern",
+        "noTemplates": "Keine passende Vorlage gefunden",
+        "noTemplatesDesc": "Erstellen Sie eine Vorlage für diesen Gerätetyp"
+    },
+    "confirm": {
+        "title": "Zuordnungsübersicht",
+        "deviceLabel": "Gerät",
+        "productLabel": "Produkt",
+        "templateLabel": "Vorlage",
+        "bind": "Verknüpfen",
+        "binding": "Wird verknüpft...",
+        "sendToDevice": "An Gerät senden",
+        "sending": "Wird gesendet..."
+    },
+    "success": {
+        "title": "Zuordnung erfolgreich!",
+        "message": "Gerät {device} wurde mit Produkt {product} verknüpft",
+        "newScan": "Neuer Scan",
+        "sendNow": "Jetzt senden",
+        "sent": "Gesendet"
+    },
+    "error": {
+        "lookupFailed": "Suche fehlgeschlagen",
+        "bindingFailed": "Zuordnung fehlgeschlagen",
+        "sendFailed": "Senden fehlgeschlagen",
+        "cameraError": "Kamerafehler",
+        "networkError": "Netzwerkfehler, bitte versuchen Sie es erneut",
+        "tryAgain": "Erneut versuchen"
+    },
+    "history": {
+        "title": "Letzte Zuordnungen",
+        "empty": "Noch keine Zuordnungen vorhanden",
+        "clear": "Verlauf löschen",
+        "ago": "vor {time}"
+    },
+    "actions": {
+        "continue": "Weiter",
+        "back": "Zurück",
+        "cancel": "Abbrechen",
+        "retry": "Erneut scannen",
+        "close": "Schließen"
+    }
+}

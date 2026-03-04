@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Dashboard",
+        "fieldBinding": "Veldkoppeling"
+    },
+    "title": "Veldkoppeling",
+    "subtitle": "Koppel apparaten aan producten met camerascanning",
+    "steps": {
+        "device": "Apparaat scannen",
+        "product": "Product scannen",
+        "confirm": "Bevestigen"
+    },
+    "scanner": {
+        "scanDevice": "Scan de QR-code op het ESL-apparaat",
+        "scanProduct": "Scan de productbarcode",
+        "scanning": "Scannen...",
+        "processing": "Verwerken...",
+        "switchCamera": "Camera wisselen",
+        "toggleTorch": "Zaklamp",
+        "manualEntry": "Handmatige invoer",
+        "manualPlaceholder": "Typ barcode of code...",
+        "manualSearch": "Zoeken",
+        "cameraPermission": "Cameratoestemming vereist",
+        "cameraPermissionDesc": "Sta cameratoegang toe om barcodes te scannen",
+        "grantPermission": "Toestemming verlenen",
+        "cameraNotSupported": "Camera niet ondersteund",
+        "cameraNotSupportedDesc": "Uw browser ondersteunt geen cameratoegang. U kunt handmatige invoer gebruiken."
+    },
+    "device": {
+        "found": "Apparaat gevonden",
+        "name": "Apparaatnaam",
+        "type": "Type",
+        "ip": "IP-adres",
+        "mac": "MAC-adres",
+        "status": "Status",
+        "resolution": "Resolutie",
+        "model": "Model",
+        "notFound": "Apparaat niet gevonden",
+        "notFoundDesc": "Geen apparaat gevonden met deze code. Probeer het opnieuw.",
+        "alreadyAssigned": "Dit apparaat is al toegewezen aan een product",
+        "currentProduct": "Huidig product",
+        "reassign": "Opnieuw toewijzen"
+    },
+    "product": {
+        "found": "Product gevonden",
+        "name": "Productnaam",
+        "sku": "SKU",
+        "barcode": "Barcode",
+        "price": "Prijs",
+        "category": "Categorie",
+        "notFound": "Product niet gevonden",
+        "notFoundDesc": "Geen product gevonden met deze barcode. Probeer het opnieuw.",
+        "alreadyBound": "Dit product is al gekoppeld aan een apparaat",
+        "currentDevice": "Huidig apparaat"
+    },
+    "template": {
+        "title": "Sjabloonselectie",
+        "recommended": "Aanbevolen",
+        "autoSelected": "Automatisch geselecteerd",
+        "changeTemplate": "Wijzigen",
+        "noTemplates": "Geen geschikt sjabloon gevonden",
+        "noTemplatesDesc": "Maak een sjabloon aan voor dit apparaattype"
+    },
+    "confirm": {
+        "title": "Koppelingsoverzicht",
+        "deviceLabel": "Apparaat",
+        "productLabel": "Product",
+        "templateLabel": "Sjabloon",
+        "bind": "Koppelen",
+        "binding": "Koppelen...",
+        "sendToDevice": "Naar apparaat verzenden",
+        "sending": "Verzenden..."
+    },
+    "success": {
+        "title": "Koppeling geslaagd!",
+        "message": "Apparaat {device} is gekoppeld aan product {product}",
+        "newScan": "Nieuwe scan",
+        "sendNow": "Nu verzenden",
+        "sent": "Verzonden"
+    },
+    "error": {
+        "lookupFailed": "Zoeken mislukt",
+        "bindingFailed": "Koppeling mislukt",
+        "sendFailed": "Verzenden mislukt",
+        "cameraError": "Camerafout",
+        "networkError": "Netwerkfout, probeer het opnieuw",
+        "tryAgain": "Opnieuw proberen"
+    },
+    "history": {
+        "title": "Recente koppelingen",
+        "empty": "Nog geen koppelingen",
+        "clear": "Geschiedenis wissen",
+        "ago": "{time} geleden"
+    },
+    "actions": {
+        "continue": "Doorgaan",
+        "back": "Terug",
+        "cancel": "Annuleren",
+        "retry": "Opnieuw scannen",
+        "close": "Sluiten"
+    }
+}

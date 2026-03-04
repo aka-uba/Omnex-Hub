@@ -895,6 +895,7 @@
             "products": "Товары",
             "bundles": "Наборы",
             "kunyeDistribution": "Распределение Кюнье",
+            "fieldBinding": "Полевая привязка",
             "bulkSend": "Массовая отправка",
             "templates": "Шаблоны",
             "webTemplates": "Веб‑шаблоны",

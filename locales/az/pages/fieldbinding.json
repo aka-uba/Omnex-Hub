@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Panel",
+        "fieldBinding": "Sahə Etiketləmə"
+    },
+    "title": "Sahə Etiketləmə",
+    "subtitle": "Kamera ilə cihaz-məhsul eşləşdirməsi edin",
+    "steps": {
+        "device": "Cihaz Tara",
+        "product": "Məhsul Tara",
+        "confirm": "Təsdiq Et"
+    },
+    "scanner": {
+        "scanDevice": "ESL cihazın QR kodunu oxudun",
+        "scanProduct": "Məhsul barkodunu oxudun",
+        "scanning": "Taranır...",
+        "processing": "Emal edilir...",
+        "switchCamera": "Kameranı Dəyiş",
+        "toggleTorch": "Fənər",
+        "manualEntry": "Manuel Daxiletmə",
+        "manualPlaceholder": "Barkod və ya kodu yazın...",
+        "manualSearch": "Axtar",
+        "cameraPermission": "Kamera icazəsi tələb olunur",
+        "cameraPermissionDesc": "Barkod oxutmaq üçün kameraya icazə verin",
+        "grantPermission": "İcazə Ver",
+        "cameraNotSupported": "Kamera dəstəklənmir",
+        "cameraNotSupportedDesc": "Brauzeriniz kamera girişini dəstəkləmir. Manuel daxiletmə istifadə edə bilərsiniz."
+    },
+    "device": {
+        "found": "Cihaz Tapıldı",
+        "name": "Cihaz Adı",
+        "type": "Tip",
+        "ip": "IP Ünvanı",
+        "mac": "MAC Ünvanı",
+        "status": "Vəziyyət",
+        "resolution": "Həlletmə",
+        "model": "Model",
+        "notFound": "Cihaz tapılmadı",
+        "notFoundDesc": "Bu kod ilə uyğun cihaz tapılmadı. Zəhmət olmasa yenidən cəhd edin.",
+        "alreadyAssigned": "Bu cihaz artıq bir məhsula təyin edilib",
+        "currentProduct": "Cari Məhsul",
+        "reassign": "Yenidən Təyin Et"
+    },
+    "product": {
+        "found": "Məhsul Tapıldı",
+        "name": "Məhsul Adı",
+        "sku": "SKU",
+        "barcode": "Barkod",
+        "price": "Qiymət",
+        "category": "Kateqoriya",
+        "notFound": "Məhsul tapılmadı",
+        "notFoundDesc": "Bu barkod ilə uyğun məhsul tapılmadı. Zəhmət olmasa yenidən cəhd edin.",
+        "alreadyBound": "Bu məhsul artıq bir cihaza bağlıdır",
+        "currentDevice": "Cari Cihaz"
+    },
+    "template": {
+        "title": "Şablon Seçimi",
+        "recommended": "Tövsiyə olunan",
+        "autoSelected": "Avtomatik seçildi",
+        "changeTemplate": "Dəyişdir",
+        "noTemplates": "Uyğun şablon tapılmadı",
+        "noTemplatesDesc": "Bu cihaz tipi üçün şablon yaradın"
+    },
+    "confirm": {
+        "title": "Eşləşdirmə Xülasəsi",
+        "deviceLabel": "Cihaz",
+        "productLabel": "Məhsul",
+        "templateLabel": "Şablon",
+        "bind": "Bağla",
+        "binding": "Bağlanır...",
+        "sendToDevice": "Cihaza Göndər",
+        "sending": "Göndərilir..."
+    },
+    "success": {
+        "title": "Eşləşdirmə Uğurlu!",
+        "message": "{device} cihazı {product} məhsulu ilə eşləşdirildi",
+        "newScan": "Yeni Tarama",
+        "sendNow": "İndi Göndər",
+        "sent": "Göndərildi"
+    },
+    "error": {
+        "lookupFailed": "Axtarış uğursuz oldu",
+        "bindingFailed": "Eşləşdirmə uğursuz oldu",
+        "sendFailed": "Göndərmə uğursuz oldu",
+        "cameraError": "Kamera xətası",
+        "networkError": "Şəbəkə xətası, zəhmət olmasa yenidən cəhd edin",
+        "tryAgain": "Yenidən Cəhd Et"
+    },
+    "history": {
+        "title": "Son Eşləşdirmələr",
+        "empty": "Hələ eşləşdirmə aparılmayıb",
+        "clear": "Tarixçəni Təmizlə",
+        "ago": "{time} əvvəl"
+    },
+    "actions": {
+        "continue": "Davam Et",
+        "back": "Geri",
+        "cancel": "Ləğv Et",
+        "retry": "Yenidən Tara",
+        "close": "Bağla"
+    }
+}

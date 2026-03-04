@@ -895,6 +895,7 @@
             "products": "Ürünler",
             "bundles": "Paketler",
             "kunyeDistribution": "Künye Dağıtım",
+            "fieldBinding": "Saha Etiketleme",
             "bulkSend": "Toplu Gönderim",
             "templates": "Şablonlar",
             "webTemplates": "Web Şablonları",

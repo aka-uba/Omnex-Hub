@@ -1904,6 +1904,21 @@ $router->group(['prefix' => '/api/bundles', 'middleware' => ['auth']], function(
     });
 });
 
+// =====================================================
+// Field Binding Routes (Device/Product Lookup & Template Suggestions)
+// =====================================================
+$router->group(['prefix' => '/api/field-binding', 'middleware' => ['auth']], function($router) {
+    // Lookup device or product by code (barcode, SKU, MAC, IP, ID)
+    $router->post('/lookup', function($request) {
+        require API_PATH . '/field-binding/lookup.php';
+    });
+
+    // Get scored template suggestions for a device type/screen
+    $router->get('/templates', function($request) {
+        require API_PATH . '/field-binding/templates.php';
+    });
+});
+
 // Dispatch request
 try {
     $startTime = microtime(true);

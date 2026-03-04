@@ -261,6 +261,9 @@ class App {
         this.router.addRoute('/notifications', () => this.loadProtectedPage('notifications/NotificationList'));
         this.router.addRoute('/notifications/settings', () => this.loadProtectedPage('notifications/NotificationSettings'));
 
+        // Field Binding (Camera-based device-product binding)
+        this.router.addRoute('/field-binding', () => this.loadProtectedPage('field-binding/FieldBinding'));
+
         // Web Templates (VvvebJs HTML Editor)
         this.router.addRoute('/web-templates', () => this.loadProtectedPage('web-templates/WebTemplateList'));
         this.router.addRoute('/web-templates/new', () => this.loadProtectedPage('web-templates/WebTemplateEditor'));

@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Dashboard",
+        "fieldBinding": "Field Binding"
+    },
+    "title": "Field Binding",
+    "subtitle": "Bind devices to products using camera scanning",
+    "steps": {
+        "device": "Scan Device",
+        "product": "Scan Product",
+        "confirm": "Confirm"
+    },
+    "scanner": {
+        "scanDevice": "Scan the QR code on the ESL device",
+        "scanProduct": "Scan the product barcode",
+        "scanning": "Scanning...",
+        "processing": "Processing...",
+        "switchCamera": "Switch Camera",
+        "toggleTorch": "Torch",
+        "manualEntry": "Manual Entry",
+        "manualPlaceholder": "Type barcode or code...",
+        "manualSearch": "Search",
+        "cameraPermission": "Camera permission required",
+        "cameraPermissionDesc": "Please allow camera access to scan barcodes",
+        "grantPermission": "Grant Permission",
+        "cameraNotSupported": "Camera not supported",
+        "cameraNotSupportedDesc": "Your browser does not support camera access. You can use manual entry instead."
+    },
+    "device": {
+        "found": "Device Found",
+        "name": "Device Name",
+        "type": "Type",
+        "ip": "IP Address",
+        "mac": "MAC Address",
+        "status": "Status",
+        "resolution": "Resolution",
+        "model": "Model",
+        "notFound": "Device not found",
+        "notFoundDesc": "No device matched this code. Please try again.",
+        "alreadyAssigned": "This device is already assigned to a product",
+        "currentProduct": "Current Product",
+        "reassign": "Reassign"
+    },
+    "product": {
+        "found": "Product Found",
+        "name": "Product Name",
+        "sku": "SKU",
+        "barcode": "Barcode",
+        "price": "Price",
+        "category": "Category",
+        "notFound": "Product not found",
+        "notFoundDesc": "No product matched this barcode. Please try again.",
+        "alreadyBound": "This product is already bound to a device",
+        "currentDevice": "Current Device"
+    },
+    "template": {
+        "title": "Template Selection",
+        "recommended": "Recommended",
+        "autoSelected": "Auto-selected",
+        "changeTemplate": "Change",
+        "noTemplates": "No suitable template found",
+        "noTemplatesDesc": "Create a template for this device type"
+    },
+    "confirm": {
+        "title": "Binding Summary",
+        "deviceLabel": "Device",
+        "productLabel": "Product",
+        "templateLabel": "Template",
+        "bind": "Bind",
+        "binding": "Binding...",
+        "sendToDevice": "Send to Device",
+        "sending": "Sending..."
+    },
+    "success": {
+        "title": "Binding Successful!",
+        "message": "Device {device} has been bound to product {product}",
+        "newScan": "New Scan",
+        "sendNow": "Send Now",
+        "sent": "Sent"
+    },
+    "error": {
+        "lookupFailed": "Lookup failed",
+        "bindingFailed": "Binding failed",
+        "sendFailed": "Send failed",
+        "cameraError": "Camera error",
+        "networkError": "Network error, please try again",
+        "tryAgain": "Try Again"
+    },
+    "history": {
+        "title": "Recent Bindings",
+        "empty": "No bindings yet",
+        "clear": "Clear History",
+        "ago": "{time} ago"
+    },
+    "actions": {
+        "continue": "Continue",
+        "back": "Back",
+        "cancel": "Cancel",
+        "retry": "Scan Again",
+        "close": "Close"
+    }
+}

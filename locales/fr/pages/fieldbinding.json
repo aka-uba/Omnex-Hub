@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Tableau de bord",
+        "fieldBinding": "Liaison sur le terrain"
+    },
+    "title": "Liaison sur le terrain",
+    "subtitle": "Associez les appareils aux produits par scan de la caméra",
+    "steps": {
+        "device": "Scanner l'appareil",
+        "product": "Scanner le produit",
+        "confirm": "Confirmer"
+    },
+    "scanner": {
+        "scanDevice": "Scannez le code QR sur l'appareil ESL",
+        "scanProduct": "Scannez le code-barres du produit",
+        "scanning": "Scan en cours...",
+        "processing": "Traitement en cours...",
+        "switchCamera": "Changer de caméra",
+        "toggleTorch": "Lampe torche",
+        "manualEntry": "Saisie manuelle",
+        "manualPlaceholder": "Saisissez le code-barres ou le code...",
+        "manualSearch": "Rechercher",
+        "cameraPermission": "Autorisation de la caméra requise",
+        "cameraPermissionDesc": "Veuillez autoriser l'accès à la caméra pour scanner les codes-barres",
+        "grantPermission": "Autoriser",
+        "cameraNotSupported": "Caméra non prise en charge",
+        "cameraNotSupportedDesc": "Votre navigateur ne prend pas en charge l'accès à la caméra. Vous pouvez utiliser la saisie manuelle."
+    },
+    "device": {
+        "found": "Appareil trouvé",
+        "name": "Nom de l'appareil",
+        "type": "Type",
+        "ip": "Adresse IP",
+        "mac": "Adresse MAC",
+        "status": "Statut",
+        "resolution": "Résolution",
+        "model": "Modèle",
+        "notFound": "Appareil introuvable",
+        "notFoundDesc": "Aucun appareil correspondant à ce code. Veuillez réessayer.",
+        "alreadyAssigned": "Cet appareil est déjà associé à un produit",
+        "currentProduct": "Produit actuel",
+        "reassign": "Réassigner"
+    },
+    "product": {
+        "found": "Produit trouvé",
+        "name": "Nom du produit",
+        "sku": "Référence",
+        "barcode": "Code-barres",
+        "price": "Prix",
+        "category": "Catégorie",
+        "notFound": "Produit introuvable",
+        "notFoundDesc": "Aucun produit correspondant à ce code-barres. Veuillez réessayer.",
+        "alreadyBound": "Ce produit est déjà lié à un appareil",
+        "currentDevice": "Appareil actuel"
+    },
+    "template": {
+        "title": "Sélection du modèle",
+        "recommended": "Recommandé",
+        "autoSelected": "Sélectionné automatiquement",
+        "changeTemplate": "Modifier",
+        "noTemplates": "Aucun modèle approprié trouvé",
+        "noTemplatesDesc": "Créez un modèle pour ce type d'appareil"
+    },
+    "confirm": {
+        "title": "Résumé de l'association",
+        "deviceLabel": "Appareil",
+        "productLabel": "Produit",
+        "templateLabel": "Modèle",
+        "bind": "Associer",
+        "binding": "Association en cours...",
+        "sendToDevice": "Envoyer à l'appareil",
+        "sending": "Envoi en cours..."
+    },
+    "success": {
+        "title": "Association réussie !",
+        "message": "L'appareil {device} a été associé au produit {product}",
+        "newScan": "Nouveau scan",
+        "sendNow": "Envoyer maintenant",
+        "sent": "Envoyé"
+    },
+    "error": {
+        "lookupFailed": "Recherche échouée",
+        "bindingFailed": "Association échouée",
+        "sendFailed": "Envoi échoué",
+        "cameraError": "Erreur de caméra",
+        "networkError": "Erreur réseau, veuillez réessayer",
+        "tryAgain": "Réessayer"
+    },
+    "history": {
+        "title": "Associations récentes",
+        "empty": "Aucune association pour le moment",
+        "clear": "Effacer l'historique",
+        "ago": "il y a {time}"
+    },
+    "actions": {
+        "continue": "Continuer",
+        "back": "Retour",
+        "cancel": "Annuler",
+        "retry": "Scanner à nouveau",
+        "close": "Fermer"
+    }
+}

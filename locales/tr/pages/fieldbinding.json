@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "Panel",
+        "fieldBinding": "Saha Etiketleme"
+    },
+    "title": "Saha Etiketleme",
+    "subtitle": "Kamera ile cihaz-ürün eşleştirmesi yapın",
+    "steps": {
+        "device": "Cihaz Tara",
+        "product": "Ürün Tara",
+        "confirm": "Onayla"
+    },
+    "scanner": {
+        "scanDevice": "ESL cihazın QR kodunu okutun",
+        "scanProduct": "Ürün barkodunu okutun",
+        "scanning": "Taranıyor...",
+        "processing": "İşleniyor...",
+        "switchCamera": "Kamera Değiştir",
+        "toggleTorch": "Fener",
+        "manualEntry": "Manuel Giriş",
+        "manualPlaceholder": "Barkod veya kodu yazın...",
+        "manualSearch": "Ara",
+        "cameraPermission": "Kamera izni gerekli",
+        "cameraPermissionDesc": "Barkod okutmak için kamera erişimine izin verin",
+        "grantPermission": "İzin Ver",
+        "cameraNotSupported": "Kamera desteklenmiyor",
+        "cameraNotSupportedDesc": "Tarayıcınız kamera erişimini desteklemiyor. Manuel giriş kullanabilirsiniz."
+    },
+    "device": {
+        "found": "Cihaz Bulundu",
+        "name": "Cihaz Adı",
+        "type": "Tip",
+        "ip": "IP Adresi",
+        "mac": "MAC Adresi",
+        "status": "Durum",
+        "resolution": "Çözünürlük",
+        "model": "Model",
+        "notFound": "Cihaz bulunamadı",
+        "notFoundDesc": "Bu kod ile eşleşen bir cihaz bulunamadı. Lütfen tekrar deneyin.",
+        "alreadyAssigned": "Bu cihaz zaten bir ürüne atanmış",
+        "currentProduct": "Mevcut Ürün",
+        "reassign": "Yeniden Ata"
+    },
+    "product": {
+        "found": "Ürün Bulundu",
+        "name": "Ürün Adı",
+        "sku": "SKU",
+        "barcode": "Barkod",
+        "price": "Fiyat",
+        "category": "Kategori",
+        "notFound": "Ürün bulunamadı",
+        "notFoundDesc": "Bu barkod ile eşleşen bir ürün bulunamadı. Lütfen tekrar deneyin.",
+        "alreadyBound": "Bu ürün zaten bir cihaza bağlı",
+        "currentDevice": "Mevcut Cihaz"
+    },
+    "template": {
+        "title": "Şablon Seçimi",
+        "recommended": "Önerilen",
+        "autoSelected": "Otomatik seçildi",
+        "changeTemplate": "Değiştir",
+        "noTemplates": "Uygun şablon bulunamadı",
+        "noTemplatesDesc": "Bu cihaz tipi için şablon oluşturun"
+    },
+    "confirm": {
+        "title": "Eşleştirme Özeti",
+        "deviceLabel": "Cihaz",
+        "productLabel": "Ürün",
+        "templateLabel": "Şablon",
+        "bind": "Bağla",
+        "binding": "Bağlanıyor...",
+        "sendToDevice": "Cihaza Gönder",
+        "sending": "Gönderiliyor..."
+    },
+    "success": {
+        "title": "Eşleştirme Başarılı!",
+        "message": "{device} cihazı {product} ürünü ile eşleştirildi",
+        "newScan": "Yeni Tarama",
+        "sendNow": "Şimdi Gönder",
+        "sent": "Gönderildi"
+    },
+    "error": {
+        "lookupFailed": "Arama başarısız",
+        "bindingFailed": "Eşleştirme başarısız",
+        "sendFailed": "Gönderme başarısız",
+        "cameraError": "Kamera hatası",
+        "networkError": "Ağ hatası, lütfen tekrar deneyin",
+        "tryAgain": "Tekrar Dene"
+    },
+    "history": {
+        "title": "Son Eşleştirmeler",
+        "empty": "Henüz eşleştirme yapılmadı",
+        "clear": "Geçmişi Temizle",
+        "ago": "{time} önce"
+    },
+    "actions": {
+        "continue": "Devam",
+        "back": "Geri",
+        "cancel": "İptal",
+        "retry": "Tekrar Tara",
+        "close": "Kapat"
+    }
+}

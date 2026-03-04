@@ -895,6 +895,7 @@
             "products": "Products",
             "bundles": "Bundles",
             "kunyeDistribution": "Kunye Distribution",
+            "fieldBinding": "Field Binding",
             "bulkSend": "Bulk Send",
             "templates": "Templates",
             "webTemplates": "Web Templates",

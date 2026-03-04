@@ -1,0 +1,102 @@
+{
+    "breadcrumb": {
+        "dashboard": "لوحة التحكم",
+        "fieldBinding": "ربط الحقول"
+    },
+    "title": "ربط الحقول",
+    "subtitle": "ربط الأجهزة بالمنتجات باستخدام مسح الكاميرا",
+    "steps": {
+        "device": "مسح الجهاز",
+        "product": "مسح المنتج",
+        "confirm": "تأكيد"
+    },
+    "scanner": {
+        "scanDevice": "امسح رمز QR على جهاز ESL",
+        "scanProduct": "امسح الباركود الخاص بالمنتج",
+        "scanning": "جارٍ المسح...",
+        "processing": "جارٍ المعالجة...",
+        "switchCamera": "تبديل الكاميرا",
+        "toggleTorch": "المصباح",
+        "manualEntry": "إدخال يدوي",
+        "manualPlaceholder": "اكتب الباركود أو الرمز...",
+        "manualSearch": "بحث",
+        "cameraPermission": "يلزم إذن الكاميرا",
+        "cameraPermissionDesc": "يرجى السماح بالوصول إلى الكاميرا لمسح الباركود",
+        "grantPermission": "منح الإذن",
+        "cameraNotSupported": "الكاميرا غير مدعومة",
+        "cameraNotSupportedDesc": "متصفحك لا يدعم الوصول إلى الكاميرا. يمكنك استخدام الإدخال اليدوي بدلاً من ذلك."
+    },
+    "device": {
+        "found": "تم العثور على الجهاز",
+        "name": "اسم الجهاز",
+        "type": "النوع",
+        "ip": "عنوان IP",
+        "mac": "عنوان MAC",
+        "status": "الحالة",
+        "resolution": "الدقة",
+        "model": "الطراز",
+        "notFound": "لم يتم العثور على الجهاز",
+        "notFoundDesc": "لم يتم العثور على جهاز مطابق لهذا الرمز. يرجى المحاولة مرة أخرى.",
+        "alreadyAssigned": "هذا الجهاز مرتبط بالفعل بمنتج",
+        "currentProduct": "المنتج الحالي",
+        "reassign": "إعادة التعيين"
+    },
+    "product": {
+        "found": "تم العثور على المنتج",
+        "name": "اسم المنتج",
+        "sku": "رمز المخزون",
+        "barcode": "الباركود",
+        "price": "السعر",
+        "category": "الفئة",
+        "notFound": "لم يتم العثور على المنتج",
+        "notFoundDesc": "لم يتم العثور على منتج مطابق لهذا الباركود. يرجى المحاولة مرة أخرى.",
+        "alreadyBound": "هذا المنتج مرتبط بالفعل بجهاز",
+        "currentDevice": "الجهاز الحالي"
+    },
+    "template": {
+        "title": "اختيار القالب",
+        "recommended": "موصى به",
+        "autoSelected": "تم الاختيار تلقائياً",
+        "changeTemplate": "تغيير",
+        "noTemplates": "لم يتم العثور على قالب مناسب",
+        "noTemplatesDesc": "قم بإنشاء قالب لهذا النوع من الأجهزة"
+    },
+    "confirm": {
+        "title": "ملخص الربط",
+        "deviceLabel": "الجهاز",
+        "productLabel": "المنتج",
+        "templateLabel": "القالب",
+        "bind": "ربط",
+        "binding": "جارٍ الربط...",
+        "sendToDevice": "إرسال إلى الجهاز",
+        "sending": "جارٍ الإرسال..."
+    },
+    "success": {
+        "title": "تم الربط بنجاح!",
+        "message": "تم ربط الجهاز {device} بالمنتج {product}",
+        "newScan": "مسح جديد",
+        "sendNow": "إرسال الآن",
+        "sent": "تم الإرسال"
+    },
+    "error": {
+        "lookupFailed": "فشل البحث",
+        "bindingFailed": "فشل الربط",
+        "sendFailed": "فشل الإرسال",
+        "cameraError": "خطأ في الكاميرا",
+        "networkError": "خطأ في الشبكة، يرجى المحاولة مرة أخرى",
+        "tryAgain": "حاول مرة أخرى"
+    },
+    "history": {
+        "title": "عمليات الربط الأخيرة",
+        "empty": "لا توجد عمليات ربط بعد",
+        "clear": "مسح السجل",
+        "ago": "منذ {time}"
+    },
+    "actions": {
+        "continue": "متابعة",
+        "back": "رجوع",
+        "cancel": "إلغاء",
+        "retry": "إعادة المسح",
+        "close": "إغلاق"
+    }
+}

@@ -1416,6 +1416,7 @@ export class LayoutManager {
                     { label: this.__('layout.menu.products'), href: '/products', icon: 'package', roles: ['*'] },
                     { label: this.__('layout.menu.bundles'), href: '/bundles', icon: 'box-multiple', roles: ['*'] },
                     { label: this.__('layout.menu.kunyeDistribution'), href: '/products/kunye-distribution', icon: 'leaf', roles: ['*'] },
+                    { label: this.__('layout.menu.fieldBinding'), href: '/field-binding', icon: 'scan', roles: ['*'] },
                     { label: this.__('layout.menu.bulkSend'), href: '/admin/queue', icon: 'send', roles: ['*'] },
                     { label: this.__('layout.menu.templates'), href: '/templates', icon: 'layout', roles: ['*'] },
                     { label: this.__('layout.menu.webTemplates'), href: '/web-templates', icon: 'code', roles: ['*'] },
