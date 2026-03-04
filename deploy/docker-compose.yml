@@ -1,13 +1,27 @@
 # ========================================
-# Omnex Display Hub - Production Docker Compose
-# 4 Services: PostgreSQL + App + Nginx + Certbot
+# Omnex Display Hub - Base Docker Compose
+# Core Services: PostgreSQL + App
+# ========================================
+#
+# This is the BASE stack. Use with an overlay for production:
+#
+#   Standalone (single server, built-in nginx):
+#     docker compose -f docker-compose.yml -f docker-compose.standalone.yml up -d
+#
+#   Multi-project (behind shared Traefik proxy):
+#     docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
+#
+#   Local testing:
+#     docker compose -f docker-compose.local.yml up -d
+#
+# IMPORTANT: Set COMPOSE_PROJECT_NAME in .env for multi-project isolation.
+# Each stack must have a unique project name and APP_PORT.
 # ========================================
 
 services:
   # ---- PostgreSQL Database ----
   postgres:
     image: postgres:18-alpine
-    container_name: omnex-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${OMNEX_DB_NAME:-omnex_hub}
@@ -17,8 +31,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${OMNEX_DB_USER:-omnex} -d ${OMNEX_DB_NAME:-omnex_hub}"]
       interval: 10s
@@ -30,14 +42,13 @@ services:
         limits:
           memory: 2G
     networks:
-      - omnex-network
+      internal:
 
   # ---- PHP Application (Apache) ----
   app:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    container_name: omnex-app
     restart: unless-stopped
     depends_on:
       postgres:
@@ -58,55 +69,20 @@ services:
     volumes:
       - app_storage:/var/www/html/storage
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:${APP_PORT:-8080}:80"
     deploy:
       resources:
         limits:
           memory: 4G
     networks:
-      - omnex-network
-
-  # ---- Nginx Reverse Proxy + SSL ----
-  nginx:
-    image: nginx:alpine
-    container_name: omnex-nginx
-    restart: unless-stopped
-    depends_on:
-      - app
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - certbot_certs:/etc/letsencrypt:ro
-      - certbot_webroot:/var/www/certbot:ro
-    networks:
-      - omnex-network
-
-  # ---- Certbot SSL Certificate Manager ----
-  certbot:
-    image: certbot/certbot
-    container_name: omnex-certbot
-    restart: unless-stopped
-    volumes:
-      - certbot_certs:/etc/letsencrypt
-      - certbot_webroot:/var/www/certbot
-    # Auto-renew every 12 hours
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 43200; done'"
-    networks:
-      - omnex-network
+      internal:
 
 volumes:
   postgres_data:
     driver: local
   app_storage:
     driver: local
-  certbot_certs:
-    driver: local
-  certbot_webroot:
-    driver: local
 
 networks:
-  omnex-network:
+  internal:
     driver: bridge

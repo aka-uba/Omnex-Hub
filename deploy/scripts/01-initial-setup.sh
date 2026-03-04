@@ -73,10 +73,20 @@ else
     log "User 'deploy' already exists, ensured docker group membership"
 fi
 
-# ---- Application Directory ----
-log "Creating application directory..."
+# ---- Application Directories ----
+log "Creating application directories..."
 mkdir -p /opt/omnex-hub
-chown deploy:deploy /opt/omnex-hub
+mkdir -p /opt/omnex-backups
+chown deploy:deploy /opt/omnex-hub /opt/omnex-backups
+
+# ---- Shared Docker Network (for multi-project) ----
+log "Creating shared Docker network..."
+if ! docker network inspect omnex-proxy >/dev/null 2>&1; then
+    docker network create omnex-proxy
+    log "Shared network 'omnex-proxy' created"
+else
+    log "Shared network 'omnex-proxy' already exists"
+fi
 
 # ---- SSH Hardening ----
 log "Hardening SSH configuration..."

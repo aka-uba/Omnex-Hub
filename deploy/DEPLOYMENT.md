@@ -8,6 +8,17 @@
 
 ---
 
+## Deployment Modes
+
+Omnex Display Hub supports two deployment modes:
+
+| Mode | Use Case | Components |
+|------|----------|------------|
+| **Standalone** | Single server, single project | PostgreSQL + App + Nginx + Certbot |
+| **Multi-project** | Multiple stacks on same server | PostgreSQL + App + Shared Traefik Proxy |
+
+---
+
 ## 1. Server Preparation
 
 ### 1.1 Initial Setup
@@ -26,11 +37,13 @@ sudo bash deploy/scripts/01-initial-setup.sh
 This script will:
 - Install Docker CE + Compose plugin
 - Create `deploy` user with Docker access
+- Create `/opt/omnex-hub` and `/opt/omnex-backups` directories
+- Create shared Docker network `omnex-proxy` (for multi-project)
 - Harden SSH (port 2222, key-only auth)
 - Configure UFW firewall (80, 443, 2222)
 - Set up Fail2Ban
 - Apply kernel security parameters
-- Create 2GB swap
+- Create 4GB swap
 
 ### 1.2 SSH Key Setup
 
@@ -72,12 +85,13 @@ cat omnex-deploy-key
 
 ---
 
-## 3. First Deploy
+## 3. Standalone Deployment (Single Server)
+
+Best for: Single installation, one domain, simple setup.
 
 ### 3.1 Configure Environment
 
 ```bash
-# Switch to deploy user
 su - deploy
 cd /opt/omnex-hub
 
@@ -87,7 +101,9 @@ nano deploy/.env
 ```
 
 **Required changes in `.env`:**
-- `OMNEX_DB_PASSWORD` - Strong database password
+- `COMPOSE_PROJECT_NAME=omnex` (keep default)
+- `DEPLOY_MODE=standalone`
+- `OMNEX_DB_PASS` - Strong database password
 - `OMNEX_JWT_SECRET` - Random 64-char string (`openssl rand -hex 32`)
 - `OMNEX_ADMIN_PASSWORD` - Admin account password
 - `OMNEX_DOMAIN` - Your domain name
@@ -95,34 +111,233 @@ nano deploy/.env
 ### 3.2 Deploy
 
 ```bash
-bash deploy/scripts/02-deploy-app.sh
+bash deploy/scripts/02-deploy-app.sh --mode standalone
 ```
 
 This will:
 - Build Docker images
-- Start all services (PostgreSQL, App, Nginx, Certbot)
+- Start PostgreSQL + App + Nginx + Certbot
+- Obtain SSL certificate via Let's Encrypt
 - Run database migrations
-- Obtain SSL certificate
 - Verify health check
 
----
+### Architecture (Standalone)
 
-## 4. SSL Certificate
-
-### Automatic (with domain)
-
-Set `OMNEX_DOMAIN=yourdomain.com` in `.env`. The deploy script handles Certbot automatically. Certificates auto-renew every 12 hours via the certbot container.
-
-### Manual renewal
-
-```bash
-docker compose -f deploy/docker-compose.yml run --rm certbot certbot renew
-docker compose -f deploy/docker-compose.yml restart nginx
+```
+Internet
+    |
+    v
+nginx:443 (SSL termination, rate limiting, security headers)
+    |
+    v
+app:80 (PHP 8.4 + Apache, application logic)
+    |
+    v
+postgres:5432 (PostgreSQL 18, 11 schemas, RLS)
 ```
 
 ---
 
-## 5. Continuous Deployment
+## 4. Multi-Project Deployment
+
+Best for: Multiple customers/stacks on one server, domain-based routing.
+
+### 4.1 Architecture (Multi-Project)
+
+```
+Internet
+    |
+    v
+Traefik:443 (shared reverse proxy, auto SSL, domain routing)
+    |
+    +---> panel.example.com      --> Stack "panel"     (postgres + app)
+    +---> customer-a.example.com --> Stack "customer-a" (postgres + app)
+    +---> customer-b.example.com --> Stack "customer-b" (postgres + app)
+```
+
+Each stack gets:
+- Its own PostgreSQL database (fully isolated)
+- Its own app container
+- Its own storage volume
+- Automatic HTTPS via Let's Encrypt
+- Domain-based routing via Traefik labels
+
+### 4.2 Start Shared Proxy
+
+```bash
+su - deploy
+cd /opt/omnex-hub
+
+# Configure proxy
+cp deploy/proxy/.env.example deploy/proxy/.env
+nano deploy/proxy/.env
+```
+
+**Required in proxy `.env`:**
+- `ACME_EMAIL` - Email for Let's Encrypt notifications
+- `PROXY_DOMAIN` - Base domain (dashboard at `traefik.PROXY_DOMAIN`)
+- `DASHBOARD_AUTH` - htpasswd hash (`htpasswd -nB admin`)
+
+```bash
+# Start the shared Traefik proxy
+bash deploy/scripts/05-proxy-setup.sh
+```
+
+### 4.3 Deploy First Stack
+
+```bash
+# Create stack directory
+mkdir -p /opt/stacks/panel
+cp -r deploy/* /opt/stacks/panel/
+
+# Configure stack
+cd /opt/stacks/panel
+cp .env.example .env
+nano .env
+```
+
+**Stack `.env` settings:**
+```env
+COMPOSE_PROJECT_NAME=panel
+DEPLOY_MODE=multi
+OMNEX_DOMAIN=panel.example.com
+APP_PORT=8081
+OMNEX_DB_NAME=omnex_panel
+OMNEX_DB_PASS=unique_strong_password_1
+OMNEX_JWT_SECRET=unique_random_64_chars_1
+```
+
+```bash
+bash scripts/02-deploy-app.sh --mode multi --project-dir /opt/stacks/panel
+```
+
+### 4.4 Deploy Additional Stacks
+
+```bash
+# Customer A stack
+mkdir -p /opt/stacks/customer-a
+cp -r /opt/omnex-hub/deploy/* /opt/stacks/customer-a/
+cd /opt/stacks/customer-a
+cp .env.example .env
+nano .env
+```
+
+**Customer A `.env`:**
+```env
+COMPOSE_PROJECT_NAME=customer-a
+DEPLOY_MODE=multi
+OMNEX_DOMAIN=customer-a.example.com
+APP_PORT=8082
+OMNEX_DB_NAME=omnex_customer_a
+OMNEX_DB_PASS=unique_strong_password_2
+OMNEX_JWT_SECRET=unique_random_64_chars_2
+```
+
+```bash
+bash scripts/02-deploy-app.sh --mode multi --project-dir /opt/stacks/customer-a
+```
+
+### 4.5 Port Allocation
+
+Each stack needs a unique `APP_PORT` for localhost admin access:
+
+| Stack | APP_PORT | Domain |
+|-------|----------|--------|
+| panel | 8081 | panel.example.com |
+| customer-a | 8082 | customer-a.example.com |
+| customer-b | 8083 | customer-b.example.com |
+
+---
+
+## 5. SSL Certificate
+
+### Standalone Mode
+
+Set `OMNEX_DOMAIN=yourdomain.com` in `.env`. The deploy script handles Certbot automatically. Certificates auto-renew every 12 hours via the certbot container.
+
+### Multi-Project Mode
+
+Traefik handles SSL automatically via Let's Encrypt. No manual certificate management needed. Certificates are stored in the `traefik_letsencrypt` Docker volume.
+
+### Manual renewal (standalone only)
+
+```bash
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml \
+  run --rm certbot certbot renew
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml \
+  restart nginx
+```
+
+---
+
+## 6. Backup & Restore
+
+### Automated Backup
+
+```bash
+# Backup current project (auto-detects directory)
+bash deploy/scripts/04-backup.sh
+
+# Backup specific stack
+bash deploy/scripts/04-backup.sh --project-dir /opt/stacks/customer-a
+
+# Custom backup directory and retention
+bash deploy/scripts/04-backup.sh --backup-dir /mnt/backups --retention 7
+```
+
+**What gets backed up:**
+- Full PostgreSQL dump
+- Storage volume (media, renders, uploads)
+- Environment snapshot (passwords masked)
+- Nginx config snapshot
+- Backup metadata (JSON)
+
+**Retention:** 5 days by default (configurable with `--retention`)
+
+### Cron Setup (Recommended)
+
+```bash
+# Daily backup at 3:00 AM - add to deploy user's crontab
+crontab -e
+
+# Single project
+0 3 * * * /opt/omnex-hub/deploy/scripts/04-backup.sh >> /var/log/omnex-backup.log 2>&1
+
+# Multi-project (one line per stack)
+0 3 * * * /opt/omnex-hub/deploy/scripts/04-backup.sh --project-dir /opt/stacks/panel >> /var/log/omnex-backup-panel.log 2>&1
+0 3 * * * /opt/omnex-hub/deploy/scripts/04-backup.sh --project-dir /opt/stacks/customer-a >> /var/log/omnex-backup-customer-a.log 2>&1
+```
+
+### Restore from Backup
+
+```bash
+# Restore standalone
+bash deploy/scripts/03-restore-backup.sh /opt/omnex-backups/omnex/omnex_20260304_030000.tar.gz
+
+# Restore specific stack
+bash deploy/scripts/03-restore-backup.sh \
+  /opt/omnex-backups/customer-a/customer-a_20260304_030000.tar.gz \
+  --project-dir /opt/stacks/customer-a \
+  --mode multi
+```
+
+### Backup Directory Structure
+
+```
+/opt/omnex-backups/
+├── omnex/                              # Default standalone
+│   ├── omnex_20260301_030000.tar.gz
+│   ├── omnex_20260302_030000.tar.gz
+│   └── ...
+├── panel/                              # Multi-project: panel stack
+│   └── ...
+└── customer-a/                         # Multi-project: customer-a stack
+    └── ...
+```
+
+---
+
+## 7. Continuous Deployment
 
 After initial setup, every push to `main` branch automatically:
 
@@ -139,71 +354,59 @@ Go to GitHub > Actions > "Deploy to Production" > Run workflow
 
 ---
 
-## 6. Backup & Restore
-
-### Create backup
-
-```bash
-# Database dump
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  pg_dump -U omnex omnex_hub > backup_$(date +%Y%m%d).sql
-
-# Full backup (DB + storage)
-mkdir -p /tmp/omnex-backup
-docker compose -f deploy/docker-compose.yml exec -T postgres \
-  pg_dump -U omnex omnex_hub > /tmp/omnex-backup/database.sql
-docker cp $(docker compose -f deploy/docker-compose.yml ps -q app):/var/www/html/storage /tmp/omnex-backup/storage
-tar -czf omnex-backup-$(date +%Y%m%d).tar.gz -C /tmp omnex-backup
-rm -rf /tmp/omnex-backup
-```
-
-### Restore from backup
-
-```bash
-bash deploy/scripts/03-restore-backup.sh /path/to/omnex-backup-YYYYMMDD.tar.gz
-```
-
----
-
-## 7. Monitoring
+## 8. Monitoring
 
 ### Health check
 
 ```bash
+# Standalone
 curl http://localhost:8080/api/health
-# Expected: {"status":"ok","version":"1.0.52","service":"omnex-display-hub",...}
+
+# Multi-project (per stack port)
+curl http://localhost:8081/api/health  # panel
+curl http://localhost:8082/api/health  # customer-a
 ```
 
 ### View logs
 
 ```bash
-# All services
-docker compose -f deploy/docker-compose.yml logs -f
+# Standalone
+docker compose -p omnex -f deploy/docker-compose.yml \
+  -f deploy/docker-compose.standalone.yml logs -f
 
-# Specific service
-docker compose -f deploy/docker-compose.yml logs -f app
-docker compose -f deploy/docker-compose.yml logs -f postgres
-docker compose -f deploy/docker-compose.yml logs -f nginx
+# Multi-project (specific stack)
+docker compose -p customer-a -f /opt/stacks/customer-a/docker-compose.yml \
+  -f /opt/stacks/customer-a/docker-compose.proxy.yml logs -f app
+
+# Traefik proxy logs
+cd deploy/proxy && docker compose logs -f
 ```
 
 ### Container status
 
 ```bash
-docker compose -f deploy/docker-compose.yml ps
+# All stacks
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Specific stack
+docker compose -p customer-a -f /opt/stacks/customer-a/docker-compose.yml ps
+
+# Proxy status (show connected stacks)
+bash deploy/scripts/05-proxy-setup.sh --status
 ```
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### App won't start
 
 ```bash
 # Check app logs
-docker compose -f deploy/docker-compose.yml logs app --tail=50
+docker compose -p omnex -f deploy/docker-compose.yml logs app --tail=50
 
 # Check if database is accessible
-docker compose -f deploy/docker-compose.yml exec app php -r "
+docker compose -p omnex -f deploy/docker-compose.yml exec app php -r "
     require '/var/www/html/config.php';
     \$db = Database::getInstance();
     echo 'DB OK';
@@ -214,73 +417,87 @@ docker compose -f deploy/docker-compose.yml exec app php -r "
 
 ```bash
 # Check postgres logs
-docker compose -f deploy/docker-compose.yml logs postgres
+docker compose -p omnex -f deploy/docker-compose.yml logs postgres
 
 # Test connection
-docker compose -f deploy/docker-compose.yml exec postgres psql -U omnex -d omnex_hub -c "SELECT 1;"
+docker compose -p omnex -f deploy/docker-compose.yml exec postgres \
+  psql -U omnex -d omnex_hub -c "SELECT 1;"
 ```
 
-### SSL certificate issues
+### SSL certificate issues (standalone)
 
 ```bash
-# Check certificate status
-docker compose -f deploy/docker-compose.yml run --rm certbot certbot certificates
+docker compose -p omnex -f deploy/docker-compose.yml \
+  -f deploy/docker-compose.standalone.yml \
+  run --rm certbot certbot certificates
 
 # Force renewal
-docker compose -f deploy/docker-compose.yml run --rm certbot certbot renew --force-renewal
-docker compose -f deploy/docker-compose.yml restart nginx
+docker compose -p omnex -f deploy/docker-compose.yml \
+  -f deploy/docker-compose.standalone.yml \
+  run --rm certbot certbot renew --force-renewal
 ```
 
-### Nginx errors
+### Multi-project: Stack not accessible
 
 ```bash
-# Test nginx config
-docker compose -f deploy/docker-compose.yml exec nginx nginx -t
+# Check Traefik can see the stack
+docker network inspect omnex-proxy --format '{{range .Containers}}{{.Name}} {{end}}'
 
-# View access/error logs
-docker compose -f deploy/docker-compose.yml exec nginx cat /var/log/nginx/error.log
+# Check Traefik dashboard
+curl -u admin:PASSWORD https://traefik.example.com/api/http/routers
+
+# Check app is healthy
+curl http://localhost:APP_PORT/api/health
 ```
 
 ### Reset everything
 
 ```bash
-cd /opt/omnex-hub
-docker compose -f deploy/docker-compose.yml down -v  # WARNING: deletes all data!
+# WARNING: deletes all data!
+docker compose -p omnex -f deploy/docker-compose.yml down -v
 bash deploy/scripts/02-deploy-app.sh
 ```
 
 ---
 
-## Architecture
+## 10. File Reference
 
-```
-Internet
-    |
-    v
-nginx:443 (SSL termination, rate limiting, security headers)
-    |
-    v
-app:80 (PHP 8.2 + Apache, application logic)
-    |
-    v
-postgres:5432 (PostgreSQL 18, 11 schemas, RLS)
-```
+### Docker Compose Files
+
+| File | Purpose |
+|------|---------|
+| `docker-compose.yml` | Base stack: PostgreSQL + App |
+| `docker-compose.standalone.yml` | Overlay: Adds Nginx + Certbot |
+| `docker-compose.proxy.yml` | Overlay: Adds Traefik labels + shared network |
+| `docker-compose.local.yml` | Local testing (independent) |
+| `proxy/docker-compose.yml` | Shared Traefik reverse proxy |
+
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `01-initial-setup.sh` | Server preparation (Docker, firewall, SSH) |
+| `02-deploy-app.sh` | Application deployment (standalone/multi) |
+| `03-restore-backup.sh` | Restore from backup archive |
+| `04-backup.sh` | Automated backup with retention |
+| `05-proxy-setup.sh` | Shared Traefik proxy management |
 
 ### Services
 
-| Service | Image | Purpose |
-|---------|-------|---------|
-| postgres | postgres:18-alpine | Database (512MB limit) |
-| app | Custom PHP 8.2 Apache | Application (1GB limit) |
-| nginx | nginx:alpine | Reverse proxy + SSL |
-| certbot | certbot/certbot | SSL certificate management |
+| Service | Image | Memory Limit | Purpose |
+|---------|-------|-------------|---------|
+| postgres | postgres:18-alpine | 2GB | Database |
+| app | Custom PHP 8.4 Apache | 4GB | Application |
+| nginx | nginx:alpine | - | Reverse proxy (standalone) |
+| certbot | certbot/certbot | - | SSL certificates (standalone) |
+| traefik | traefik:v3.3 | 512MB | Reverse proxy (multi-project) |
 
 ### Security Features
 
 - SSH: Key-only auth, port 2222, max 3 retries
 - Firewall: UFW deny-all + allow 80/443/2222
 - Fail2Ban: SSH + Nginx brute force protection
-- Nginx: Rate limiting, security headers, HSTS
+- Nginx/Traefik: Rate limiting, security headers, HSTS
 - App: OPcache, error hiding, CSRF/XSS protection
-- Database: RLS multi-tenant isolation, encrypted connections
+- Database: RLS multi-tenant isolation
 - Docker: Non-root containers, memory limits, log rotation

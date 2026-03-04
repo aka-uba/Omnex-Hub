@@ -1,7 +1,19 @@
 #!/bin/bash
 # ========================================
 # Omnex Display Hub - Application Deploy
-# Run as deploy user: bash 02-deploy-app.sh
+# Supports standalone and multi-project modes
+# ========================================
+#
+# Usage:
+#   bash 02-deploy-app.sh                                # Deploy with .env settings
+#   bash 02-deploy-app.sh --mode standalone              # Explicit standalone
+#   bash 02-deploy-app.sh --mode multi                   # Multi-project (Traefik)
+#   bash 02-deploy-app.sh --project-dir /opt/stacks/foo  # Custom project dir
+#
+# Modes:
+#   standalone - nginx + certbot built-in (default, single server)
+#   multi      - behind shared Traefik proxy (multi-project)
+#
 # ========================================
 
 set -euo pipefail
@@ -10,91 +22,171 @@ echo "================================================"
 echo "  Omnex Display Hub - Application Deploy"
 echo "================================================"
 
-# Colors
+# ---- Colors ----
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
-log() { echo -e "${GREEN}[INFO]${NC} $1"; }
-warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log()   { echo -e "${GREEN}[INFO]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
-APP_DIR="/opt/omnex-hub"
-COMPOSE_FILE="$APP_DIR/deploy/docker-compose.yml"
-ENV_FILE="$APP_DIR/deploy/.env"
-DOMAIN="${OMNEX_DOMAIN:-}"
+# ---- Defaults ----
+PROJECT_DIR=""
+DEPLOY_MODE=""
+
+# ---- Parse Arguments ----
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --mode)         DEPLOY_MODE="$2"; shift 2 ;;
+        --project-dir)  PROJECT_DIR="$2"; shift 2 ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --mode MODE         Deploy mode: standalone (default) or multi"
+            echo "  --project-dir DIR   Project directory (default: /opt/omnex-hub)"
+            echo "  --help              Show this help"
+            exit 0
+            ;;
+        *) error "Unknown option: $1" ;;
+    esac
+done
+
+# ---- Detect Project Directory ----
+if [ -z "$PROJECT_DIR" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    CANDIDATE="$(dirname "$SCRIPT_DIR")"
+
+    if [ -f "$CANDIDATE/docker-compose.yml" ]; then
+        PROJECT_DIR="$CANDIDATE"
+    elif [ -f "/opt/omnex-hub/deploy/docker-compose.yml" ]; then
+        PROJECT_DIR="/opt/omnex-hub/deploy"
+    else
+        error "Cannot detect project directory. Use --project-dir"
+    fi
+fi
+
+COMPOSE_FILE="$PROJECT_DIR/docker-compose.yml"
+ENV_FILE="$PROJECT_DIR/.env"
 
 # ---- Pre-checks ----
-[ -d "$APP_DIR" ] || error "App directory not found: $APP_DIR"
+[ -d "$PROJECT_DIR" ] || error "Project directory not found: $PROJECT_DIR"
 [ -f "$COMPOSE_FILE" ] || error "docker-compose.yml not found: $COMPOSE_FILE"
 
 if [ ! -f "$ENV_FILE" ]; then
-    error "Environment file not found: $ENV_FILE\nCopy deploy/.env.example to deploy/.env and configure it."
+    error "Environment file not found: $ENV_FILE\nCopy .env.example to .env and configure it."
 fi
 
-# ---- Load env ----
+# ---- Load Environment ----
 set -a
 source "$ENV_FILE"
 set +a
 
 log "Environment loaded from $ENV_FILE"
 
-# ---- Stop existing containers ----
-log "Stopping existing containers..."
-cd "$APP_DIR"
-docker compose -f "$COMPOSE_FILE" down --remove-orphans 2>/dev/null || true
+# ---- Resolve Deploy Mode ----
+DEPLOY_MODE="${DEPLOY_MODE:-${DEPLOY_MODE:-standalone}}"
+if [[ "$DEPLOY_MODE" != "standalone" && "$DEPLOY_MODE" != "multi" ]]; then
+    error "Invalid deploy mode: $DEPLOY_MODE. Use 'standalone' or 'multi'"
+fi
 
-# ---- SSL Certificate ----
-if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
-    CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
-    if [ ! -d "$CERT_DIR" ]; then
-        log "Obtaining SSL certificate for $DOMAIN..."
+# ---- Resolve Project Name ----
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-omnex}"
+DOMAIN="${OMNEX_DOMAIN:-}"
+APP_PORT="${APP_PORT:-8080}"
 
-        # Start nginx temporarily for certbot challenge
-        docker compose -f "$COMPOSE_FILE" up -d nginx
+echo ""
+echo -e "${CYAN}  Mode:    $DEPLOY_MODE${NC}"
+echo -e "${CYAN}  Project: $PROJECT_NAME${NC}"
+echo -e "${CYAN}  Domain:  ${DOMAIN:-localhost}${NC}"
+echo -e "${CYAN}  Port:    $APP_PORT (localhost admin)${NC}"
+echo -e "${CYAN}  Dir:     $PROJECT_DIR${NC}"
+echo ""
 
-        docker compose -f "$COMPOSE_FILE" run --rm certbot \
-            certbot certonly \
-            --webroot \
-            -w /var/www/certbot \
-            -d "$DOMAIN" \
-            --email "${OMNEX_ADMIN_EMAIL:-admin@omnex.local}" \
-            --agree-tos \
-            --no-eff-email \
-            --force-renewal
+# ---- Build Compose Command ----
+COMPOSE_CMD="docker compose -p $PROJECT_NAME -f $COMPOSE_FILE"
 
-        docker compose -f "$COMPOSE_FILE" down
-        log "SSL certificate obtained for $DOMAIN"
-    else
-        log "SSL certificate already exists for $DOMAIN"
+if [ "$DEPLOY_MODE" = "standalone" ]; then
+    STANDALONE_FILE="$PROJECT_DIR/docker-compose.standalone.yml"
+    [ -f "$STANDALONE_FILE" ] || error "Standalone overlay not found: $STANDALONE_FILE"
+    COMPOSE_CMD="$COMPOSE_CMD -f $STANDALONE_FILE"
+    log "Mode: Standalone (nginx + certbot)"
+elif [ "$DEPLOY_MODE" = "multi" ]; then
+    PROXY_FILE="$PROJECT_DIR/docker-compose.proxy.yml"
+    [ -f "$PROXY_FILE" ] || error "Proxy overlay not found: $PROXY_FILE"
+    COMPOSE_CMD="$COMPOSE_CMD -f $PROXY_FILE"
+    log "Mode: Multi-project (Traefik)"
+
+    # Verify shared proxy network exists
+    if ! docker network inspect omnex-proxy >/dev/null 2>&1; then
+        error "Shared proxy network 'omnex-proxy' not found.\nRun proxy setup first: bash 05-proxy-setup.sh"
     fi
-else
-    warn "No domain configured (OMNEX_DOMAIN). SSL will use self-signed or be disabled."
 
-    # Create self-signed cert for initial setup
-    CERT_DIR="/opt/omnex-hub/deploy/ssl"
-    if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
-        log "Generating self-signed certificate..."
-        mkdir -p "$CERT_DIR"
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-            -keyout "$CERT_DIR/privkey.pem" \
-            -out "$CERT_DIR/fullchain.pem" \
-            -subj "/CN=localhost" 2>/dev/null
+    # Verify domain is set
+    [ -n "$DOMAIN" ] || error "OMNEX_DOMAIN is required in multi-project mode"
+fi
+
+# ---- Stop Existing Containers ----
+log "Stopping existing containers..."
+cd "$PROJECT_DIR"
+$COMPOSE_CMD down --remove-orphans 2>/dev/null || true
+
+# ---- SSL Certificate (Standalone Only) ----
+if [ "$DEPLOY_MODE" = "standalone" ]; then
+    if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+        CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
+        if [ ! -d "$CERT_DIR" ]; then
+            log "Obtaining SSL certificate for $DOMAIN..."
+
+            # Start nginx temporarily for certbot challenge
+            $COMPOSE_CMD up -d nginx
+            sleep 3
+
+            $COMPOSE_CMD run --rm certbot \
+                certbot certonly \
+                --webroot \
+                -w /var/www/certbot \
+                -d "$DOMAIN" \
+                --email "${OMNEX_ADMIN_EMAIL:-admin@omnex.local}" \
+                --agree-tos \
+                --no-eff-email \
+                --force-renewal
+
+            $COMPOSE_CMD down
+            log "SSL certificate obtained for $DOMAIN"
+        else
+            log "SSL certificate already exists for $DOMAIN"
+        fi
+    else
+        warn "No domain configured. SSL will use self-signed certificate."
+
+        # Create self-signed cert for initial setup
+        CERT_DIR="$PROJECT_DIR/ssl"
+        if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
+            log "Generating self-signed certificate..."
+            mkdir -p "$CERT_DIR"
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout "$CERT_DIR/privkey.pem" \
+                -out "$CERT_DIR/fullchain.pem" \
+                -subj "/CN=localhost" 2>/dev/null
+        fi
     fi
 fi
 
-# ---- Build and start ----
+# ---- Build and Start ----
 log "Building application..."
-docker compose -f "$COMPOSE_FILE" build app
+$COMPOSE_CMD build app
 
 log "Starting all services..."
-docker compose -f "$COMPOSE_FILE" up -d
+$COMPOSE_CMD up -d
 
-# ---- Wait for database ----
+# ---- Wait for Database ----
 log "Waiting for database..."
 for i in $(seq 1 30); do
-    if docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U "${OMNEX_DB_USER:-omnex}" >/dev/null 2>&1; then
+    if $COMPOSE_CMD exec -T postgres pg_isready -U "${OMNEX_DB_USER:-omnex}" >/dev/null 2>&1; then
         log "Database is ready"
         break
     fi
@@ -104,20 +196,20 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
-# ---- Run migrations ----
+# ---- Run Migrations ----
 log "Running database migrations..."
-docker compose -f "$COMPOSE_FILE" exec -T app php /var/www/html/tools/postgresql/migrate_seed.php || {
+$COMPOSE_CMD exec -T app php /var/www/html/tools/postgresql/migrate_seed.php || {
     warn "Migration had warnings (may be first run)"
 }
 
-# ---- Health check ----
+# ---- Health Check ----
 log "Running health check..."
 MAX_RETRIES=30
 for i in $(seq 1 $MAX_RETRIES); do
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/health 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${APP_PORT}/api/health" 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" = "200" ]; then
         log "Health check passed!"
-        curl -s http://localhost:8080/api/health | python3 -m json.tool 2>/dev/null || true
+        curl -s "http://localhost:${APP_PORT}/api/health" | python3 -m json.tool 2>/dev/null || true
         break
     fi
     if [ $i -eq $MAX_RETRIES ]; then
@@ -127,16 +219,25 @@ for i in $(seq 1 $MAX_RETRIES); do
     sleep 3
 done
 
+# ---- Summary ----
 echo ""
 echo "================================================"
-echo "  Deploy completed successfully!"
+echo -e "${GREEN}  Deploy completed successfully!${NC}"
 echo "================================================"
 echo ""
-echo "  App:   http://localhost:8080"
+echo "  Mode:    $DEPLOY_MODE"
+echo "  Project: $PROJECT_NAME"
+echo "  Admin:   http://localhost:${APP_PORT}"
 if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
-    echo "  HTTPS: https://$DOMAIN"
+    echo "  HTTPS:   https://$DOMAIN"
 fi
 echo ""
 echo "  Containers:"
-docker compose -f "$COMPOSE_FILE" ps
+$COMPOSE_CMD ps
+echo ""
+echo "  Useful commands:"
+echo "    Logs:    $COMPOSE_CMD logs -f"
+echo "    Stop:    $COMPOSE_CMD down"
+echo "    Restart: $COMPOSE_CMD restart"
+echo "    Backup:  bash scripts/04-backup.sh --project-dir $PROJECT_DIR"
 echo "================================================"

@@ -1,0 +1,48 @@
+# ========================================
+# Omnex Display Hub - Standalone Mode Overlay
+# Adds Nginx reverse proxy + Certbot SSL
+# ========================================
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.standalone.yml up -d
+#
+# This overlay adds:
+#   - Nginx reverse proxy (ports 80/443)
+#   - Certbot automatic SSL certificate management
+#
+# For single-server deployments without shared reverse proxy.
+# ========================================
+
+services:
+  # ---- Nginx Reverse Proxy + SSL ----
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    networks:
+      internal:
+
+  # ---- Certbot SSL Certificate Manager ----
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    # Auto-renew every 12 hours
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 43200; done'"
+
+volumes:
+  certbot_certs:
+    driver: local
+  certbot_webroot:
+    driver: local
