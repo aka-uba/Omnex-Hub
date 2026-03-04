@@ -33,6 +33,7 @@ if ($method !== 'POST') {
 }
 
 $data = $request->json();
+$isSuperAdmin = strcasecmp((string)($user['role'] ?? ''), 'SuperAdmin') === 0;
 
 try {
     $activeProvider = $db->fetch(
@@ -84,6 +85,23 @@ try {
         Response::badRequest('Firma bilgisi gerekli');
     }
 
+    if (!$isSuperAdmin && ($user['company_id'] ?? null) !== $companyId) {
+        Response::forbidden('Sadece kendi firmaniz icin odeme baslatabilirsiniz');
+    }
+
+    $licenseId = $data['license_id'] ?? null;
+    $currentLicense = null;
+    if (!empty($licenseId)) {
+        $currentLicense = $db->fetch("SELECT * FROM licenses WHERE id = ?", [$licenseId]);
+        if (!$currentLicense) {
+            Response::badRequest('Gecersiz lisans kaydi');
+        }
+
+        if (($currentLicense['company_id'] ?? null) !== $companyId) {
+            Response::forbidden('Bu lisans icin odeme baslatamazsiniz');
+        }
+    }
+
     // Card payload zorunlu (bu endpoint tek adimda initialize + 3D baslatir)
     $paymentCardInput = $data['payment_card'] ?? [];
     $requiredCardFields = ['card_holder_name', 'card_number', 'expire_month', 'expire_year', 'cvc'];
@@ -118,6 +136,16 @@ try {
 
     $isPerDevicePricing = in_array('per_device_pricing', $features, true)
         || (($plan['plan_type'] ?? '') === 'per_device');
+    $decodedDeviceCategories = [];
+    if (!empty($plan['device_categories'])) {
+        $decodedDeviceCategories = json_decode($plan['device_categories'], true);
+        if (!is_array($decodedDeviceCategories)) {
+            $decodedDeviceCategories = [];
+        }
+    }
+    $hasDeviceCategories = !empty($decodedDeviceCategories);
+    $isPerDeviceTypePricing = $hasDeviceCategories
+        || (($currentLicense['pricing_mode'] ?? 'flat') === 'per_device_type');
 
     $deviceCount = 1;
     if ($isPerDevicePricing) {
@@ -144,6 +172,11 @@ try {
     // Convert to monthly equivalent, then apply requested renewal period.
     $monthlyPriceKurus = $planPriceKurus / $planDurationMonths;
     $amountKurus = (int)round($monthlyPriceKurus * $renewalMonths);
+
+    if ($isPerDeviceTypePricing && $currentLicense) {
+        $fixedMonthlyTotal = (float)($currentLicense['total_monthly_price'] ?? 0);
+        $amountKurus = (int)round($fixedMonthlyTotal * 100 * $renewalMonths);
+    }
 
     if ($isPerDevicePricing) {
         $amountKurus = (int)round($amountKurus * $deviceCount);
@@ -254,8 +287,13 @@ try {
             'plan_name' => $plan['name'],
             'duration_months' => $planDurationMonths,
             'renewal_months' => $renewalMonths,
-            'pricing_mode' => $isPerDevicePricing ? 'per_device' : 'flat',
-            'device_count' => $deviceCount
+            'pricing_mode' => $isPerDeviceTypePricing
+                ? 'per_device_type'
+                : ($isPerDevicePricing ? 'per_device' : 'flat'),
+            'device_count' => $isPerDevicePricing ? $deviceCount : null,
+            'company_monthly_total' => $isPerDeviceTypePricing && $currentLicense
+                ? (float)($currentLicense['total_monthly_price'] ?? 0)
+                : null
         ]
     ]);
 

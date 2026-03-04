@@ -29,6 +29,151 @@ function normalizePriceToKurus($value): int
     return (int)round($num * 100);
 }
 
+function normalizeBooleanFlag($value, bool $default = false): bool
+{
+    if ($value === null || $value === '') {
+        return $default;
+    }
+
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    if (is_int($value) || is_float($value)) {
+        return ((int)$value) === 1;
+    }
+
+    if (is_string($value)) {
+        $normalized = strtolower(trim($value));
+        if ($normalized === '') {
+            return $default;
+        }
+        if (in_array($normalized, ['1', 'true', 'yes', 'on', 'active'], true)) {
+            return true;
+        }
+        if (in_array($normalized, ['0', 'false', 'no', 'off', 'inactive'], true)) {
+            return false;
+        }
+    }
+
+    return (bool)$value;
+}
+
+function normalizeBooleanDbFlag($value, bool $default = false): int
+{
+    return normalizeBooleanFlag($value, $default) ? 1 : 0;
+}
+
+function normalizeTextValue($value, string $default = ''): string
+{
+    if ($value === null) {
+        return $default;
+    }
+
+    $text = trim((string)$value);
+    return $text !== '' ? $text : $default;
+}
+
+function normalizePricingMode($value): string
+{
+    $mode = normalizeTextValue($value, 'flat');
+    $allowed = ['flat', 'per_device', 'per_device_type'];
+    return in_array($mode, $allowed, true) ? $mode : 'flat';
+}
+
+function normalizeFeaturesValue($value, string $pricingMode = 'flat'): array
+{
+    if (is_string($value)) {
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            $value = $decoded;
+        } elseif ($value === '') {
+            $value = [];
+        } else {
+            $value = [$value];
+        }
+    }
+
+    if (!is_array($value)) {
+        $value = [];
+    }
+
+    $features = [];
+    foreach ($value as $feature) {
+        $feature = trim((string)$feature);
+        if ($feature !== '') {
+            $features[$feature] = $feature;
+        }
+    }
+
+    if ($pricingMode === 'per_device') {
+        $features['per_device_pricing'] = 'per_device_pricing';
+    } else {
+        unset($features['per_device_pricing']);
+    }
+
+    return array_values($features);
+}
+
+function determinePricingModeForPlan(array $plan, array $features, array $deviceCategories): string
+{
+    if (!empty($deviceCategories)) {
+        return 'per_device_type';
+    }
+
+    if (in_array('per_device_pricing', $features, true) || (($plan['plan_type'] ?? '') === 'per_device')) {
+        return 'per_device';
+    }
+
+    return 'flat';
+}
+
+function hydrateLicensePlanForResponse(array $plan): array
+{
+    $features = normalizeFeaturesValue($plan['features'] ?? []);
+    $rawDeviceCategories = $plan['device_categories'] ?? [];
+    if (is_array($rawDeviceCategories)) {
+        $deviceCategories = $rawDeviceCategories;
+    } else {
+        $deviceCategories = json_decode((string)$rawDeviceCategories, true);
+        $deviceCategories = is_array($deviceCategories) ? $deviceCategories : [];
+    }
+
+    $rawDefaultDevicePricing = $plan['default_device_pricing'] ?? [];
+    if (is_array($rawDefaultDevicePricing)) {
+        $defaultDevicePricing = $rawDefaultDevicePricing;
+    } else {
+        $defaultDevicePricing = json_decode((string)$rawDefaultDevicePricing, true);
+        $defaultDevicePricing = is_array($defaultDevicePricing) ? $defaultDevicePricing : [];
+    }
+
+    $pricingMode = determinePricingModeForPlan($plan, $features, $deviceCategories);
+    $durationMonths = (int)($plan['duration_months'] ?? 1);
+    if ($durationMonths <= 0) {
+        $durationMonths = 1;
+    }
+
+    $plan['features'] = $features;
+    $plan['price'] = ((float)($plan['price'] ?? 0)) / 100;
+    $plan['max_users'] = (int)($plan['max_users'] ?? 0);
+    $plan['max_devices'] = (int)($plan['max_devices'] ?? 0);
+    $plan['max_products'] = (int)($plan['max_products'] ?? 0);
+    $plan['max_templates'] = (int)($plan['max_templates'] ?? 0);
+    $plan['max_branches'] = (int)($plan['max_branches'] ?? -1);
+    $plan['storage_limit'] = (int)($plan['max_storage'] ?? -1);
+    $plan['is_popular'] = normalizeBooleanFlag($plan['is_popular'] ?? false);
+    $plan['is_enterprise'] = normalizeBooleanFlag($plan['is_enterprise'] ?? false);
+    $plan['is_active'] = normalizeBooleanFlag($plan['is_active'] ?? (($plan['status'] ?? 'active') === 'active'), true);
+    $plan['device_categories'] = $deviceCategories;
+    $plan['default_device_pricing'] = $defaultDevicePricing;
+    $plan['pricing_mode'] = $pricingMode;
+    $plan['device_unit_price'] = $pricingMode === 'per_device'
+        ? round($plan['price'] / $durationMonths, 2)
+        : null;
+
+    return $plan;
+}
+
 // Auth kontrolu
 if (!$user) {
     Response::unauthorized('Oturum gerekli');
@@ -46,6 +191,9 @@ if ($method === 'GET') {
         if (!$plan) {
             Response::notFound('Plan bulunamadi');
         }
+
+        Response::success(hydrateLicensePlanForResponse($plan));
+        return;
 
         // Features JSON decode
         $plan['features'] = json_decode($plan['features'] ?? '[]', true);
@@ -76,6 +224,9 @@ if ($method === 'GET') {
         $query .= " ORDER BY sort_order ASC";
 
         $plans = $db->fetchAll($query);
+
+        Response::success(array_map('hydrateLicensePlanForResponse', $plans));
+        return;
 
         // Format plans
         $formattedPlans = array_map(function ($plan) {
@@ -140,13 +291,27 @@ if ($method === 'POST') {
     // Device categories and default pricing
     $deviceCategories = $request->input('device_categories', []);
     $defaultDevicePricing = $request->input('default_device_pricing', []);
+    $pricingMode = normalizePricingMode($request->input('pricing_mode', 'flat'));
+    $isActive = normalizeBooleanFlag($request->input('is_active', true), true);
+    $planType = normalizeTextValue($request->input('plan_type', 'standard'), 'standard');
+    if ($pricingMode === 'per_device') {
+        $planType = 'per_device';
+    }
+
+    if ($pricingMode !== 'per_device_type') {
+        $deviceCategories = [];
+        $defaultDevicePricing = [];
+    }
+
+    $features = json_encode(normalizeFeaturesValue($request->input('features', []), $pricingMode));
+    $status = normalizeTextValue($request->input('status', ''), $isActive ? 'active' : 'inactive');
 
     $db->insert('license_plans', [
         'id' => $id,
         'name' => $name,
         'slug' => $slug,
-        'description' => $request->input('description', ''),
-        'plan_type' => $request->input('plan_type', 'monthly'),
+        'description' => normalizeTextValue($request->input('description', ''), ''),
+        'plan_type' => $planType,
         'duration_months' => (int)$request->input('duration_months', 1),
         'price' => $priceKurus,
         'currency' => $request->input('currency', 'TRY'),
@@ -157,11 +322,11 @@ if ($method === 'POST') {
         'max_branches' => (int)$request->input('max_branches', -1),
         'max_storage' => (int)$request->input('storage_limit', -1),
         'features' => $features,
-        'is_popular' => (bool)$request->input('is_popular', false),
-        'is_enterprise' => (bool)$request->input('is_enterprise', false),
+        'is_popular' => normalizeBooleanDbFlag($request->input('is_popular', false)),
+        'is_enterprise' => normalizeBooleanDbFlag($request->input('is_enterprise', false)),
         'sort_order' => (int)$request->input('sort_order', 0),
-        'status' => $request->input('status', 'active'),
-        'is_active' => (bool)$request->input('is_active', true),
+        'status' => $status,
+        'is_active' => normalizeBooleanDbFlag($isActive, true),
         'device_categories' => is_array($deviceCategories) ? json_encode($deviceCategories) : ($deviceCategories ?: '[]'),
         'default_device_pricing' => is_array($defaultDevicePricing) ? json_encode($defaultDevicePricing) : ($defaultDevicePricing ?: '{}'),
         'created_at' => date('Y-m-d H:i:s'),
@@ -175,6 +340,7 @@ if ($method === 'POST') {
     $plan['storage_limit'] = (int)($plan['max_storage'] ?? -1);
     $plan['device_categories'] = json_decode($plan['device_categories'] ?? '[]', true);
     $plan['default_device_pricing'] = json_decode($plan['default_device_pricing'] ?? '{}', true);
+    $plan = hydrateLicensePlanForResponse($plan);
 
     Logger::audit('create', 'license_plan', [
         'id' => $id,
@@ -196,6 +362,9 @@ if ($method === 'PUT') {
     }
 
     $updateData = [];
+    $inputPricingMode = $request->has('pricing_mode')
+        ? normalizePricingMode($request->input('pricing_mode'))
+        : null;
 
     // Guncellenebilir alanlar
     $fields = [
@@ -223,6 +392,15 @@ if ($method === 'PUT') {
         }
     }
 
+    if (array_key_exists('status', $updateData)) {
+        $normalizedStatus = normalizeTextValue($updateData['status'], $plan['status'] ?? 'active');
+        if ($normalizedStatus === '') {
+            unset($updateData['status']);
+        } else {
+            $updateData['status'] = $normalizedStatus;
+        }
+    }
+
     // Slug guncelleme
     if ($request->has('slug') && !empty($request->input('slug'))) {
         $newSlug = $request->input('slug');
@@ -234,12 +412,15 @@ if ($method === 'PUT') {
 
     // Features
     if ($request->has('features')) {
-        $features = $request->input('features');
-        if (is_array($features)) {
-            $updateData['features'] = json_encode($features);
-        } else {
-            $updateData['features'] = $features;
-        }
+        $existingFeatures = normalizeFeaturesValue($plan['features'] ?? []);
+        $pricingModeForFeatures = $inputPricingMode ?? determinePricingModeForPlan(
+            $plan,
+            $existingFeatures,
+            json_decode($plan['device_categories'] ?? '[]', true) ?: []
+        );
+        $updateData['features'] = json_encode(
+            normalizeFeaturesValue($request->input('features'), $pricingModeForFeatures)
+        );
     }
 
     // Device categories and default pricing
@@ -254,15 +435,36 @@ if ($method === 'PUT') {
 
     // Boolean alanlar
     if ($request->has('is_popular')) {
-        $updateData['is_popular'] = (bool)$request->input('is_popular');
+        $updateData['is_popular'] = normalizeBooleanDbFlag($request->input('is_popular'));
     }
     if ($request->has('is_enterprise')) {
-        $updateData['is_enterprise'] = (bool)$request->input('is_enterprise');
+        $updateData['is_enterprise'] = normalizeBooleanDbFlag($request->input('is_enterprise'));
     }
     if ($request->has('is_active')) {
-        $updateData['is_active'] = (bool)$request->input('is_active');
+        $updateData['is_active'] = normalizeBooleanDbFlag($request->input('is_active'));
         // Status'u da senkronize et
-        $updateData['status'] = $request->input('is_active') ? 'active' : 'inactive';
+        $updateData['status'] = ((int)$updateData['is_active'] === 1) ? 'active' : 'inactive';
+    }
+
+    if ($inputPricingMode !== null) {
+        if ($inputPricingMode === 'per_device') {
+            $updateData['plan_type'] = 'per_device';
+            $featuresForMode = isset($updateData['features'])
+                ? json_decode($updateData['features'], true)
+                : normalizeFeaturesValue($plan['features'] ?? []);
+            $updateData['features'] = json_encode(normalizeFeaturesValue($featuresForMode, 'per_device'));
+        } elseif ($request->has('plan_type')) {
+            $updateData['plan_type'] = normalizeTextValue($request->input('plan_type'), $plan['plan_type'] ?? 'standard');
+        }
+
+        if ($inputPricingMode !== 'per_device_type') {
+            $updateData['device_categories'] = '[]';
+            $updateData['default_device_pricing'] = '{}';
+        }
+
+        if (!isset($updateData['features'])) {
+            $updateData['features'] = json_encode(normalizeFeaturesValue($plan['features'] ?? [], $inputPricingMode));
+        }
     }
 
     $updateData['updated_at'] = date('Y-m-d H:i:s');
@@ -276,6 +478,7 @@ if ($method === 'PUT') {
     $updatedPlan['storage_limit'] = (int)($updatedPlan['max_storage'] ?? -1);
     $updatedPlan['device_categories'] = json_decode($updatedPlan['device_categories'] ?? '[]', true);
     $updatedPlan['default_device_pricing'] = json_decode($updatedPlan['default_device_pricing'] ?? '{}', true);
+    $updatedPlan = hydrateLicensePlanForResponse($updatedPlan);
 
     Logger::audit('update', 'license_plan', [
         'id' => $planId,
@@ -311,7 +514,7 @@ if ($method === 'DELETE') {
     // Soft delete tercih ediyoruz
     $db->update('license_plans', [
         'status' => 'deleted',
-        'is_active' => false,
+        'is_active' => 0,
         'updated_at' => date('Y-m-d H:i:s')
     ], 'id = ?', [$planId]);
 

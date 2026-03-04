@@ -5,6 +5,11 @@
  */
 
 $db = Database::getInstance();
+$user = Auth::user();
+
+if (!$user) {
+    Response::unauthorized('Oturum gerekli');
+}
 
 global $request;
 $id = $request ? $request->routeParam('id') : null;
@@ -23,6 +28,11 @@ $license = $db->fetch(
 
 if (!$license) {
     Response::error('Lisans bulunamadı', 404);
+}
+
+if (strcasecmp((string)($user['role'] ?? ''), 'SuperAdmin') !== 0
+    && ($license['company_id'] ?? null) !== ($user['company_id'] ?? null)) {
+    Response::forbidden('Bu lisansi gorme yetkiniz yok');
 }
 
 // Include device pricing breakdown if per_device_type

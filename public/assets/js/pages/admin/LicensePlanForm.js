@@ -83,9 +83,13 @@ export class LicensePlanFormPage {
         const deviceCategories = Array.isArray(plan?.device_categories) ? plan.device_categories : [];
         const defaultPricing = (typeof plan?.default_device_pricing === 'object' && plan?.default_device_pricing !== null)
             ? plan.default_device_pricing : {};
+        const pricingMeta = (typeof defaultPricing._meta === 'object' && defaultPricing._meta !== null)
+            ? defaultPricing._meta : {};
 
         const durationMonths = Math.max(1, parseInt(plan?.duration_months, 10) || 1);
         const perDeviceUnitPrice = this._getPerDeviceUnitPrice(plan);
+        const perDeviceTypeExchangeRate = Math.max(0.01, parseFloat(pricingMeta.exchange_rate) || 1);
+        const perDeviceTypeBaseCurrency = pricingMeta.base_currency || 'USD';
 
         return `
             <div class="page-header">
@@ -214,7 +218,8 @@ export class LicensePlanFormPage {
                                     ${DEVICE_CATEGORIES.map(cat => {
                                         const isChecked = deviceCategories.includes(cat.key);
                                         const defaultPrice = defaultPricing[cat.key]?.unit_price || 0;
-                                        const defaultCurrency = defaultPricing[cat.key]?.currency || 'USD';
+                                        const defaultCurrency = defaultPricing[cat.key]?.currency || perDeviceTypeBaseCurrency;
+                                        const defaultCount = parseInt(defaultPricing[cat.key]?.device_count ?? defaultPricing[cat.key]?.default_count ?? 0, 10) || 0;
                                         return `
                                             <div class="device-category-row">
                                                 <label class="device-category-check">
@@ -223,6 +228,7 @@ export class LicensePlanFormPage {
                                                     <span>${this.__('licenses.deviceCategories.' + cat.key)}</span>
                                                 </label>
                                                 <div class="device-category-price-inputs">
+                                                    <input type="number" class="form-input form-input-sm device-cat-count" data-category="${cat.key}" value="${defaultCount}" step="1" min="0" placeholder="Adet" ${!isChecked ? 'disabled' : ''}>
                                                     <input type="number" class="form-input form-input-sm device-cat-price" data-category="${cat.key}" value="${defaultPrice}" step="0.01" min="0" placeholder="${this.__('licenses.pricing.unitPrice')}" ${!isChecked ? 'disabled' : ''}>
                                                     <select class="form-select form-select-sm device-cat-currency" data-category="${cat.key}" ${!isChecked ? 'disabled' : ''}>
                                                         <option value="USD" ${defaultCurrency === 'USD' ? 'selected' : ''}>USD</option>
@@ -234,6 +240,26 @@ export class LicensePlanFormPage {
                                         `;
                                     }).join('')}
                                 </div>
+                                <div class="grid grid-cols-4 gap-4 mt-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Kur</label>
+                                        <input type="number" id="plan-exchange-rate" class="form-input" value="${perDeviceTypeExchangeRate}" step="0.01" min="0.01">
+                                        <small class="text-muted text-xs">Secili baz para birimi icin manuel kur.</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Baz Para Birimi</label>
+                                        <input type="text" id="plan-base-currency" class="form-input" value="${escapeHTML(perDeviceTypeBaseCurrency)}" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Aylik Toplam</label>
+                                        <input type="text" id="plan-device-type-monthly-total" class="form-input" value="0.00" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Aylik TL Karsiligi</label>
+                                        <input type="text" id="plan-device-type-monthly-try-total" class="form-input" value="0.00" readonly>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-3" id="plan-device-type-summary"></div>
                                 <small class="text-muted text-xs mt-2 d-block">${this.__('licenses.plans.form.defaultUnitPricesHint')}</small>
                             </div>
                         </div>
@@ -360,7 +386,10 @@ export class LicensePlanFormPage {
         const priceInput = document.getElementById('plan-price');
 
         unitPriceInput?.addEventListener('input', () => this._syncPerDevicePrice());
-        durationInput?.addEventListener('input', () => this._syncPerDevicePrice());
+        durationInput?.addEventListener('input', () => {
+            this._syncPerDevicePrice();
+            this._syncPerDeviceTypePrice();
+        });
 
         // Device category checkboxes
         document.querySelectorAll('.device-cat-checkbox').forEach(cb => {
@@ -372,7 +401,25 @@ export class LicensePlanFormPage {
                         input.disabled = !e.target.checked;
                     }
                 });
+                if (e.target.checked) {
+                    const rowCurrency = row?.querySelector('.device-cat-currency');
+                    if (rowCurrency) {
+                        rowCurrency.value = document.getElementById('plan-currency')?.value || rowCurrency.value;
+                    }
+                }
+                this._syncPerDeviceTypePrice();
             });
+        });
+
+        document.querySelectorAll('.device-cat-count, .device-cat-price, .device-cat-currency').forEach((input) => {
+            input.addEventListener('input', () => this._syncPerDeviceTypePrice());
+            input.addEventListener('change', () => this._syncPerDeviceTypePrice());
+        });
+
+        document.getElementById('plan-exchange-rate')?.addEventListener('input', () => this._syncPerDeviceTypePrice());
+        document.getElementById('plan-currency')?.addEventListener('change', () => {
+            this._syncPerDeviceTypeCurrency();
+            this._syncPerDeviceTypePrice();
         });
 
         // Auto-generate slug from name
@@ -396,6 +443,8 @@ export class LicensePlanFormPage {
 
         // Initial sync
         this._syncPricingMode();
+        this._syncPerDeviceTypeCurrency();
+        this._syncPerDeviceTypePrice();
     }
 
     _syncPricingMode() {
@@ -403,6 +452,7 @@ export class LicensePlanFormPage {
         const perDeviceGroup = document.getElementById('per-device-price-group');
         const perDeviceTypeSection = document.getElementById('device-type-pricing-section');
         const priceInput = document.getElementById('plan-price');
+        const currencyInput = document.getElementById('plan-currency');
 
         if (perDeviceGroup) {
             perDeviceGroup.style.display = mode === 'per_device' ? '' : 'none';
@@ -411,11 +461,14 @@ export class LicensePlanFormPage {
             perDeviceTypeSection.style.display = mode === 'per_device_type' ? '' : 'none';
         }
         if (priceInput) {
-            priceInput.readOnly = mode === 'per_device';
+            priceInput.readOnly = mode === 'per_device' || mode === 'per_device_type';
         }
 
         if (mode === 'per_device') {
             this._syncPerDevicePrice();
+        } else if (mode === 'per_device_type') {
+            this._syncPerDeviceTypeCurrency();
+            this._syncPerDeviceTypePrice();
         }
     }
 
@@ -432,6 +485,79 @@ export class LicensePlanFormPage {
         const unitPrice = parseFloat(unitPriceInput.value) || 0;
         const duration = Math.max(1, parseInt(durationInput.value, 10) || 1);
         priceInput.value = (unitPrice * duration).toFixed(2);
+    }
+
+    _syncPerDeviceTypePrice() {
+        const mode = document.getElementById('plan-pricing-mode')?.value;
+        if (mode !== 'per_device_type') return;
+
+        const duration = Math.max(1, parseInt(document.getElementById('plan-duration')?.value, 10) || 1);
+        const exchangeRate = Math.max(0.01, parseFloat(document.getElementById('plan-exchange-rate')?.value) || 1);
+        const selectedCurrency = document.getElementById('plan-currency')?.value || 'TRY';
+        const priceInput = document.getElementById('plan-price');
+        const monthlyTotalInput = document.getElementById('plan-device-type-monthly-total');
+        const monthlyTryTotalInput = document.getElementById('plan-device-type-monthly-try-total');
+        const baseCurrencyInput = document.getElementById('plan-base-currency');
+        const summaryEl = document.getElementById('plan-device-type-summary');
+
+        const checkedRows = Array.from(document.querySelectorAll('.device-cat-checkbox:checked')).map((checkbox) => {
+            const category = checkbox.value;
+            const count = parseInt(document.querySelector(`.device-cat-count[data-category="${category}"]`)?.value, 10) || 0;
+            const unitPrice = parseFloat(document.querySelector(`.device-cat-price[data-category="${category}"]`)?.value) || 0;
+            const currency = document.querySelector(`.device-cat-currency[data-category="${category}"]`)?.value || 'USD';
+
+            return { category, count, unitPrice, currency, subtotal: count * unitPrice };
+        });
+
+        const currencies = [...new Set(checkedRows.map((row) => row.currency).filter(Boolean))];
+        const baseCurrency = selectedCurrency || currencies[0] || 'USD';
+        const monthlyBaseTotal = checkedRows.reduce((sum, row) => sum + row.subtotal, 0);
+        const monthlyTryTotal = baseCurrency === 'TRY'
+            ? monthlyBaseTotal
+            : (monthlyBaseTotal * exchangeRate);
+        const planTotal = monthlyBaseTotal * duration;
+
+        if (baseCurrencyInput) {
+            baseCurrencyInput.value = baseCurrency;
+        }
+        if (monthlyTotalInput) {
+            monthlyTotalInput.value = monthlyBaseTotal.toFixed(2);
+        }
+        if (monthlyTryTotalInput) {
+            monthlyTryTotalInput.value = monthlyTryTotal.toFixed(2);
+        }
+        if (priceInput) {
+            priceInput.value = planTotal.toFixed(2);
+        }
+        if (summaryEl) {
+            const warning = currencies.length > 1
+                ? '<div class="mt-2 text-warning">Birden fazla para birimi secili. Kur tek baz para birimine gore uygulanir.</div>'
+                : '';
+            summaryEl.innerHTML = `
+                <div>Aylik toplam (${escapeHTML(baseCurrency)}): <strong>${monthlyBaseTotal.toFixed(2)}</strong></div>
+                <div>Aylik toplam (TRY): <strong>${monthlyTryTotal.toFixed(2)}</strong></div>
+                <div>Plan toplam (${escapeHTML(selectedCurrency)}): <strong>${planTotal.toFixed(2)}</strong></div>
+                ${warning}
+            `;
+        }
+    }
+
+    _syncPerDeviceTypeCurrency() {
+        const mode = document.getElementById('plan-pricing-mode')?.value;
+        if (mode !== 'per_device_type') return;
+
+        const selectedCurrency = document.getElementById('plan-currency')?.value || 'TRY';
+        const baseCurrencyInput = document.getElementById('plan-base-currency');
+
+        if (baseCurrencyInput) {
+            baseCurrencyInput.value = selectedCurrency;
+        }
+
+        document.querySelectorAll('.device-cat-currency').forEach((select) => {
+            if (!select.disabled) {
+                select.value = selectedCurrency;
+            }
+        });
     }
 
     _getPerDeviceUnitPrice(plan) {
@@ -495,12 +621,18 @@ export class LicensePlanFormPage {
         let defaultDevicePricing = {};
 
         if (pricingMode === 'per_device_type') {
+            const exchangeRate = Math.max(0.01, parseFloat(document.getElementById('plan-exchange-rate')?.value) || 1);
+            const baseCurrency = document.getElementById('plan-currency')?.value || document.getElementById('plan-base-currency')?.value || 'USD';
+            const monthlyBaseTotal = Math.max(0, parseFloat(document.getElementById('plan-device-type-monthly-total')?.value) || 0);
+
             document.querySelectorAll('.device-cat-checkbox:checked').forEach(cb => {
                 const cat = cb.value;
                 deviceCategories.push(cat);
+                const countInput = document.querySelector(`.device-cat-count[data-category="${cat}"]`);
                 const priceInput = document.querySelector(`.device-cat-price[data-category="${cat}"]`);
                 const currencyInput = document.querySelector(`.device-cat-currency[data-category="${cat}"]`);
                 defaultDevicePricing[cat] = {
+                    device_count: parseInt(countInput?.value, 10) || 0,
                     unit_price: parseFloat(priceInput?.value) || 0,
                     currency: currencyInput?.value || 'USD'
                 };
@@ -510,6 +642,17 @@ export class LicensePlanFormPage {
                 Toast.error(this.__('licenses.plans.validation.nameRequired')); // TODO: better message
                 return;
             }
+
+            if (monthlyBaseTotal <= 0) {
+                Toast.error('Cihaz bazli toplam sifirdan buyuk olmali');
+                return;
+            }
+
+            defaultDevicePricing._meta = {
+                exchange_rate: exchangeRate,
+                base_currency: baseCurrency
+            };
+            normalizedPrice = monthlyBaseTotal * Math.max(1, durationMonths);
         }
 
         const data = {

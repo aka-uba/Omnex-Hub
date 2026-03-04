@@ -15,11 +15,20 @@ if (!in_array($user['role'], ['SuperAdmin', 'Admin'])) {
 }
 
 $data = $request->json();
+$isSuperAdmin = strcasecmp((string)($user['role'] ?? ''), 'SuperAdmin') === 0;
 
 $companyId = $data['company_id'] ?? null;
 $planId = $data['plan_id'] ?? null;
 $startsAt = $data['starts_at'] ?? date('Y-m-d');
 $expiresAt = $data['expires_at'] ?? null;
+
+if (!$companyId && !$isSuperAdmin) {
+    $companyId = $user['company_id'] ?? null;
+}
+
+if (!$isSuperAdmin && ($user['company_id'] ?? null) !== $companyId) {
+    Response::forbidden('Sadece kendi firmaniza lisans tanimlayabilirsiniz');
+}
 
 if (!$companyId) {
     Response::badRequest('Şirket ID gerekli');

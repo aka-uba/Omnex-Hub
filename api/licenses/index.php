@@ -26,6 +26,8 @@ if ($user && $user['role'] === 'SuperAdmin') {
     if ($companyId) {
         $where[] = "l.company_id = ?";
         $params[] = $companyId;
+    } else {
+        $where[] = "1 = 0";
     }
 }
 

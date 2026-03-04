@@ -1354,7 +1354,14 @@ export class LicenseManagementPage {
 
     isPerDevicePricing(plan) {
         const features = Array.isArray(plan?.features) ? plan.features : [];
-        return features.includes('per_device_pricing') || plan?.plan_type === 'per_device';
+        return plan?.pricing_mode === 'per_device'
+            || features.includes('per_device_pricing')
+            || plan?.plan_type === 'per_device';
+    }
+
+    isPerDeviceTypePricing(plan, license = null) {
+        return plan?.pricing_mode === 'per_device_type'
+            || license?.pricing_mode === 'per_device_type';
     }
 
     getPeriodMonths(period, plan) {
@@ -1374,6 +1381,11 @@ export class LicenseManagementPage {
         const planPrice = parseFloat(plan?.price) || 0;
         const durationMonths = Math.max(1, parseInt(plan?.duration_months, 10) || 1);
         return planPrice / durationMonths;
+    }
+
+    getPerDeviceTypeMonthlyTotal(license) {
+        const monthlyTotal = parseFloat(license?.total_monthly_price);
+        return Number.isFinite(monthlyTotal) && monthlyTotal > 0 ? monthlyTotal : 0;
     }
 
     getBillableDeviceCount(license, plan, requestedCount = null) {
@@ -1401,7 +1413,9 @@ export class LicenseManagementPage {
         const monthlyEquivalent = planPrice / durationMonths;
 
         let amount = monthlyEquivalent * periodMonths;
-        if (this.isPerDevicePricing(plan)) {
+        if (this.isPerDeviceTypePricing(plan, license)) {
+            amount = this.getPerDeviceTypeMonthlyTotal(license) * periodMonths;
+        } else if (this.isPerDevicePricing(plan)) {
             const billableDeviceCount = this.getBillableDeviceCount(license, plan, requestedDeviceCount);
             amount = this.getPerDeviceUnitPrice(plan) * periodMonths * billableDeviceCount;
         }
@@ -1429,13 +1443,26 @@ export class LicenseManagementPage {
 
         // Find current plan
         const currentPlan = this.licensePlans.find(p =>
-            p.name === license.plan || p.slug === license.plan?.toLowerCase()
+            p.id === license.plan_id
+            || p.slug === license.plan_slug
+            || p.name === license.plan
+            || p.slug === license.plan?.toLowerCase()
         );
 
         const planOptions = this.licensePlans
-            .filter(p => p.is_active && this.calculatePlanAmount(p, license, 'yearly') > 0)
+            .filter((p) => {
+                if (!p.is_active) {
+                    return false;
+                }
+
+                if (license?.pricing_mode === 'per_device_type' && currentPlan?.id && p.id !== currentPlan.id) {
+                    return false;
+                }
+
+                return this.calculatePlanAmount(p, license, 'yearly') > 0;
+            })
             .map(p => `
-                <option value="${escapeHTML(p.slug || p.name)}" ${p.name === license.plan ? 'selected' : ''}>
+                <option value="${escapeHTML(p.slug || p.name)}" ${(p.id === currentPlan?.id || p.name === license.plan) ? 'selected' : ''}>
                     ${escapeHTML(this.getLocalizedPlanName(p))} ${p.is_featured ? `(${this.__('actions.recommended')})` : ''}
                 </option>
             `).join('');
@@ -1603,7 +1630,15 @@ export class LicenseManagementPage {
 
             const deviceInfoEl = document.getElementById('payment-device-info');
             if (deviceInfoEl) {
-                if (this.isPerDevicePricing(plan)) {
+                if (this.isPerDeviceTypePricing(plan, license)) {
+                    if (deviceCountGroup) {
+                        deviceCountGroup.style.display = 'none';
+                    }
+                    const fixedMonthly = this.getPerDeviceTypeMonthlyTotal(license);
+                    deviceInfoEl.textContent = fixedMonthly > 0
+                        ? `${this.__('licenses.pricing.monthlyTotal')}: ${this.formatPaymentAmount(fixedMonthly, plan.currency || 'TRY')}`
+                        : '';
+                } else if (this.isPerDevicePricing(plan)) {
                     if (deviceCountGroup) {
                         deviceCountGroup.style.display = '';
                     }
@@ -2453,6 +2488,8 @@ export class LicenseManagementPage {
         const categories = plan.device_categories;
         const defaultPricing = (typeof plan.default_device_pricing === 'object' && plan.default_device_pricing !== null)
             ? plan.default_device_pricing : {};
+        const pricingMeta = (typeof defaultPricing._meta === 'object' && defaultPricing._meta !== null)
+            ? defaultPricing._meta : {};
 
         // If editing, load existing device pricing from license
         const existingPricing = {};
@@ -2482,6 +2519,7 @@ export class LicenseManagementPage {
                         <th>${this.__('licenses.pricing.deviceCategory')}</th>
                         <th>${this.__('licenses.pricing.deviceCount')}</th>
                         <th>${this.__('licenses.pricing.unitPrice')}</th>
+                        <th>${this.__('licenses.plans.form.currency')}</th>
                         <th>${this.__('licenses.pricing.subtotal')}</th>
                     </tr>
                 </thead>
@@ -2489,16 +2527,17 @@ export class LicenseManagementPage {
                     ${categories.map(cat => {
                         const existing = existingPricing[cat];
                         const defaults = defaultPricing[cat] || {};
-                        const count = existing?.device_count ?? 0;
+                        const count = existing?.device_count ?? defaults.device_count ?? defaults.default_count ?? 0;
                         const unitPrice = existing?.unit_price ?? defaults.unit_price ?? 0;
                         const currency = existing?.currency ?? defaults.currency ?? 'USD';
                         const subtotal = count * unitPrice;
                         return `
-                            <tr data-category="${cat}">
+                            <tr data-category="${cat}" data-currency="${escapeHTML(currency)}">
                                 <td class="category-icon"><i class="ti ${categoryIcons[cat] || 'ti-device-desktop'}"></i></td>
                                 <td>${this.__('licenses.deviceCategories.' + cat)}</td>
                                 <td><input type="number" class="form-input form-input-sm dp-count" data-cat="${cat}" value="${count}" min="0" step="1"></td>
                                 <td><input type="number" class="form-input form-input-sm dp-price" data-cat="${cat}" value="${unitPrice}" min="0" step="0.01"></td>
+                                <td class="currency-cell">${escapeHTML(currency)}</td>
                                 <td class="subtotal-cell" data-cat="${cat}">${this._formatCurrency(subtotal, currency)}</td>
                             </tr>
                         `;
@@ -2514,6 +2553,9 @@ export class LicenseManagementPage {
 
         // Exchange rate change
         const exchangeInput = document.getElementById(`${prefix}-exchange-rate`);
+        if (exchangeInput && !license) {
+            exchangeInput.value = `${Math.max(0.01, parseFloat(pricingMeta.exchange_rate) || 1)}`;
+        }
         exchangeInput?.addEventListener('input', () => this._updatePricingSummary(prefix, categories));
 
         // Initial summary
@@ -2529,33 +2571,46 @@ export class LicenseManagementPage {
 
         const exchangeRate = parseFloat(document.getElementById(`${prefix}-exchange-rate`)?.value) || 1.0;
         let totalBase = 0;
+        const currencies = new Set();
 
         categories.forEach(cat => {
             const countInput = document.querySelector(`#${prefix}-device-pricing-rows .dp-count[data-cat="${cat}"]`);
             const priceInput = document.querySelector(`#${prefix}-device-pricing-rows .dp-price[data-cat="${cat}"]`);
             const subtotalCell = document.querySelector(`#${prefix}-device-pricing-rows .subtotal-cell[data-cat="${cat}"]`);
+            const row = countInput?.closest('tr[data-category]');
+            const rowCurrency = row?.dataset.currency || 'USD';
 
             const count = parseInt(countInput?.value) || 0;
             const unitPrice = parseFloat(priceInput?.value) || 0;
             const subtotal = count * unitPrice;
 
             if (subtotalCell) {
-                subtotalCell.textContent = this._formatCurrency(subtotal, 'USD');
+                subtotalCell.textContent = this._formatCurrency(subtotal, rowCurrency);
             }
 
             totalBase += subtotal;
+            currencies.add(rowCurrency);
         });
 
+        const baseCurrency = currencies.values().next().value || 'USD';
         const totalTRY = totalBase * exchangeRate;
+        const rateLabel = document.querySelector(`#${prefix}-device-pricing-section .rate-label`);
+        if (rateLabel) {
+            rateLabel.textContent = `${baseCurrency} \u2192 TRY`;
+        }
+
+        const mixedCurrencyNote = currencies.size > 1
+            ? `<div class="text-xs text-warning mt-2">Karisik para birimi kullaniliyor; toplam ilk para birimine gore hesaplandi.</div>`
+            : '';
 
         summaryEl.innerHTML = `
             <div class="pricing-summary-row">
-                <span class="label">${this.__('licenses.pricing.monthlyTotal')} (USD)</span>
-                <span class="value">${this._formatCurrency(totalBase, 'USD')}</span>
+                <span class="label">${this.__('licenses.pricing.monthlyTotal')} (${escapeHTML(baseCurrency)})</span>
+                <span class="value">${this._formatCurrency(totalBase, baseCurrency)}</span>
             </div>
             <div class="pricing-summary-row">
-                <span class="label">${this.__('licenses.pricing.annualTotal')} (USD)</span>
-                <span class="value">${this._formatCurrency(totalBase * 12, 'USD')}</span>
+                <span class="label">${this.__('licenses.pricing.annualTotal')} (${escapeHTML(baseCurrency)})</span>
+                <span class="value">${this._formatCurrency(totalBase * 12, baseCurrency)}</span>
             </div>
             <div class="pricing-summary-row total">
                 <span class="label">${this.__('licenses.pricing.monthlyTotal')} (TRY)</span>
@@ -2565,6 +2620,7 @@ export class LicenseManagementPage {
                 <span class="label">${this.__('licenses.pricing.annualTotal')} (TRY)</span>
                 <span class="value">${this._formatCurrency(totalTRY * 12, 'TRY')}</span>
             </div>
+            ${mixedCurrencyNote}
         `;
     }
 
@@ -2580,13 +2636,14 @@ export class LicenseManagementPage {
             const cat = row.dataset.category;
             const count = parseInt(row.querySelector('.dp-count')?.value) || 0;
             const unitPrice = parseFloat(row.querySelector('.dp-price')?.value) || 0;
+            const currency = row.dataset.currency || 'USD';
 
             if (count > 0 || unitPrice > 0) {
                 pricing.push({
                     device_category: cat,
                     device_count: count,
                     unit_price: unitPrice,
-                    currency: 'USD'
+                    currency
                 });
             }
         });

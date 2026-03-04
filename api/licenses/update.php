@@ -16,12 +16,17 @@ if (!in_array($user['role'], ['SuperAdmin', 'Admin'])) {
 
 $id = $request->routeParam('id');
 $data = $request->json();
+$isSuperAdmin = strcasecmp((string)($user['role'] ?? ''), 'SuperAdmin') === 0;
 
 try {
     $license = $db->fetch("SELECT * FROM licenses WHERE id = ?", [$id]);
 
     if (!$license) {
         Response::notFound('Lisans bulunamadi');
+    }
+
+    if (!$isSuperAdmin && ($license['company_id'] ?? null) !== ($user['company_id'] ?? null)) {
+        Response::forbidden('Sadece kendi firmanizin lisanslarini duzenleyebilirsiniz');
     }
 
     $updateData = [];
@@ -44,6 +49,19 @@ try {
         }
 
         $updateData['plan_id'] = $data['plan_id'];
+    }
+
+    if (isset($data['company_id']) && $data['company_id'] !== $license['company_id']) {
+        if (!$isSuperAdmin) {
+            Response::forbidden('Firma degistirme yetkiniz yok');
+        }
+
+        $company = $db->fetch("SELECT id FROM companies WHERE id = ?", [$data['company_id']]);
+        if (!$company) {
+            Response::badRequest('Gecersiz sirket ID');
+        }
+
+        $updateData['company_id'] = $data['company_id'];
     }
 
     // Map frontend field names to database column names

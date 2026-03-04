@@ -324,7 +324,7 @@ class IyzicoGateway
             'conversationId' => $paymentData['conversation_id'] ?? $this->db->generateUuid(),
             'price' => number_format($paymentData['price'], 2, '.', ''),
             'paidPrice' => number_format($paymentData['paid_price'] ?? $paymentData['price'], 2, '.', ''),
-            'currency' => $this->settings['currency'] ?? 'TRY',
+            'currency' => $paymentData['currency'] ?? ($this->settings['currency'] ?? 'TRY'),
             'installment' => $paymentData['installment'] ?? 1,
             'basketId' => $paymentData['basket_id'] ?? $this->db->generateUuid(),
             'paymentChannel' => 'WEB',
