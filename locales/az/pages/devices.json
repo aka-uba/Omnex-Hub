@@ -812,7 +812,25 @@
         "loadMqttSettings": "Server parametrlərini yüklə",
         "mqttSettingsLoaded": "MQTT parametrləri yükləndi",
         "mqttNoSettings": "MQTT parametrləri hələ quraşdırılmayıb. Admin paneldən MQTT parametrlərini qurun.",
-        "mqttUrlRequired": "MQTT Broker URL tələb olunur"
+        "mqttUrlRequired": "MQTT Broker URL tələb olunur",
+        "protection": {
+            "title": "BLE Təhlükəsizlik",
+            "status": "Qoruma Vəziyyəti",
+            "protected": "Qorunur",
+            "unprotected": "Qorunmur",
+            "settingPassword": "BLE qoruma şifrəsi təyin edilir...",
+            "passwordSet": "BLE qoruma şifrəsi təyin edildi",
+            "tokenError": "Cihaz token xətası qaytardı. Mövcud BLE şifrəsini yoxlayın.",
+            "viewPassword": "Şifrəni Göstər",
+            "changePassword": "Şifrəni Dəyişdir",
+            "removePassword": "Şifrəni Sil",
+            "removeConfirm": "BLE şifrəsini silmək istədiyinizə əminsiniz? Bu yalnız serverdəki qeydi silir, cihazdakı şifrəni deyil.",
+            "removed": "BLE şifrəsi silindi",
+            "noPassword": "Bu cihaz üçün BLE şifrəsi təyin edilməyib.",
+            "passwordInfo": "Bu şifrə cihazla Bluetooth əlaqəsində istifadə olunur.",
+            "copied": "Şifrə kopyalandı",
+            "unprotectedHint": "Bu cihaz BLE şifrəsi ilə qorunmur. Bluetooth sehrbazı ilə əlavə edərkən şifrə avtomatik təyin edilir."
+        }
     },
     "control": {
         "title": "Cihaza Nəzarət",

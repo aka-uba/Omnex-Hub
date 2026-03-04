@@ -812,7 +812,25 @@
         "loadMqttSettings": "Загрузить настройки сервера",
         "mqttSettingsLoaded": "Настройки MQTT загружены",
         "mqttNoSettings": "Настройки MQTT ещё не сконфигурированы. Настройте MQTT в панели администратора.",
-        "mqttUrlRequired": "MQTT Broker URL обязателен"
+        "mqttUrlRequired": "MQTT Broker URL обязателен",
+        "protection": {
+            "title": "Безопасность BLE",
+            "status": "Состояние защиты",
+            "protected": "Защищён",
+            "unprotected": "Не защищён",
+            "settingPassword": "Установка пароля защиты BLE...",
+            "passwordSet": "Пароль защиты BLE установлен",
+            "tokenError": "Устройство вернуло ошибку токена. Проверьте текущий пароль BLE.",
+            "viewPassword": "Показать пароль",
+            "changePassword": "Изменить пароль",
+            "removePassword": "Удалить пароль",
+            "removeConfirm": "Вы уверены, что хотите удалить пароль BLE? Это удалит только запись на сервере, а не пароль на самом устройстве.",
+            "removed": "Пароль BLE удалён",
+            "noPassword": "Для этого устройства не установлен пароль BLE.",
+            "passwordInfo": "Этот пароль используется для Bluetooth-связи с устройством.",
+            "copied": "Пароль скопирован",
+            "unprotectedHint": "Это устройство не защищено паролем BLE. Пароль назначается автоматически при добавлении через Bluetooth-мастер."
+        }
     },
     "control": {
         "title": "Управление устройством",

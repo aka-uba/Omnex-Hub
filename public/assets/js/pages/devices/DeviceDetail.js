@@ -114,6 +114,7 @@ export class DeviceDetailPage {
                             ${this.isStreamDevice(d) ? `<span class="badge badge-stream"><i class="ti ti-broadcast mr-1"></i>Stream</span>` : ''}
                             ${d.group_name ? `<span class="badge badge-outline">${escapeHTML(d.group_name)}</span>` : ''}
                             ${d.approval_status ? `<span class="badge ${this.getApprovalBadgeClass(d.approval_status)}">${this.__('approvalStatuses.' + d.approval_status) || d.approval_status}</span>` : ''}
+                            ${this.isPavoDisplayDevice(d) ? `<span class="badge ${d.bt_protected ? 'badge-success' : 'badge-warning'}"><i class="ti ${d.bt_protected ? 'ti-lock' : 'ti-lock-open'} mr-1"></i>${d.bt_protected ? (this.__('bluetooth.protection.protected') || 'BLE Korumalı') : (this.__('bluetooth.protection.unprotected') || 'BLE Korumasız')}</span>` : ''}
                         </div>
                     </div>
                     <div class="dd-hero-meta">
@@ -278,6 +279,8 @@ export class DeviceDetailPage {
                         </div>
 
                         ${this.isStreamDevice(d) ? this.renderStreamModeCard(d) : ''}
+
+                        ${this.isPavoDisplayDevice(d) ? this.renderBleSecurityCard(d) : ''}
 
                         ${d.sync_code || d.approval_status ? `
                             <div class="chart-card" style="margin-top: var(--space-4);">
@@ -1336,6 +1339,9 @@ export class DeviceDetailPage {
         document.getElementById('action-assign-playlist')?.addEventListener('click', () => this.showAssignPlaylistModal());
         document.getElementById('action-delete')?.addEventListener('click', () => this.deleteDevice());
 
+        // BLE security card buttons
+        this.bindBleSecurityEvents();
+
         // Stream URL copy button
         document.getElementById('copy-stream-url-btn')?.addEventListener('click', () => {
             const urlInput = document.getElementById('stream-url-input');
@@ -2151,6 +2157,124 @@ export class DeviceDetailPage {
      */
     isPavoDisplayDevice(device) {
         return device.type === 'esl' || device.model === 'esl_android' || device.model === 'PavoDisplay';
+    }
+
+    /**
+     * Render BLE Security card for PavoDisplay/Kexin devices
+     */
+    renderBleSecurityCard(d) {
+        const isProtected = !!d.bt_protected;
+        return `
+            <div class="chart-card" style="margin-top: var(--space-4);">
+                <div class="chart-card-header">
+                    <h2 class="chart-card-title">
+                        <i class="ti ti-bluetooth"></i> ${this.__('bluetooth.protection.title') || 'BLE Güvenlik'}
+                    </h2>
+                </div>
+                <div class="chart-card-body">
+                    <div class="dd-prop-grid">
+                        <div class="dd-prop-item">
+                            <span class="dd-prop-label">${this.__('bluetooth.protection.status') || 'Koruma Durumu'}</span>
+                            <span class="dd-prop-value">
+                                <span class="badge ${isProtected ? 'badge-success' : 'badge-warning'}">
+                                    <i class="ti ${isProtected ? 'ti-lock' : 'ti-lock-open'} mr-1"></i>
+                                    ${isProtected ? (this.__('bluetooth.protection.protected') || 'Korumalı') : (this.__('bluetooth.protection.unprotected') || 'Korumasız')}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: var(--space-3); flex-wrap: wrap;">
+                        ${isProtected ? `
+                            <button class="btn btn-sm btn-outline" id="btn-ble-view-password">
+                                <i class="ti ti-eye mr-1"></i> ${this.__('bluetooth.protection.viewPassword') || 'Şifreyi Göster'}
+                            </button>
+                            <button class="btn btn-sm btn-danger-outline" id="btn-ble-remove-password">
+                                <i class="ti ti-lock-open mr-1"></i> ${this.__('bluetooth.protection.removePassword') || 'Şifreyi Kaldır'}
+                            </button>
+                        ` : `
+                            <p class="text-sm text-gray-400" style="margin: 0;">
+                                <i class="ti ti-info-circle mr-1"></i>
+                                ${this.__('bluetooth.protection.unprotectedHint') || 'Bu cihaz BLE şifresiyle korunmuyor. Bluetooth wizard ile eklerken şifre otomatik atanır.'}
+                            </p>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Bind BLE security card events
+     */
+    bindBleSecurityEvents() {
+        document.getElementById('btn-ble-view-password')?.addEventListener('click', () => this.showBlePassword());
+        document.getElementById('btn-ble-remove-password')?.addEventListener('click', () => this.removeBlePassword());
+    }
+
+    /**
+     * Show BLE password in a modal
+     */
+    async showBlePassword() {
+        try {
+            const response = await this.app.api.get(`/devices/${this.deviceId}/bt-password`);
+            if (response.success && response.data.password) {
+                Modal.show({
+                    title: this.__('bluetooth.protection.viewPassword') || 'BLE Şifresi',
+                    icon: 'ti-bluetooth',
+                    size: 'sm',
+                    content: `
+                        <div style="text-align: center; padding: var(--space-3);">
+                            <p class="text-sm text-gray-400 mb-3">${this.__('bluetooth.protection.passwordInfo') || 'Bu şifre cihazla Bluetooth iletişiminde kullanılır.'}</p>
+                            <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
+                                <code style="font-size: 1.25rem; padding: 8px 16px; background: var(--bg-secondary); border-radius: 6px; letter-spacing: 1px;" id="ble-password-display">${escapeHTML(response.data.password)}</code>
+                                <button class="btn btn-sm btn-outline" id="ble-copy-password-btn" title="Kopyala">
+                                    <i class="ti ti-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `,
+                    confirmText: this.__('modal.close') || 'Kapat',
+                    cancelText: this.__('modal.cancel') || 'İptal',
+                    onConfirm: () => {}
+                });
+                // Bind copy button after modal renders
+                setTimeout(() => {
+                    document.getElementById('ble-copy-password-btn')?.addEventListener('click', () => {
+                        const pw = document.getElementById('ble-password-display')?.textContent;
+                        if (pw) {
+                            navigator.clipboard.writeText(pw).then(() => Toast.success(this.__('bluetooth.protection.copied') || 'Kopyalandı'));
+                        }
+                    });
+                }, 200);
+            } else {
+                Toast.warning(this.__('bluetooth.protection.noPassword') || 'Bu cihazda BLE şifresi ayarlanmamış.');
+            }
+        } catch (error) {
+            Toast.error(error.message || 'Şifre alınamadı');
+        }
+    }
+
+    /**
+     * Remove BLE password from device record
+     */
+    async removeBlePassword() {
+        Modal.confirm({
+            title: this.__('bluetooth.protection.removePassword') || 'BLE Şifresini Kaldır',
+            message: this.__('bluetooth.protection.removeConfirm') || 'Cihazın BLE şifresini kaldırmak istediğinize emin misiniz? Bu işlem sadece sunucu kaydını siler, cihaz üzerindeki şifreyi kaldırmaz.',
+            type: 'danger',
+            confirmText: this.__('actions.remove') || 'Kaldır',
+            onConfirm: async () => {
+                try {
+                    const response = await this.app.api.delete(`/devices/${this.deviceId}/bt-password`);
+                    if (response.success) {
+                        Toast.success(this.__('bluetooth.protection.removed') || 'BLE şifresi kaldırıldı');
+                        await this.loadDevice();
+                    }
+                } catch (error) {
+                    Toast.error(error.message || 'Şifre kaldırılamadı');
+                }
+            }
+        });
     }
 
     /**

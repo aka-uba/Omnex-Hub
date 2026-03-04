@@ -42,6 +42,7 @@ export class BluetoothWizard {
         this._isKexinDevice = false;
         this._pendingWifiConfig = null;
         this._isReadingInfo = false;
+        this._deviceToken = ''; // BT protection password (set during protocol step)
     }
 
     /**
@@ -97,6 +98,7 @@ export class BluetoothWizard {
         this._mqttProtocolSelected = false;
         this._isKexinDevice = false;
         this._pendingWifiConfig = null;
+        this._deviceToken = '';
     }
 
     _isWorkflowReadyForDeviceAdd() {
@@ -224,18 +226,38 @@ export class BluetoothWizard {
     }
 
     /**
+     * Generate cryptographically secure random password
+     * @param {number} length - Password length
+     * @returns {string}
+     * @private
+     */
+    _generateSecurePassword(length = 16) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const array = new Uint8Array(length);
+        crypto.getRandomValues(array);
+        return Array.from(array, byte => chars[byte % chars.length]).join('');
+    }
+
+    /**
      * Cihaza BLE admin şifresi ayarla (güvenlik)
      * @private
      */
     async _setDevicePassword() {
-        const password = prompt('Cihaz BLE şifresi belirleyin:\n(Bu şifre olmadan kimse Bluetooth ile bağlanamaz)');
-        if (!password || !password.trim()) return;
+        const currentPassword = this._deviceToken || '';
+        const newPassword = prompt(
+            'Cihaz BLE şifresi belirleyin:\n(Bu şifre olmadan kimse Bluetooth ile bağlanamaz)\n\n'
+            + (currentPassword ? `Mevcut şifre: ${currentPassword}` : 'Henüz şifre yok')
+        );
+        if (!newPassword || !newPassword.trim()) return;
 
         try {
             this._log('Admin şifresi ayarlanıyor...');
-            await this.bluetoothService.setAdminPassword(password.trim());
-            this._log('Admin şifresi ayarlandı', 'success');
-            Toast.success('Cihaz şifresi ayarlandı. Artık BLE bağlantısı için şifre gerekir.');
+            await this.bluetoothService.setAdminPassword(newPassword.trim(), currentPassword);
+            await new Promise(r => setTimeout(r, 300));
+            await this.bluetoothService.setUserPassword(newPassword.trim(), newPassword.trim());
+            this._deviceToken = newPassword.trim();
+            this._log('Admin + User şifresi ayarlandı', 'success');
+            Toast.success('Cihaz BLE şifresi ayarlandı.');
         } catch (error) {
             this._log(`Şifre ayarlanamadı: ${error.message}`, 'error');
             Toast.error(error.message);
@@ -1523,7 +1545,7 @@ export class BluetoothWizard {
                 this._log('WiFi ayarları kaydedildi (protokol adımında birleşik gönderilecek)', 'success');
             } else {
                 // ── PavoDisplay: Mevcut akış — WiFi ayrı gönder ──
-                await this.bluetoothService.setWifi(ssid, password);
+                await this.bluetoothService.setWifi(ssid, password, this._deviceToken);
                 this._rememberWifiSsid(ssid);
                 this._updateWifiNetworkOptions();
                 this._log(this.__('bluetooth.wizard.wifiSet'), 'success');
@@ -1545,11 +1567,11 @@ export class BluetoothWizard {
                     }
 
                     this._log(this.__('bluetooth.wizard.settingStaticIp', { ip }));
-                    await this.bluetoothService.setStaticIp(ip, gateway, netmask);
+                    await this.bluetoothService.setStaticIp(ip, gateway, netmask, this._deviceToken);
                     this._log(this.__('bluetooth.wizard.staticIpSet'), 'success');
                 } else {
                     // Set DHCP
-                    await this.bluetoothService.setDhcp();
+                    await this.bluetoothService.setDhcp(this._deviceToken);
                     this._log(this.__('bluetooth.wizard.dhcpSet'), 'success');
                 }
             }
@@ -1595,12 +1617,13 @@ export class BluetoothWizard {
                 // Kexin: Bekleyen WiFi ayarlarını önce gönder (MQTT sıralı komut kullanır)
                 if (this._isKexinDevice && this._pendingWifiConfig) {
                     this._log('Kexin: Bekleyen WiFi ayarları gönderiliyor...');
-                    await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password);
+                    await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password, this._deviceToken);
                     if (this._pendingWifiConfig.staticIp) {
                         await this.bluetoothService.setStaticIp(
                             this._pendingWifiConfig.staticIp.ip,
                             this._pendingWifiConfig.staticIp.gateway,
-                            this._pendingWifiConfig.staticIp.netmask
+                            this._pendingWifiConfig.staticIp.netmask,
+                            this._deviceToken
                         );
                     }
                     this._log('WiFi ayarları gönderildi', 'success');
@@ -1630,7 +1653,7 @@ export class BluetoothWizard {
                     reportServer,
                     appId,
                     appSecret
-                });
+                }, this._deviceToken);
 
                 // Sonuclari logla
                 let hasError = false;
@@ -1673,7 +1696,7 @@ export class BluetoothWizard {
                     // 1) WiFi ayarları (beklemede ise)
                     if (this._pendingWifiConfig) {
                         this._log(`WiFi ayarlanıyor: ${this._pendingWifiConfig.ssid}`);
-                        await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password);
+                        await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password, this._deviceToken);
                         this._log('WiFi gönderildi ✓', 'success');
 
                         if (this._pendingWifiConfig.staticIp) {
@@ -1681,7 +1704,8 @@ export class BluetoothWizard {
                             await this.bluetoothService.setStaticIp(
                                 this._pendingWifiConfig.staticIp.ip,
                                 this._pendingWifiConfig.staticIp.gateway,
-                                this._pendingWifiConfig.staticIp.netmask
+                                this._pendingWifiConfig.staticIp.netmask,
+                                this._deviceToken
                             );
                             this._log('Statik IP gönderildi ✓', 'success');
                         }
@@ -1689,7 +1713,7 @@ export class BluetoothWizard {
 
                     // 2) Protokol
                     this._log(`Protokol ayarlanıyor: ${protocol}`);
-                    await this.bluetoothService.setProtocol(protocol);
+                    await this.bluetoothService.setProtocol(protocol, this._deviceToken);
                     this._log('Protokol gönderildi ✓', 'success');
 
                     // 3) HTTP-SERVER modunda URL gerekmez (push mode)
@@ -1705,7 +1729,7 @@ export class BluetoothWizard {
                                 Toast.warning('Sunucu adresi localhost! Cihaz bu adrese erişemez. Gerçek LAN IP girin.');
                             }
                             this._log(`Remote-server: ${remoteServer}`);
-                            await this.bluetoothService.setRemoteServer(remoteServer);
+                            await this.bluetoothService.setRemoteServer(remoteServer, this._deviceToken);
                             this._log('Remote-server gönderildi ✓', 'success');
                         } else {
                             this._log('Remote-server boş! Cihaz içerik çekemez.', 'error');
@@ -1713,12 +1737,12 @@ export class BluetoothWizard {
 
                         if (infoServer) {
                             this._log(`Info-server: ${infoServer}`);
-                            await this.bluetoothService.setInfoServer(infoServer);
+                            await this.bluetoothService.setInfoServer(infoServer, this._deviceToken);
                             this._log('Info-server gönderildi ✓', 'success');
                         }
 
                         this._log(`Query-cycle: ${queryCycle}sn`);
-                        await this.bluetoothService.setQueryCycle(queryCycle);
+                        await this.bluetoothService.setQueryCycle(queryCycle, this._deviceToken);
                         this._log('Query-cycle gönderildi ✓', 'success');
                     } else if (protocol === 'HTTP-SERVER') {
                         this._log('HTTP-SERVER modu: URL/appId gerekmez — cihaz port 80 açacak', 'info');
@@ -1734,7 +1758,7 @@ export class BluetoothWizard {
                         let deviceAppId = null;
                         let deviceAppSecret = null;
                         try {
-                            const appResp = await this.bluetoothService.getDeviceInfo('Application');
+                            const appResp = await this.bluetoothService.getDeviceInfo('Application', this._deviceToken);
                             this._log(`Application okuma: ${appResp}`, 'info');
                             // +DONE:{"Application":{"AppID":"xxx","AppSecret":"yyy"}} formatı
                             const parsed = this.bluetoothService.safeJsonParse(
@@ -1753,7 +1777,7 @@ export class BluetoothWizard {
                         this._log('Cihaz bilgileri okunuyor (ayar doğrulama)...');
                         await new Promise(r => setTimeout(r, 1500));
                         try {
-                            const info = await this.bluetoothService.getAllInfo();
+                            const info = await this.bluetoothService.getAllInfo(this._deviceToken);
                             this._log(`Cihaz: IP=${info.ip}, Proto=${info.Protocol}, MAC=${info.mac}`, 'info');
                         } catch (readErr) {
                             this._log(`Bilgi okuma: ${readErr.message}`, 'info');
@@ -1764,12 +1788,12 @@ export class BluetoothWizard {
                         await new Promise(r => setTimeout(r, 500));
                         if (this._pendingWifiConfig) {
                             try {
-                                await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password);
+                                await this.bluetoothService.setWifi(this._pendingWifiConfig.ssid, this._pendingWifiConfig.password, this._deviceToken);
                                 this._log('WiFi (2. gönderim) ✓', 'success');
                             } catch (e) { this._log(`WiFi 2: ${e.message}`, 'info'); }
                         }
                         try {
-                            await this.bluetoothService.setProtocol(protocol);
+                            await this.bluetoothService.setProtocol(protocol, this._deviceToken);
                             this._log('Protocol (2. gönderim) ✓', 'success');
                         } catch (e) { this._log(`Protocol 2: ${e.message}`, 'info'); }
 
@@ -1777,7 +1801,7 @@ export class BluetoothWizard {
                         if (deviceAppId !== null) {
                             this._log(`Application geri yazılıyor: AppID="${deviceAppId}"...`);
                             try {
-                                await this.bluetoothService.setApplication(deviceAppId, deviceAppSecret || '');
+                                await this.bluetoothService.setApplication(deviceAppId, deviceAppSecret || '', this._deviceToken);
                                 this._log('Application (orijinal değer) geri yazıldı ✓', 'success');
                             } catch (e) { this._log(`Application geri yazma: ${e.message}`, 'info'); }
                         }
@@ -1787,7 +1811,7 @@ export class BluetoothWizard {
                         // HTTP PULL modunda reboot gerekli (ayarların uygulanması için)
                         this._log('Cihaz yeniden başlatılıyor...');
                         try {
-                            await this.bluetoothService.reboot();
+                            await this.bluetoothService.reboot(this._deviceToken);
                             this._log('Reboot gönderildi. Cihaz ~20sn sonra sunucuya bağlanacak.', 'info');
                             Toast.info('Cihaz yeniden başlatılıyor. ~20 saniye bekleyin.');
                         } catch (rebootErr) {
@@ -1797,7 +1821,7 @@ export class BluetoothWizard {
                     this._log('Otomatik doğrulama bekliyor...');
                 } else {
                     // ── PavoDisplay: Protokol + sunucu URL'lerini ayrı komutlarla gönder ──
-                    await this.bluetoothService.setProtocol(protocol);
+                    await this.bluetoothService.setProtocol(protocol, this._deviceToken);
 
                     // HTTP modunda sunucu URL'lerini gönder
                     // NOT: appId/appSecret GÖNDERİLMEZ — cihaz fabrika appId'si ile çalışır,
@@ -1819,7 +1843,7 @@ export class BluetoothWizard {
                         if (remoteServer) {
                             await bleDelay();
                             this._log(`Remote-server: ${remoteServer}`);
-                            await this.bluetoothService.setRemoteServer(remoteServer);
+                            await this.bluetoothService.setRemoteServer(remoteServer, this._deviceToken);
                             this._log('Remote-server ayarlandı', 'success');
                         } else {
                             this._log('Remote-server boş! Cihaz içerik çekemez.', 'error');
@@ -1828,13 +1852,13 @@ export class BluetoothWizard {
                         if (infoServer) {
                             await bleDelay();
                             this._log(`Info-server: ${infoServer}`);
-                            await this.bluetoothService.setInfoServer(infoServer);
+                            await this.bluetoothService.setInfoServer(infoServer, this._deviceToken);
                             this._log('Info-server ayarlandı', 'success');
                         }
 
                         await bleDelay();
                         this._log(`Query-cycle: ${queryCycle}sn`);
-                        await this.bluetoothService.setQueryCycle(queryCycle);
+                        await this.bluetoothService.setQueryCycle(queryCycle, this._deviceToken);
                         this._log('Query-cycle ayarlandı', 'success');
                     }
                 }
@@ -1844,6 +1868,24 @@ export class BluetoothWizard {
 
             this.workflowState.protocolConfigured = true;
             this.workflowState.verified = false;
+
+            // ── Auto-protect: Set BT admin+user password after protocol is configured ──
+            if (!this._deviceToken && this.bluetoothService.connected) {
+                try {
+                    const autoPassword = this._generateSecurePassword(16);
+                    this._log(this.__('bluetooth.protection.settingPassword') || 'BLE koruma şifresi ayarlanıyor...');
+                    await new Promise(r => setTimeout(r, 300)); // GATT stabilization
+                    await this.bluetoothService.setAdminPassword(autoPassword);
+                    await new Promise(r => setTimeout(r, 300));
+                    await this.bluetoothService.setUserPassword(autoPassword, autoPassword);
+                    this._deviceToken = autoPassword;
+                    this._log(this.__('bluetooth.protection.passwordSet') || 'BLE koruma şifresi ayarlandı ✓', 'success');
+                } catch (pwdErr) {
+                    this._log(`BLE koruma şifresi atanamadı: ${pwdErr.message}`, 'error');
+                    // Don't block wizard — device just won't be protected
+                }
+            }
+
             this._log(this.__('bluetooth.wizard.protocolSet'), 'success');
             if (protocol !== 'MQTT') {
                 Toast.success(this.__('bluetooth.toast.protocolSet') || 'Protokol ayarlandi');
@@ -2010,7 +2052,7 @@ export class BluetoothWizard {
 
             this._log(this.__('bluetooth.wizard.readingInfo'));
             const info = await Promise.race([
-                this.bluetoothService.getAllInfo('', {
+                this.bluetoothService.getAllInfo(this._deviceToken, {
                     types: ['ip', 'mac', 'Protocol', 'lcd_screen_width', 'lcd_screen_height'],
                     timeoutMs: 2500
                 }),
@@ -2085,7 +2127,7 @@ export class BluetoothWizard {
 
         try {
             this._log(this.__('bluetooth.wizard.hardwareSettings', { volume, brightness }));
-            await this.bluetoothService.setHardware(volume, brightness);
+            await this.bluetoothService.setHardware(volume, brightness, this._deviceToken);
 
             this._log(this.__('bluetooth.wizard.hardwareSaved'), 'success');
             Toast.success(this.__('bluetooth.success'));
@@ -2109,7 +2151,7 @@ export class BluetoothWizard {
 
         try {
             this._log(this.__('bluetooth.wizard.rebooting'));
-            await this.bluetoothService.reboot();
+            await this.bluetoothService.reboot(this._deviceToken);
 
             Toast.info(this.__('bluetooth.toast.rebooting') || 'Cihaz yeniden baslatiliyor...');
 
@@ -2136,7 +2178,7 @@ export class BluetoothWizard {
 
         try {
             this._log(this.__('bluetooth.wizard.clearingMedia'));
-            await this.bluetoothService.clearMedia();
+            await this.bluetoothService.clearMedia(this._deviceToken);
 
             this._log(this.__('bluetooth.wizard.mediaCleared'), 'success');
             Toast.success(this.__('bluetooth.toast.mediaCleared') || 'Medyalar temizlendi');
@@ -2158,7 +2200,10 @@ export class BluetoothWizard {
 
         try {
             this._log(this.__('bluetooth.wizard.resetting'));
-            await this.bluetoothService.factoryReset();
+            await this.bluetoothService.factoryReset(this._deviceToken);
+
+            // Factory reset clears device password — clear our token too
+            this._deviceToken = '';
 
             Toast.success(this.__('bluetooth.toast.factoryResetDone') || 'Fabrika ayarlarina sifirlandi');
 
@@ -2307,6 +2352,11 @@ export class BluetoothWizard {
         // MQTT modunda ise communication_mode ekle
         if (this._mqttProtocolSelected) {
             data.mqtt_client_id = data.serial_number || '';
+        }
+
+        // Include BT password for server-side encrypted storage
+        if (this._deviceToken) {
+            data.bt_password = this._deviceToken;
         }
 
         // Validation

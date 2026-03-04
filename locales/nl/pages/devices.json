@@ -812,7 +812,25 @@
         "loadMqttSettings": "Serverinstellingen laden",
         "mqttSettingsLoaded": "MQTT-instellingen geladen",
         "mqttNoSettings": "MQTT-instellingen nog niet geconfigureerd. Configureer MQTT via het adminpaneel.",
-        "mqttUrlRequired": "MQTT Broker URL is vereist"
+        "mqttUrlRequired": "MQTT Broker URL is vereist",
+        "protection": {
+            "title": "BLE-beveiliging",
+            "status": "Beveiligingsstatus",
+            "protected": "Beveiligd",
+            "unprotected": "Onbeveiligd",
+            "settingPassword": "BLE-beveiligingswachtwoord instellen...",
+            "passwordSet": "BLE-beveiligingswachtwoord ingesteld",
+            "tokenError": "Apparaat gaf een tokenfout. Controleer het huidige BLE-wachtwoord.",
+            "viewPassword": "Wachtwoord tonen",
+            "changePassword": "Wachtwoord wijzigen",
+            "removePassword": "Wachtwoord verwijderen",
+            "removeConfirm": "Weet u zeker dat u het BLE-wachtwoord wilt verwijderen? Dit verwijdert alleen het serverrecord, niet het wachtwoord op het apparaat.",
+            "removed": "BLE-wachtwoord verwijderd",
+            "noPassword": "Geen BLE-wachtwoord ingesteld voor dit apparaat.",
+            "passwordInfo": "Dit wachtwoord wordt gebruikt voor Bluetooth-communicatie met het apparaat.",
+            "copied": "Wachtwoord gekopieerd",
+            "unprotectedHint": "Dit apparaat is niet beveiligd met een BLE-wachtwoord. Het wachtwoord wordt automatisch toegewezen bij het toevoegen via de Bluetooth-wizard."
+        }
     },
     "control": {
         "title": "Apparaatcontrole",

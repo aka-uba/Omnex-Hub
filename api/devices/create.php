@@ -129,6 +129,12 @@ $insertData = [
     'device_profile' => $deviceProfile
 ];
 
+// Bluetooth password protection (PavoDisplay/Kexin)
+$btPassword = $request->input('bt_password');
+if (!empty($btPassword) && is_string($btPassword)) {
+    $insertData['bt_password_encrypted'] = Security::encrypt($btPassword);
+}
+
 $id = $db->insert('devices', $insertData);
 
 $device = $db->fetch("SELECT * FROM devices WHERE id = ?", [$id]);

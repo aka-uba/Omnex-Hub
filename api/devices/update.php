@@ -155,6 +155,16 @@ if ($request->has('device_profile')) {
     }
 }
 
+// Bluetooth password protection (PavoDisplay/Kexin)
+if ($request->has('bt_password')) {
+    $btPassword = $request->input('bt_password');
+    if (!empty($btPassword) && is_string($btPassword)) {
+        $data['bt_password_encrypted'] = Security::encrypt($btPassword);
+    } elseif ($btPassword === null || $btPassword === '') {
+        $data['bt_password_encrypted'] = null;
+    }
+}
+
 $data['updated_at'] = date('Y-m-d H:i:s');
 
 $db->update('devices', $data, 'id = ?', [$id]);

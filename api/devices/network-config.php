@@ -55,6 +55,12 @@ if (!$isPavoDisplay) {
 require_once BASE_PATH . '/services/PavoDisplayGateway.php';
 $gateway = new PavoDisplayGateway();
 
+// Auto-resolve BT token from DB if not provided in request
+$requestToken = $body['token'] ?? '';
+if (empty($requestToken) && !empty($device['bt_password_encrypted'])) {
+    $requestToken = Security::decrypt($device['bt_password_encrypted']) ?? '';
+}
+
 $result = [
     'device_id' => $deviceId,
     'device_name' => $device['name'],
@@ -68,7 +74,6 @@ try {
             $ip = $body['ip'] ?? null;
             $gateway_addr = $body['gateway'] ?? null;
             $netmask = $body['netmask'] ?? '255.255.255.0';
-            $token = $body['token'] ?? '';
 
             if (!$ip || !$gateway_addr) {
                 Response::badRequest('IP adresi ve gateway gereklidir');
@@ -79,24 +84,22 @@ try {
                 Response::badRequest('Geçersiz IP adresi formatı');
             }
 
-            $result = array_merge($result, $gateway->prepareStaticIpCommand($ip, $gateway_addr, $netmask, $token));
+            $result = array_merge($result, $gateway->prepareStaticIpCommand($ip, $gateway_addr, $netmask, $requestToken));
             break;
 
         case 'prepare_dhcp':
-            $token = $body['token'] ?? '';
-            $result = array_merge($result, $gateway->prepareDhcpCommand($token));
+            $result = array_merge($result, $gateway->prepareDhcpCommand($requestToken));
             break;
 
         case 'prepare_wifi':
             $ssid = $body['ssid'] ?? null;
             $password = $body['password'] ?? null;
-            $token = $body['token'] ?? '';
 
             if (!$ssid || !$password) {
                 Response::badRequest('WiFi SSID ve şifre gereklidir');
             }
 
-            $result = array_merge($result, $gateway->prepareWifiCommand($ssid, $password, $token));
+            $result = array_merge($result, $gateway->prepareWifiCommand($ssid, $password, $requestToken));
             break;
     }
 

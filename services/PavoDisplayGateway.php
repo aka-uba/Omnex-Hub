@@ -3087,7 +3087,7 @@ class PavoDisplayGateway
     /**
      * Görseli hazırla ve yükle
      */
-    private function prepareAndUploadImage(string $ip, string $clientId, string $imagePath, int $width, int $height, array $cropRegion = null, array $designData = [], array $product = []): array
+    private function prepareAndUploadImage(string $ip, string $clientId, string $imagePath, int $width, int $height, ?array $cropRegion = null, array $designData = [], array $product = []): array
     {
         $result = ['success' => false];
 

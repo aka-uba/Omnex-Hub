@@ -812,7 +812,25 @@
         "loadMqttSettings": "Charger les paramètres serveur",
         "mqttSettingsLoaded": "Paramètres MQTT chargés",
         "mqttNoSettings": "Paramètres MQTT pas encore configurés. Veuillez configurer MQTT depuis le panneau admin.",
-        "mqttUrlRequired": "L'URL du Broker MQTT est requise"
+        "mqttUrlRequired": "L'URL du Broker MQTT est requise",
+        "protection": {
+            "title": "Sécurité BLE",
+            "status": "État de protection",
+            "protected": "Protégé",
+            "unprotected": "Non protégé",
+            "settingPassword": "Configuration du mot de passe de protection BLE...",
+            "passwordSet": "Mot de passe de protection BLE configuré",
+            "tokenError": "L'appareil a renvoyé une erreur de token. Vérifiez le mot de passe BLE actuel.",
+            "viewPassword": "Afficher le mot de passe",
+            "changePassword": "Changer le mot de passe",
+            "removePassword": "Supprimer le mot de passe",
+            "removeConfirm": "Êtes-vous sûr de vouloir supprimer le mot de passe BLE ? Cela supprime uniquement l'enregistrement serveur, pas le mot de passe sur l'appareil.",
+            "removed": "Mot de passe BLE supprimé",
+            "noPassword": "Aucun mot de passe BLE configuré pour cet appareil.",
+            "passwordInfo": "Ce mot de passe est utilisé pour la communication Bluetooth avec l'appareil.",
+            "copied": "Mot de passe copié",
+            "unprotectedHint": "Cet appareil n'est pas protégé par un mot de passe BLE. Le mot de passe est attribué automatiquement lors de l'ajout via l'assistant Bluetooth."
+        }
     },
     "control": {
         "title": "Contrôle de l'appareil",

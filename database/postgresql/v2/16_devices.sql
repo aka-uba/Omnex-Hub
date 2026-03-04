@@ -231,6 +231,7 @@ CREATE TABLE IF NOT EXISTS "devices"."devices" (
   "adapter_id" text,
   "capabilities" text,
   "device_brand" text,
+  "bt_password_encrypted" text,
   CONSTRAINT "pk_devices" PRIMARY KEY ("id")
 );
 

@@ -360,6 +360,10 @@ if ($assignedContent && (($assignedContent['content_type'] ?? '') === 'playlist'
     }
 }
 
+// Bluetooth protection indicator (don't expose encrypted password)
+$device['bt_protected'] = !empty($device['bt_password_encrypted']);
+unset($device['bt_password_encrypted']);
+
 // Sanitize current_content - don't send raw base64 data to frontend
 if (!empty($device['current_content']) && !isValidImagePath($device['current_content'])) {
     // If it's valid JSON, keep it; otherwise clear it

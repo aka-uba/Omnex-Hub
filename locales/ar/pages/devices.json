@@ -812,7 +812,25 @@
         "loadMqttSettings": "تحميل إعدادات الخادم",
         "mqttSettingsLoaded": "تم تحميل إعدادات MQTT",
         "mqttNoSettings": "لم يتم تكوين إعدادات MQTT بعد. يرجى تكوين MQTT من لوحة الإدارة.",
-        "mqttUrlRequired": "عنوان وسيط MQTT مطلوب"
+        "mqttUrlRequired": "عنوان وسيط MQTT مطلوب",
+        "protection": {
+            "title": "أمان BLE",
+            "status": "حالة الحماية",
+            "protected": "محمي",
+            "unprotected": "غير محمي",
+            "settingPassword": "جارٍ تعيين كلمة مرور حماية BLE...",
+            "passwordSet": "تم تعيين كلمة مرور حماية BLE",
+            "tokenError": "أعاد الجهاز خطأ في الرمز المميز. تحقق من كلمة مرور BLE الحالية.",
+            "viewPassword": "عرض كلمة المرور",
+            "changePassword": "تغيير كلمة المرور",
+            "removePassword": "إزالة كلمة المرور",
+            "removeConfirm": "هل أنت متأكد من إزالة كلمة مرور BLE؟ سيؤدي هذا فقط إلى حذف السجل من الخادم وليس كلمة المرور على الجهاز.",
+            "removed": "تمت إزالة كلمة مرور BLE",
+            "noPassword": "لم يتم تعيين كلمة مرور BLE لهذا الجهاز.",
+            "passwordInfo": "تُستخدم كلمة المرور هذه للاتصال بالجهاز عبر البلوتوث.",
+            "copied": "تم نسخ كلمة المرور",
+            "unprotectedHint": "هذا الجهاز غير محمي بكلمة مرور BLE. يتم تعيين كلمة المرور تلقائياً عند الإضافة عبر معالج البلوتوث."
+        }
     },
     "control": {
         "title": "التحكم بالجهاز",
