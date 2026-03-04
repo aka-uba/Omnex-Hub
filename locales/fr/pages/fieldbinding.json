@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "Scannez le code QR sur l'appareil ESL",
         "scanProduct": "Scannez le code-barres du produit",
+        "tapToScan": "Appuyez pour scanner",
         "scanning": "Scan en cours...",
         "processing": "Traitement en cours...",
         "switchCamera": "Changer de caméra",
@@ -97,6 +98,7 @@
         "back": "Retour",
         "cancel": "Annuler",
         "retry": "Scanner à nouveau",
+        "retryScan": "Rescanner",
         "close": "Fermer"
     }
 }

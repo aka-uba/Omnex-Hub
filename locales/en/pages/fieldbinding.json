@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "Scan the QR code on the ESL device",
         "scanProduct": "Scan the product barcode",
+        "tapToScan": "Tap to scan",
         "scanning": "Scanning...",
         "processing": "Processing...",
         "switchCamera": "Switch Camera",
@@ -97,6 +98,7 @@
         "back": "Back",
         "cancel": "Cancel",
         "retry": "Scan Again",
+        "retryScan": "Rescan",
         "close": "Close"
     }
 }

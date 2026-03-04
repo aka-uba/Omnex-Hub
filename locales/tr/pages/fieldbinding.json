@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "ESL cihazın QR kodunu okutun",
         "scanProduct": "Ürün barkodunu okutun",
+        "tapToScan": "Taramak için dokunun",
         "scanning": "Taranıyor...",
         "processing": "İşleniyor...",
         "switchCamera": "Kamera Değiştir",
@@ -97,6 +98,7 @@
         "back": "Geri",
         "cancel": "İptal",
         "retry": "Tekrar Tara",
+        "retryScan": "Tekrar Tara",
         "close": "Kapat"
     }
 }

@@ -123,7 +123,14 @@ export class FieldBinding {
                         </div>
                     </div>
                     <div class="fb-scanner-viewport" id="fb-scanner-container">
-                        <!-- BarcodeScanner mounts here -->
+                        <!-- BarcodeScanner or tap-to-scan placeholder mounts here -->
+                    </div>
+                    <!-- Tap-to-scan overlay (shown when camera is not active) -->
+                    <div class="fb-tap-to-scan" id="fb-tap-to-scan">
+                        <div class="fb-tap-to-scan-inner">
+                            <i class="ti ti-scan"></i>
+                            <span>${this.__('scanner.tapToScan')}</span>
+                        </div>
                     </div>
                     <div class="fb-manual-entry">
                         <button class="btn btn-sm btn-outline" id="fb-manual-toggle">
@@ -239,6 +246,12 @@ export class FieldBinding {
     // ─── Event Binding ─────────────────────────────────────────────
 
     bindEvents() {
+        // Tap-to-scan overlay: user taps to activate camera
+        const tapToScan = document.getElementById('fb-tap-to-scan');
+        if (tapToScan) {
+            tapToScan.addEventListener('click', () => this._handleTapToScan());
+        }
+
         // Camera controls
         const switchBtn = document.getElementById('fb-switch-camera');
         if (switchBtn) {
@@ -334,16 +347,22 @@ export class FieldBinding {
         // Update action bar
         this.renderActionBar();
 
-        // Auto-start scanner for scanning states
+        // For scanning states: show tap-to-scan placeholder (camera NOT auto-started)
+        // Camera only activates when user explicitly taps the scan area
         if (newState === 'SCANNING_DEVICE') {
             this._scanTarget = 'device';
             this._updateScanInstruction();
-            this.startScanning('device');
+            this._showTapToScan();
         } else if (newState === 'SCANNING_PRODUCT') {
             this._scanTarget = 'product';
             this._updateScanInstruction();
-            this.startScanning('product');
-        } else if (newState === 'SELECTING_TEMPLATE') {
+            this._showTapToScan();
+        } else {
+            // Non-scanning state: ensure camera is stopped
+            this.stopScanning();
+        }
+
+        if (newState === 'SELECTING_TEMPLATE') {
             this.loadTemplates();
         } else if (newState === 'CONFIRMING') {
             this._renderConfirmSection();
@@ -481,6 +500,59 @@ export class FieldBinding {
     }
 
     // ─── Scanner Control ───────────────────────────────────────────
+
+    /**
+     * Show the "Tap to scan" overlay instead of auto-starting the camera.
+     * Camera will only activate when the user taps this area.
+     * @private
+     */
+    _showTapToScan() {
+        const overlay = document.getElementById('fb-tap-to-scan');
+        const viewport = document.getElementById('fb-scanner-container');
+        if (overlay) {
+            overlay.style.display = '';
+            overlay.classList.remove('scanning');
+        }
+        // Hide the camera viewport and clear its content
+        if (viewport) {
+            viewport.style.display = 'none';
+            viewport.innerHTML = '';
+        }
+        // Hide scanner header (camera controls not needed yet)
+        const header = document.querySelector('.fb-scanner-header');
+        if (header) header.style.display = 'none';
+    }
+
+    /**
+     * Hide the "Tap to scan" overlay and show the camera viewport.
+     * @private
+     */
+    _hideTapToScan() {
+        const overlay = document.getElementById('fb-tap-to-scan');
+        const viewport = document.getElementById('fb-scanner-container');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        if (viewport) {
+            viewport.style.display = '';
+        }
+        // Show scanner header (camera controls)
+        const header = document.querySelector('.fb-scanner-header');
+        if (header) header.style.display = '';
+    }
+
+    /**
+     * Handle the tap-to-scan overlay click: activate the camera.
+     * @private
+     */
+    async _handleTapToScan() {
+        // Prevent double taps
+        const overlay = document.getElementById('fb-tap-to-scan');
+        if (overlay) overlay.classList.add('scanning');
+
+        this._hideTapToScan();
+        await this.startScanning(this._scanTarget || 'device');
+    }
 
     /**
      * Start the barcode scanner for the given target type.

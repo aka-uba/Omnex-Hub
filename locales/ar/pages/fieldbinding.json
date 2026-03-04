@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "امسح رمز QR على جهاز ESL",
         "scanProduct": "امسح الباركود الخاص بالمنتج",
+        "tapToScan": "انقر للمسح",
         "scanning": "جارٍ المسح...",
         "processing": "جارٍ المعالجة...",
         "switchCamera": "تبديل الكاميرا",
@@ -97,6 +98,7 @@
         "back": "رجوع",
         "cancel": "إلغاء",
         "retry": "إعادة المسح",
+        "retryScan": "إعادة المسح",
         "close": "إغلاق"
     }
 }

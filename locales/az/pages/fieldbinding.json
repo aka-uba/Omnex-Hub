@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "ESL cihazın QR kodunu oxudun",
         "scanProduct": "Məhsul barkodunu oxudun",
+        "tapToScan": "Skan etmək üçün toxunun",
         "scanning": "Taranır...",
         "processing": "Emal edilir...",
         "switchCamera": "Kameranı Dəyiş",
@@ -97,6 +98,7 @@
         "back": "Geri",
         "cancel": "Ləğv Et",
         "retry": "Yenidən Tara",
+        "retryScan": "Yenidən skan et",
         "close": "Bağla"
     }
 }

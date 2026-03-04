@@ -13,6 +13,7 @@
     "scanner": {
         "scanDevice": "Scan de QR-code op het ESL-apparaat",
         "scanProduct": "Scan de productbarcode",
+        "tapToScan": "Tik om te scannen",
         "scanning": "Scannen...",
         "processing": "Verwerken...",
         "switchCamera": "Camera wisselen",
@@ -97,6 +98,7 @@
         "back": "Terug",
         "cancel": "Annuleren",
         "retry": "Opnieuw scannen",
+        "retryScan": "Opnieuw scannen",
         "close": "Sluiten"
     }
 }

@@ -134,6 +134,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    position: relative;
 }
 
 .fb-scanner-header {
@@ -199,6 +200,84 @@
     border-radius: 12px;
     overflow: hidden;
     border: 2px solid var(--border-color);
+}
+
+/* ─── Tap-to-Scan Overlay ─────────────────────────────── */
+/* Shown instead of auto-starting the camera. User taps to activate. */
+.fb-tap-to-scan {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    aspect-ratio: 16 / 10;
+    min-height: 250px;
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary, #e9ecef) 100%);
+    border-radius: 12px;
+    transition: all var(--transition-normal);
+    border: 2px dashed var(--border-color);
+}
+
+.fb-tap-to-scan:hover {
+    border-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary-light, #e7f5ff) 0%, var(--bg-secondary) 100%);
+}
+
+.fb-tap-to-scan:active {
+    transform: scale(0.98);
+}
+
+.fb-tap-to-scan-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--text-tertiary);
+    transition: color var(--transition-fast);
+}
+
+.fb-tap-to-scan:hover .fb-tap-to-scan-inner {
+    color: var(--color-primary);
+}
+
+.fb-tap-to-scan-inner .ti {
+    font-size: 48px;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+}
+
+.fb-tap-to-scan:hover .fb-tap-to-scan-inner .ti {
+    opacity: 1;
+}
+
+.fb-tap-to-scan-inner span {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+/* Scanning state (after tap, while camera is loading) */
+.fb-tap-to-scan.scanning {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.fb-tap-to-scan.scanning .fb-tap-to-scan-inner .ti::before {
+    content: "\eaba"; /* ti-loader */
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+.dark .fb-tap-to-scan {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+.dark .fb-tap-to-scan:hover {
+    background: linear-gradient(135deg, rgba(34, 139, 230, 0.1) 0%, var(--bg-secondary) 100%);
 }
 
 /* When BarcodeScanner falls back to manual mode, make its wrapper fill the viewport */
