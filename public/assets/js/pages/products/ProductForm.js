@@ -1528,6 +1528,7 @@ export class ProductFormPage {
                 ${this.images.map((img, index) => `
                     <div class="product-media-item ${isCover(index) ? 'is-cover' : ''}" data-index="${index}" data-type="image">
                         <img src="${this.getDisplayUrl(img.url)}" alt="${this.__('form.media.image')} ${index + 1}">
+                        <span class="product-media-index-badge">${index + 1}.</span>
                         ${isCover(index) ? `<span class="product-media-cover-badge"><i class="ti ti-photo-star"></i> ${this.__('form.media.cover')}</span>` : ''}
                         <div class="product-media-actions">
                             ${!isCover(index) ? `

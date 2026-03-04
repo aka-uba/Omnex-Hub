@@ -1771,6 +1771,48 @@ class PavoDisplayGateway
                 }
             }
 
+            // Dinamik görsel placeholder nesnelerini erken yakala (value hesabından önce)
+            // image-placeholder'ın dynamicField'i 'image_url' olabilir ama images[] dizisinden resolve edeceğiz
+            if (in_array($customType, ['image-placeholder', 'dynamic-image', 'slot-image'])) {
+                $dynamicCount++;
+                $imageIndex = (int)($obj['imageIndex'] ?? 0);
+                $log("Object #{$index}: IMAGE-PLACEHOLDER imageIndex={$imageIndex}, customType={$customType}");
+
+                // Ürün görsellerini parse et
+                $productImages = [];
+                if (!empty($product['images'])) {
+                    $parsed = is_string($product['images']) ? json_decode($product['images'], true) : $product['images'];
+                    if (is_array($parsed)) {
+                        foreach ($parsed as $img) {
+                            $url = is_string($img) ? $img : ($img['url'] ?? $img['path'] ?? $img['file_path'] ?? $img['filename'] ?? null);
+                            if ($url) $productImages[] = $url;
+                        }
+                    }
+                }
+                if (empty($productImages) && !empty($product['image_url'])) {
+                    $productImages[] = $product['image_url'];
+                }
+
+                // İndeksteki görseli bul — yoksa kapak görseline fallback
+                $targetUrl = $productImages[$imageIndex] ?? $productImages[0] ?? null;
+                $log("  TARGET URL: " . ($targetUrl ?? 'YOK') . " (total images: " . count($productImages) . ")");
+
+                if ($targetUrl) {
+                    $resolvedPath = $this->resolveImagePath($targetUrl, $product['company_id'] ?? null);
+                    if ($resolvedPath && file_exists($resolvedPath)) {
+                        // PLACEHOLDER SİL — base image'da render edilmiş placeholder Rect'in
+                        // (gri dolgu + mavi çizgili kenarlık) product image'ın oval köşelerinden
+                        // görünmesini engelle. Alanı arka plan rengiyle doldur, sonra product image çiz.
+                        $this->eraseObjectArea($image, $obj, $scaleX, $scaleY, $bgColor, $log);
+                        $this->renderImageOnPosition($image, $resolvedPath, $obj, $scaleX, $scaleY, $log);
+                        $renderedCount++;
+                    } else {
+                        $log("  IMAGE-PLACEHOLDER: Dosya bulunamadı: " . ($resolvedPath ?? $targetUrl));
+                    }
+                }
+                continue;
+            }
+
             if (!$dynamicField && $resolvedText === null) {
                 continue;
             }
@@ -1815,6 +1857,12 @@ class PavoDisplayGateway
                 continue;
             }
 
+            // visible kontrolü
+            if (isset($obj['visible']) && $obj['visible'] === false) {
+                $log("  SKIP: visible=false");
+                continue;
+            }
+
             // Pozisyon ve boyut hesapla
             $left = (float)($obj['left'] ?? 0);
             $top = (float)($obj['top'] ?? 0);
@@ -1827,6 +1875,11 @@ class PavoDisplayGateway
             $originY = $obj['originY'] ?? 'center';
             $textAlign = $obj['textAlign'] ?? 'left';
             $fontWeight = $obj['fontWeight'] ?? 'normal';
+            $textAngle = (float)($obj['angle'] ?? 0);
+            $textOpacity = (float)($obj['opacity'] ?? 1);
+            $textShadow = $obj['shadow'] ?? null;
+            $textStroke = $obj['stroke'] ?? null;
+            $textStrokeWidth = (float)($obj['strokeWidth'] ?? 0);
 
             // Nesne kendi scale'i ile efektif boyutları hesapla
             $effectiveWidth = $objWidth * $objScaleX;
@@ -1868,11 +1921,41 @@ class PavoDisplayGateway
             $log("  Font: orig={$fontSize} effective={$effectiveFontSize} -> scaled={$scaledFontSize}");
             $log("  Width: orig={$objWidth} effective={$effectiveWidth} -> scaled={$scaledWidth}");
 
-            // Renk
+            // Renk (opacity desteği ile)
             $fillColor = $obj['fill'] ?? '#000000';
             $rgb = $this->hexToRgb($fillColor);
-            $textColor = imagecolorallocate($image, $rgb['r'], $rgb['g'], $rgb['b']);
-            $log("  Color: {$fillColor} -> RGB({$rgb['r']},{$rgb['g']},{$rgb['b']})");
+            if ($textOpacity < 1 && $textOpacity > 0) {
+                $alpha = (int)(127 - ($textOpacity * 127));
+                $textColor = imagecolorallocatealpha($image, $rgb['r'], $rgb['g'], $rgb['b'], $alpha);
+            } else {
+                $textColor = imagecolorallocate($image, $rgb['r'], $rgb['g'], $rgb['b']);
+            }
+            $log("  Color: {$fillColor} -> RGB({$rgb['r']},{$rgb['g']},{$rgb['b']}) opacity={$textOpacity}");
+
+            // Gölge rengi hazırla
+            $shadowColorGd = null;
+            $shadowOffsetX = 0;
+            $shadowOffsetY = 0;
+            if ($textShadow) {
+                $shadowObj = is_string($textShadow) ? json_decode($textShadow, true) : (is_array($textShadow) ? $textShadow : null);
+                if ($shadowObj) {
+                    $sColor = $shadowObj['color'] ?? 'rgba(0,0,0,0.4)';
+                    $shadowOffsetX = (int)(($shadowObj['offsetX'] ?? 4) * $scaleX);
+                    $shadowOffsetY = (int)(($shadowObj['offsetY'] ?? 4) * $scaleY);
+                    $sRgb = $this->hexToRgb($sColor);
+                    $sAlpha = (int)(127 - (($sRgb['a'] ?? 0.4) * 127));
+                    $shadowColorGd = imagecolorallocatealpha($image, $sRgb['r'], $sRgb['g'], $sRgb['b'], max(0, min(127, $sAlpha)));
+                    $log("  Shadow: color={$sColor} offset=({$shadowOffsetX},{$shadowOffsetY})");
+                }
+            }
+
+            // Metin outline (stroke) rengi
+            $strokeColorGd = null;
+            if ($textStroke && $textStrokeWidth > 0) {
+                $stRgb = $this->hexToRgb($textStroke);
+                $strokeColorGd = imagecolorallocate($image, $stRgb['r'], $stRgb['g'], $stRgb['b']);
+                $log("  Text stroke: {$textStroke} width={$textStrokeWidth}");
+            }
 
             // Metin sarmalama (word-wrap) - genişlik varsa satırlara böl
             $lines = [];
@@ -1919,8 +2002,26 @@ class PavoDisplayGateway
                 }
 
                 $textY = $currentY + $lineAscent;
-                $log("  LINE #{$lineIdx}: '{$line}' at ({$lineX}, {$textY}) align={$textAlign}");
-                imagettftext($image, $scaledFontSize, 0, $lineX, $textY, $textColor, $fontPath, $line);
+                $log("  LINE #{$lineIdx}: '{$line}' at ({$lineX}, {$textY}) align={$textAlign} angle={$textAngle}");
+
+                // 1. Gölge çiz (varsa)
+                if ($shadowColorGd) {
+                    imagettftext($image, $scaledFontSize, $textAngle, $lineX + $shadowOffsetX, $textY + $shadowOffsetY, $shadowColorGd, $fontPath, $line);
+                }
+
+                // 2. Metin outline/stroke çiz (varsa)
+                if ($strokeColorGd && $textStrokeWidth > 0) {
+                    $sw = max(1, (int)round($textStrokeWidth * $scaleX));
+                    for ($sx = -$sw; $sx <= $sw; $sx++) {
+                        for ($sy = -$sw; $sy <= $sw; $sy++) {
+                            if ($sx === 0 && $sy === 0) continue;
+                            imagettftext($image, $scaledFontSize, $textAngle, $lineX + $sx, $textY + $sy, $strokeColorGd, $fontPath, $line);
+                        }
+                    }
+                }
+
+                // 3. Ana metin (angle desteği ile)
+                imagettftext($image, $scaledFontSize, $textAngle, $lineX, $textY, $textColor, $fontPath, $line);
 
                 $currentY += $lineSpacing;
             }
@@ -2513,34 +2614,554 @@ class PavoDisplayGateway
     /**
      * Hex renk kodunu RGB'ye dönüştür
      */
+    /**
+     * Görsel URL'sinden dosya yolunu resolve et
+     * @param string $url Görsel URL veya dosya yolu
+     * @param string|null $companyId Firma ID
+     * @return string|null Dosya yolu veya null
+     */
+    private function resolveImagePath(string $url, ?string $companyId = null): ?string
+    {
+        if (empty($url)) return null;
+
+        // Zaten tam dosya yoluysa (Windows veya Linux)
+        if (preg_match('/^[A-Za-z]:[\\\\\/]/', $url) || strpos($url, '/') === 0) {
+            return file_exists($url) ? $url : null;
+        }
+
+        $basePaths = [];
+
+        // Storage yolu
+        if (defined('STORAGE_PATH')) {
+            $basePaths[] = STORAGE_PATH;
+        }
+        if (defined('BASE_PATH')) {
+            $basePaths[] = BASE_PATH . '/storage';
+            $basePaths[] = BASE_PATH;
+        }
+
+        // URL'den relative path çıkar
+        $relativePath = $url;
+        // /storage/ prefix'i varsa kaldır
+        $relativePath = preg_replace('#^/?(storage/)#', '', $relativePath);
+        // /api/media/serve.php?path= prefix'i varsa kaldır
+        if (strpos($relativePath, 'api/media/serve.php') !== false) {
+            parse_str(parse_url($relativePath, PHP_URL_QUERY) ?? '', $params);
+            $relativePath = $params['path'] ?? $relativePath;
+        }
+
+        // Firma bazlı yolları dene
+        foreach ($basePaths as $base) {
+            $candidates = [
+                $base . '/' . $relativePath,
+                $base . '/companies/' . $companyId . '/media/' . basename($relativePath),
+            ];
+
+            if ($companyId) {
+                $candidates[] = $base . '/companies/' . $companyId . '/' . $relativePath;
+            }
+
+            foreach ($candidates as $candidate) {
+                $normalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $candidate);
+                if (file_exists($normalized)) {
+                    return $normalized;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Base image üzerindeki placeholder alanını arka plan rengiyle sil.
+     *
+     * Base image (render_image/preview_image), Fabric.js canvas export'undan gelir ve
+     * tüm nesneleri (placeholder Rect dahil) zaten içerir. Product image oval maskeleme
+     * ile çizildiğinde, saydam köşeler eski placeholder'ı (gri dolgu + mavi çizgili kenar)
+     * gösterir. Bu metod, product image çizilmeden ÖNCE placeholder alanını temizler.
+     *
+     * @param resource|\GdImage $image Hedef GD görsel (base image)
+     * @param array $obj Fabric.js nesne verileri (pozisyon, boyut, origin bilgileri)
+     * @param float $scaleX Yatay ölçekleme oranı
+     * @param float $scaleY Dikey ölçekleme oranı
+     * @param int $bgColor GD renk kaynağı (template arka plan rengi)
+     * @param callable $log Log fonksiyonu
+     */
+    private function eraseObjectArea($image, array $obj, float $scaleX, float $scaleY, $bgColor, callable $log): void
+    {
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $width = (float)($obj['width'] ?? 150);
+        $height = (float)($obj['height'] ?? 150);
+        $objScaleX = (float)($obj['scaleX'] ?? 1);
+        $objScaleY = (float)($obj['scaleY'] ?? 1);
+        $originX = $obj['originX'] ?? 'center';
+        $originY = $obj['originY'] ?? 'center';
+
+        $dstW = (int)round($width * $objScaleX * $scaleX);
+        $dstH = (int)round($height * $objScaleY * $scaleY);
+        $dstX = (int)round($left * $scaleX);
+        $dstY = (int)round($top * $scaleY);
+
+        // Origin ayarı (renderImageOnPosition ile aynı mantık)
+        if ($originX === 'center') $dstX -= (int)($dstW / 2);
+        elseif ($originX === 'right') $dstX -= $dstW;
+
+        if ($originY === 'center') $dstY -= (int)($dstH / 2);
+        elseif ($originY === 'bottom') $dstY -= $dstH;
+
+        // Stroke width kadar marj ekle — placeholder'ın kenarlık çizgileri de silinsin
+        $sw = (int)round(($obj['strokeWidth'] ?? 2) * max($scaleX, $scaleY));
+        $margin = max($sw + 1, 3);
+
+        $imgW = imagesx($image);
+        $imgH = imagesy($image);
+
+        $x1 = max(0, $dstX - $margin);
+        $y1 = max(0, $dstY - $margin);
+        $x2 = min($imgW - 1, $dstX + $dstW + $margin);
+        $y2 = min($imgH - 1, $dstY + $dstH + $margin);
+
+        if ($x2 > $x1 && $y2 > $y1) {
+            imagefilledrectangle($image, $x1, $y1, $x2, $y2, $bgColor);
+            $log("  eraseObjectArea: ({$x1},{$y1})-({$x2},{$y2}) arka plan rengiyle silindi");
+        }
+    }
+
+    /**
+     * Dinamik görsel placeholder'ını GD ile render et
+     * @param resource|\GdImage $dstImage Hedef GD görsel
+     * @param string $imagePath Kaynak görsel dosya yolu
+     * @param array $obj Fabric.js nesne verileri
+     * @param float $scaleX Yatay ölçekleme oranı
+     * @param float $scaleY Dikey ölçekleme oranı
+     * @param callable $log Log fonksiyonu
+     */
+    private function renderImageOnPosition($dstImage, string $imagePath, array $obj, float $scaleX, float $scaleY, callable $log): void
+    {
+        // visible kontrolü
+        if (isset($obj['visible']) && $obj['visible'] === false) {
+            $log("  renderImageOnPosition: visible=false, atlanıyor");
+            return;
+        }
+
+        // Kaynak görseli yükle
+        $srcImg = null;
+        $ext = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+
+        switch ($ext) {
+            case 'jpg': case 'jpeg':
+                $srcImg = @imagecreatefromjpeg($imagePath);
+                break;
+            case 'png':
+                $srcImg = @imagecreatefrompng($imagePath);
+                break;
+            case 'gif':
+                $srcImg = @imagecreatefromgif($imagePath);
+                break;
+            case 'webp':
+                if (function_exists('imagecreatefromwebp')) {
+                    $srcImg = @imagecreatefromwebp($imagePath);
+                }
+                break;
+        }
+
+        if (!$srcImg) {
+            $log("  renderImageOnPosition: Görsel yüklenemedi: $imagePath (ext: $ext)");
+            return;
+        }
+
+        // Pozisyon ve boyut hesapla
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $width = (float)($obj['width'] ?? 150);
+        $height = (float)($obj['height'] ?? 150);
+        $objScaleX = (float)($obj['scaleX'] ?? 1);
+        $objScaleY = (float)($obj['scaleY'] ?? 1);
+        $originX = $obj['originX'] ?? 'center';
+        $originY = $obj['originY'] ?? 'center';
+
+        // Görsel özellikler
+        $opacity = (float)($obj['opacity'] ?? 1);
+        $stroke = $obj['stroke'] ?? null;
+        $strokeWidth = (float)($obj['strokeWidth'] ?? 0);
+        $rx = (float)($obj['rx'] ?? 0);
+        $ry = (float)($obj['ry'] ?? 0);
+        $angle = (float)($obj['angle'] ?? 0);
+        $shadow = $obj['shadow'] ?? null;
+
+        // Efektif boyutları hesapla
+        $dstW = (int)round($width * $objScaleX * $scaleX);
+        $dstH = (int)round($height * $objScaleY * $scaleY);
+
+        // Ölçeklenmiş pozisyonu hesapla
+        $dstX = (int)round($left * $scaleX);
+        $dstY = (int)round($top * $scaleY);
+
+        // Origin ayarı
+        if ($originX === 'center') $dstX -= (int)($dstW / 2);
+        elseif ($originX === 'right') $dstX -= $dstW;
+
+        if ($originY === 'center') $dstY -= (int)($dstH / 2);
+        elseif ($originY === 'bottom') $dstY -= $dstH;
+
+        // Kaynak boyutları
+        $srcW = imagesx($srcImg);
+        $srcH = imagesy($srcImg);
+
+        // imageFit moduna göre render
+        $fit = $obj['imageFit'] ?? 'cover';
+        $cropSrcX = 0;
+        $cropSrcY = 0;
+        $cropSrcW = $srcW;
+        $cropSrcH = $srcH;
+
+        if ($fit === 'cover') {
+            // Cover: Kaynak görseli kırp, hedef alanı tamamen doldursun
+            $srcAspect = $srcW / max(1, $srcH);
+            $dstAspect = $dstW / max(1, $dstH);
+
+            if ($srcAspect > $dstAspect) {
+                $cropSrcW = (int)round($srcH * $dstAspect);
+                $cropSrcX = (int)round(($srcW - $cropSrcW) / 2);
+            } else {
+                $cropSrcH = (int)round($srcW / max(0.01, $dstAspect));
+                $cropSrcY = (int)round(($srcH - $cropSrcH) / 2);
+            }
+        } elseif ($fit === 'contain') {
+            // Contain: Kaynak görseli küçült, hedef alanı içine sığsın
+            $srcAspect = $srcW / max(1, $srcH);
+            $dstAspect = $dstW / max(1, $dstH);
+
+            if ($srcAspect > $dstAspect) {
+                $newH = (int)round($dstW / max(0.01, $srcAspect));
+                $dstY += (int)round(($dstH - $newH) / 2);
+                $dstH = $newH;
+            } else {
+                $newW = (int)round($dstH * $srcAspect);
+                $dstX += (int)round(($dstW - $newW) / 2);
+                $dstW = $newW;
+            }
+        }
+
+        // Geçersiz boyut kontrolü
+        if ($dstW < 1 || $dstH < 1 || $cropSrcW < 1 || $cropSrcH < 1) {
+            $log("  renderImageOnPosition: Geçersiz boyut: dst={$dstW}x{$dstH}, src={$cropSrcW}x{$cropSrcH}");
+            imagedestroy($srcImg);
+            return;
+        }
+
+        // Ara görüntü oluştur (border radius, opacity, rotation için)
+        $tempImg = imagecreatetruecolor($dstW, $dstH);
+        imagealphablending($tempImg, true);
+        imagesavealpha($tempImg, true);
+        $transparent = imagecolorallocatealpha($tempImg, 0, 0, 0, 127);
+        imagefill($tempImg, 0, 0, $transparent);
+
+        // Görseli ara görüntüye kopyala
+        imagecopyresampled(
+            $tempImg, $srcImg,
+            0, 0,
+            $cropSrcX, $cropSrcY,
+            $dstW, $dstH,
+            $cropSrcW, $cropSrcH
+        );
+        imagedestroy($srcImg);
+
+        // --- Köşe yuvarlaklığı (rx/ry) ---
+        $scaledRx = (int)round($rx * $scaleX);
+        $scaledRy = (int)round($ry * $scaleY);
+        $hasRoundedCorners = ($scaledRx > 0 || $scaledRy > 0);
+        $isFullEllipse = false;
+
+        if ($hasRoundedCorners) {
+            $this->applyRoundedCorners($tempImg, $dstW, $dstH, $scaledRx, $scaledRy);
+            $effRx = min($scaledRx > 0 ? $scaledRx : $scaledRy, (int)floor($dstW / 2));
+            $effRy = min($scaledRy > 0 ? $scaledRy : $scaledRx, (int)floor($dstH / 2));
+            $isFullEllipse = ($effRx >= (int)floor($dstW / 2)) && ($effRy >= (int)floor($dstH / 2));
+            $log("  renderImageOnPosition: rx={$scaledRx} ry={$scaledRy} köşe yuvarlaklığı uygulandı (fullEllipse=" . ($isFullEllipse ? 'true' : 'false') . ")");
+        }
+
+        // --- Kenarlık (stroke) — tempImg üzerine, yuvarlatılmış şekli takip eder ---
+        if ($stroke && $strokeWidth > 0) {
+            $scaledStrokeW = max(1, (int)round($strokeWidth * $scaleX));
+            $stRgb = $this->hexToRgb($stroke);
+            $strokeAlpha = isset($stRgb['a']) && $stRgb['a'] < 1 ? (int)(127 - ($stRgb['a'] * 127)) : 0;
+            $strokeColor = imagecolorallocatealpha($tempImg, $stRgb['r'], $stRgb['g'], $stRgb['b'], $strokeAlpha);
+
+            if ($isFullEllipse) {
+                // Eliptik kenarlık
+                for ($i = 0; $i < $scaledStrokeW; $i++) {
+                    imageellipse($tempImg, (int)floor($dstW / 2), (int)floor($dstH / 2), $dstW - 1 - 2 * $i, $dstH - 1 - 2 * $i, $strokeColor);
+                }
+            } elseif ($hasRoundedCorners) {
+                // Yuvarlatılmış dikdörtgen kenarlık (arc + line)
+                $erx = min($scaledRx > 0 ? $scaledRx : $scaledRy, (int)floor($dstW / 2));
+                $ery = min($scaledRy > 0 ? $scaledRy : $scaledRx, (int)floor($dstH / 2));
+                for ($i = 0; $i < $scaledStrokeW; $i++) {
+                    $arcW = max(1, 2 * $erx - 2 * $i);
+                    $arcH = max(1, 2 * $ery - 2 * $i);
+                    // 4 köşe yayı
+                    imagearc($tempImg, $erx, $ery, $arcW, $arcH, 180, 270, $strokeColor);
+                    imagearc($tempImg, $dstW - $erx - 1, $ery, $arcW, $arcH, 270, 360, $strokeColor);
+                    imagearc($tempImg, $erx, $dstH - $ery - 1, $arcW, $arcH, 90, 180, $strokeColor);
+                    imagearc($tempImg, $dstW - $erx - 1, $dstH - $ery - 1, $arcW, $arcH, 0, 90, $strokeColor);
+                    // 4 kenar çizgisi
+                    imageline($tempImg, $erx, $i, $dstW - $erx - 1, $i, $strokeColor);
+                    imageline($tempImg, $erx, $dstH - 1 - $i, $dstW - $erx - 1, $dstH - 1 - $i, $strokeColor);
+                    imageline($tempImg, $i, $ery, $i, $dstH - $ery - 1, $strokeColor);
+                    imageline($tempImg, $dstW - 1 - $i, $ery, $dstW - 1 - $i, $dstH - $ery - 1, $strokeColor);
+                }
+            } else {
+                // Düz dikdörtgen kenarlık
+                imagesetthickness($tempImg, $scaledStrokeW);
+                imagerectangle($tempImg, 0, 0, $dstW - 1, $dstH - 1, $strokeColor);
+                imagesetthickness($tempImg, 1);
+            }
+            $log("  renderImageOnPosition: stroke={$stroke} width={$scaledStrokeW} kenarlık uygulandı");
+        }
+
+        // --- Rotasyon (angle) ---
+        if ($angle != 0) {
+            $rotated = imagerotate($tempImg, -$angle, imagecolorallocatealpha($tempImg, 0, 0, 0, 127));
+            if ($rotated) {
+                imagesavealpha($rotated, true);
+                $newW = imagesx($rotated);
+                $newH = imagesy($rotated);
+                $dstX -= (int)(($newW - $dstW) / 2);
+                $dstY -= (int)(($newH - $dstH) / 2);
+                imagedestroy($tempImg);
+                $tempImg = $rotated;
+                $dstW = $newW;
+                $dstH = $newH;
+                $log("  renderImageOnPosition: angle={$angle} rotasyon uygulandı");
+            }
+        }
+
+        // --- Gölge (shadow) — şekle uyumlu ---
+        if ($shadow) {
+            $shadowObj = is_string($shadow) ? json_decode($shadow, true) : (is_array($shadow) ? $shadow : null);
+            if ($shadowObj) {
+                $sColor = $shadowObj['color'] ?? 'rgba(0,0,0,0.4)';
+                $sOffsetX = (int)(($shadowObj['offsetX'] ?? 4) * $scaleX);
+                $sOffsetY = (int)(($shadowObj['offsetY'] ?? 4) * $scaleY);
+
+                $sRgb = $this->hexToRgb($sColor);
+                $sAlpha = (int)(127 - (($sRgb['a'] ?? 0.4) * 127));
+                $shadowColor = imagecolorallocatealpha($dstImage, $sRgb['r'], $sRgb['g'], $sRgb['b'], max(0, min(127, $sAlpha)));
+
+                if ($isFullEllipse && $angle == 0) {
+                    // Elips gölge
+                    imagefilledellipse(
+                        $dstImage,
+                        $dstX + (int)($dstW / 2) + $sOffsetX,
+                        $dstY + (int)($dstH / 2) + $sOffsetY,
+                        $dstW, $dstH,
+                        $shadowColor
+                    );
+                } else {
+                    // Dikdörtgen gölge
+                    imagefilledrectangle(
+                        $dstImage,
+                        $dstX + $sOffsetX,
+                        $dstY + $sOffsetY,
+                        $dstX + $sOffsetX + $dstW - 1,
+                        $dstY + $sOffsetY + $dstH - 1,
+                        $shadowColor
+                    );
+                }
+                $log("  renderImageOnPosition: shadow offset=({$sOffsetX},{$sOffsetY}) uygulandı");
+            }
+        }
+
+        // --- Hedef görüntüye kopyala (opacity + alpha uyumlu) ---
+        if ($opacity < 1 && $opacity > 0) {
+            if ($hasRoundedCorners) {
+                // Alpha + opacity birlikte: önce alpha blend, sonra opacity merge
+                $temp2 = imagecreatetruecolor($dstW, $dstH);
+                imagealphablending($temp2, false);
+                imagesavealpha($temp2, true);
+                // Hedef bölgeyi kopyala
+                $copyX = max(0, $dstX);
+                $copyY = max(0, $dstY);
+                $availW = min($dstW, imagesx($dstImage) - $copyX);
+                $availH = min($dstH, imagesy($dstImage) - $copyY);
+                if ($availW > 0 && $availH > 0) {
+                    imagecopy($temp2, $dstImage, 0, 0, $copyX, $copyY, $availW, $availH);
+                }
+                // tempImg'i alpha ile üstüne koy (şeffaf köşeler korunur)
+                imagealphablending($temp2, true);
+                imagecopy($temp2, $tempImg, 0, 0, 0, 0, $dstW, $dstH);
+                // Opacity ile birleştir
+                imagecopymerge($dstImage, $temp2, $dstX, $dstY, 0, 0, $dstW, $dstH, (int)round($opacity * 100));
+                imagedestroy($temp2);
+            } else {
+                imagecopymerge($dstImage, $tempImg, $dstX, $dstY, 0, 0, $dstW, $dstH, (int)round($opacity * 100));
+            }
+            $log("  renderImageOnPosition: opacity={$opacity} uygulandı");
+        } elseif ($opacity > 0) {
+            // Tam opaklık — alpha kanalını koru
+            imagealphablending($dstImage, true);
+            imagecopy($dstImage, $tempImg, $dstX, $dstY, 0, 0, $dstW, $dstH);
+        }
+        imagedestroy($tempImg);
+
+        $log("  renderImageOnPosition: OK {$dstW}x{$dstH} at ({$dstX},{$dstY}) fit={$fit} opacity={$opacity}");
+    }
+
+    /**
+     * GD görüntüsüne köşe yuvarlaklığı uygula (alpha mask)
+     */
+    private function applyRoundedCorners($img, int $w, int $h, int $rx, int $ry): void
+    {
+        // rx veya ry 0 ise diğerini kullan (Fabric.js davranışı: tek değer her iki eksene uygulanır)
+        $effRx = $rx > 0 ? $rx : $ry;
+        $effRy = $ry > 0 ? $ry : $rx;
+
+        if ($effRx < 1 || $effRy < 1 || $w < 2 || $h < 2) return;
+
+        // Yarıçapları görüntü boyutunun yarısıyla sınırla (boyut sınırlaması YAPMA)
+        $halfW = (int)floor($w / 2);
+        $halfH = (int)floor($h / 2);
+        $effRx = min($effRx, $halfW);
+        $effRy = min($effRy, $halfH);
+
+        imagealphablending($img, false); // Doğrudan piksel yazımı için
+        $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
+
+        $isFullEllipse = ($effRx >= $halfW) && ($effRy >= $halfH);
+
+        if ($isFullEllipse) {
+            // ========== TAM ELİPS MODU ==========
+            // Tüm görüntüyü elips olarak maskele (scanline yaklaşımı — performanslı)
+            $cx = ($w - 1) / 2.0;
+            $cy = ($h - 1) / 2.0;
+            $a  = $w / 2.0;   // yarı eksen x
+            $b  = $h / 2.0;   // yarı eksen y
+
+            for ($y = 0; $y < $h; $y++) {
+                $ny   = ($y - $cy) / $b;   // normalleştirilmiş y (-1..1)
+                $nySq = $ny * $ny;
+
+                if ($nySq >= 1.0) {
+                    // Bu satır tamamen elips dışında — tüm pikseller şeffaf
+                    for ($x = 0; $x < $w; $x++) {
+                        imagesetpixel($img, $x, $y, $transparent);
+                    }
+                    continue;
+                }
+
+                // Bu satırdaki elips x sınırlarını hesapla
+                $xSpan = $a * sqrt(1.0 - $nySq);
+                $xLeftBound  = $cx - $xSpan;
+                $xRightBound = $cx + $xSpan;
+
+                // Sol dış bölge — elips sol sınırına kadar
+                $leftEnd = min($w, (int)ceil($xLeftBound));
+                for ($x = 0; $x < $leftEnd; $x++) {
+                    $nx = ($x - $cx) / $a;
+                    if ($nx * $nx + $nySq > 1.0) {
+                        imagesetpixel($img, $x, $y, $transparent);
+                    }
+                }
+
+                // Sağ dış bölge — elips sağ sınırından itibaren
+                $rightStart = max(0, (int)floor($xRightBound));
+                for ($x = $rightStart; $x < $w; $x++) {
+                    $nx = ($x - $cx) / $a;
+                    if ($nx * $nx + $nySq > 1.0) {
+                        imagesetpixel($img, $x, $y, $transparent);
+                    }
+                }
+            }
+        } else {
+            // ========== KÖŞE YUVARLAMA MODU ==========
+            // 4 köşede eliptik yay uygula (ayrı rx/ry ile gerçek elips desteği)
+            // Merkez noktası köşe eğrisinin iç tarafında — elips denklemiyle maskeleme
+
+            $corners = [
+                // [centerX, centerY, regionX1, regionY1, regionX2, regionY2]
+                [$effRx,             $effRy,             0,             0,             $effRx - 1,       $effRy - 1      ], // Sol üst
+                [$w - 1 - $effRx,    $effRy,             $w - $effRx,   0,             $w - 1,           $effRy - 1      ], // Sağ üst
+                [$effRx,             $h - 1 - $effRy,    0,             $h - $effRy,   $effRx - 1,       $h - 1          ], // Sol alt
+                [$w - 1 - $effRx,    $h - 1 - $effRy,    $w - $effRx,   $h - $effRy,   $w - 1,           $h - 1          ], // Sağ alt
+            ];
+
+            $aF = (float)$effRx;  // elips yarı eksen x
+            $bF = (float)$effRy;  // elips yarı eksen y
+
+            foreach ($corners as $c) {
+                $cxF = (float)$c[0];
+                $cyF = (float)$c[1];
+
+                for ($y = $c[3]; $y <= $c[5]; $y++) {
+                    $ny = ($y - $cyF) / $bF;
+                    $nySq = $ny * $ny;
+
+                    // Satır tamamen dışarıdaysa hızla atla
+                    if ($nySq >= 1.0) {
+                        for ($x = $c[2]; $x <= $c[4]; $x++) {
+                            imagesetpixel($img, $x, $y, $transparent);
+                        }
+                        continue;
+                    }
+
+                    for ($x = $c[2]; $x <= $c[4]; $x++) {
+                        // Elips denklemi: (dx/a)² + (dy/b)² > 1 → dışarıda → şeffaf yap
+                        $nx = ($x - $cxF) / $aF;
+                        if ($nx * $nx + $nySq > 1.0) {
+                            imagesetpixel($img, $x, $y, $transparent);
+                        }
+                    }
+                }
+            }
+        }
+
+        imagealphablending($img, true); // Alpha blending'i geri aç
+    }
+
     private function hexToRgb(string $color): array
     {
         // rgba(255,255,255,0.8) veya rgb(255,255,255) formatı
-        if (preg_match('/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/', $color, $matches)) {
+        if (preg_match('/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/', $color, $matches)) {
             return [
                 'r' => (int)$matches[1],
                 'g' => (int)$matches[2],
-                'b' => (int)$matches[3]
+                'b' => (int)$matches[3],
+                'a' => isset($matches[4]) ? (float)$matches[4] : 1.0
             ];
         }
 
         // Hex format
         $hex = ltrim($color, '#');
 
-        // Kısa format (#RGB)
+        // Kısa format (#RGB veya #RGBA)
         if (strlen($hex) === 3) {
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        } elseif (strlen($hex) === 4) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2].$hex[3].$hex[3];
+        }
+
+        // #RRGGBBAA format (8 karakter)
+        if (strlen($hex) === 8) {
+            return [
+                'r' => hexdec(substr($hex, 0, 2)),
+                'g' => hexdec(substr($hex, 2, 2)),
+                'b' => hexdec(substr($hex, 4, 2)),
+                'a' => round(hexdec(substr($hex, 6, 2)) / 255, 2)
+            ];
         }
 
         // Geçersiz format için varsayılan siyah
         if (strlen($hex) !== 6) {
-            return ['r' => 0, 'g' => 0, 'b' => 0];
+            return ['r' => 0, 'g' => 0, 'b' => 0, 'a' => 1.0];
         }
 
         return [
             'r' => hexdec(substr($hex, 0, 2)),
             'g' => hexdec(substr($hex, 2, 2)),
-            'b' => hexdec(substr($hex, 4, 2))
+            'b' => hexdec(substr($hex, 4, 2)),
+            'a' => 1.0
         ];
     }
 

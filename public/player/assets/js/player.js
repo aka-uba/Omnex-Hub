@@ -441,7 +441,7 @@ class OmnexPlayer {
                             <strong>Android TV / Google TV:</strong>
                         </p>
                         <p style="font-size: 0.85rem; color: var(--player-text-muted); margin-bottom: 0.5rem;">
-                            1. Tarayıcı menüsünü açın (â‹®)
+                            1. Tarayıcı menüsünü açın (menü simgesi)
                         </p>
                         <p style="font-size: 0.85rem; color: var(--player-text-muted); margin-bottom: 0.5rem;">
                             2. "Ana ekrana ekle" veya "Kısayol oluştur" seçin
@@ -461,7 +461,7 @@ class OmnexPlayer {
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
                                 <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
                             </svg>
-                            simgesine basın â†’ "Ana Ekrana Ekle"
+                            simgesine basın -> "Ana Ekrana Ekle"
                         </p>
                     </div>`;
             } else if (deviceInfo.isMobile || deviceInfo.isTablet) {
@@ -471,7 +471,7 @@ class OmnexPlayer {
                             <strong>${deviceInfo.isTablet ? 'Tablet' : 'Mobil'}:</strong>
                         </p>
                         <p style="font-size: 0.85rem; color: var(--player-text-muted);">
-                            Tarayıcı menüsü (â‹®) â†’ "Ana ekrana ekle"
+                            Tarayıcı menüsü (menü simgesi) -> "Ana ekrana ekle"
                         </p>
                     </div>`;
             } else {
@@ -671,7 +671,7 @@ class OmnexPlayer {
         if (existingOverlay) existingOverlay.remove();
 
         let instructions = '';
-        let browserIcon = 'â‹®';
+        let browserIcon = 'menü simgesi';
 
         if (deviceInfo.isTV || deviceInfo.isAndroidTV) {
             instructions = `
@@ -748,7 +748,7 @@ class OmnexPlayer {
                 </div>
                 <div class="instruction-step">
                     <span class="step-number">2</span>
-                    <span>Edge: Menü (â‹¯) â†’ "Uygulamalar" â†’ "Bu siteyi uygulama olarak yükle"</span>
+                    <span>Edge: Menü (üç nokta) -> "Uygulamalar" -> "Bu siteyi uygulama olarak yükle"</span>
                 </div>
                 <div class="instruction-step">
                     <span class="step-number">3</span>
@@ -1045,7 +1045,7 @@ class OmnexPlayer {
      */
     formatDisplayMetrics(metrics) {
         if (!metrics) return '-';
-        return `${metrics.renderWidth}x${metrics.renderHeight} CSS â€¢ ${metrics.physicalRenderWidth}x${metrics.physicalRenderHeight} px â€¢ DPR ${metrics.devicePixelRatio}`;
+        return `${metrics.renderWidth}x${metrics.renderHeight} CSS | ${metrics.physicalRenderWidth}x${metrics.physicalRenderHeight} px | DPR ${metrics.devicePixelRatio}`;
     }
 
     /**
@@ -1914,11 +1914,11 @@ class OmnexPlayer {
         container.innerHTML = `
             <div class="qr-placeholder" style="text-align: center; padding: 1rem;">
                 <svg viewBox="0 0 100 100" width="80" height="80" style="opacity: 0.5;">
-                    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#4f46e5" stroke-width="2"/>
-                    <rect x="20" y="20" width="20" height="20" fill="#4f46e5"/>
-                    <rect x="60" y="20" width="20" height="20" fill="#4f46e5"/>
-                    <rect x="20" y="60" width="20" height="20" fill="#4f46e5"/>
-                    <rect x="45" y="45" width="10" height="10" fill="#4f46e5"/>
+                    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#2f73ff" stroke-width="2"/>
+                    <rect x="20" y="20" width="20" height="20" fill="#2f73ff"/>
+                    <rect x="60" y="20" width="20" height="20" fill="#2f73ff"/>
+                    <rect x="20" y="60" width="20" height="20" fill="#2f73ff"/>
+                    <rect x="45" y="45" width="10" height="10" fill="#2f73ff"/>
                 </svg>
                 <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-top: 0.5rem;">Kodu panele girin</p>
             </div>
@@ -2015,7 +2015,7 @@ class OmnexPlayer {
                 // Check if playlist has items
                 if (!this.playlist.items || this.playlist.items.length === 0) {
                     this.showScreen('player');
-                    this.showFallback('Playlist boş\n\nPlaylist\'e medya ekleyin');
+                    this.showFallback('Yayın listesi boş\n\nYönetim panelinden playlist\'e medya ekleyin');
                 } else {
                     await storage.savePlaylist(this.playlist);
 
@@ -2026,7 +2026,7 @@ class OmnexPlayer {
                 }
             } else {
                 this.showScreen('player');
-                this.showFallback('Playlist atanmadı\n\nAdmin panelden bu cihaza bir playlist atayın');
+                this.showFallback('Yayın listesi atanmadı\n\nYönetim panelinden bu cihaza playlist atayın');
             }
 
             this.startHeartbeat();
@@ -2412,7 +2412,7 @@ class OmnexPlayer {
 
         const items = this.playlist.items;
         if (!items || !items.length) {
-            this.showFallback('Playlist boş');
+            this.showFallback('Yayın listesi boş\n\nYönetim panelinden playlist\'e medya ekleyin');
             return;
         }
 
@@ -4267,7 +4267,7 @@ class OmnexPlayer {
             } else if (this.playlist && !data.playlist) {
                 this.playlist = null;
                 this.stopPlayback();
-                this.showFallback('İçerik atanmadı');
+                this.showFallback('Yayın listesi atanmadı\n\nYönetim panelinden bu cihaza playlist atayın');
             }
 
             await storage.put('config', { key: 'lastSync', value: new Date().toISOString() });

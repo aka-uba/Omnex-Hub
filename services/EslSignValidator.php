@@ -460,6 +460,7 @@ class EslSignValidator
 
         $prepared = $this->preparePictureAssetForHttp(
             $companyId,
+            $sendParams,
             $fullPath,
             $deviceId,
             $clientId,
@@ -497,6 +498,7 @@ class EslSignValidator
 
     private function preparePictureAssetForHttp(
         string $companyId,
+        array $sendParams,
         string $sourcePath,
         string $deviceId,
         string $clientId,
@@ -507,8 +509,12 @@ class EslSignValidator
         int $deviceWidth,
         int $deviceHeight
     ): ?array {
+        $designData = is_array($sendParams['design_data'] ?? null) ? $sendParams['design_data'] : [];
+        $product = is_array($sendParams['product'] ?? null) ? $sendParams['product'] : [];
         $needsRegionProcessing = ($x > 0 || $y > 0 || $regionWidth !== $deviceWidth || $regionHeight !== $deviceHeight);
-        if (!$needsRegionProcessing) {
+        $needsDynamicRender = !empty($designData) && !empty($product);
+
+        if (!$needsRegionProcessing && !$needsDynamicRender) {
             return null;
         }
         if (!function_exists('imagecreatetruecolor') || !is_file($sourcePath)) {
@@ -545,20 +551,92 @@ class EslSignValidator
             return null;
         }
 
-        $scaleX = $srcWidth / max(1, $deviceWidth);
-        $scaleY = $srcHeight / max(1, $deviceHeight);
+        // Region kırpma
+        if ($needsRegionProcessing) {
+            $scaleX = $srcWidth / max(1, $deviceWidth);
+            $scaleY = $srcHeight / max(1, $deviceHeight);
 
-        $cropX = max(0, min((int)round($x * $scaleX), max(0, $srcWidth - 1)));
-        $cropY = max(0, min((int)round($y * $scaleY), max(0, $srcHeight - 1)));
-        $cropW = max(1, (int)round($regionWidth * $scaleX));
-        $cropH = max(1, (int)round($regionHeight * $scaleY));
-        $cropW = min($cropW, $srcWidth - $cropX);
-        $cropH = min($cropH, $srcHeight - $cropY);
+            $cropX = max(0, min((int)round($x * $scaleX), max(0, $srcWidth - 1)));
+            $cropY = max(0, min((int)round($y * $scaleY), max(0, $srcHeight - 1)));
+            $cropW = max(1, (int)round($regionWidth * $scaleX));
+            $cropH = max(1, (int)round($regionHeight * $scaleY));
+            $cropW = min($cropW, $srcWidth - $cropX);
+            $cropH = min($cropH, $srcHeight - $cropY);
+
+            $croppedImage = imagecreatetruecolor($cropW, $cropH);
+            imagecopy($croppedImage, $srcImage, 0, 0, $cropX, $cropY, $cropW, $cropH);
+            imagedestroy($srcImage);
+            $srcImage = $croppedImage;
+            $srcWidth = $cropW;
+            $srcHeight = $cropH;
+        }
 
         $dstImage = imagecreatetruecolor($regionWidth, $regionHeight);
         $white = imagecolorallocate($dstImage, 255, 255, 255);
         imagefill($dstImage, 0, 0, $white);
-        imagecopyresampled($dstImage, $srcImage, 0, 0, $cropX, $cropY, $regionWidth, $regionHeight, $cropW, $cropH);
+        imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $regionWidth, $regionHeight, $srcWidth, $srcHeight);
+        imagedestroy($srcImage);
+
+        // Dinamik alanları render et (metin, görsel, barkod — gölge, kenarlık, opacity dahil)
+        if ($needsDynamicRender) {
+            $templateWidth = (int)($designData['_templateWidth'] ?? $deviceWidth);
+            $templateHeight = (int)($designData['_templateHeight'] ?? $deviceHeight);
+
+            // Region kırpma varsa nesne koordinatlarını ayarla
+            if ($needsRegionProcessing && ($x > 0 || $y > 0)) {
+                $adjustedDesignData = $designData;
+                if (isset($adjustedDesignData['objects']) && is_array($adjustedDesignData['objects'])) {
+                    $cropOffsetX = $x;
+                    $cropOffsetY = $y;
+                    $cropRight = $x + $regionWidth;
+                    $cropBottom = $y + $regionHeight;
+
+                    foreach ($adjustedDesignData['objects'] as &$obj) {
+                        if (empty($obj['dynamicField']) && empty($obj['dynamic_field'])) {
+                            continue;
+                        }
+
+                        $objLeft = (float)($obj['left'] ?? 0);
+                        $objTop = (float)($obj['top'] ?? 0);
+                        $objW = (float)(($obj['width'] ?? 0) * ($obj['scaleX'] ?? 1));
+                        $objH = (float)(($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1));
+                        $objRight = $objLeft + $objW;
+                        $objBottom = $objTop + $objH;
+
+                        // Kırpma bölgesi dışındaki nesneleri gizle
+                        if ($objRight < $cropOffsetX || $objLeft > $cropRight || $objBottom < $cropOffsetY || $objTop > $cropBottom) {
+                            $obj['visible'] = false;
+                            continue;
+                        }
+
+                        // Koordinatları kırpma bölgesine göre ayarla
+                        $obj['left'] = $objLeft - $cropOffsetX;
+                        $obj['top'] = $objTop - $cropOffsetY;
+                    }
+                    unset($obj);
+                }
+
+                $this->renderDynamicFieldsViaGateway(
+                    $dstImage,
+                    $adjustedDesignData,
+                    $product,
+                    $regionWidth,
+                    $regionHeight,
+                    $regionWidth,
+                    $regionHeight
+                );
+            } else {
+                $this->renderDynamicFieldsViaGateway(
+                    $dstImage,
+                    $designData,
+                    $product,
+                    $templateWidth,
+                    $templateHeight,
+                    $regionWidth,
+                    $regionHeight
+                );
+            }
+        }
 
         $assetDir = STORAGE_PATH . '/renders/cache/' . $companyId;
         if (!is_dir($assetDir)) {
@@ -570,7 +648,6 @@ class EslSignValidator
         $outputPath = $assetDir . '/' . $fileName;
         $saved = @imagejpeg($dstImage, $outputPath, 90);
 
-        imagedestroy($srcImage);
         imagedestroy($dstImage);
 
         if (!$saved) {
@@ -581,6 +658,28 @@ class EslSignValidator
             'full_path' => $outputPath,
             'relative_path' => 'storage/renders/cache/' . $companyId . '/' . $fileName
         ];
+    }
+
+    /**
+     * PavoDisplayGateway'in renderDynamicFields metodunu Reflection ile çağırır.
+     * Dinamik metin, görsel, barkod alanlarını GD imajına render eder.
+     * Tüm görsel özellikler (opacity, shadow, stroke, rx/ry, angle) desteklenir.
+     */
+    private function renderDynamicFieldsViaGateway($image, array $designData, array $product, int $srcWidth, int $srcHeight, int $dstWidth, int $dstHeight): void
+    {
+        try {
+            require_once BASE_PATH . '/services/PavoDisplayGateway.php';
+            $gateway = new PavoDisplayGateway();
+            $method = new ReflectionMethod($gateway, 'renderDynamicFields');
+
+            if (method_exists($method, 'setAccessible')) {
+                $method->setAccessible(true);
+            }
+
+            $method->invoke($gateway, $image, $designData, $product, $srcWidth, $srcHeight, $dstWidth, $dstHeight);
+        } catch (Throwable $e) {
+            error_log('[EslSignValidator] renderDynamicFields failed: ' . $e->getMessage());
+        }
     }
 
     /**

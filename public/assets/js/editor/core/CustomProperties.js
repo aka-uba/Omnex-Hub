@@ -287,6 +287,12 @@ export const CUSTOM_PROPS = {
     ORIGINAL_SRC: 'originalSrc',
 
     /**
+     * Ürün görseli indeksi (çoklu görsel desteği)
+     * 0 = kapak görseli, 1 = 2. görsel, 2 = 3. görsel, 3 = 4. görsel
+     */
+    IMAGE_INDEX: 'imageIndex',
+
+    /**
      * Görsel fit modu
      * Değerler: 'contain', 'cover', 'fill', 'none'
      */
@@ -576,6 +582,7 @@ export const SERIALIZABLE_PROPS = [
 
     // Görsel
     CUSTOM_PROPS.ORIGINAL_SRC,
+    CUSTOM_PROPS.IMAGE_INDEX,
     CUSTOM_PROPS.IMAGE_FIT,
     CUSTOM_PROPS.CROP_SETTINGS,
 

@@ -600,7 +600,8 @@ export class ObjectFactory {
         this._applyBaseProperties(placeholder, CUSTOM_TYPES.DYNAMIC_IMAGE, {
             [CUSTOM_PROPS.IS_DATA_FIELD]: true,
             [CUSTOM_PROPS.DYNAMIC_FIELD]: fieldKey,
-            [CUSTOM_PROPS.PLACEHOLDER]: `{${fieldKey}}`
+            [CUSTOM_PROPS.PLACEHOLDER]: `{${fieldKey}}`,
+            [CUSTOM_PROPS.IMAGE_INDEX]: options.imageIndex ?? 0
         });
 
         if (this.canvas) {

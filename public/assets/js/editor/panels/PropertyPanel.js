@@ -123,7 +123,8 @@ export class PropertyPanel extends PanelBase {
         }
 
         const objectType = this._selectedObject.type;
-        const customType = this._selectedObject.get(CUSTOM_PROPS.TYPE);
+        // Fabric.js v7: .get() custom prop'ları güvenilir döndürmeyebilir, direct access da dene
+        const customType = this._selectedObject[CUSTOM_PROPS.CUSTOM_TYPE] || this._selectedObject.get(CUSTOM_PROPS.TYPE);
 
         // Nesne tipine göre panel içeriği
         let sections = [];
@@ -142,6 +143,15 @@ export class PropertyPanel extends PanelBase {
         // Şekil özellikleri
         if (this._isShapeObject()) {
             sections.push(this._renderShapeSection());
+        }
+
+        // Dinamik Görsel özellikleri (image-placeholder veya slot-image seçildiğinde)
+        const isDynamicImage = customType === 'image-placeholder' || customType === CUSTOM_TYPES.DYNAMIC_IMAGE || customType === CUSTOM_TYPES.SLOT_IMAGE;
+        // Fallback: dynamicField = image_url olan non-text nesneler de dinamik görseldir
+        const dynamicFieldValue = this._selectedObject[CUSTOM_PROPS.DYNAMIC_FIELD] || this._selectedObject.get(CUSTOM_PROPS.DYNAMIC_FIELD);
+        const isImageFieldFallback = dynamicFieldValue === 'image_url' && !this._isTextObject();
+        if (isDynamicImage || isImageFieldFallback) {
+            sections.push(this._renderDynamicImageSection());
         }
 
         // Barkod/QR düzenleme
@@ -195,10 +205,11 @@ export class PropertyPanel extends PanelBase {
         const obj = this._selectedObject;
         if (!obj) return '';
 
-        const customType = obj.get(CUSTOM_PROPS.TYPE) || obj.type;
-        const dynamicField = obj.get(CUSTOM_PROPS.DYNAMIC_FIELD);
-        const placeholder = obj.get(CUSTOM_PROPS.PLACEHOLDER);
-        const objectName = obj.get(CUSTOM_PROPS.OBJECT_NAME);
+        // Fabric.js v7: direct property access ile fallback
+        const customType = obj[CUSTOM_PROPS.CUSTOM_TYPE] || obj.get(CUSTOM_PROPS.TYPE) || obj.type;
+        const dynamicField = obj[CUSTOM_PROPS.DYNAMIC_FIELD] || obj.get(CUSTOM_PROPS.DYNAMIC_FIELD);
+        const placeholder = obj[CUSTOM_PROPS.PLACEHOLDER] || obj.get(CUSTOM_PROPS.PLACEHOLDER);
+        const objectName = obj[CUSTOM_PROPS.OBJECT_NAME] || obj.get(CUSTOM_PROPS.OBJECT_NAME);
 
         // İkon belirle
         const icon = this._getObjectHeaderIcon(customType);
@@ -214,7 +225,7 @@ export class PropertyPanel extends PanelBase {
             displayName = displayName.replace(/^\{|\}$/g, '');
             typeBadge = this.__('editor.elements.dynamicText');
         } else if (customType === CUSTOM_TYPES.BARCODE) {
-            const barcodeValue = obj.get(CUSTOM_PROPS.BARCODE_VALUE) || '';
+            const barcodeValue = obj[CUSTOM_PROPS.BARCODE_VALUE] || obj.get(CUSTOM_PROPS.BARCODE_VALUE) || '';
             displayName = objectName || barcodeValue || (this.__('editor.elements.barcode'));
             typeBadge = this.__('editor.elements.barcode');
         } else if (customType === CUSTOM_TYPES.QRCODE) {
@@ -520,13 +531,60 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
+     * Dinamik Görsel özellikleri bölümü (image-placeholder / slot-image)
+     * Görsel indeks seçimi ve fit modu ayarları
+     * @private
+     * @returns {string}
+     */
+    _renderDynamicImageSection() {
+        const obj = this._selectedObject;
+        // Fabric.js v7: direct property access ile fallback
+        const currentIndex = parseInt(obj[CUSTOM_PROPS.IMAGE_INDEX] ?? obj.get(CUSTOM_PROPS.IMAGE_INDEX) ?? 0) || 0;
+        const currentFit = obj[CUSTOM_PROPS.IMAGE_FIT] || obj.get(CUSTOM_PROPS.IMAGE_FIT) || 'cover';
+
+        return `
+            <div class="property-section">
+                <div class="property-section-header">
+                    <i class="ti ti-photo-search"></i>
+                    <span>${this.__('editor.properties.dynamicImage')}</span>
+                </div>
+                <div class="property-section-body">
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.imageIndex')}</label>
+                        <select class="form-input form-input-sm" data-property="imageIndex">
+                            <option value="0" ${currentIndex === 0 ? 'selected' : ''}>${this.__('editor.properties.coverImage')} (1.)</option>
+                            <option value="1" ${currentIndex === 1 ? 'selected' : ''}>2. ${this.__('editor.properties.image')}</option>
+                            <option value="2" ${currentIndex === 2 ? 'selected' : ''}>3. ${this.__('editor.properties.image')}</option>
+                            <option value="3" ${currentIndex === 3 ? 'selected' : ''}>4. ${this.__('editor.properties.image')}</option>
+                        </select>
+                    </div>
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.imageFit')}</label>
+                        <select class="form-input form-input-sm" data-property="imageFit">
+                            <option value="cover" ${currentFit === 'cover' ? 'selected' : ''}>Cover</option>
+                            <option value="contain" ${currentFit === 'contain' ? 'selected' : ''}>Contain</option>
+                            <option value="fill" ${currentFit === 'fill' ? 'selected' : ''}>Fill</option>
+                        </select>
+                    </div>
+                    <div class="property-item">
+                        <button type="button" class="btn btn-outline btn-sm btn-block" data-action="replace-image">
+                            <i class="ti ti-replace"></i>
+                            ${this.__('editor.properties.replaceImage')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
      * Barkod/QR düzenleme bölümü
      * @private
      * @returns {string}
      */
     _renderBarcodeSection() {
         const obj = this._selectedObject;
-        const customType = obj.get(CUSTOM_PROPS.TYPE);
+        const customType = obj[CUSTOM_PROPS.CUSTOM_TYPE] || obj.get(CUSTOM_PROPS.TYPE);
         const isQR = customType === CUSTOM_TYPES.QRCODE;
         const icon = isQR ? 'ti-qrcode' : 'ti-barcode';
         const label = isQR
@@ -1033,6 +1091,20 @@ export class PropertyPanel extends PanelBase {
             case 'opacity':
                 // Yüzdeyi 0-1 aralığına dönüştür
                 this._selectedObject.set('opacity', value / 100);
+                break;
+
+            case 'imageIndex':
+                // Görsel indeksini integer olarak ayarla (both .set() and direct for v7 compat)
+                {
+                    const idx = parseInt(value) || 0;
+                    this._selectedObject.set(CUSTOM_PROPS.IMAGE_INDEX, idx);
+                    this._selectedObject[CUSTOM_PROPS.IMAGE_INDEX] = idx;
+                }
+                break;
+
+            case 'imageFit':
+                this._selectedObject.set(CUSTOM_PROPS.IMAGE_FIT, value);
+                this._selectedObject[CUSTOM_PROPS.IMAGE_FIT] = value;
                 break;
 
             case 'rx':

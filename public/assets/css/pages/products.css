@@ -1475,6 +1475,20 @@
     font-size: 12px;
 }
 
+.product-media-index-badge {
+    position: absolute;
+    bottom: var(--space-1);
+    left: var(--space-1);
+    padding: 1px 6px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    line-height: 1.4;
+    pointer-events: none;
+}
+
 .product-media-actions {
     position: absolute;
     top: var(--space-1);

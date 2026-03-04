@@ -1110,7 +1110,20 @@ export class TemplateRenderer {
                 }
             } else if ((['dynamic-image', 'slot-image', 'image-placeholder'].includes(customType) || (customType === 'slot-media' && this._isImageFieldKey(fieldKey))) && value) {
                 // Görsel alanı için URL'yi yükle - async
-                const loadPromise = this._loadImageForObjectAsync(obj, value, index);
+                // imageIndex kontrolü: 0 = kapak görseli (varsayılan), 1+ = diğer görseller
+                const imageIndex = parseInt(obj.imageIndex ?? 0) || 0;
+                let imageUrl = value; // Varsayılan: kapak görseli URL'si
+
+                if (imageIndex > 0 && product) {
+                    // Belirli indeksteki görseli resolve et
+                    const resolvedUrl = this._resolveProductImageByIndex(product, imageIndex);
+                    if (resolvedUrl) {
+                        imageUrl = resolvedUrl;
+                    }
+                    // resolvedUrl boşsa fallback olarak kapak görseli (value) kullanılır
+                }
+
+                const loadPromise = this._loadImageForObjectAsync(obj, imageUrl, index);
                 imageLoadPromises.push(loadPromise);
             } else if (['dynamic-image', 'slot-image', 'image-placeholder'].includes(customType) || (customType === 'slot-media' && this._isImageFieldKey(fieldKey))) {
                 obj.visible = false;
@@ -1368,6 +1381,36 @@ export class TemplateRenderer {
     }
 
     /**
+     * Belirli bir indeksteki ürün görselini resolve et (çoklu görsel desteği)
+     * @param {Object} product - Ürün verisi
+     * @param {number} index - Görsel indeksi (0=kapak, 1=2.görsel, 2=3.görsel, ...)
+     * @returns {string} Görsel URL'si veya boş string (fallback için)
+     */
+    _resolveProductImageByIndex(product, index) {
+        if (!product) return '';
+
+        let images = product.images;
+        if (typeof images === 'string') {
+            try { images = JSON.parse(images); } catch (e) { images = []; }
+        }
+
+        if (!Array.isArray(images) || images.length === 0) return '';
+
+        // İndeks sınır kontrolü — yoksa boş döner, caller kapak görseline fallback yapar
+        if (index >= images.length) return '';
+
+        const candidate = images[index];
+        if (typeof candidate === 'string') return candidate;
+        if (candidate && typeof candidate === 'object') {
+            return candidate.url || candidate.src || candidate.path ||
+                candidate.file_path || candidate.filename ||
+                candidate.storage_path || candidate.source_url ||
+                candidate.image_url || candidate.image || '';
+        }
+        return '';
+    }
+
+    /**
      * Görsel nesnesine resim yükle (senkron placeholder - gerçek yükleme için async versiyon kullan)
      * @param {fabric.Object} obj - Fabric nesnesi
      * @param {string} imageUrl - Görsel URL'si
@@ -1397,7 +1440,7 @@ export class TemplateRenderer {
                 fullUrl = MediaUtils.getDisplayUrl(imageUrl);
             }
 
-            // Orijinal pozisyon ve boyut bilgilerini sakla
+            // Orijinal pozisyon, boyut ve GÖRSEL özellikleri sakla
             const originalProps = {
                 left: obj.left,
                 top: obj.top,
@@ -1405,7 +1448,22 @@ export class TemplateRenderer {
                 height: obj.height * (obj.scaleY || 1),
                 angle: obj.angle || 0,
                 originX: obj.originX || 'left',
-                originY: obj.originY || 'top'
+                originY: obj.originY || 'top',
+                // Görsel özellikler (denetçi panelinden ayarlanan)
+                opacity: obj.opacity ?? 1,
+                shadow: obj.shadow || null,
+                stroke: obj.stroke || null,
+                strokeWidth: obj.strokeWidth || 0,
+                strokeDashArray: obj.strokeDashArray || null,
+                rx: obj.rx || 0,
+                ry: obj.ry || 0,
+                flipX: obj.flipX || false,
+                flipY: obj.flipY || false,
+                skewX: obj.skewX || 0,
+                skewY: obj.skewY || 0,
+                clipPath: obj.clipPath || null,
+                visible: obj.visible !== false,
+                backgroundColor: obj.backgroundColor || ''
             };
 
             // Canvas'taki objenin index'ini bul
@@ -1439,7 +1497,16 @@ export class TemplateRenderer {
                 const scaleX = originalProps.width / imgWidth;
                 const scaleY = originalProps.height / imgHeight;
 
-                img.set({
+                // rx/ry varsa stroke'u Image'a DEĞİL ayrı border Rect'e uygula.
+                // Sebep: Image nesnesinde stroke her zaman dikdörtgen bounding box'u takip eder,
+                // clipPath'in oval/rounded şeklini takip etmez. Ayrı Rect overlay ile stroke
+                // doğal olarak rx/ry şeklini takip eder.
+                const hasRoundedCorners = (originalProps.rx > 0 || originalProps.ry > 0);
+                const hasStroke = originalProps.stroke && originalProps.strokeWidth > 0;
+                const needsBorderOverlay = hasRoundedCorners && hasStroke;
+
+                // Pozisyon + tüm görsel özelliklerini uygula
+                const imgProps = {
                     left: originalProps.left,
                     top: originalProps.top,
                     scaleX: scaleX,
@@ -1448,8 +1515,55 @@ export class TemplateRenderer {
                     originX: originalProps.originX,
                     originY: originalProps.originY,
                     selectable: false,
-                    evented: false
-                });
+                    evented: false,
+                    // Görsel özellikler
+                    opacity: originalProps.opacity,
+                    // Oval + stroke varsa: stroke'u Image'a KOYMA, ayrı border Rect kullan
+                    stroke: needsBorderOverlay ? null : originalProps.stroke,
+                    strokeWidth: needsBorderOverlay ? 0 : originalProps.strokeWidth,
+                    flipX: originalProps.flipX,
+                    flipY: originalProps.flipY,
+                    skewX: originalProps.skewX,
+                    skewY: originalProps.skewY,
+                    visible: originalProps.visible,
+                    backgroundColor: originalProps.backgroundColor
+                };
+
+                // Gölge
+                if (originalProps.shadow) {
+                    imgProps.shadow = originalProps.shadow;
+                }
+
+                // Kesikli kenarlık (oval border overlay yoksa)
+                if (originalProps.strokeDashArray && !needsBorderOverlay) {
+                    imgProps.strokeDashArray = originalProps.strokeDashArray;
+                }
+
+                img.set(imgProps);
+
+                // Köşe yuvarlaklığı (rx/ry): Image için clipPath ile uygulanır
+                if (hasRoundedCorners && fabric?.Rect) {
+                    const clipRx = originalProps.rx || originalProps.ry || 0;
+                    const clipRy = originalProps.ry || originalProps.rx || 0;
+                    try {
+                        const clipRect = new fabric.Rect({
+                            width: imgWidth,
+                            height: imgHeight,
+                            rx: clipRx / scaleX,  // Scale'e göre ayarla
+                            ry: clipRy / scaleY,
+                            originX: 'center',
+                            originY: 'center',
+                            left: 0,
+                            top: 0
+                        });
+                        img.set('clipPath', clipRect);
+                    } catch (clipErr) {
+                        // clipPath oluşturulamazsa devam et
+                    }
+                } else if (originalProps.clipPath) {
+                    // Mevcut clipPath'i koru
+                    img.set('clipPath', originalProps.clipPath);
+                }
 
                 // Eski placeholder'ı kaldır ve yeni görseli aynı pozisyona ekle
                 try {
@@ -1459,6 +1573,47 @@ export class TemplateRenderer {
                         if (img.moveTo) {
                             img.moveTo(objIndex);
                         }
+
+                        // Oval + stroke varsa: ayrı border Rect overlay ekle
+                        // Bu Rect'in fill'i yok (sadece kenarlık), rx/ry ile oval şekli takip eder.
+                        // Orijinal placeholder'ın width/height/scaleX/scaleY değerlerini kullanarak
+                        // rx/ry'nin Fabric.js tarafından doğru ölçeklenmesini sağla.
+                        if (needsBorderOverlay && fabric?.Rect) {
+                            try {
+                                const borderRect = new fabric.Rect({
+                                    left: originalProps.left,
+                                    top: originalProps.top,
+                                    // Orijinal placeholder'ın unscaled boyut + scale değerleri —
+                                    // Fabric.js rx/ry'yi scaleX/scaleY ile otomatik ölçekler
+                                    width: obj.width,
+                                    height: obj.height,
+                                    scaleX: obj.scaleX || 1,
+                                    scaleY: obj.scaleY || 1,
+                                    rx: obj.rx || originalProps.rx,
+                                    ry: obj.ry || originalProps.ry,
+                                    fill: 'transparent',
+                                    stroke: originalProps.stroke,
+                                    strokeWidth: originalProps.strokeWidth,
+                                    strokeDashArray: originalProps.strokeDashArray || null,
+                                    angle: originalProps.angle,
+                                    originX: originalProps.originX,
+                                    originY: originalProps.originY,
+                                    opacity: originalProps.opacity,
+                                    selectable: false,
+                                    evented: false,
+                                    // Gölge border overlay'e de uygulanabilir (opsiyonel)
+                                    // shadow: originalProps.shadow  // Gölge Image'da zaten var
+                                });
+                                currentCanvas.add(borderRect);
+                                // Border'ı Image'ın hemen üstüne yerleştir
+                                if (borderRect.moveTo) {
+                                    borderRect.moveTo(objIndex + 1);
+                                }
+                            } catch (borderErr) {
+                                console.warn('[TemplateRenderer] Border overlay oluşturma hatası:', borderErr);
+                            }
+                        }
+
                         if (currentCanvas.renderAll) {
                             currentCanvas.renderAll();
                         }

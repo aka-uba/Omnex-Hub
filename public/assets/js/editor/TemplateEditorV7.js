@@ -3339,7 +3339,10 @@ export class TemplateEditorV7 {
                     scaleY: oldScaleY,
                     [CUSTOM_PROPS.CUSTOM_TYPE]: obj[CUSTOM_PROPS.CUSTOM_TYPE] || '',
                     [CUSTOM_PROPS.IS_DATA_FIELD]: obj[CUSTOM_PROPS.IS_DATA_FIELD] || false,
-                    [CUSTOM_PROPS.DYNAMIC_FIELD]: dynamicField
+                    [CUSTOM_PROPS.DYNAMIC_FIELD]: dynamicField,
+                    [CUSTOM_PROPS.IMAGE_INDEX]: obj[CUSTOM_PROPS.IMAGE_INDEX] || 0,
+                    [CUSTOM_PROPS.IMAGE_FIT]: obj[CUSTOM_PROPS.IMAGE_FIT] || 'cover',
+                    [CUSTOM_PROPS.PLACEHOLDER]: obj[CUSTOM_PROPS.PLACEHOLDER] || ''
                 });
                 if (newObj) {
                     newObj.set({ angle: oldAngle });

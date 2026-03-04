@@ -42,8 +42,8 @@ if ($validator->fails()) {
 $deviceId = $request->input('serial_number') ?: $request->input('device_id');
 if ($deviceId) {
     $exists = $db->fetch(
-        "SELECT 1 FROM devices WHERE device_id = ?",
-        [$deviceId]
+        "SELECT 1 FROM devices WHERE device_id = ? AND company_id = ?",
+        [$deviceId, $companyId]
     );
 
     if ($exists) {

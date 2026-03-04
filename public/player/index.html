@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -64,7 +64,7 @@
             window.PLAYER_PATH = playerPath;
 
             document.write('<base href="' + playerPath + '">');
-            document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=31">');
+            document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=32">');
             document.write('<link rel="manifest" href="' + playerPath + 'manifest.json">');
         })();
     </script>
@@ -89,200 +89,141 @@
     <link rel="apple-touch-icon" href="../branding/favicon.png">
 
     <!-- Critical inline styles for Android TV/Google TV compatibility (fallback if CSS fails) -->
-    <style>
-        /* Base reset and fallback */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            background: #0f0f23; color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        <style>
+        :root {
+            --hub-bg-start: #050b1a;
+            --hub-bg-mid: #0f1a33;
+            --hub-bg-end: #0a1224;
+            --hub-primary: #2f73ff;
+            --hub-accent: #3ad8d3;
+            --hub-text: #f5f9ff;
+            --hub-muted: #9fb2d2;
+            --hub-border: rgba(120, 167, 230, 0.34);
         }
-        .screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; flex-direction: column; }
-        .screen.active { display: flex !important; }
-        .loading-content, .error-content { text-align: center; padding: 2rem; max-width: 90%; }
-        /* Registration content - responsive */
-        .registration-content {
-            text-align: center;
-            padding: clamp(1rem, 3vmin, 3rem);
-            max-width: 90vw;
-            display: flex;
-            flex-direction: column;
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            color: var(--hub-text);
+            font-family: "Segoe UI", "Noto Sans", sans-serif;
+            background:
+                radial-gradient(circle at 14% 18%, rgba(58, 140, 255, 0.24), transparent 33%),
+                radial-gradient(circle at 82% 78%, rgba(58, 216, 211, 0.2), transparent 35%),
+                linear-gradient(145deg, var(--hub-bg-start) 0%, var(--hub-bg-mid) 48%, var(--hub-bg-end) 100%);
+        }
+        .screen {
+            position: fixed;
+            inset: 0;
+            display: none;
             align-items: center;
             justify-content: center;
-            gap: clamp(1rem, 2vmin, 2rem);
+            flex-direction: column;
         }
-        .loading-title, h1, h2 { font-size: clamp(1.25rem, 4vmin, 3rem); margin: 1rem 0; }
-        .loading-message, p { font-size: clamp(0.875rem, 2vmin, 1.5rem); color: rgba(255,255,255,0.7); margin: 0.5rem 0; }
+        .screen.active {
+            display: flex !important;
+        }
+        .loading-content,
+        .registration-content,
+        .error-content {
+            width: min(1080px, 92vw);
+            text-align: center;
+        }
+        .loading-logo img {
+            width: clamp(170px, 24vmin, 320px);
+            height: auto;
+            filter: drop-shadow(0 14px 34px rgba(47, 115, 255, 0.34));
+        }
+        .loading-title {
+            font-size: clamp(1.8rem, 4.5vmin, 3.2rem);
+            margin-top: 0.8rem;
+            letter-spacing: 0.02em;
+        }
+        .loading-message {
+            margin-top: 0.7rem;
+            color: var(--hub-muted);
+            font-size: clamp(0.95rem, 1.8vmin, 1.35rem);
+        }
+        .loading-spinner {
+            margin-top: 1.25rem;
+            display: flex;
+            justify-content: center;
+        }
         .loading-spinner .spinner {
-            width: clamp(40px, 8vmin, 80px); height: clamp(40px, 8vmin, 80px);
-            border: 4px solid rgba(79,70,229,0.3); border-top-color: #4f46e5;
-            border-radius: 50%; animation: spin 1s linear infinite;
-            margin: 1.5rem auto;
+            width: clamp(36px, 5.4vmin, 54px);
+            height: clamp(36px, 5.4vmin, 54px);
+            border-radius: 50%;
+            border: 3px solid rgba(151, 191, 249, 0.26);
+            border-top-color: var(--hub-accent);
+            animation: spin 1s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .sync-code-container {
-            background: rgba(22,33,62,0.8);
-            border: 2px solid rgba(55,65,81,0.5);
-            border-radius: clamp(0.75rem, 2vmin, 1.5rem);
-            padding: clamp(1.5rem, 4vmin, 4rem);
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #content-container {
             width: 100%;
-            max-width: clamp(300px, 60vmin, 800px);
+            height: 100%;
+            position: relative;
+            background: #000;
+            overflow: hidden;
         }
-        .sync-code {
-            font-size: clamp(2rem, 10vmin, 8rem);
-            font-weight: bold;
-            letter-spacing: clamp(0.2em, 0.3em, 0.4em);
-            color: #818cf8;
-            margin: clamp(0.25rem, 1vmin, 1rem) 0;
-            text-shadow: 0 0 20px rgba(79,70,229,0.5);
-            word-break: break-all;
-        }
-        .sync-code-label, .sync-code-hint { font-size: clamp(0.875rem, 2vmin, 1.5rem); }
-        .sync-code-timer {
-            font-size: clamp(0.75rem, 1.8vmin, 1.25rem);
-            color: rgba(255,255,255,0.5);
-            margin-top: clamp(0.5rem, 1vmin, 1rem);
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(245,158,11,0.1);
-            border-radius: 0.5rem;
-        }
-        .device-info {
-            margin-top: clamp(0.5rem, 2vmin, 2rem);
-            text-align: left;
-            display: inline-block;
-            background: rgba(22,33,62,0.8);
-            border: 1px solid rgba(55,65,81,0.5);
-            border-radius: clamp(0.5rem, 1.5vmin, 1rem);
-            padding: clamp(0.75rem, 2vmin, 1.5rem);
+        .content-item {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            max-width: clamp(280px, 50vmin, 600px);
+            height: 100%;
+            object-fit: contain;
         }
-        .info-row { display: flex; gap: 1rem; padding: clamp(0.25rem, 1vmin, 0.5rem) 0; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-between; }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: rgba(255,255,255,0.5); font-size: clamp(0.75rem, 1.8vmin, 1.25rem); }
-        .info-value { color: #fff; word-break: break-all; font-size: clamp(0.75rem, 1.8vmin, 1.25rem); text-align: right; }
-        .status-waiting { color: #fbbf24 !important; }
-        .status-error { color: #ef4444 !important; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .fallback.visible {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(140deg, rgba(5, 11, 26, 0.96), rgba(9, 21, 44, 0.94));
+        }
+        .fallback-inner {
+            width: min(900px, 90vw);
+            border-radius: 24px;
+            border: 1px solid var(--hub-border);
+            background: linear-gradient(180deg, rgba(20, 42, 77, 0.82), rgba(10, 22, 44, 0.9));
+            padding: clamp(1.2rem, 2.6vmin, 2.6rem);
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+        }
+        .fallback-inner h2 {
+            font-size: clamp(1.4rem, 3vmin, 2.6rem);
+        }
+        .error-content {
+            padding: 1.6rem;
+        }
         .btn-retry {
-            padding: 1rem 2.5rem; background: #4f46e5; color: white;
-            border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem;
-            margin-top: 1.5rem; transition: background 0.2s;
+            margin-top: 1rem;
+            padding: 0.9rem 2rem;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2f73ff 0%, #48c6ef 100%);
+            color: #f8fbff;
+            font-weight: 700;
+            cursor: pointer;
         }
-        .btn-retry:hover, .btn-retry:focus { background: #4338ca; outline: none; }
-        #content-container { width: 100%; height: 100%; position: relative; background: #000; overflow: hidden; }
-        .content-item { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; }
-
-        /* Transition animations */
-        .content-item.transition-enter { z-index: 2; }
-        .content-item.transition-exit { z-index: 1; }
-
-        /* Fade transition */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        .content-item.fade-enter { animation: fadeIn var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.fade-exit { animation: fadeOut var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Slide left transition */
-        @keyframes slideInLeft { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        @keyframes slideOutLeft { from { transform: translateX(0); } to { transform: translateX(-100%); } }
-        .content-item.slide-left-enter { animation: slideInLeft var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.slide-left-exit { animation: slideOutLeft var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Slide right transition */
-        @keyframes slideInRight { from { transform: translateX(-100%); } to { transform: translateX(0); } }
-        @keyframes slideOutRight { from { transform: translateX(0); } to { transform: translateX(100%); } }
-        .content-item.slide-right-enter { animation: slideInRight var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.slide-right-exit { animation: slideOutRight var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Slide up transition */
-        @keyframes slideInUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes slideOutUp { from { transform: translateY(0); } to { transform: translateY(-100%); } }
-        .content-item.slide-up-enter { animation: slideInUp var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.slide-up-exit { animation: slideOutUp var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Slide down transition */
-        @keyframes slideInDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
-        @keyframes slideOutDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
-        .content-item.slide-down-enter { animation: slideInDown var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.slide-down-exit { animation: slideOutDown var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Zoom transition */
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-        @keyframes zoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
-        .content-item.zoom-enter { animation: zoomIn var(--transition-duration, 500ms) ease-out forwards; }
-        .content-item.zoom-exit { animation: zoomOut var(--transition-duration, 500ms) ease-out forwards; }
-
-        /* Crossfade transition (smooth overlap, ideal for signage) */
-        @keyframes crossfadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes crossfadeOut { from { opacity: 1; } to { opacity: 0; } }
-        .content-item.crossfade-enter { animation: crossfadeIn var(--transition-duration, 500ms) ease-in-out forwards; }
-        .content-item.crossfade-exit { animation: crossfadeOut var(--transition-duration, 500ms) ease-in-out forwards; }
-        .fallback.visible { display: flex; justify-content: center; align-items: center; background: #0f0f23; }
-        .fallback-inner { text-align: center; }
-        .error-icon svg { margin-bottom: 1rem; }
-        .error-title { color: #ef4444; }
         #debug-panel {
-            position: fixed; bottom: 0; left: 0; right: 0; max-height: 250px;
-            background: rgba(0,0,0,0.95); color: #0f0; font-family: 'Consolas', monospace;
-            font-size: 11px; overflow: auto; padding: 10px; z-index: 10000;
-            border-top: 2px solid #0f0;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            max-height: 250px;
+            display: none;
+            background: rgba(0, 0, 0, 0.95);
+            color: #9dffb6;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+            z-index: 10000;
+            border-top: 2px solid #1fd86e;
+            overflow: auto;
+            padding: 10px;
         }
-        .debug-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .debug-header button { background: #333; color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
-        /* Status bar - hidden by default, show on hover/activity */
-        .status-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-            padding: 0.75rem 1.5rem;
-            display: flex; justify-content: space-between; font-size: 0.875rem;
-            z-index: 100;
-            opacity: 0;
-            transform: translateY(100%);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            pointer-events: none;
-        }
-        .status-bar.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-        .status-icon { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.5rem; }
-        .status-icon.online { background: #22c55e; }
-        .status-icon.offline { background: #ef4444; }
-        /* Landscape mode - ANY width */
-        @media (orientation: landscape) {
-            .registration-content { flex-direction: row; flex-wrap: wrap; max-width: 98vw; gap: 3vmin; justify-content: center; }
-            .sync-code-container { flex: 1 1 auto; max-width: 55vw; min-width: 300px; }
-            .device-info { flex: 0 1 auto; max-width: 30vw; min-width: 200px; margin-top: 0; }
-            .sync-code { font-size: clamp(2rem, 8vmin, 8rem); }
-        }
-        /* Large landscape */
-        @media (min-width: 1200px) and (orientation: landscape) {
-            .registration-content { gap: 4vmin; }
-            .sync-code-container { max-width: 50vw; }
-        }
-        /* Portrait mode */
-        @media (orientation: portrait) {
-            .registration-content { flex-direction: column; }
-            .sync-code { font-size: clamp(2rem, 10vw, 6rem); }
-        }
-        /* Small portrait (mobile) */
-        @media (max-width: 640px) and (orientation: portrait) {
-            #registration-screen { padding: 16px; }
-            .registration-content { padding: 16px; gap: 1rem; }
-            .sync-code { font-size: clamp(1.75rem, 12vw, 3rem); }
-        }
-        /* Small landscape (mobile landscape) */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .registration-content { padding: 8px; gap: 2vmin; }
-            .registration-header { display: none; }
-            .sync-code { font-size: clamp(1.5rem, 10vh, 3rem); }
-        }
-        /* QR container responsive */
-        .qr-container { margin-top: clamp(0.5rem, 2vmin, 1.5rem); }
-        .qr-placeholder svg { width: clamp(80px, 15vmin, 200px); height: clamp(80px, 15vmin, 200px); opacity: 0.5; }
     </style>
 
     <!-- HLS.js for video streaming (Local Vendor) -->
@@ -299,7 +240,7 @@
                 <img src="../branding/logo-player.png?v=1" alt="Omnex Logo" class="brand-logo brand-logo">
             </div>
             <h1 class="loading-title">Omnex Player</h1>
-            <p class="loading-message" id="loading-message">Başlatılıyor...</p>
+            <p class="loading-message" id="loading-message">Ba&#351;lat&#305;l&#305;yor...</p>
             <div class="loading-spinner">
                 <div class="spinner"></div>
             </div>
@@ -308,13 +249,13 @@
 
     <!-- Global install actions -->
     <div id="floating-install-actions" class="floating-install-actions" style="display: none;">
-        <button id="pwa-install-btn" class="pwa-install-btn" style="display: none;" title="PWA Olarak Yükle">
+        <button id="pwa-install-btn" class="pwa-install-btn" style="display: none;" title="PWA Olarak Y&#252;kle">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 5v14M5 12l7 7 7-7"/>
                 <rect x="3" y="19" width="18" height="2" rx="1" fill="currentColor" stroke="none"/>
             </svg>
         </button>
-        <a id="apk-install-btn" class="apk-install-btn" style="display: none;" title="APK İndir" href="#" target="_blank" rel="noopener">
+        <a id="apk-install-btn" class="apk-install-btn" style="display: none;" title="APK &#304;ndir" href="#" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="7" y="2" width="10" height="14" rx="2"/>
                 <path d="M9 19h6M12 11v9M9 17l3 3 3-3"/>
@@ -322,7 +263,7 @@
         </a>
     </div>
 
-    <button id="orientation-toggle-btn" class="orientation-toggle-btn" style="display: none;" title="Yatay Görünüm">
+    <button id="orientation-toggle-btn" class="orientation-toggle-btn" style="display: none;" title="Yatay G&#246;r&#252;n&#252;m">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="7" width="18" height="10" rx="2"/>
             <path d="M7 5l-2 2 2 2M17 19l2-2-2-2"/>
@@ -338,11 +279,11 @@
             </div>
 
             <div class="sync-code-container">
-                <p class="sync-code-label">Eşleştirme Kodu</p>
+                <p class="sync-code-label">E&#351;le&#351;tirme Kodu</p>
                 <div class="sync-code" id="sync-code">------</div>
-                <p class="sync-code-hint">Bu kodu yönetim paneline girin</p>
+                <p class="sync-code-hint">Bu kodu y&#246;netim paneline girin</p>
                 <div class="sync-code-timer">
-                    <span id="sync-timer">15:00</span> içinde geçerli
+                    <span id="sync-timer">15:00</span> i&#231;inde ge&#231;erli
                 </div>
             </div>
 
@@ -390,7 +331,8 @@
                 <div class="fallback-inner">
                     <img src="../branding/logo-player.png?v=1" alt="Omnex Logo" class="fallback-logo brand-logo">
                     <h2>Omnex Display Hub</h2>
-                    <p id="fallback-message">İçerik yükleniyor...</p>
+                    <p class="fallback-subtitle">Cihaz haz&#305;r, yay&#305;n atamas&#305; bekleniyor</p>
+                    <p id="fallback-message" class="fallback-message">&#304;&#231;erik y&#252;kleniyor...</p>
                 </div>
             </div>
         </div>
@@ -420,8 +362,8 @@
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
             </div>
-            <h2 class="error-title">Bağlantı Hatası</h2>
-            <p class="error-message" id="error-message">Sunucuya bağlanılamadı</p>
+            <h2 class="error-title">Ba&#287;lant&#305; Hatas&#305;</h2>
+            <p class="error-message" id="error-message">Sunucuya ba&#287;lan&#305;lamad&#305;</p>
             <button class="btn-retry" id="btn-retry">Tekrar Dene</button>
         </div>
     </div>
@@ -442,7 +384,7 @@
     <script type="module">
         // Dynamic import of player module with full path
         const playerPath = window.PLAYER_PATH || '/player/';
-        const scriptUrl = playerPath + 'assets/js/player.js?v=40';
+        const scriptUrl = playerPath + 'assets/js/player.js?v=41';
 
         try {
             import(scriptUrl);
@@ -450,7 +392,7 @@
             console.error('[Omnex Player] Failed to load player module:', error);
             const loadingMsg = document.getElementById('loading-message');
             if (loadingMsg) {
-                loadingMsg.innerHTML = 'Modül yüklenemedi:<br>' + error.message;
+                loadingMsg.innerHTML = 'Mod&#252;l y&#252;klenemedi:<br>' + error.message;
                 loadingMsg.style.color = '#ef4444';
             }
         }
@@ -472,12 +414,15 @@
                 errorScreen.style.display = 'flex';
             }
             if (errorMsg) {
-                errorMsg.innerHTML = 'Bu tarayıcı desteklenmiyor.<br>Lütfen güncel bir tarayıcı kullanın.';
+                errorMsg.innerHTML = 'Bu taray&#305;c&#305; desteklenmiyor.<br>L&#252;tfen g&#252;ncel bir taray&#305;c&#305; kullan&#305;n.';
             }
         });
     </script>
 </body>
 </html>
+
+
+
 
 
 

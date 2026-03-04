@@ -197,7 +197,11 @@
             "textFitShrink": "Küçült",
             "textFitEllipsis": "Üç Nokta (...)",
             "minFontSize": "Min Font",
-            "maxLines": "Max Satır"
+            "maxLines": "Max Satır",
+            "dynamicImage": "Dinamik Görsel",
+            "imageIndex": "Görsel Seçimi",
+            "coverImage": "Kapak Görseli",
+            "imageFit": "Sığdırma Modu"
         },
         "canvas": {
             "title": "Tasarım Alanı",

@@ -197,7 +197,11 @@
             "textFitShrink": "Shrink",
             "textFitEllipsis": "Ellipsis (...)",
             "minFontSize": "Min Font",
-            "maxLines": "Max Lines"
+            "maxLines": "Max Lines",
+            "dynamicImage": "Dynamic Image",
+            "imageIndex": "Image Selection",
+            "coverImage": "Cover Image",
+            "imageFit": "Fit Mode"
         },
         "canvas": {
             "title": "Design Area",
