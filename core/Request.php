@@ -333,6 +333,13 @@ class Request
                     $headers[$header] = $value;
                 }
             }
+            // CONTENT_TYPE and CONTENT_LENGTH are set without HTTP_ prefix in CGI/FPM
+            if (isset($_SERVER['CONTENT_TYPE'])) {
+                $headers['content-type'] = $_SERVER['CONTENT_TYPE'];
+            }
+            if (isset($_SERVER['CONTENT_LENGTH'])) {
+                $headers['content-length'] = $_SERVER['CONTENT_LENGTH'];
+            }
         }
 
         return $headers;
