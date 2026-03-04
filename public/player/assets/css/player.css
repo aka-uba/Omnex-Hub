@@ -1201,6 +1201,299 @@ video::poster {
     transition: opacity 0.5s ease;
 }
 
+.content-item.transition-enter,
+.content-item.transition-exit {
+    animation-duration: var(--transition-duration, 500ms);
+    animation-timing-function: ease;
+    animation-fill-mode: both;
+    will-change: transform, opacity, clip-path;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.content-item.transition-enter {
+    z-index: 2;
+}
+
+.content-item.transition-exit {
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes signageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes signageFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes signageSlideLeftIn {
+    from { opacity: 0; transform: translate3d(14%, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes signageSlideLeftOut {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(-10%, 0, 0); }
+}
+
+@keyframes signageSlideRightIn {
+    from { opacity: 0; transform: translate3d(-14%, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes signageSlideRightOut {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(10%, 0, 0); }
+}
+
+@keyframes signageSlideUpIn {
+    from { opacity: 0; transform: translate3d(0, 14%, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes signageSlideUpOut {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(0, -10%, 0); }
+}
+
+@keyframes signageSlideDownIn {
+    from { opacity: 0; transform: translate3d(0, -14%, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes signageSlideDownOut {
+    from { opacity: 1; transform: translate3d(0, 0, 0); }
+    to { opacity: 0; transform: translate3d(0, 10%, 0); }
+}
+
+@keyframes signagePushLeftIn {
+    from { transform: translate3d(100%, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushLeftOut {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    to { transform: translate3d(-100%, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushRightIn {
+    from { transform: translate3d(-100%, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushRightOut {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    to { transform: translate3d(100%, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushUpIn {
+    from { transform: translate3d(0, 100%, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushUpOut {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, -100%, 0); opacity: 1; }
+}
+
+@keyframes signagePushDownIn {
+    from { transform: translate3d(0, -100%, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes signagePushDownOut {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, 100%, 0); opacity: 1; }
+}
+
+@keyframes signageWipeLeftIn {
+    from { clip-path: inset(0 100% 0 0); opacity: 1; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes signageWipeLeftOut {
+    from { clip-path: inset(0 0 0 0); opacity: 1; }
+    to { clip-path: inset(0 0 0 100%); opacity: 1; }
+}
+
+@keyframes signageWipeRightIn {
+    from { clip-path: inset(0 0 0 100%); opacity: 1; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes signageWipeRightOut {
+    from { clip-path: inset(0 0 0 0); opacity: 1; }
+    to { clip-path: inset(0 100% 0 0); opacity: 1; }
+}
+
+@keyframes signageWipeUpIn {
+    from { clip-path: inset(100% 0 0 0); opacity: 1; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes signageWipeUpOut {
+    from { clip-path: inset(0 0 0 0); opacity: 1; }
+    to { clip-path: inset(0 0 100% 0); opacity: 1; }
+}
+
+@keyframes signageWipeDownIn {
+    from { clip-path: inset(0 0 100% 0); opacity: 1; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes signageWipeDownOut {
+    from { clip-path: inset(0 0 0 0); opacity: 1; }
+    to { clip-path: inset(100% 0 0 0); opacity: 1; }
+}
+
+@keyframes signageZoomInIn {
+    from { opacity: 0; transform: scale(0.88); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes signageZoomInOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.08); }
+}
+
+@keyframes signageZoomOutIn {
+    from { opacity: 0; transform: scale(1.12); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes signageZoomOutOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.92); }
+}
+
+.content-item.fade-enter,
+.content-item.crossfade-enter {
+    animation-name: signageFadeIn;
+}
+
+.content-item.fade-exit,
+.content-item.crossfade-exit {
+    animation-name: signageFadeOut;
+}
+
+.content-item.slide-left-enter {
+    animation-name: signageSlideLeftIn;
+}
+
+.content-item.slide-left-exit {
+    animation-name: signageSlideLeftOut;
+}
+
+.content-item.slide-right-enter {
+    animation-name: signageSlideRightIn;
+}
+
+.content-item.slide-right-exit {
+    animation-name: signageSlideRightOut;
+}
+
+.content-item.slide-up-enter {
+    animation-name: signageSlideUpIn;
+}
+
+.content-item.slide-up-exit {
+    animation-name: signageSlideUpOut;
+}
+
+.content-item.slide-down-enter {
+    animation-name: signageSlideDownIn;
+}
+
+.content-item.slide-down-exit {
+    animation-name: signageSlideDownOut;
+}
+
+.content-item.push-left-enter {
+    animation-name: signagePushLeftIn;
+}
+
+.content-item.push-left-exit {
+    animation-name: signagePushLeftOut;
+}
+
+.content-item.push-right-enter {
+    animation-name: signagePushRightIn;
+}
+
+.content-item.push-right-exit {
+    animation-name: signagePushRightOut;
+}
+
+.content-item.push-up-enter {
+    animation-name: signagePushUpIn;
+}
+
+.content-item.push-up-exit {
+    animation-name: signagePushUpOut;
+}
+
+.content-item.push-down-enter {
+    animation-name: signagePushDownIn;
+}
+
+.content-item.push-down-exit {
+    animation-name: signagePushDownOut;
+}
+
+.content-item.wipe-left-enter {
+    animation-name: signageWipeLeftIn;
+}
+
+.content-item.wipe-left-exit {
+    animation-name: signageWipeLeftOut;
+}
+
+.content-item.wipe-right-enter {
+    animation-name: signageWipeRightIn;
+}
+
+.content-item.wipe-right-exit {
+    animation-name: signageWipeRightOut;
+}
+
+.content-item.wipe-up-enter {
+    animation-name: signageWipeUpIn;
+}
+
+.content-item.wipe-up-exit {
+    animation-name: signageWipeUpOut;
+}
+
+.content-item.wipe-down-enter {
+    animation-name: signageWipeDownIn;
+}
+
+.content-item.wipe-down-exit {
+    animation-name: signageWipeDownOut;
+}
+
+.content-item.zoom-enter,
+.content-item.zoom-in-enter {
+    animation-name: signageZoomInIn;
+}
+
+.content-item.zoom-exit,
+.content-item.zoom-in-exit {
+    animation-name: signageZoomInOut;
+}
+
+.content-item.zoom-out-enter {
+    animation-name: signageZoomOutIn;
+}
+
+.content-item.zoom-out-exit {
+    animation-name: signageZoomOutOut;
+}
+
 /* ==================== Global PWA Install Button ==================== */
 .pwa-install-btn {
     position: fixed;

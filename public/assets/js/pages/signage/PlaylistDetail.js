@@ -62,6 +62,102 @@ export class PlaylistDetailPage {
         return (folder && folder.name) || '';
     }
 
+    renderHelpLabel(labelKey, buttonId, helpTitleKey) {
+        const label = this.__(labelKey);
+        const helpTitle = this.__(helpTitleKey);
+
+        return `
+            <span class="field-label-with-help">
+                <span>${label}</span>
+                <button
+                    type="button"
+                    id="${buttonId}"
+                    class="field-help-button"
+                    title="${escapeHTML(helpTitle)}"
+                    aria-label="${escapeHTML(helpTitle)}"
+                >!</button>
+            </span>
+        `;
+    }
+
+    renderTransitionOptions() {
+        const options = [
+            ['none', 'playlists.transitions.none'],
+            ['fade', 'playlists.transitions.fade'],
+            ['crossfade', 'playlists.transitions.crossfade'],
+            ['slide-left', 'playlists.transitions.slideLeft'],
+            ['slide-right', 'playlists.transitions.slideRight'],
+            ['slide-up', 'playlists.transitions.slideUp'],
+            ['slide-down', 'playlists.transitions.slideDown'],
+            ['push-left', 'playlists.transitions.pushLeft'],
+            ['push-right', 'playlists.transitions.pushRight'],
+            ['push-up', 'playlists.transitions.pushUp'],
+            ['push-down', 'playlists.transitions.pushDown'],
+            ['wipe-left', 'playlists.transitions.wipeLeft'],
+            ['wipe-right', 'playlists.transitions.wipeRight'],
+            ['wipe-up', 'playlists.transitions.wipeUp'],
+            ['wipe-down', 'playlists.transitions.wipeDown'],
+            ['zoom', 'playlists.transitions.zoom'],
+            ['zoom-in', 'playlists.transitions.zoomIn'],
+            ['zoom-out', 'playlists.transitions.zoomOut'],
+            ['random-safe', 'playlists.transitions.randomSafe']
+        ];
+
+        return options.map(([value, key]) => (
+            `<option value="${value}">${this.__(key)}</option>`
+        )).join('');
+    }
+
+    showFieldHelpModal(topic) {
+        const isDuration = topic === 'duration';
+        const titleKey = isDuration
+            ? 'playlists.form.help.durationTitle'
+            : 'playlists.form.help.transitionTitle';
+        const introKey = isDuration
+            ? 'playlists.form.help.durationIntro'
+            : 'playlists.form.help.transitionIntro';
+        const tipKeyPairs = isDuration
+            ? [
+                ['playlists.form.help.fastTitle', 'playlists.form.help.fastBody'],
+                ['playlists.form.help.recommendedTitle', 'playlists.form.help.recommendedBody'],
+                ['playlists.form.help.longTitle', 'playlists.form.help.longBody']
+            ]
+            : [
+                ['playlists.form.help.bestPracticeTitle', 'playlists.form.help.bestPracticeBody'],
+                ['playlists.form.help.productFlowTitle', 'playlists.form.help.productFlowBody'],
+                ['playlists.form.help.cinematicTitle', 'playlists.form.help.cinematicBody'],
+                ['playlists.form.help.safeModeTitle', 'playlists.form.help.safeModeBody']
+            ];
+
+        const content = `
+            <div class="playlist-help-modal">
+                <p class="playlist-help-intro">${escapeHTML(this.__(introKey))}</p>
+                <div class="playlist-help-list">
+                    ${tipKeyPairs.map(([tipTitleKey, tipBodyKey]) => `
+                        <div class="playlist-help-item">
+                            <span class="playlist-help-badge">!</span>
+                            <div class="playlist-help-copy">
+                                <strong>${escapeHTML(this.__(tipTitleKey))}</strong>
+                                <p>${escapeHTML(this.__(tipBodyKey))}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        Modal.show({
+            title: this.__(titleKey),
+            icon: 'ti-alert-circle',
+            content,
+            size: 'md',
+            showFooter: true,
+            footer: `
+                <button type="button" class="btn btn-outline" data-modal-close>${this.__('modal.close')}</button>
+            `
+        });
+    }
+
     render() {
         const id = this.app.router.params?.id;
         this.isNew = !id || id === 'new';
@@ -149,20 +245,13 @@ export class PlaylistDetailPage {
                                     <p class="form-hint">${this.__('playlists.form.durationHint')}</p>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('playlists.form.fields.transition')}</label>
+                                    <label class="form-label">${this.renderHelpLabel('playlists.form.fields.transition', 'btn-transition-help', 'playlists.form.help.transitionTitle')}</label>
                                     <select id="playlist-transition" class="form-select">
-                                        <option value="none">${this.__('playlists.transitions.none')}</option>
-                                        <option value="fade">${this.__('playlists.transitions.fade')}</option>
-                                        <option value="slide-left">${this.__('playlists.transitions.slideLeft')}</option>
-                                        <option value="slide-right">${this.__('playlists.transitions.slideRight')}</option>
-                                        <option value="slide-up">${this.__('playlists.transitions.slideUp')}</option>
-                                        <option value="slide-down">${this.__('playlists.transitions.slideDown')}</option>
-                                        <option value="zoom">${this.__('playlists.transitions.zoom')}</option>
-                                        <option value="crossfade">${this.__('playlists.transitions.crossfade')}</option>
+                                        ${this.renderTransitionOptions()}
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('playlists.form.fields.transitionDuration')}</label>
+                                    <label class="form-label">${this.renderHelpLabel('playlists.form.fields.transitionDuration', 'btn-transition-duration-help', 'playlists.form.help.durationTitle')}</label>
                                     <div class="input-with-suffix">
                                         <input type="number" id="playlist-transition-duration" class="form-input"
                                             value="500" min="100" max="2000" step="100">
@@ -754,6 +843,14 @@ export class PlaylistDetailPage {
 
         document.getElementById('btn-add-item')?.addEventListener('click', () => {
             this.openContentModal();
+        });
+
+        document.getElementById('btn-transition-help')?.addEventListener('click', () => {
+            this.showFieldHelpModal('transition');
+        });
+
+        document.getElementById('btn-transition-duration-help')?.addEventListener('click', () => {
+            this.showFieldHelpModal('duration');
         });
     }
 
@@ -1741,6 +1838,92 @@ export class PlaylistDetailPage {
         const styles = document.createElement('style');
         styles.id = 'playlist-detail-styles';
         styles.textContent = `
+            .field-label-with-help {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .field-help-button {
+                width: 1.35rem;
+                height: 1.35rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                border-radius: 999px;
+                background: var(--bg-secondary);
+                color: var(--color-warning);
+                font-size: 0.75rem;
+                font-weight: 700;
+                line-height: 1;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .field-help-button:hover,
+            .field-help-button:focus-visible {
+                border-color: var(--color-warning);
+                background: var(--color-warning-light, rgba(245, 158, 11, 0.12));
+                color: var(--color-warning);
+                outline: none;
+            }
+
+            .playlist-help-modal {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .playlist-help-intro {
+                margin: 0;
+                color: var(--text-secondary);
+                line-height: 1.6;
+            }
+
+            .playlist-help-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.875rem;
+            }
+
+            .playlist-help-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.9rem;
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                background: var(--bg-secondary);
+            }
+
+            .playlist-help-badge {
+                flex: 0 0 1.5rem;
+                width: 1.5rem;
+                height: 1.5rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                background: var(--color-warning);
+                color: #fff;
+                font-size: 0.8rem;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            .playlist-help-copy strong {
+                display: block;
+                margin-bottom: 0.25rem;
+                color: var(--text-primary);
+            }
+
+            .playlist-help-copy p {
+                margin: 0;
+                color: var(--text-secondary);
+                line-height: 1.5;
+            }
+
             /* Media Library Sub-tabs */
             .playlist-media-library {
                 display: flex;

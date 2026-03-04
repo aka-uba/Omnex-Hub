@@ -5357,7 +5357,7 @@
    ============================================ */
 .kunye-steps {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     gap: 0;
     padding: 0.5rem 0;
@@ -5447,21 +5447,28 @@
     }
 
     .kunye-step {
-        min-width: 50px;
+        min-width: 44px;
+        gap: 0.25rem;
     }
 
     .kunye-step-number {
-        width: 30px;
-        height: 30px;
-        font-size: 0.75rem;
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+        flex-shrink: 0;
     }
 
     .kunye-step-label {
-        font-size: 0.625rem;
+        font-size: 0.6rem;
+        white-space: normal;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        line-height: 1.3;
+        max-width: 56px;
     }
 
     .kunye-step-line {
-        min-width: 16px;
-        margin-top: 15px;
+        min-width: 12px;
+        margin-top: 14px;
     }
 }

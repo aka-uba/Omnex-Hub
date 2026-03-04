@@ -205,7 +205,7 @@ export class KunyeDistribution {
             <style>
                 .kunye-steps {
                     display: flex;
-                    align-items: center;
+                    align-items: flex-start;
                     justify-content: center;
                     gap: 0;
                 }
@@ -245,7 +245,7 @@ export class KunyeDistribution {
                 .kunye-step-label {
                     font-size: 12px;
                     color: var(--color-gray-600);
-                    white-space: nowrap;
+                    text-align: center;
                 }
                 .kunye-step.active .kunye-step-label {
                     color: var(--color-primary);
@@ -256,7 +256,7 @@ export class KunyeDistribution {
                     height: 2px;
                     background: var(--color-gray-200);
                     margin: 0 12px;
-                    margin-bottom: 22px;
+                    margin-top: 18px;
                     min-width: 40px;
                     max-width: 120px;
                 }

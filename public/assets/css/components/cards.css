@@ -690,7 +690,8 @@
 
     /* Grid view cards - zero padding on mobile */
     .grid-view .card-body,
-    .template-grid .card-body {
+    .template-grid .card-body,
+    .card-body:has(.templates-grid) {
         padding: 0;
     }
 }

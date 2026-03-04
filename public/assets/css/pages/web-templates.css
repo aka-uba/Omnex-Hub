@@ -262,9 +262,50 @@
     }
 }
 
+/* Web Templates filter compact - mobile */
+@media (max-width: 768px) {
+    .templates-grid ~ .filter-row,
+    .card .filter-row:has(+ .templates-grid),
+    .card:has(~ .card .templates-grid) .filter-row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .card:has(~ .card .templates-grid) .filter-item {
+        width: auto;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .card:has(~ .card .templates-grid) .filter-item .form-select {
+        width: 100%;
+        min-width: 0;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .card:has(~ .card .templates-grid) .filter-label {
+        display: none;
+    }
+
+    .card:has(~ .card .templates-grid) .filter-search {
+        min-width: 0;
+        flex: 1;
+        max-width: none !important;
+        margin-left: 0 !important;
+    }
+
+    .card:has(~ .card .templates-grid) .filter-search .form-input {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+}
+
 @media (max-width: 480px) {
     .template-cards {
         grid-template-columns: 1fr;
+        gap: 0.5rem;
     }
 
     .template-card-overlay .btn-icon {

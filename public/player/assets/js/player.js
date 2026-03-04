@@ -80,6 +80,7 @@ class OmnexPlayer {
         this._currentElement = null;     // Track currently visible content element
         this._transitionType = 'none';   // Transition type from playlist
         this._transitionDuration = 500;  // Transition duration in ms
+        this._runtimeTransitionType = null; // Resolved transition for the current swap
 
         // Timers
         this.heartbeatInterval = null;
@@ -2009,23 +2010,7 @@ class OmnexPlayer {
 
             if (data.playlist) {
                 this.playlist = data.playlist;
-
-                // Load transition settings from playlist
-                this._transitionType = this.playlist.transition || 'none';
-                this._transitionDuration = parseInt(this.playlist.transition_duration) || 500;
-                if (this.isLegacyProfile() && this._transitionType !== 'none') {
-                    // Legacy: allow transitions but cap duration to reduce CPU load
-                    this._transitionDuration = Math.min(this._transitionDuration, 300);
-                } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
-                    this._transitionDuration = Math.min(this._transitionDuration, 400);
-                }
-
-                // Set CSS variable for transition duration
-                document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
-
-                if (this.debug) {
-                    console.log(`[Player] Transition: ${this._transitionType}, Duration: ${this._transitionDuration}ms`);
-                }
+                this.applyPlaylistPlaybackSettings();
 
                 // Check if playlist has items
                 if (!this.playlist.items || this.playlist.items.length === 0) {
@@ -2622,6 +2607,8 @@ class OmnexPlayer {
             return;
         }
 
+        const resolvedTransitionType = this.getResolvedTransitionType();
+
         // Remove any existing transition classes
         this.clearTransitionClasses(element);
 
@@ -2630,7 +2617,7 @@ class OmnexPlayer {
         element.style.visibility = 'visible';
 
         // Add exit transition class
-        element.classList.add('transition-exit', `${this._transitionType}-exit`);
+        element.classList.add('transition-exit', `${resolvedTransitionType}-exit`);
 
         // Hide element after transition completes
         const duration = this._transitionDuration;
@@ -2652,6 +2639,7 @@ class OmnexPlayer {
                     this._cleanupVideoElement(exitElement, true);
                 }
             }
+            this.releaseResolvedTransitionType();
         }, duration);
     }
 
@@ -2662,6 +2650,8 @@ class OmnexPlayer {
     applyEnterTransition(element) {
         if (!element) return;
 
+        const resolvedTransitionType = this.getResolvedTransitionType();
+
         // Clear any existing transition classes
         this.clearTransitionClasses(element);
 
@@ -2670,9 +2660,9 @@ class OmnexPlayer {
         element.style.visibility = 'visible';
         element.style.opacity = '1';
 
-        if (this._transitionType !== 'none') {
+        if (resolvedTransitionType !== 'none') {
             // Add enter transition class (z-index: 2 via CSS)
-            element.classList.add('transition-enter', `${this._transitionType}-enter`);
+            element.classList.add('transition-enter', `${resolvedTransitionType}-enter`);
 
             // Track current element
             this._currentElement = element;
@@ -2683,6 +2673,7 @@ class OmnexPlayer {
                 this.clearTransitionClasses(enterElement);
                 // Reset z-index after transition
                 enterElement.style.zIndex = '';
+                this.releaseResolvedTransitionType();
             }, this._transitionDuration);
         } else {
             this._currentElement = element;
@@ -2738,6 +2729,43 @@ class OmnexPlayer {
         return el === this.elements.videoContent || el === this.elements.videoContentAlt;
     }
 
+    getResolvedTransitionType() {
+        if (this._transitionType === 'none') {
+            return 'none';
+        }
+
+        if (this._transitionType !== 'random-safe') {
+            this._runtimeTransitionType = this._transitionType;
+            return this._runtimeTransitionType;
+        }
+
+        if (!this._runtimeTransitionType) {
+            const safeTransitions = [
+                'fade',
+                'crossfade',
+                'push-left',
+                'push-right',
+                'push-up',
+                'push-down',
+                'wipe-left',
+                'wipe-right',
+                'wipe-up',
+                'wipe-down',
+                'zoom',
+                'zoom-in',
+                'zoom-out'
+            ];
+            const index = Math.floor(Math.random() * safeTransitions.length);
+            this._runtimeTransitionType = safeTransitions[index];
+        }
+
+        return this._runtimeTransitionType;
+    }
+
+    releaseResolvedTransitionType() {
+        this._runtimeTransitionType = null;
+    }
+
     /**
      * Clear all transition classes from an element
      */
@@ -2752,7 +2780,17 @@ class OmnexPlayer {
             'slide-right-enter', 'slide-right-exit',
             'slide-up-enter', 'slide-up-exit',
             'slide-down-enter', 'slide-down-exit',
-            'zoom-enter', 'zoom-exit'
+            'push-left-enter', 'push-left-exit',
+            'push-right-enter', 'push-right-exit',
+            'push-up-enter', 'push-up-exit',
+            'push-down-enter', 'push-down-exit',
+            'wipe-left-enter', 'wipe-left-exit',
+            'wipe-right-enter', 'wipe-right-exit',
+            'wipe-up-enter', 'wipe-up-exit',
+            'wipe-down-enter', 'wipe-down-exit',
+            'zoom-enter', 'zoom-exit',
+            'zoom-in-enter', 'zoom-in-exit',
+            'zoom-out-enter', 'zoom-out-exit'
         ];
 
         transitionClasses.forEach(cls => element.classList.remove(cls));
@@ -3223,6 +3261,28 @@ class OmnexPlayer {
             templateId,
             defaultDuration
         ].join(':');
+    }
+
+    applyPlaylistPlaybackSettings() {
+        if (!this.playlist) {
+            return;
+        }
+
+        this.releaseResolvedTransitionType();
+        this._transitionType = this.playlist.transition || 'none';
+        this._transitionDuration = parseInt(this.playlist.transition_duration, 10) || 500;
+
+        if (this.isLegacyProfile() && this._transitionType !== 'none') {
+            this._transitionDuration = Math.min(this._transitionDuration, 300);
+        } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
+            this._transitionDuration = Math.min(this._transitionDuration, 400);
+        }
+
+        document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
+
+        if (this.debug) {
+            console.log(`[Player] Transition: ${this._transitionType}, Duration: ${this._transitionDuration}ms`);
+        }
     }
 
     /**
@@ -4077,8 +4137,9 @@ class OmnexPlayer {
     /**
      * Sync content with server
      */
-    async syncContent() {
+    async syncContent(options = {}) {
         try {
+            const forceRestart = options.forceRestart === true;
             const currentPlaylistId = this.playlist ? this.playlist.id : null;
             const currentItemCount = (this.playlist && this.playlist.items) ? this.playlist.items.length : 0;
             const currentConfigSignature = this.buildPlaylistConfigSignature(this.playlist);
@@ -4129,8 +4190,9 @@ class OmnexPlayer {
                     console.log('  Config changed:', configChanged);
                 }
 
-                if (playlistChanged || itemsChanged || contentChanged || configChanged) {
+                if (playlistChanged || itemsChanged || contentChanged || configChanged || forceRestart) {
                     this.playlist = data.playlist;
+                    this.applyPlaylistPlaybackSettings();
                     this.lastSyncTime = new Date().toISOString(); // âœ… Sync zamanını kaydet
                     await storage.savePlaylist(this.playlist);
 
@@ -4138,7 +4200,7 @@ class OmnexPlayer {
                     // Actual caching happens progressively in prepareNextMedia().
                     this._scheduleDeferredPrecache();
 
-                    const onlyContentChanged = !playlistChanged && !itemsChanged && contentChanged && !configChanged;
+                    const onlyContentChanged = !playlistChanged && !itemsChanged && contentChanged && !configChanged && !forceRestart;
 
                     // Keep playback seamless only when the active item payload changed.
                     if (onlyContentChanged && wasPlaying) {
@@ -4226,6 +4288,15 @@ class OmnexPlayer {
 
                 switch (cmd.command) {
                     case 'start':
+                        // Explicit start should always pull latest content and restart from the first item.
+                        await this.syncContent({ forceRestart: true });
+                        this.showNotification('Yayın Başlatıldı', {
+                            body: 'İçerik oynatılıyor',
+                            type: 'success'
+                        });
+                        result = { success: true, status: 'playing' };
+                        break;
+
                     case 'resume':
                         // âœ… FIX: Playlist sync yaparak muted değişikliklerini al
                         await this.syncContent();
@@ -4310,7 +4381,7 @@ class OmnexPlayer {
                     case 'refresh_content':
                     case 'sync':
                         this.showToast('İçerik yenileniyor...', 'info');
-                        await this.syncContent();
+                        await this.syncContent({ forceRestart: true });
                         this.showNotification('İçerik Güncellendi', {
                             body: 'Yeni içerik yüklendi',
                             type: 'success'
@@ -4768,4 +4839,3 @@ if (document.readyState === 'loading') {
 } else {
     startPlayer();
 }
-

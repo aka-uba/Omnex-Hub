@@ -54,7 +54,18 @@
             "slideUp": "Slide Up",
             "slideDown": "Slide Down",
             "zoom": "Zoom",
-            "crossfade": "Crossfade"
+            "crossfade": "Crossfade",
+            "pushLeft": "Push Left",
+            "pushRight": "Push Right",
+            "pushUp": "Push Up",
+            "pushDown": "Push Down",
+            "wipeLeft": "Wipe Left",
+            "wipeRight": "Wipe Right",
+            "wipeUp": "Wipe Up",
+            "wipeDown": "Wipe Down",
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "randomSafe": "Random Safe"
         },
         "form": {
             "fields": {
@@ -67,6 +78,26 @@
                 "orientation": "Screen Orientation",
                 "template": "Template",
                 "layoutType": "Layout Type"
+            },
+            "help": {
+                "transitionTitle": "Transition Tips",
+                "transitionIntro": "Use lighter transitions for smooth playback. Match the effect to the content type and screen hardware.",
+                "bestPracticeTitle": "Default choice",
+                "bestPracticeBody": "Fade or crossfade is the safest option for mixed playlists and always-on screens.",
+                "productFlowTitle": "For product lists",
+                "productFlowBody": "Push and wipe work well for prices, menus, and ordered content because they preserve reading direction.",
+                "cinematicTitle": "For premium visuals",
+                "cinematicBody": "Use zoom sparingly on hero images and keep long loops short so motion does not feel heavy.",
+                "safeModeTitle": "For low-power devices",
+                "safeModeBody": "Choose None, Fade, or Random Safe when the player hardware is older or the playlist mixes video and web content.",
+                "durationTitle": "Duration Tips",
+                "durationIntro": "Transition time affects perceived speed more than the animation style. Keep it short enough to protect readability.",
+                "fastTitle": "Fast (100-300 ms)",
+                "fastBody": "Best for rapid signage loops, price boards, and compact widgets.",
+                "recommendedTitle": "Recommended (300-500 ms)",
+                "recommendedBody": "The most balanced range for daily playlists. Smooth enough to look polished without slowing the loop.",
+                "longTitle": "Long (600-900 ms)",
+                "longBody": "Use only for full-screen campaigns or premium visuals. Longer values can feel sluggish on busy playlists."
             },
             "infoTitle": "List Information",
             "itemsTitle": "List Contents",

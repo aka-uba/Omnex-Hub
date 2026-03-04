@@ -632,6 +632,8 @@
 
     .template-grid {
         grid-template-columns: 1fr;
+        padding: 0.5rem;
+        gap: 0.5rem;
     }
 
     .template-card-preview {
