@@ -817,6 +817,43 @@ $router->group(['prefix' => '/api/licenses', 'middleware' => ['auth', 'admin']],
 });
 
 // =====================================================
+// Tenant Backup Routes (Admin)
+// =====================================================
+$router->group(['prefix' => '/api/tenant-backup', 'middleware' => ['auth', 'admin']], function($router) {
+    $router->get('/settings', function($request) {
+        require API_PATH . '/tenant-backup/settings.php';
+    });
+
+    $router->put('/settings', function($request) {
+        require API_PATH . '/tenant-backup/update-settings.php';
+    });
+
+    $router->get('/list', function($request) {
+        require API_PATH . '/tenant-backup/list.php';
+    });
+
+    $router->post('/export', function($request) {
+        require API_PATH . '/tenant-backup/export.php';
+    });
+
+    $router->post('/import', function($request) {
+        require API_PATH . '/tenant-backup/import.php';
+    });
+
+    $router->get('/download/{id}', function($request) {
+        require API_PATH . '/tenant-backup/download.php';
+    });
+
+    $router->get('/status/{id}', function($request) {
+        require API_PATH . '/tenant-backup/status.php';
+    });
+
+    $router->delete('/{id}', function($request) {
+        require API_PATH . '/tenant-backup/delete.php';
+    });
+});
+
+// =====================================================
 // Device Groups Routes
 // =====================================================
 $router->group(['prefix' => '/api/device-groups', 'middleware' => ['auth']], function($router) {

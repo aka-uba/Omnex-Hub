@@ -759,6 +759,73 @@ class NotificationTriggers
     }
 
     /**
+     * Trigger when tenant backup is completed
+     *
+     * @param string $companyId Company ID
+     * @param array $result Backup result
+     */
+    public static function onTenantBackupCompleted(string $companyId, array $result): void
+    {
+        try {
+            $service = NotificationService::getInstance();
+
+            $tables = $result['tables'] ?? [];
+            $totalRows = array_sum($tables);
+            $fileSize = $result['file_size'] ?? 0;
+            $sizeMB = round($fileSize / 1048576, 1);
+
+            $service->sendToRole(
+                'Admin',
+                'Firma Yedeği Tamamlandı',
+                "Firma yedeği başarıyla oluşturuldu. {$totalRows} kayıt, {$sizeMB} MB.",
+                [
+                    'company_id' => $companyId,
+                    'type' => NotificationService::TYPE_SUCCESS,
+                    'icon' => 'ti-database-export',
+                    'link' => '#/admin/backups',
+                    'priority' => NotificationService::PRIORITY_NORMAL
+                ]
+            );
+        } catch (Exception $e) {
+            Logger::error('NotificationTriggers: Failed to send backup completed notification', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Trigger when tenant backup fails
+     *
+     * @param string $companyId Company ID
+     * @param string $errorMessage Error message
+     */
+    public static function onTenantBackupFailed(string $companyId, string $errorMessage): void
+    {
+        try {
+            $service = NotificationService::getInstance();
+
+            $service->sendToRole(
+                'Admin',
+                'Firma Yedeği Başarısız',
+                'Firma yedeği oluşturulamadı: ' . substr($errorMessage, 0, 200),
+                [
+                    'company_id' => $companyId,
+                    'type' => NotificationService::TYPE_ERROR,
+                    'icon' => 'ti-database-off',
+                    'link' => '#/admin/backups',
+                    'priority' => NotificationService::PRIORITY_HIGH
+                ]
+            );
+        } catch (Exception $e) {
+            Logger::error('NotificationTriggers: Failed to send backup failed notification', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Trigger when render jobs fail
      * Sends notification about failed design rendering
      *

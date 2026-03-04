@@ -313,3 +313,11 @@ CREATE POLICY "p_web_templates_company_isolation" ON "signage"."web_templates"
     OR company_id = nullif(current_setting('app.company_id', true), '')::uuid
   );
 
+ALTER TABLE "audit"."tenant_backups" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "p_tenant_backups_company_isolation" ON "audit"."tenant_backups";
+CREATE POLICY "p_tenant_backups_company_isolation" ON "audit"."tenant_backups"
+  USING (
+    current_setting('app.role', true) = 'SuperAdmin'
+    OR company_id = nullif(current_setting('app.company_id', true), '')::uuid
+  );
+

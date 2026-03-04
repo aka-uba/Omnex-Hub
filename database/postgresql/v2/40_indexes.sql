@@ -7,6 +7,9 @@ CREATE INDEX IF NOT EXISTS "idx_audit_changed_by" ON "integration"."integration_
 CREATE INDEX IF NOT EXISTS "idx_audit_company_id" ON "integration"."integration_settings_audit" ("company_id");
 CREATE INDEX IF NOT EXISTS "idx_audit_integration_type" ON "integration"."integration_settings_audit" ("integration_type");
 CREATE INDEX IF NOT EXISTS "idx_audit_logs_action_created" ON "audit"."audit_logs" ("action", "created_at");
+CREATE INDEX IF NOT EXISTS "idx_tenant_backups_company_id" ON "audit"."tenant_backups" ("company_id");
+CREATE INDEX IF NOT EXISTS "idx_tenant_backups_status" ON "audit"."tenant_backups" ("status");
+CREATE INDEX IF NOT EXISTS "idx_tenant_backups_created_at" ON "audit"."tenant_backups" ("created_at" DESC);
 CREATE INDEX IF NOT EXISTS "idx_audit_logs_active" ON "audit"."audit_logs" ("company_id", "archived_at", "created_at");
 CREATE INDEX IF NOT EXISTS "idx_audit_logs_archived" ON "audit"."audit_logs" ("archived_at");
 CREATE INDEX IF NOT EXISTS "idx_audit_logs_company_archived" ON "audit"."audit_logs" ("company_id", "archived_at");

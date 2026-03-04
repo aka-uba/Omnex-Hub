@@ -1,0 +1,55 @@
+/**
+ * Tenant Backup Page Styles
+ */
+
+/* Card spacing */
+#main-content .card + .card {
+    margin-top: 1.25rem;
+}
+
+/* Settings card collapsible */
+.collapsible-card .card-header.clickable {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.collapsible-card .collapse-icon {
+    transition: transform 0.2s ease;
+}
+
+/* History modal table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    white-space: nowrap;
+}
+
+.data-table th {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #6b7280);
+    background: var(--bg-secondary, #f9fafb);
+}
+
+.data-table td .btn-sm {
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.25rem;
+}
+
+/* Form static text (for last run display) */
+.form-static-text {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.875rem;
+}

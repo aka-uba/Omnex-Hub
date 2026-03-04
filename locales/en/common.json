@@ -439,6 +439,7 @@
         "licenses": "Licenses",
         "integrations": "Integrations",
         "auditLog": "Audit Log",
+        "tenantBackups": "Tenant Backups",
         "logManagement": "Log Management"
     },
     "languages": {
@@ -914,6 +915,7 @@
             "branches": "Branches",
             "licenses": "Licenses",
             "auditLog": "Audit Log",
+            "tenantBackups": "Tenant Backups",
             "logManagement": "Log Management",
             "setupWizard": "Setup Wizard"
         },

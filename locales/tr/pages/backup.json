@@ -1,0 +1,121 @@
+{
+    "title": "Firma Yedekleri",
+    "subtitle": "Firma verilerini yedekleyin ve geri yükleyin",
+    "breadcrumb": "Yedekler",
+
+    "settings": {
+        "title": "Yedekleme Ayarları",
+        "enabled": "Otomatik Yedekleme",
+        "cycle": "Yedekleme Döngüsü",
+        "cycle_daily": "Günlük",
+        "cycle_weekly": "Haftalık",
+        "cycle_monthly": "Aylık",
+        "retention": "Saklanacak Yedek Sayısı",
+        "include_media": "Medya Dosyalarını Dahil Et",
+        "last_run": "Son Çalışma",
+        "save": "Ayarları Kaydet",
+        "saved": "Ayarlar kaydedildi",
+        "never_run": "Henüz çalışmadı"
+    },
+
+    "list": {
+        "company_name": "Firma Adı",
+        "products": "Ürünler",
+        "devices": "Cihazlar",
+        "templates": "Şablonlar",
+        "last_backup": "Son Yedek",
+        "backup_count": "Yedek Sayısı",
+        "total_size": "Toplam Boyut",
+        "status": "Durum",
+        "actions": "İşlemler",
+        "no_backups": "Henüz yedek oluşturulmamış",
+        "never": "Hiç"
+    },
+
+    "actions": {
+        "backup_now": "Şimdi Yedekle",
+        "history": "Geçmiş",
+        "download_latest": "Son Yedeği İndir",
+        "import": "İçe Aktar",
+        "delete": "Sil",
+        "download": "İndir",
+        "restore": "Geri Yükle"
+    },
+
+    "history": {
+        "title": "Yedek Geçmişi",
+        "date": "Tarih",
+        "size": "Boyut",
+        "type": "Tür",
+        "tables": "Tablolar",
+        "media": "Medya",
+        "status": "Durum",
+        "manual": "Manuel",
+        "scheduled": "Otomatik",
+        "yes": "Dahil",
+        "no": "Hariç"
+    },
+
+    "status": {
+        "pending": "Bekliyor",
+        "running": "Çalışıyor",
+        "completed": "Tamamlandı",
+        "failed": "Başarısız"
+    },
+
+    "export": {
+        "title": "Yedek Oluştur",
+        "company": "Firma",
+        "include_media": "Medya dosyalarını dahil et",
+        "media_note": "Medya dahil edilirse yedek boyutu büyük olabilir",
+        "start": "Yedeklemeyi Başlat",
+        "started": "Yedekleme başlatıldı",
+        "completed": "Yedek başarıyla oluşturuldu",
+        "failed": "Yedekleme başarısız",
+        "already_running": "Bu firma için zaten devam eden bir yedekleme var"
+    },
+
+    "import_modal": {
+        "title": "Yedek İçe Aktar",
+        "file": "Yedek Dosyası",
+        "file_hint": "Desteklenen format: .tar.gz",
+        "mode": "İçe Aktarma Modu",
+        "mode_overwrite": "Mevcut Firmaya Üzerine Yaz",
+        "mode_new": "Yeni Firma Olarak Oluştur",
+        "target_company": "Hedef Firma",
+        "new_company_name": "Yeni Firma Adı",
+        "include_media": "Medya dosyalarını dahil et",
+        "start": "İçe Aktarmayı Başlat",
+        "started": "İçe aktarma başlatıldı",
+        "completed": "İçe aktarma başarıyla tamamlandı",
+        "failed": "İçe aktarma başarısız"
+    },
+
+    "restore_confirm": {
+        "title": "Geri Yükleme",
+        "warning": "Bu işlem hedef firmanın TÜM verilerini silerek yedeğin verileriyle değiştirecektir!",
+        "source": "Kaynak Yedek",
+        "mode": "Geri Yükleme Modu",
+        "mode_overwrite": "Mevcut Firmaya Geri Yükle",
+        "mode_new": "Yeni Firma Olarak İçe Aktar",
+        "target_company": "Hedef Firma",
+        "type_name": "Onaylamak için hedef firma adını yazın:",
+        "name_mismatch": "Firma adı eşleşmiyor!",
+        "name_required": "Firma adı gerekli",
+        "started": "Geri yükleme başlatılıyor...",
+        "confirm": "Geri Yükle",
+        "cancel": "İptal"
+    },
+
+    "delete_confirm": {
+        "title": "Yedek Silme",
+        "message": "Bu yedek kalıcı olarak silinecektir. Devam etmek istiyor musunuz?"
+    },
+
+    "size": {
+        "bytes": "B",
+        "kb": "KB",
+        "mb": "MB",
+        "gb": "GB"
+    }
+}

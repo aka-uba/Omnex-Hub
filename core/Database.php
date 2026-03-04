@@ -731,7 +731,8 @@ class Database
             'mqtt_settings',
             'transcode_queue', 'transcode_variants', 'stream_access_logs',
             'license_device_pricing',
-            'erp_import_files'
+            'erp_import_files',
+            'tenant_backups'
         ];
 
         if (!in_array($table, $allowedTables, true)) {

@@ -68,6 +68,27 @@ CREATE TABLE IF NOT EXISTS "audit"."notifications" (
   CONSTRAINT "pk_notifications" PRIMARY KEY ("id")
 );
 
+-- Table: tenant_backups
+CREATE TABLE IF NOT EXISTS "audit"."tenant_backups" (
+  "id" uuid DEFAULT gen_random_uuid() NOT NULL,
+  "company_id" uuid NOT NULL,
+  "filename" text NOT NULL,
+  "file_path" text NOT NULL,
+  "file_size" bigint DEFAULT 0,
+  "backup_type" text DEFAULT 'manual' NOT NULL,
+  "status" text DEFAULT 'pending' NOT NULL,
+  "media_included" boolean DEFAULT false,
+  "tables_exported" text,
+  "manifest_version" text DEFAULT '1.0',
+  "error_message" text,
+  "progress" integer DEFAULT 0,
+  "started_at" timestamptz,
+  "completed_at" timestamptz,
+  "created_by" uuid,
+  "created_at" timestamptz DEFAULT now(),
+  CONSTRAINT "pk_tenant_backups" PRIMARY KEY ("id")
+);
+
 -- Table: user_notification_preferences
 CREATE TABLE IF NOT EXISTS "audit"."user_notification_preferences" (
   "id" uuid DEFAULT gen_random_uuid() NOT NULL,

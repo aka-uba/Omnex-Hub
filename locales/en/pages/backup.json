@@ -1,0 +1,121 @@
+{
+    "title": "Tenant Backups",
+    "subtitle": "Backup and restore company data",
+    "breadcrumb": "Backups",
+
+    "settings": {
+        "title": "Backup Settings",
+        "enabled": "Automatic Backup",
+        "cycle": "Backup Cycle",
+        "cycle_daily": "Daily",
+        "cycle_weekly": "Weekly",
+        "cycle_monthly": "Monthly",
+        "retention": "Backups to Keep",
+        "include_media": "Include Media Files",
+        "last_run": "Last Run",
+        "save": "Save Settings",
+        "saved": "Settings saved",
+        "never_run": "Never run"
+    },
+
+    "list": {
+        "company_name": "Company Name",
+        "products": "Products",
+        "devices": "Devices",
+        "templates": "Templates",
+        "last_backup": "Last Backup",
+        "backup_count": "Backup Count",
+        "total_size": "Total Size",
+        "status": "Status",
+        "actions": "Actions",
+        "no_backups": "No backups created yet",
+        "never": "Never"
+    },
+
+    "actions": {
+        "backup_now": "Backup Now",
+        "history": "History",
+        "download_latest": "Download Latest",
+        "import": "Import",
+        "delete": "Delete",
+        "download": "Download",
+        "restore": "Restore"
+    },
+
+    "history": {
+        "title": "Backup History",
+        "date": "Date",
+        "size": "Size",
+        "type": "Type",
+        "tables": "Tables",
+        "media": "Media",
+        "status": "Status",
+        "manual": "Manual",
+        "scheduled": "Scheduled",
+        "yes": "Included",
+        "no": "Excluded"
+    },
+
+    "status": {
+        "pending": "Pending",
+        "running": "Running",
+        "completed": "Completed",
+        "failed": "Failed"
+    },
+
+    "export": {
+        "title": "Create Backup",
+        "company": "Company",
+        "include_media": "Include media files",
+        "media_note": "Including media may significantly increase backup size",
+        "start": "Start Backup",
+        "started": "Backup started",
+        "completed": "Backup created successfully",
+        "failed": "Backup failed",
+        "already_running": "A backup is already in progress for this company"
+    },
+
+    "import_modal": {
+        "title": "Import Backup",
+        "file": "Backup File",
+        "file_hint": "Supported format: .tar.gz",
+        "mode": "Import Mode",
+        "mode_overwrite": "Overwrite Existing Company",
+        "mode_new": "Create as New Company",
+        "target_company": "Target Company",
+        "new_company_name": "New Company Name",
+        "include_media": "Include media files",
+        "start": "Start Import",
+        "started": "Import started",
+        "completed": "Import completed successfully",
+        "failed": "Import failed"
+    },
+
+    "restore_confirm": {
+        "title": "Restore Backup",
+        "warning": "This operation will DELETE ALL data for the target company and replace it with backup data!",
+        "source": "Source Backup",
+        "mode": "Restore Mode",
+        "mode_overwrite": "Restore to Existing Company",
+        "mode_new": "Import as New Company",
+        "target_company": "Target Company",
+        "type_name": "Type the target company name to confirm:",
+        "name_mismatch": "Company name does not match!",
+        "name_required": "Company name is required",
+        "started": "Restore starting...",
+        "confirm": "Restore",
+        "cancel": "Cancel"
+    },
+
+    "delete_confirm": {
+        "title": "Delete Backup",
+        "message": "This backup will be permanently deleted. Do you want to continue?"
+    },
+
+    "size": {
+        "bytes": "B",
+        "kb": "KB",
+        "mb": "MB",
+        "gb": "GB"
+    }
+}

@@ -208,6 +208,12 @@ ALTER TABLE "devices"."mqtt_settings"
 ALTER TABLE "audit"."notification_recipients"
   ADD CONSTRAINT "fk_notification_recipients_notification_id_notifications" FOREIGN KEY ("notification_id") REFERENCES "audit"."notifications" ("id") ON UPDATE NO ACTION ON DELETE CASCADE;
 
+ALTER TABLE "audit"."tenant_backups"
+  ADD CONSTRAINT "fk_tenant_backups_company_id_companies" FOREIGN KEY ("company_id") REFERENCES "core"."companies" ("id") ON UPDATE NO ACTION ON DELETE CASCADE;
+
+ALTER TABLE "audit"."tenant_backups"
+  ADD CONSTRAINT "fk_tenant_backups_created_by_users" FOREIGN KEY ("created_by") REFERENCES "core"."users" ("id") ON UPDATE NO ACTION ON DELETE SET NULL;
+
 ALTER TABLE "license"."payment_settings"
   ADD CONSTRAINT "fk_payment_settings_company_id_companies" FOREIGN KEY ("company_id") REFERENCES "core"."companies" ("id") ON UPDATE NO ACTION ON DELETE CASCADE;
 
