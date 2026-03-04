@@ -240,6 +240,9 @@ class App {
         this.router.addRoute('/devices/:id', () => this.loadProtectedPage('devices/DeviceDetail'));
         this.router.addRoute('/signage', () => this.loadProtectedPage('signage/PlaylistList'));
         this.router.addRoute('/signage/playlists', () => this.loadProtectedPage('signage/PlaylistList'));
+        this.router.addRoute('/signage/playlists/ops', () => this.loadProtectedPage('signage/PlaylistListOps'));
+        this.router.addRoute('/signage/playlists/cards', () => this.loadProtectedPage('signage/PlaylistListCards'));
+        this.router.addRoute('/signage/playlists/studio', () => this.loadProtectedPage('signage/PlaylistListStudio'));
         this.router.addRoute('/signage/playlists/new', () => this.loadProtectedPage('signage/PlaylistDetail'));
         this.router.addRoute('/signage/playlists/:id', () => this.loadProtectedPage('signage/PlaylistDetail'));
         this.router.addRoute('/signage/schedules', () => this.loadProtectedPage('signage/ScheduleList'));
@@ -466,4 +469,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 export default App;
-

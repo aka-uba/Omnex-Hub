@@ -86,11 +86,28 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
         return [];
     }
 
-    getPlaylistPreviewUrl(playlist) {
+    getPreviewAssetKind(item, displayUrl = '') {
+        const rawType = String(item?.type || item?.content_type || '').toLowerCase();
+
+        if (rawType.includes('video') || rawType.includes('stream')) {
+            return 'video';
+        }
+
+        if (rawType.includes('image') || rawType.includes('template')) {
+            return 'image';
+        }
+
+        return MediaUtils.isVideo(displayUrl) ? 'video' : 'image';
+    }
+
+    getPlaylistPreviewAsset(playlist) {
         if (playlist?.template_preview) {
             const templatePreview = MediaUtils.getDisplayUrl(playlist.template_preview);
             if (templatePreview) {
-                return templatePreview;
+                return {
+                    url: templatePreview,
+                    kind: 'image'
+                };
             }
         }
 
@@ -99,12 +116,15 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
             if (item?.url && typeof item.url === 'string') {
                 const displayUrl = MediaUtils.getDisplayUrl(item.url);
                 if (displayUrl) {
-                    return displayUrl;
+                    return {
+                        url: displayUrl,
+                        kind: this.getPreviewAssetKind(item, displayUrl)
+                    };
                 }
             }
         }
 
-        return '';
+        return null;
     }
 
     getPlaylistContentSummary(playlist) {
@@ -299,11 +319,28 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
     }
 
     renderPreviewFrame(playlist, className = '') {
-        const previewUrl = this.getPlaylistPreviewUrl(playlist);
+        const previewAsset = this.getPlaylistPreviewAsset(playlist);
         const summary = this.getPlaylistContentSummary(playlist);
 
-        if (previewUrl) {
-            return `<img src="${previewUrl}" alt="${escapeHTML(playlist?.name || 'Playlist')}" class="${className}">`;
+        if (previewAsset?.url) {
+            const escapedUrl = escapeHTML(previewAsset.url);
+            const escapedName = escapeHTML(playlist?.name || 'Playlist');
+
+            if (previewAsset.kind === 'video') {
+                return `
+                    <video
+                        src="${escapedUrl}"
+                        class="${className}"
+                        muted
+                        autoplay
+                        loop
+                        playsinline
+                        preload="metadata"
+                        aria-label="${escapedName}"></video>
+                `;
+            }
+
+            return `<img src="${escapedUrl}" alt="${escapedName}" class="${className}">`;
         }
 
         return `
