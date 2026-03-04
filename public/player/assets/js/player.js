@@ -3203,6 +3203,28 @@ class OmnexPlayer {
         ].join(':');
     }
 
+    buildPlaylistConfigSignature(playlist) {
+        if (!playlist) {
+            return '';
+        }
+
+        const transition = playlist.transition || playlist.transition_type || '';
+        const transitionDuration = playlist.transition_duration ?? '';
+        const orientation = playlist.orientation || '';
+        const layoutType = playlist.layout_type || '';
+        const templateId = playlist.template_id || '';
+        const defaultDuration = playlist.default_duration ?? playlist.duration ?? '';
+
+        return [
+            transition,
+            transitionDuration,
+            orientation,
+            layoutType,
+            templateId,
+            defaultDuration
+        ].join(':');
+    }
+
     /**
      * Play video content (PHASE 2: Hybrid native/WebView playback)
      */
@@ -4059,6 +4081,7 @@ class OmnexPlayer {
         try {
             const currentPlaylistId = this.playlist ? this.playlist.id : null;
             const currentItemCount = (this.playlist && this.playlist.items) ? this.playlist.items.length : 0;
+            const currentConfigSignature = this.buildPlaylistConfigSignature(this.playlist);
 
             const response = await api.init_player();
 
@@ -4071,9 +4094,11 @@ class OmnexPlayer {
             if (data.playlist) {
                 const newPlaylistId = data.playlist.id;
                 const newItemCount = (data.playlist.items && data.playlist.items.length) ? data.playlist.items.length : 0;
+                const newConfigSignature = this.buildPlaylistConfigSignature(data.playlist);
 
                 const playlistChanged = currentPlaylistId !== newPlaylistId;
                 const itemsChanged = currentItemCount !== newItemCount;
+                const configChanged = currentConfigSignature !== newConfigSignature;
                 const savedIndex = this.currentIndex;
                 const wasPlaying = this.isPlaying;
 
@@ -4101,9 +4126,10 @@ class OmnexPlayer {
                     console.log('  Content changed:', contentChanged);
                     console.log('  Playlist changed:', playlistChanged);
                     console.log('  Items changed:', itemsChanged);
+                    console.log('  Config changed:', configChanged);
                 }
 
-                if (playlistChanged || itemsChanged || contentChanged) {
+                if (playlistChanged || itemsChanged || contentChanged || configChanged) {
                     this.playlist = data.playlist;
                     this.lastSyncTime = new Date().toISOString(); // âœ… Sync zamanını kaydet
                     await storage.savePlaylist(this.playlist);
@@ -4112,9 +4138,10 @@ class OmnexPlayer {
                     // Actual caching happens progressively in prepareNextMedia().
                     this._scheduleDeferredPrecache();
 
-                    // If playlist ID is the same and item count is same,
-                    // try to resume at current position (seamless update)
-                    if (!playlistChanged && !itemsChanged && wasPlaying) {
+                    const onlyContentChanged = !playlistChanged && !itemsChanged && contentChanged && !configChanged;
+
+                    // Keep playback seamless only when the active item payload changed.
+                    if (onlyContentChanged && wasPlaying) {
                         // âœ… CRITICAL FIX: Her seamless update'te şu anki item'ın muted değerini kontrol et ve uygula
                         if (this.playlist.items && this.playlist.items[this.currentIndex]) {
                             const currentItem = this.playlist.items[this.currentIndex];
@@ -4741,7 +4768,4 @@ if (document.readyState === 'loading') {
 } else {
     startPlayer();
 }
-
-
-
 

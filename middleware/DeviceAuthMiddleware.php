@@ -17,7 +17,7 @@ class DeviceAuthMiddleware
      * Get device token from request headers
      * Supports both X-DEVICE-TOKEN and Authorization: Device formats
      */
-    public static function getToken(Request $request = null): ?string
+    public static function getToken(?Request $request = null): ?string
     {
         // Check Authorization: Device <token> header first
         $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';

@@ -7,15 +7,50 @@
 
 export class ExportManager {
     constructor(options = {}) {
+        // Auto-detect company branding from session
+        const branding = ExportManager._getCompanyBranding();
+
         this.options = {
             filename: options.filename || 'export',
             title: options.title || (typeof window.__ === 'function' ? window.__('export.title') : 'Export'),
             subtitle: options.subtitle || '',
-            logo: options.logo || null,
-            author: options.author || 'Omnex Display Hub',
+            logo: options.logo || branding.logo || null,
+            companyName: options.companyName || branding.companyName || '',
+            branchName: options.branchName || branding.branchName || '',
+            author: options.author || branding.companyName || 'Omnex Display Hub',
             dateFormat: options.dateFormat || 'tr-TR',
             ...options
         };
+    }
+
+    /**
+     * Get company branding from user session state
+     */
+    static _getCompanyBranding() {
+        try {
+            const userStr = localStorage.getItem('omnex_user');
+            if (!userStr) return {};
+            const user = JSON.parse(userStr);
+            const company = user?.company;
+            if (!company) return {};
+
+            // Get light theme logo from company settings
+            const settings = company.settings || {};
+            const lightLogo = settings.branding?.logo_light || company.logo || null;
+            const basePath = window.OmnexConfig?.basePath || '';
+            const logoUrl = lightLogo ? (lightLogo.startsWith('http') ? lightLogo : `${basePath}/${lightLogo}`) : null;
+
+            // Get branch name if available
+            const branchName = user.branch_name || '';
+
+            return {
+                logo: logoUrl,
+                companyName: company.name || '',
+                branchName: branchName
+            };
+        } catch (e) {
+            return {};
+        }
     }
 
     /**
@@ -141,6 +176,9 @@ export class ExportManager {
             border-bottom: 2px solid #e9ecef;
         }
         .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-center { text-align: center; flex: 1; }
+        .company-name { font-size: 1.125rem; font-weight: 700; color: #1a1a2e; }
+        .branch-name { font-size: 0.8125rem; color: #6c757d; margin-top: 0.125rem; }
         .logo { width: 48px; height: 48px; }
         .title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
         .subtitle { font-size: 0.875rem; color: #6c757d; }
@@ -204,6 +242,11 @@ export class ExportManager {
                     ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
                 </div>
             </div>
+            ${this.options.companyName ? `
+            <div class="header-center">
+                <div class="company-name">${this._escapeHTML(this.options.companyName)}</div>
+                ${this.options.branchName ? `<div class="branch-name">${this._escapeHTML(this.options.branchName)}</div>` : ''}
+            </div>` : ''}
             <div class="meta">
                 <div>Oluşturulma: ${now}</div>
                 <div>Toplam: ${data.length} kayıt</div>
@@ -382,6 +425,9 @@ export class ExportManager {
             border-bottom: 2px solid #1a1a2e;
         }
         .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-center { text-align: center; flex: 1; }
+        .company-name { font-size: 1rem; font-weight: 700; }
+        .branch-name { font-size: 0.7rem; color: #6c757d; margin-top: 0.125rem; }
         .logo { width: 40px; height: 40px; }
         .title { font-size: 1.25rem; font-weight: 700; }
         .subtitle { font-size: 0.75rem; color: #6c757d; }
@@ -438,6 +484,11 @@ export class ExportManager {
                 ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
             </div>
         </div>
+        ${this.options.companyName ? `
+        <div class="header-center">
+            <div class="company-name">${this._escapeHTML(this.options.companyName)}</div>
+            ${this.options.branchName ? `<div class="branch-name">${this._escapeHTML(this.options.branchName)}</div>` : ''}
+        </div>` : ''}
         <div class="meta">
             <div>${now}</div>
             <div>${data.length} kayıt</div>

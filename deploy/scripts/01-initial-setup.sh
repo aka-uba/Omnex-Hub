@@ -175,17 +175,40 @@ cat > /etc/docker/daemon.json <<'DOCKEREOF'
 DOCKEREOF
 systemctl restart docker
 
-# ---- Swap (2GB) ----
+# ---- Logrotate ----
+log "Configuring logrotate for application logs..."
+cat > /etc/logrotate.d/omnex-hub <<'LOGEOF'
+# Omnex Display Hub log rotation
+/opt/omnex-hub/deploy/logs/*.log
+/opt/omnex-hub/storage/logs/*.log
+{
+    daily
+    missingok
+    rotate 14
+    compress
+    delaycompress
+    notifempty
+    copytruncate
+    maxsize 50M
+}
+LOGEOF
+log "Logrotate configured (daily, 14 days retention, max 50MB per file)"
+
+# ---- Swap (4GB) ----
 log "Setting up swap..."
 if [ ! -f /swapfile ]; then
-    fallocate -l 2G /swapfile
+    fallocate -l 4G /swapfile
     chmod 600 /swapfile
     mkswap /swapfile
     swapon /swapfile
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    # swappiness=10: RAM oncelikli, swap sadece gerektiginde
     sysctl vm.swappiness=10
     echo 'vm.swappiness=10' >> /etc/sysctl.conf
-    log "2GB swap created"
+    # cache_pressure=50: inode/dentry cache dengeli tutulur
+    sysctl vm.vfs_cache_pressure=50
+    echo 'vm.vfs_cache_pressure=50' >> /etc/sysctl.conf
+    log "4GB swap created (swappiness=10, cache_pressure=50)"
 else
     log "Swap already exists"
 fi

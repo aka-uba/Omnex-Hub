@@ -1005,13 +1005,18 @@
         padding: var(--space-1) var(--space-2);
     }
 
-    /* Hide button text on mobile, show icon only */
+    /* Bulk action buttons - show text on mobile, allow wrapping */
     [data-table-toolbar-actions] .btn span {
-        display: none;
+        display: inline;
+        font-size: var(--text-xs);
     }
 
     [data-table-toolbar-actions] .btn i {
         margin: 0;
+    }
+
+    [data-table-toolbar-actions] {
+        flex-wrap: wrap;
     }
 
     .data-table-footer {

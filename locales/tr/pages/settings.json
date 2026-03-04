@@ -45,7 +45,15 @@
             "avatarUpdated": "Profil fotoğrafı güncellendi",
             "avatarRemoved": "Profil fotoğrafı kaldırıldı",
             "passwordChanged": "Şifre başarıyla değiştirildi"
-        }
+        },
+        "passwordTips": "Güvenlik İpuçları",
+        "passwordTipsTitle": "Güçlü bir şifre için:",
+        "passwordTip1": "En az 8 karakter kullanın",
+        "passwordTip2": "Büyük/küçük harf, rakam ve özel karakter karıştırın",
+        "passwordTip3": "Kişisel bilgilerinizi şifre olarak kullanmayın",
+        "quickLinks": "Hızlı Bağlantılar",
+        "notificationSettings": "Bildirim Ayarları",
+        "allCompanies": "Tümü"
     },
     "roles": {
         "SuperAdmin": "Süper Yönetici",

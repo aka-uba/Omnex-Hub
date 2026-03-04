@@ -177,7 +177,7 @@ define('API_URL', APP_URL . '/api');
 
 // Default admin credentials
 // WARNING: Change these immediately after first login in production!
-define('DEFAULT_ADMIN_EMAIL', getenv('OMNEX_ADMIN_EMAIL') ?: 'admin@omnex.local');
+define('DEFAULT_ADMIN_EMAIL', getenv('OMNEX_ADMIN_EMAIL') ?: 'admin@omnexcore.com');
 // In production, generate a random password if not set via environment
 $defaultAdminPass = getenv('OMNEX_ADMIN_PASSWORD');
 if (!$defaultAdminPass && PRODUCTION_MODE) {

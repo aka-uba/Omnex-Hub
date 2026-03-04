@@ -1102,6 +1102,9 @@ export class BundleListPage {
                     .toolbar { position: sticky; top: 0; z-index: 100; background: rgba(26,26,46,0.95); backdrop-filter: blur(10px); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
                     .toolbar-left { display: flex; align-items: center; gap: 16px; }
                     .toolbar-title { font-size: 18px; font-weight: 600; color: #fff; }
+                    .toolbar-stats { display: flex; gap: 20px; font-size: 13px; color: rgba(255,255,255,0.7); }
+                    .toolbar-stat { display: flex; align-items: center; gap: 6px; }
+                    .toolbar-stat strong { color: #4dabf7; }
                     .toolbar-right { display: flex; gap: 12px; }
                     .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; }
                     .btn-primary { background: linear-gradient(135deg, #228be6, #1971c2); color: white; }
@@ -1125,7 +1128,12 @@ export class BundleListPage {
             <body>
                 <div class="toolbar">
                     <div class="toolbar-left">
-                        <div class="toolbar-title">${this.__('messages.printTitle')} (${bundles.length})</div>
+                        <div class="toolbar-title">${this.__('messages.printTitle')}</div>
+                        <div class="toolbar-stats">
+                            <span class="toolbar-stat">${this.__('stats.totalBundles')}: <strong>${bundles.length}</strong></span>
+                            <span class="toolbar-stat">${this.__('messages.copies')}: <strong>${copies}</strong></span>
+                            <span class="toolbar-stat">${widthMm}x${heightMm}mm</span>
+                        </div>
                     </div>
                     <div class="toolbar-right">
                         <button class="btn btn-secondary" onclick="window.close()">&#10005; ${this.__('actions.cancel')}</button>

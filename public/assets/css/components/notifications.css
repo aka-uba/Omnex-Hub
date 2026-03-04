@@ -491,7 +491,8 @@
     }
 
     .filter-tab span {
-        display: none;
+        display: inline;
+        font-size: var(--text-xs);
     }
 
     .filter-tab i {
@@ -1208,7 +1209,8 @@
     }
 
     .filter-tab span {
-        display: none;
+        display: inline;
+        font-size: var(--text-xs);
     }
 
     .filter-tab i {

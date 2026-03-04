@@ -121,6 +121,8 @@ $userData = [
     'role' => $user['role'],
     'company_id' => $user['company_id'],
     'avatar' => $user['avatar'],
+    'phone' => $user['phone'] ?? null,
+    'last_login' => $user['last_login'] ?? null,
     'preferences' => $userPreferences
 ];
 

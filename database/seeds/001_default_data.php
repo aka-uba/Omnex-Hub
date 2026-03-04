@@ -63,7 +63,7 @@ $companyAdminId = $db->generateUuid();
 $db->insert('users', [
     'id' => $companyAdminId,
     'company_id' => $companyId,
-    'email' => 'company@omnex.local',
+    'email' => 'company@omnexcore.com',
     'password_hash' => Auth::hashPassword('CompanyAdmin2024!'),
     'first_name' => 'Company',
     'last_name' => 'Admin',
@@ -305,5 +305,5 @@ foreach ($menus as $menu) {
 if (php_sapi_name() === 'cli') {
     echo "Default data seeded successfully!\n";
     echo "SuperAdmin: " . DEFAULT_ADMIN_EMAIL . " / " . DEFAULT_ADMIN_PASSWORD . "\n";
-    echo "Company Admin: company@omnex.local / CompanyAdmin2024!\n";
+    echo "Company Admin: company@omnexcore.com / CompanyAdmin2024!\n";
 }

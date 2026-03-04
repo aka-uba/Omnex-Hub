@@ -1,0 +1,74 @@
+# ========================================
+# Omnex Display Hub - Local Docker Test
+# Production yapisini lokal test etmek icin
+# Nginx/Certbot haric, farkli portlar
+# ========================================
+# Kullanim:
+#   docker compose -f deploy/docker-compose.local.yml up -d --build
+#   docker compose -f deploy/docker-compose.local.yml down
+# ========================================
+
+services:
+  # ---- PostgreSQL Database ----
+  postgres:
+    image: postgres:18-alpine
+    container_name: omnex-test-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: omnex_hub
+      POSTGRES_USER: omnex
+      POSTGRES_PASSWORD: omnex_test_pass
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - omnex_test_pgdata:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnex -d omnex_hub"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    networks:
+      - omnex-test
+
+  # ---- PHP Application (Apache) ----
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: omnex-test-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      OMNEX_DB_DRIVER: pgsql
+      OMNEX_DB_HOST: postgres
+      OMNEX_DB_PORT: 5432
+      OMNEX_DB_NAME: omnex_hub
+      OMNEX_DB_USER: omnex
+      OMNEX_DB_PASS: omnex_test_pass
+      OMNEX_PRODUCTION: "false"
+      OMNEX_JWT_SECRET: local-test-jwt-secret-do-not-use-in-production-1234567890
+      OMNEX_ADMIN_EMAIL: admin@omnex.local
+      OMNEX_ADMIN_PASSWORD: OmnexAdmin2024!
+      OMNEX_FORCE_HTTPS: "false"
+      OMNEX_SKIP_CSRF: "true"
+    ports:
+      - "127.0.0.1:3000:80"
+    volumes:
+      - omnex_test_storage:/var/www/html/storage
+    networks:
+      - omnex-test
+
+volumes:
+  omnex_test_pgdata:
+    driver: local
+  omnex_test_storage:
+    driver: local
+
+networks:
+  omnex-test:
+    driver: bridge

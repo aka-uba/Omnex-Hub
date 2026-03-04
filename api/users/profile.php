@@ -53,7 +53,7 @@ $db->update('users', $data, 'id = ?', [$userId]);
 
 // Fetch updated user data
 $updatedUser = $db->fetch(
-    "SELECT id, first_name, last_name, email, role, phone, avatar, created_at, last_login_at
+    "SELECT id, first_name, last_name, email, role, phone, avatar, created_at, last_login
      FROM users WHERE id = ?",
     [$userId]
 );

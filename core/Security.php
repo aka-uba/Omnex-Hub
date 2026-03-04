@@ -81,7 +81,7 @@ class Security
     /**
      * Check rate limit
      */
-    public static function checkRateLimit(string $key, int $limit = null, int $window = null): bool
+    public static function checkRateLimit(string $key, ?int $limit = null, ?int $window = null): bool
     {
         $limit = $limit ?? RATE_LIMIT_REQUESTS;
         $window = $window ?? RATE_LIMIT_WINDOW;
@@ -112,7 +112,7 @@ class Security
     /**
      * Get remaining rate limit
      */
-    public static function getRateLimitRemaining(string $key, int $limit = null): int
+    public static function getRateLimitRemaining(string $key, ?int $limit = null): int
     {
         $limit = $limit ?? RATE_LIMIT_REQUESTS;
         $cacheFile = STORAGE_PATH . '/cache/rate_limit_' . md5($key) . '.json';
@@ -201,7 +201,7 @@ class Security
     /**
      * Generate secure random string
      */
-    public static function randomString(int $length = 32, string $chars = null): string
+    public static function randomString(int $length = 32, ?string $chars = null): string
     {
         $chars = $chars ?? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         $charsLength = strlen($chars);
@@ -247,7 +247,7 @@ class Security
     /**
      * Validate file upload
      */
-    public static function validateFileUpload(array $file, array $allowedTypes, int $maxSize = null): array
+    public static function validateFileUpload(array $file, array $allowedTypes, ?int $maxSize = null): array
     {
         $errors = [];
         $maxSize = $maxSize ?? MAX_UPLOAD_SIZE;

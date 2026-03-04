@@ -558,7 +558,8 @@ export class IntegrationSettingsPage {
         await this.loadIntegrationSettings(); // Load ERP/POS/WMS/API settings
         this.generateApiKeyIfNeeded();
         await this.loadMqttSettings();
-        await this.loadImportSettings();
+        // Import settings API routes not yet implemented - skip to prevent 404 console errors
+        // await this.loadImportSettings();
 
         // Load payment settings if SuperAdmin
         if (this.isSuperAdmin) {

@@ -1,9 +1,9 @@
 # ========================================
 # Omnex Display Hub - Production Dockerfile
-# PHP 8.2 + Apache + PostgreSQL extensions
+# PHP 8.4 + Apache + PostgreSQL extensions
 # ========================================
 
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 LABEL maintainer="aka-uba <ugurbakagunduz@gmail.com>"
 LABEL description="Omnex Display Hub - ESL & Digital Signage Platform"
@@ -57,24 +57,13 @@ RUN { \
     echo 'expose_php=Off'; \
 } > /usr/local/etc/php/conf.d/production.ini
 
-# Apache configuration
+# Apache configuration - DocumentRoot at project root (like XAMPP)
+# Root .htaccess handles all routing (API, SPA, static files)
 RUN { \
     echo '<VirtualHost *:80>'; \
-    echo '    DocumentRoot /var/www/html/public'; \
-    echo '    <Directory /var/www/html/public>'; \
+    echo '    DocumentRoot /var/www/html'; \
+    echo '    <Directory /var/www/html>'; \
     echo '        AllowOverride All'; \
-    echo '        Require all granted'; \
-    echo '    </Directory>'; \
-    echo '    <Directory /var/www/html/api>'; \
-    echo '        AllowOverride All'; \
-    echo '        Require all granted'; \
-    echo '    </Directory>'; \
-    echo '    # Allow access to API directory'; \
-    echo '    Alias /api /var/www/html/api'; \
-    echo '    # Allow access to storage'; \
-    echo '    Alias /storage /var/www/html/storage'; \
-    echo '    <Directory /var/www/html/storage>'; \
-    echo '        AllowOverride None'; \
     echo '        Require all granted'; \
     echo '    </Directory>'; \
     echo '    ErrorLog ${APACHE_LOG_DIR}/error.log'; \
@@ -100,9 +89,12 @@ COPY mappings/ ./mappings/
 COPY workers/ ./workers/
 COPY cron/ ./cron/
 COPY database/postgresql/ ./database/postgresql/
+COPY database/seeds/ ./database/seeds/
+COPY database/seeders/ ./database/seeders/
 COPY tools/postgresql/ ./tools/postgresql/
 COPY web-build/ ./web-build/
 COPY config.php ./
+COPY index.php ./
 COPY .htaccess ./
 
 # Create required directories

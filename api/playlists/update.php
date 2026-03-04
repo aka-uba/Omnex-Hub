@@ -38,6 +38,46 @@ if ($request->has('template_id')) $data['template_id'] = $request->input('templa
 
 $db->update('playlists', $data, 'id = ?', [$id]);
 
+$assignedDevices = $db->fetchAll(
+    "SELECT DISTINCT dca.device_id
+     FROM device_content_assignments dca
+     JOIN devices d ON dca.device_id = d.id
+     WHERE dca.content_type = 'playlist'
+       AND dca.content_id = ?
+       AND dca.status = 'active'
+       AND d.company_id = ?",
+    [$id, $companyId]
+);
+
+foreach ($assignedDevices as $assignedDevice) {
+    $deviceId = $assignedDevice['device_id'] ?? null;
+
+    if (!$deviceId) {
+        continue;
+    }
+
+    $db->query(
+        "UPDATE devices SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [$deviceId]
+    );
+
+    $commandId = $db->generateUuid();
+    $db->query(
+        "INSERT INTO device_commands (id, device_id, command, parameters, status, priority, created_at, created_by)
+         VALUES (?, ?, 'refresh_content', ?, 'pending', ?, CURRENT_TIMESTAMP, ?)",
+        [
+            $commandId,
+            $deviceId,
+            json_encode([
+                'playlist_id' => $id,
+                'source' => 'playlist_update'
+            ]),
+            10,
+            $user['id']
+        ]
+    );
+}
+
 // Fetch with template info
 $playlist = $db->fetch(
     "SELECT p.*, t.name as template_name, t.preview_image as template_preview

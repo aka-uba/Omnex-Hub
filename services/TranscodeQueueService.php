@@ -18,7 +18,7 @@ class TranscodeQueueService
     /**
      * Yeni transcode isi kuyruge ekler
      */
-    public function enqueue(string $mediaId, string $companyId, array $profiles = null): string
+    public function enqueue(string $mediaId, string $companyId, ?array $profiles = null): string
     {
         if (!$profiles) {
             $profiles = [defined('STREAM_DEFAULT_PROFILE') ? STREAM_DEFAULT_PROFILE : '720p'];

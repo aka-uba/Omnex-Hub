@@ -45,7 +45,15 @@
             "avatarUpdated": "Profile photo updated",
             "avatarRemoved": "Profile photo removed",
             "passwordChanged": "Password successfully changed"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Super Admin",

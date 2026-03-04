@@ -14,7 +14,7 @@ $db = Database::getInstance();
 
 // Load fresh user data
 $userData = $db->fetch(
-    "SELECT id, email, first_name, last_name, role, company_id, avatar, preferences, status
+    "SELECT id, email, first_name, last_name, role, company_id, avatar, phone, last_login, preferences, status, created_at
      FROM users WHERE id = ? AND status = 'active'",
     [$user['id']]
 );
