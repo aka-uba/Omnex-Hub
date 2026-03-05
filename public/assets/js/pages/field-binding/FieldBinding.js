@@ -210,7 +210,7 @@ export class FieldBinding {
             Logger.error('[FieldBinding] Scanner error:', err);
             // Don't show toast if scanner already fell back to manual input mode
             // (camera permission denied, not found etc. are handled internally by BarcodeScanner)
-            const method = this.scanner?.getDetectionMethod?.();
+            const method = this.scanner?._detectionMethod;
             if (method === 'manual') {
                 Logger.debug('[FieldBinding] Scanner fell back to manual mode, suppressing error toast');
                 return;

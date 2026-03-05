@@ -292,7 +292,7 @@
     box-sizing: border-box;
 }
 
-.fb-scanner-viewport video {
+.fb-scanner-viewport .barcode-scanner-video {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -300,7 +300,7 @@
     object-fit: cover;
 }
 
-.fb-scanner-viewport canvas {
+.fb-scanner-viewport .barcode-scanner-wrapper > canvas {
     position: absolute;
     inset: 0;
     width: 100%;

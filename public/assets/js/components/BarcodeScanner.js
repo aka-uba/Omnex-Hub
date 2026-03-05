@@ -35,6 +35,17 @@ const DEFAULT_FORMATS = [
     'itf'
 ];
 
+const ONE_D_FORMATS = new Set([
+    'ean_13',
+    'ean_8',
+    'code_128',
+    'code_39',
+    'upc_a',
+    'upc_e',
+    'itf',
+    'codabar'
+]);
+
 /**
  * Map BarcodeDetector format names to html5-qrcode format constants.
  * html5-qrcode uses its own enum (Html5QrcodeSupportedFormats).
@@ -93,6 +104,7 @@ export class BarcodeScanner {
         this._highlightColor = options.highlightColor || '#00ff00';
         this._deduplicateMs = options.deduplicateMs || 2000;
         this._continuous = options.continuous !== false;
+        this._showOverlay = options.showOverlay === true;
 
         // Internal state
         this._state = ScannerState.IDLE;
@@ -213,6 +225,10 @@ export class BarcodeScanner {
 
         // Determine detection method
         this._detectionMethod = await BarcodeScanner.getDetectionMethod();
+        if (this._detectionMethod === 'native' && this._shouldPreferZxing()) {
+            this._detectionMethod = 'zxing';
+            Logger.debug('[BarcodeScanner] Preferring zxing for 1D barcode reliability');
+        }
         Logger.debug('[BarcodeScanner] Detection method:', this._detectionMethod);
 
         // Register page lifecycle handlers
@@ -231,6 +247,18 @@ export class BarcodeScanner {
                 await this._startZxing();
             }
         } catch (err) {
+            // If zxing failed (e.g. CDN blocked), try native as fallback.
+            if (this._detectionMethod === 'zxing' && typeof BarcodeDetector !== 'undefined') {
+                Logger.debug('[BarcodeScanner] zxing start failed, trying native fallback:', err?.message || err);
+                try {
+                    this._detectionMethod = 'native';
+                    await this._startNative();
+                    return;
+                } catch (nativeErr) {
+                    err = nativeErr;
+                }
+            }
+
             Logger.error('[BarcodeScanner] Failed to start:', err);
 
             // Camera permission denied or not available - fall back to manual input.
@@ -428,6 +456,7 @@ export class BarcodeScanner {
 
         // Mount UI
         this._mountNativeUI();
+        await this._ensureVideoPlayback();
 
         // Start detection loop
         this._state = ScannerState.SCANNING;
@@ -463,45 +492,52 @@ export class BarcodeScanner {
         // Wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'barcode-scanner-wrapper';
-        wrapper.style.cssText = 'position:relative;width:100%;overflow:hidden;background:#000;border-radius:8px;';
+        wrapper.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden;background:#000;border-radius:8px;';
 
         // Video element
         this._videoEl = document.createElement('video');
         this._videoEl.className = 'barcode-scanner-video';
         this._videoEl.setAttribute('autoplay', '');
         this._videoEl.setAttribute('playsinline', '');
+        this._videoEl.setAttribute('webkit-playsinline', '');
         this._videoEl.setAttribute('muted', '');
         this._videoEl.muted = true;
+        this._videoEl.autoplay = true;
+        this._videoEl.playsInline = true;
         this._videoEl.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
         this._videoEl.srcObject = this._stream;
         wrapper.appendChild(this._videoEl);
 
-        // Scan region overlay
-        this._overlayEl = document.createElement('div');
-        this._overlayEl.className = 'barcode-scanner-overlay';
-        this._overlayEl.style.cssText = `
-            position:absolute;top:50%;left:50%;
-            transform:translate(-50%,-50%);
-            width:70%;height:40%;
-            border:2px solid ${this._highlightColor};
-            border-radius:12px;
-            box-shadow:0 0 0 9999px rgba(0,0,0,0.4);
-            pointer-events:none;
-            transition:border-color 0.2s;
-        `;
+        if (this._showOverlay) {
+            // Scan region overlay (optional visual helper)
+            this._overlayEl = document.createElement('div');
+            this._overlayEl.className = 'barcode-scanner-overlay';
+            this._overlayEl.style.cssText = `
+                position:absolute;top:50%;left:50%;
+                transform:translate(-50%,-50%);
+                width:70%;height:40%;
+                border:2px solid ${this._highlightColor};
+                border-radius:12px;
+                box-shadow:0 0 0 9999px rgba(0,0,0,0.4);
+                pointer-events:none;
+                transition:border-color 0.2s;
+            `;
 
-        // Animated scan line
-        const scanLine = document.createElement('div');
-        scanLine.className = 'barcode-scanner-line';
-        scanLine.style.cssText = `
-            position:absolute;left:5%;right:5%;height:2px;
-            background:${this._highlightColor};
-            box-shadow:0 0 8px ${this._highlightColor};
-            animation:barcodeScanLine 2s ease-in-out infinite;
-            opacity:0.8;
-        `;
-        this._overlayEl.appendChild(scanLine);
-        wrapper.appendChild(this._overlayEl);
+            // Animated scan line
+            const scanLine = document.createElement('div');
+            scanLine.className = 'barcode-scanner-line';
+            scanLine.style.cssText = `
+                position:absolute;left:5%;right:5%;height:2px;
+                background:${this._highlightColor};
+                box-shadow:0 0 8px ${this._highlightColor};
+                animation:barcodeScanLine 2s ease-in-out infinite;
+                opacity:0.8;
+            `;
+            this._overlayEl.appendChild(scanLine);
+            wrapper.appendChild(this._overlayEl);
+        } else {
+            this._overlayEl = null;
+        }
 
         // Inject keyframes if not already present
         if (!document.getElementById('barcode-scanner-keyframes')) {
@@ -532,6 +568,45 @@ export class BarcodeScanner {
             this._canvasEl.height = this._videoEl.videoHeight;
             this._canvasCtx = this._canvasEl.getContext('2d', { willReadFrequently: true });
         });
+    }
+
+    /**
+     * Ensure video preview starts playing after stream is attached.
+     * Some browsers (especially mobile/PWA contexts) need explicit play().
+     * @private
+     * @returns {Promise<void>}
+     */
+    async _ensureVideoPlayback() {
+        if (!this._videoEl) return;
+
+        const waitForReady = new Promise((resolve) => {
+            if (this._videoEl.readyState >= 2) {
+                resolve();
+                return;
+            }
+
+            let done = false;
+            const finish = () => {
+                if (done) return;
+                done = true;
+                this._videoEl.removeEventListener('loadedmetadata', finish);
+                this._videoEl.removeEventListener('canplay', finish);
+                resolve();
+            };
+
+            this._videoEl.addEventListener('loadedmetadata', finish, { once: true });
+            this._videoEl.addEventListener('canplay', finish, { once: true });
+            setTimeout(finish, 1500);
+        });
+
+        await waitForReady;
+
+        try {
+            await this._videoEl.play();
+            Logger.debug('[BarcodeScanner] Video playback started');
+        } catch (err) {
+            Logger.debug('[BarcodeScanner] video.play() rejected (will continue):', err?.message || err);
+        }
     }
 
     /**
@@ -594,7 +669,7 @@ export class BarcodeScanner {
         const scannerDiv = document.createElement('div');
         scannerDiv.id = scannerId;
         scannerDiv.className = 'barcode-scanner-wrapper';
-        scannerDiv.style.cssText = 'width:100%;border-radius:8px;overflow:hidden;';
+        scannerDiv.style.cssText = 'position:relative;width:100%;height:100%;border-radius:8px;overflow:hidden;';
         this._containerEl.appendChild(scannerDiv);
 
         // Map requested formats to html5-qrcode format IDs
@@ -617,7 +692,6 @@ export class BarcodeScanner {
 
         const config = {
             fps: Math.round(1000 / this._scanInterval),
-            qrbox: { width: 280, height: 160 },
             aspectRatio: 16 / 9,
             disableFlip: false,
             experimentalFeatures: {
@@ -979,6 +1053,15 @@ export class BarcodeScanner {
         ];
 
         return cameraKeywords.some(kw => msg.includes(kw));
+    }
+
+    /**
+     * Prefer zxing for 1D barcode formats (native BarcodeDetector support is inconsistent across devices).
+     * @private
+     * @returns {boolean}
+     */
+    _shouldPreferZxing() {
+        return this._formats.some((fmt) => ONE_D_FORMATS.has(fmt));
     }
 
     /**
