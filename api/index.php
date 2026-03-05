@@ -76,11 +76,77 @@ register_shutdown_function(function() {
     }
 });
 
+/**
+ * Check whether IP belongs to given CIDR.
+ */
+function ipInCidr(string $ip, string $cidr): bool
+{
+    if (!str_contains($cidr, '/')) {
+        return $ip === $cidr;
+    }
+
+    [$subnet, $mask] = explode('/', $cidr, 2);
+    $maskBits = (int)$mask;
+    if ($maskBits < 0 || $maskBits > 32) {
+        return false;
+    }
+
+    $ipLong = ip2long($ip);
+    $subnetLong = ip2long($subnet);
+    if ($ipLong === false || $subnetLong === false) {
+        return false;
+    }
+
+    $netmask = -1 << (32 - $maskBits);
+    $subnetNet = $subnetLong & $netmask;
+    return ($ipLong & $netmask) === $subnetNet;
+}
+
+/**
+ * Parse trusted proxies from env and return normalized list.
+ */
+function getTrustedProxies(): array
+{
+    $raw = (string)(getenv('OMNEX_TRUSTED_PROXIES') ?: '');
+    if ($raw === '') {
+        return ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'];
+    }
+
+    $parts = array_filter(array_map('trim', explode(',', $raw)));
+    return array_values($parts);
+}
+
+/**
+ * Validate whether remote IP is in trusted proxies list.
+ */
+function isTrustedProxy(string $remoteIp, array $trustedProxies): bool
+{
+    if ($remoteIp === '') {
+        return false;
+    }
+
+    foreach ($trustedProxies as $proxy) {
+        if ($proxy === '') {
+            continue;
+        }
+
+        if ($proxy === $remoteIp) {
+            return true;
+        }
+
+        if (str_contains($proxy, '/') && ipInCidr($remoteIp, $proxy)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // HTTPS enforcement in production
 if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
-    $trustedProxies = ['127.0.0.1', '::1'];
+    $trustedProxies = getTrustedProxies();
     $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
-    $isFromTrustedProxy = in_array($remoteAddr, $trustedProxies);
+    $isFromTrustedProxy = isTrustedProxy((string)$remoteAddr, $trustedProxies);
 
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 

@@ -23,6 +23,7 @@ services:
   postgres:
     image: postgres:18-alpine
     restart: unless-stopped
+    mem_limit: 2g
     environment:
       POSTGRES_DB: ${OMNEX_DB_NAME:-omnex_hub}
       POSTGRES_USER: ${OMNEX_DB_USER:-omnex}
@@ -50,6 +51,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     restart: unless-stopped
+    mem_limit: 4g
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,10 +64,11 @@ services:
       OMNEX_DB_PASS: ${OMNEX_DB_PASS:?Database password is required}
       OMNEX_PRODUCTION: "true"
       OMNEX_JWT_SECRET: ${OMNEX_JWT_SECRET:?JWT secret is required}
-      OMNEX_ADMIN_EMAIL: ${OMNEX_ADMIN_EMAIL:-admin@omnex.local}
+      OMNEX_ADMIN_EMAIL: ${OMNEX_ADMIN_EMAIL:-admin@example.com}
       OMNEX_ADMIN_PASSWORD: ${OMNEX_ADMIN_PASSWORD:-}
       OMNEX_FORCE_HTTPS: ${OMNEX_FORCE_HTTPS:-false}
       OMNEX_SKIP_CSRF: ${OMNEX_SKIP_CSRF:-false}
+      OMNEX_TRUSTED_PROXIES: ${OMNEX_TRUSTED_PROXIES:-127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
     volumes:
       - app_storage:/var/www/html/storage
     ports:

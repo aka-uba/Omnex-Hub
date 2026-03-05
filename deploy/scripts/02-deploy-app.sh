@@ -134,45 +134,19 @@ log "Stopping existing containers..."
 cd "$PROJECT_DIR"
 $COMPOSE_CMD down --remove-orphans 2>/dev/null || true
 
-# ---- SSL Certificate (Standalone Only) ----
+# ---- SSL Bootstrap (Standalone Only) ----
 if [ "$DEPLOY_MODE" = "standalone" ]; then
-    if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
-        CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
-        if [ ! -d "$CERT_DIR" ]; then
-            log "Obtaining SSL certificate for $DOMAIN..."
+    CERT_DIR="$PROJECT_DIR/ssl"
+    mkdir -p "$CERT_DIR"
 
-            # Start nginx temporarily for certbot challenge
-            $COMPOSE_CMD up -d nginx
-            sleep 3
-
-            $COMPOSE_CMD run --rm certbot \
-                certbot certonly \
-                --webroot \
-                -w /var/www/certbot \
-                -d "$DOMAIN" \
-                --email "${OMNEX_ADMIN_EMAIL:-admin@omnex.local}" \
-                --agree-tos \
-                --no-eff-email \
-                --force-renewal
-
-            $COMPOSE_CMD down
-            log "SSL certificate obtained for $DOMAIN"
-        else
-            log "SSL certificate already exists for $DOMAIN"
-        fi
-    else
-        warn "No domain configured. SSL will use self-signed certificate."
-
-        # Create self-signed cert for initial setup
-        CERT_DIR="$PROJECT_DIR/ssl"
-        if [ ! -f "$CERT_DIR/fullchain.pem" ]; then
-            log "Generating self-signed certificate..."
-            mkdir -p "$CERT_DIR"
-            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout "$CERT_DIR/privkey.pem" \
-                -out "$CERT_DIR/fullchain.pem" \
-                -subj "/CN=localhost" 2>/dev/null
-        fi
+    # Nginx starts with this fallback cert, then real LE cert can overwrite it.
+    if [ ! -f "$CERT_DIR/fullchain.pem" ] || [ ! -f "$CERT_DIR/privkey.pem" ]; then
+        warn "No local SSL cert found. Generating fallback self-signed certificate..."
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout "$CERT_DIR/privkey.pem" \
+            -out "$CERT_DIR/fullchain.pem" \
+            -subj "/CN=${DOMAIN:-localhost}" 2>/dev/null
+        log "Fallback certificate created: $CERT_DIR/fullchain.pem"
     fi
 fi
 
@@ -182,6 +156,21 @@ $COMPOSE_CMD build app
 
 log "Starting all services..."
 $COMPOSE_CMD up -d
+
+# ---- Let's Encrypt (Standalone Only) ----
+if [ "$DEPLOY_MODE" = "standalone" ] && [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+    if [[ "${OMNEX_ADMIN_EMAIL:-}" == *"@omnex.local" ]] || [[ "${OMNEX_ADMIN_EMAIL:-}" == "admin@example.com" ]] || [[ "${OMNEX_ADMIN_EMAIL:-}" == "" ]]; then
+        warn "OMNEX_ADMIN_EMAIL appears to be placeholder; Let's Encrypt may reject notifications."
+    fi
+
+    log "Requesting/renewing Let's Encrypt certificate for $DOMAIN..."
+    if $COMPOSE_CMD run --rm certbot sh -c "certbot certonly --webroot -w /var/www/certbot -d '$DOMAIN' --email '${OMNEX_ADMIN_EMAIL:-admin@example.com}' --agree-tos --no-eff-email && cp '/etc/letsencrypt/live/$DOMAIN/fullchain.pem' /ssl/fullchain.pem && cp '/etc/letsencrypt/live/$DOMAIN/privkey.pem' /ssl/privkey.pem"; then
+        log "Let's Encrypt certificate installed to deploy/ssl"
+        $COMPOSE_CMD exec -T nginx nginx -s reload >/dev/null 2>&1 || $COMPOSE_CMD restart nginx
+    else
+        warn "Let's Encrypt certificate request failed. Fallback self-signed certificate remains active."
+    fi
+fi
 
 # ---- Wait for Database ----
 log "Waiting for database..."
@@ -201,6 +190,14 @@ log "Running database migrations..."
 $COMPOSE_CMD exec -T app php /var/www/html/tools/postgresql/migrate_seed.php || {
     warn "Migration had warnings (may be first run)"
 }
+
+# ---- FFmpeg Check ----
+log "Checking ffmpeg in app container..."
+if $COMPOSE_CMD exec -T app ffmpeg -version >/dev/null 2>&1; then
+    log "ffmpeg is available"
+else
+    error "ffmpeg is not available in app container"
+fi
 
 # ---- Health Check ----
 log "Running health check..."

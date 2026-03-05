@@ -1374,7 +1374,7 @@ class MqttBrokerService
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             $this->db->query(
                 "UPDATE device_commands SET status = 'sent', executed_at = CURRENT_TIMESTAMP
-                 WHERE id IN ($placeholders)",
+                 WHERE id IN ($placeholders) AND status = 'pending'",
                 $ids
             );
         }
@@ -1385,6 +1385,86 @@ class MqttBrokerService
         }
 
         return $commands;
+    }
+
+    /**
+     * Cihazdan gelen push_id ile eşleşen komutu tamamlandı olarak işaretler.
+     *
+     * @return int Güncellenen satır sayısı
+     */
+    public function acknowledgeCommandByPushId(string $deviceId, int $pushId): int
+    {
+        if ($pushId <= 0) {
+            return 0;
+        }
+
+        $candidates = $this->db->fetchAll(
+            "SELECT id, parameters
+             FROM device_commands
+             WHERE device_id = ? AND status IN ('pending', 'sent')
+             ORDER BY created_at DESC
+             LIMIT 50",
+            [$deviceId]
+        );
+
+        $matchedId = null;
+        foreach ($candidates as $candidate) {
+            $params = json_decode((string)($candidate['parameters'] ?? '{}'), true);
+            if (!is_array($params)) {
+                continue;
+            }
+
+            $candidatePushId = (int)($params['push_id'] ?? 0);
+            if ($candidatePushId === $pushId) {
+                $matchedId = (string)($candidate['id'] ?? '');
+                break;
+            }
+        }
+
+        if ($matchedId === null || $matchedId === '') {
+            return 0;
+        }
+
+        $this->db->update('device_commands', [
+            'status' => 'completed',
+            'executed_at' => date('Y-m-d H:i:s'),
+            'result' => 'ack_push_id:' . $pushId
+        ], "id = ? AND status IN ('pending', 'sent')", [$matchedId]);
+
+        return $this->db->rowCount();
+    }
+
+    /**
+     * ACK gelmeyen sent komutlarini tekrar pending durumuna alir.
+     *
+     * @return int Güncellenen satır sayısı
+     */
+    public function requeueStaleSentCommands(string $deviceId, int $olderThanSeconds = 45, int $limit = 20): int
+    {
+        $olderThanSeconds = max(5, $olderThanSeconds);
+        $limit = max(1, $limit);
+
+        $this->db->query(
+            "WITH stale AS (
+                SELECT id
+                FROM device_commands
+                WHERE device_id = ?
+                  AND status = 'sent'
+                  AND (result IS NULL OR result = '')
+                  AND executed_at IS NOT NULL
+                  AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '6 hours')
+                  AND executed_at <= (CURRENT_TIMESTAMP - (? * INTERVAL '1 second'))
+                ORDER BY executed_at ASC
+                LIMIT ?
+            )
+            UPDATE device_commands dc
+            SET status = 'pending', executed_at = NULL
+            FROM stale
+            WHERE dc.id = stale.id",
+            [$deviceId, $olderThanSeconds, $limit]
+        );
+
+        return $this->db->rowCount();
     }
 
     /**

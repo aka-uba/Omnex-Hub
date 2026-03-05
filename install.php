@@ -11,9 +11,15 @@
 // Load configuration
 require_once __DIR__ . '/config.php';
 
-// Check if already installed
-$dbFile = DATABASE_PATH . '/omnex.db';
-$installed = file_exists($dbFile) && filesize($dbFile) > 0;
+// Check if already installed (PostgreSQL schema)
+$installed = false;
+$dbConnectionError = '';
+try {
+    $db = Database::getInstance();
+    $installed = $db->tableExists('users', 'core') || $db->tableExists('users');
+} catch (Exception $e) {
+    $dbConnectionError = $e->getMessage();
+}
 
 // Handle form submission
 $message = '';
@@ -95,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="ti ti-alert-triangle text-yellow-600 text-xl"></i>
                     <div>
                         <p class="text-yellow-800 font-medium">Uygulama zaten kurulu</p>
-                        <p class="text-yellow-600 text-sm mt-1">Veritabanı dosyası mevcut. Yeniden kurmak için veritabanını silin.</p>
+                        <p class="text-yellow-600 text-sm mt-1">PostgreSQL semasi mevcut. Yeniden kurulum icin veritabanini sifirlayin.</p>
                     </div>
                 </div>
             </div>
@@ -110,8 +116,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="text-gray-700">PHP <?= phpversion() ?></span>
                 </div>
                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <i class="ti ti-<?= extension_loaded('pdo_sqlite') ? 'check text-green-600' : 'x text-red-600' ?>"></i>
-                    <span class="text-gray-700">PDO SQLite Extension</span>
+                    <i class="ti ti-<?= extension_loaded('pdo_pgsql') ? 'check text-green-600' : 'x text-red-600' ?>"></i>
+                    <span class="text-gray-700">PDO PostgreSQL Extension</span>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <i class="ti ti-<?= extension_loaded('pgsql') ? 'check text-green-600' : 'x text-red-600' ?>"></i>
+                    <span class="text-gray-700">PostgreSQL Extension</span>
                 </div>
                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <i class="ti ti-<?= extension_loaded('json') ? 'check text-green-600' : 'x text-red-600' ?>"></i>
@@ -122,8 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="text-gray-700">OpenSSL Extension</span>
                 </div>
                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <i class="ti ti-<?= is_writable(dirname($dbFile)) ? 'check text-green-600' : 'x text-red-600' ?>"></i>
-                    <span class="text-gray-700">Database Directory Writable</span>
+                    <i class="ti ti-<?= empty($dbConnectionError) ? 'check text-green-600' : 'x text-red-600' ?>"></i>
+                    <span class="text-gray-700">PostgreSQL Connection</span>
                 </div>
                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                     <i class="ti ti-<?= is_writable(STORAGE_PATH) ? 'check text-green-600' : 'x text-red-600' ?>"></i>
@@ -131,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <?php if (extension_loaded('pdo_sqlite') && is_writable(dirname($dbFile))): ?>
+            <?php if (extension_loaded('pdo_pgsql') && extension_loaded('pgsql') && empty($dbConnectionError) && is_writable(STORAGE_PATH)): ?>
                 <form method="POST">
                     <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition flex items-center justify-center gap-2">
                         <i class="ti ti-database"></i>
@@ -143,6 +153,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="text-red-800 text-sm">
                         Kurulum gereksinimlerini karşılamıyorsunuz. Lütfen eksik gereksinimleri tamamlayın.
                     </p>
+                    <?php if (!empty($dbConnectionError)): ?>
+                        <p class="text-red-700 text-xs mt-2">DB Hatasi: <?= htmlspecialchars($dbConnectionError) ?></p>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         <?php endif; ?>

@@ -42,10 +42,8 @@ $sortColumnMap = [
 ];
 
 $sortColumn = $sortColumnMap[$sortBy] ?? 'al.created_at';
-$auditUserJoin = $db->isPostgres()
-    ? 'LEFT JOIN users u ON CAST(al.user_id AS TEXT) = CAST(u.id AS TEXT)'
-    : 'LEFT JOIN users u ON al.user_id = u.id';
-$todayDateExpr = $db->isPostgres() ? 'CURRENT_DATE' : "DATE('now')";
+$auditUserJoin = 'LEFT JOIN users u ON CAST(al.user_id AS TEXT) = CAST(u.id AS TEXT)';
+$todayDateExpr = 'CURRENT_DATE';
 
 try {
     $where = [];

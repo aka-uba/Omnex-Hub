@@ -26,6 +26,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
       - certbot_certs:/etc/letsencrypt:ro
       - certbot_webroot:/var/www/certbot:ro
     networks:
@@ -35,11 +36,14 @@ services:
   certbot:
     image: certbot/certbot
     restart: unless-stopped
+    environment:
+      OMNEX_DOMAIN: ${OMNEX_DOMAIN:-}
     volumes:
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
+      - ./ssl:/ssl
     # Auto-renew every 12 hours
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 43200; done'"
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet || true; if [ -n \"$OMNEX_DOMAIN\" ] && [ -f \"/etc/letsencrypt/live/$OMNEX_DOMAIN/fullchain.pem\" ] && [ -f \"/etc/letsencrypt/live/$OMNEX_DOMAIN/privkey.pem\" ]; then cp \"/etc/letsencrypt/live/$OMNEX_DOMAIN/fullchain.pem\" /ssl/fullchain.pem && cp \"/etc/letsencrypt/live/$OMNEX_DOMAIN/privkey.pem\" /ssl/privkey.pem; fi; sleep 43200; done'"
 
 volumes:
   certbot_certs:

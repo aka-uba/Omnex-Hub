@@ -56,6 +56,7 @@ services:
       OMNEX_ADMIN_PASSWORD: OmnexAdmin2024!
       OMNEX_FORCE_HTTPS: "false"
       OMNEX_SKIP_CSRF: "true"
+      OMNEX_TRUSTED_PROXIES: "127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
     ports:
       - "127.0.0.1:3000:80"
     volumes:

@@ -538,7 +538,7 @@ try {
 
     $avgResult = $db->fetch(
         "SELECT AVG(
-            CAST((julianday(completed_at) - julianday(created_at)) * 86400 AS INTEGER)
+            EXTRACT(EPOCH FROM (completed_at - created_at))
          ) as avg_seconds
          FROM render_queue WHERE status = 'completed' AND completed_at IS NOT NULL" . $companyFilter,
         $params

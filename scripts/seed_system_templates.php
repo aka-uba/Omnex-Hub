@@ -71,7 +71,7 @@ try {
         $statement = trim($statement);
         if (empty($statement)) continue;
 
-        // INSERT OR REPLACE ifadesi mi kontrol et
+        // INSERT ifadesi mi kontrol et
         if (stripos($statement, 'INSERT') !== false) {
             try {
                 // Şablon adını çıkar (debug için)
@@ -86,8 +86,14 @@ try {
             } catch (Exception $e) {
                 $errorMsg = $e->getMessage();
 
-                // UNIQUE constraint hatası = zaten var
-                if (strpos($errorMsg, 'UNIQUE constraint') !== false) {
+                // Duplicate kayit hatasi = zaten var (SQLite + PostgreSQL)
+                $errorMsgLower = strtolower($errorMsg);
+                $isDuplicate = strpos($errorMsgLower, 'unique constraint') !== false
+                    || strpos($errorMsgLower, 'duplicate key value') !== false
+                    || strpos($errorMsgLower, 'sqlstate[23505]') !== false
+                    || strpos($errorMsgLower, '23505') !== false;
+
+                if ($isDuplicate) {
                     $skipped++;
                     echo "  - Atlandı (zaten var): $templateName\n";
                 } else {

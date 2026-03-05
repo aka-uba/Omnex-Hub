@@ -107,6 +107,8 @@ nano deploy/.env
 - `OMNEX_JWT_SECRET` - Random 64-char string (`openssl rand -hex 32`)
 - `OMNEX_ADMIN_PASSWORD` - Admin account password
 - `OMNEX_DOMAIN` - Your domain name
+- `OMNEX_ADMIN_EMAIL` - Real email address (Let's Encrypt notifications)
+- `OMNEX_TRUSTED_PROXIES` - Trusted proxy IP/CIDR list (for FORCE_HTTPS behind proxy)
 
 ### 3.2 Deploy
 
@@ -117,8 +119,9 @@ bash deploy/scripts/02-deploy-app.sh --mode standalone
 This will:
 - Build Docker images
 - Start PostgreSQL + App + Nginx + Certbot
-- Obtain SSL certificate via Let's Encrypt
+- Bootstrap SSL with local cert and then request Let's Encrypt certificate
 - Run database migrations
+- Verify ffmpeg availability inside app container
 - Verify health check
 
 ### Architecture (Standalone)
@@ -253,7 +256,15 @@ Each stack needs a unique `APP_PORT` for localhost admin access:
 
 ### Standalone Mode
 
-Set `OMNEX_DOMAIN=yourdomain.com` in `.env`. The deploy script handles Certbot automatically. Certificates auto-renew every 12 hours via the certbot container.
+Set `OMNEX_DOMAIN=yourdomain.com` and a real `OMNEX_ADMIN_EMAIL` in `.env`.
+
+Deployment flow:
+1. A local fallback certificate is created under `deploy/ssl`.
+2. Stack starts safely with that certificate.
+3. Certbot requests/renews Let's Encrypt certificate.
+4. Valid cert is copied into `deploy/ssl` and nginx reloads.
+
+If Let's Encrypt fails (DNS / firewall / rate-limit), service still starts with fallback certificate.
 
 ### Multi-Project Mode
 
@@ -487,7 +498,7 @@ bash deploy/scripts/02-deploy-app.sh
 | Service | Image | Memory Limit | Purpose |
 |---------|-------|-------------|---------|
 | postgres | postgres:18-alpine | 2GB | Database |
-| app | Custom PHP 8.4 Apache | 4GB | Application |
+| app | Custom PHP 8.4 Apache + ffmpeg | 4GB | Application + signage/player media processing |
 | nginx | nginx:alpine | - | Reverse proxy (standalone) |
 | certbot | certbot/certbot | - | SSL certificates (standalone) |
 | traefik | traefik:v3.3 | 512MB | Reverse proxy (multi-project) |
@@ -500,4 +511,4 @@ bash deploy/scripts/02-deploy-app.sh
 - Nginx/Traefik: Rate limiting, security headers, HSTS
 - App: OPcache, error hiding, CSRF/XSS protection
 - Database: RLS multi-tenant isolation
-- Docker: Non-root containers, memory limits, log rotation
+- Docker: memory limits, log rotation

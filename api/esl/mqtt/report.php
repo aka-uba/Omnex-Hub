@@ -237,6 +237,13 @@ try {
 // Komut fallback: publish kacmissa cihaz report yanitinda komutu alabilsin
 $responseData = 'null';
 try {
+    if ($pushId !== null) {
+        $mqttService->acknowledgeCommandByPushId($deviceId, (int)$pushId);
+    }
+
+    // Report yaniti ulasmamis olabilir: ACK'siz sent komutlari tekrar pending'e al.
+    $mqttService->requeueStaleSentCommands($deviceId, 45, 3);
+
     $pendingCommands = $mqttService->getPendingCommands($deviceId, 10);
     if (!empty($pendingCommands)) {
         $normalizedClientId = strtoupper(str_replace([':', '-', '.'], '', (string)$clientId));

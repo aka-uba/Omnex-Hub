@@ -32,6 +32,7 @@ apt-get install -y \
     wget \
     git \
     unzip \
+    ffmpeg \
     htop \
     ufw \
     fail2ban \

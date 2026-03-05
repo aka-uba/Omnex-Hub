@@ -18,6 +18,7 @@ services:
   traefik:
     image: traefik:v3.3
     restart: unless-stopped
+    mem_limit: 512m
     command:
       # ---- API / Dashboard ----
       - "--api.dashboard=true"

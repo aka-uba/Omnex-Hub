@@ -35,12 +35,12 @@ try {
             d.last_online,
             d.company_id,
             COALESCE(d.last_seen, d.last_online) as last_activity,
-            (strftime('%s', 'now') - strftime('%s', COALESCE(d.last_seen, d.last_online))) as seconds_ago
+            EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - COALESCE(d.last_seen, d.last_online)))::bigint as seconds_ago
         FROM devices d
         WHERE d.status = 'online'
           AND d.type IN ('android_tv', 'web_display', 'esl')
           AND COALESCE(d.last_seen, d.last_online) IS NOT NULL
-          AND (strftime('%s', 'now') - strftime('%s', COALESCE(d.last_seen, d.last_online))) > ?
+          AND EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - COALESCE(d.last_seen, d.last_online))) > ?
     ";
 
     $devicesToOffline = $db->fetchAll($sql, [$offlineThreshold]);
@@ -91,10 +91,11 @@ try {
 
     // Cleanup: Eski heartbeat kayıtlarını sil (30 günden eski)
     $cleanupSql = "DELETE FROM device_heartbeats WHERE created_at < now() - INTERVAL '30 days'";
-    $deleted = $db->query($cleanupSql);
+    $cleanupStmt = $db->query($cleanupSql);
+    $deletedRows = $cleanupStmt->rowCount();
 
-    if ($deleted > 0) {
-        echo "🧹 Cleaned up {$deleted} old heartbeat record(s)\n";
+    if ($deletedRows > 0) {
+        echo "🧹 Cleaned up {$deletedRows} old heartbeat record(s)\n";
     }
 
 } catch (Exception $e) {

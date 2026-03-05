@@ -372,7 +372,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================
@@ -825,7 +825,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================
@@ -1214,7 +1214,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================
@@ -1588,7 +1588,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================
@@ -2002,7 +2002,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================
@@ -2426,7 +2426,7 @@ INSERT INTO templates (
         "background": "#ffffff"
     }',
     'active',
-    datetime('now')
+    now()
 );
 
 -- ============================================================================

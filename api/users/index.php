@@ -56,14 +56,9 @@ $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 // Total count
 $total = $db->fetchColumn("SELECT COUNT(*) FROM users u $whereClause", $params);
 
-if ($db->isPostgres()) {
-    $branchNamesExpr = "string_agg(b.name::text, ', ' ORDER BY b.name)";
-    $branchIdsExpr = "string_agg(uba.branch_id::text, ',' ORDER BY uba.branch_id)";
-} else {
-    $branchNamesExpr = "GROUP_CONCAT(b.name, ', ')";
-    $branchIdsExpr = "GROUP_CONCAT(uba.branch_id, ',')";
-}
-$defaultBranchExpr = $db->isPostgres() ? 'uba.is_default IS TRUE' : 'uba.is_default = 1';
+$branchNamesExpr = "string_agg(b.name::text, ', ' ORDER BY b.name)";
+$branchIdsExpr = "string_agg(uba.branch_id::text, ',' ORDER BY uba.branch_id)";
+$defaultBranchExpr = 'uba.is_default IS TRUE';
 
 // Get users with branch info
 $users = $db->fetchAll(

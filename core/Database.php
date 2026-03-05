@@ -1,6 +1,6 @@
 <?php
 /**
- * Database - PDO wrapper (SQLite + PostgreSQL)
+ * Database - PDO wrapper (PostgreSQL)
  *
  * @package OmnexDisplayHub
  */
@@ -10,7 +10,7 @@ class Database
     private static ?Database $instance = null;
     private PDO $pdo;
     private int $lastRowCount = 0;
-    private string $driver = 'sqlite';
+    private string $driver = 'pgsql';
     private array $tableColumnCache = [];
 
     private const NON_UUID_ID_TABLES = [
@@ -51,15 +51,13 @@ class Database
 
     private function __construct()
     {
-        $configuredDriver = strtolower(trim((string)(defined('DB_DRIVER') ? DB_DRIVER : (getenv('OMNEX_DB_DRIVER') ?: 'sqlite'))));
-        if (in_array($configuredDriver, ['pgsql', 'postgres', 'postgresql'], true)) {
-            $this->driver = 'pgsql';
-            $this->connectPostgresql();
-            return;
+        $configuredDriver = strtolower(trim((string)(defined('DB_DRIVER') ? DB_DRIVER : (getenv('OMNEX_DB_DRIVER') ?: 'pgsql'))));
+        if (!in_array($configuredDriver, ['pgsql', 'postgres', 'postgresql'], true)) {
+            throw new Exception('Only PostgreSQL is supported. Set OMNEX_DB_DRIVER=pgsql.');
         }
 
-        $this->driver = 'sqlite';
-        $this->connectSqlite();
+        $this->driver = 'pgsql';
+        $this->connectPostgresql();
     }
 
     public static function getInstance(): Database
@@ -87,7 +85,7 @@ class Database
 
     public function isSqlite(): bool
     {
-        return $this->driver === 'sqlite';
+        return false;
     }
 
     /**
@@ -95,10 +93,6 @@ class Database
      */
     public function setAppContext(?string $companyId = null, ?string $userId = null, ?string $role = null): void
     {
-        if (!$this->isPostgres()) {
-            return;
-        }
-
         $context = [
             'app.company_id' => $companyId ?? '',
             'app.user_id' => $userId ?? '',
@@ -164,17 +158,6 @@ class Database
             return [];
         }
 
-        if ($this->isSqlite()) {
-            $rows = $this->fetchAll('PRAGMA table_info(' . $this->escapeIdentifier($tableName) . ')');
-            $names = [];
-            foreach ($rows as $row) {
-                if (isset($row['name'])) {
-                    $names[] = (string)$row['name'];
-                }
-            }
-            return $names;
-        }
-
         if ($schema !== null && $schema !== '') {
             $rows = $this->fetchAll(
                 'SELECT column_name
@@ -212,14 +195,6 @@ class Database
         $tableName = trim($table);
         if ($tableName === '') {
             return false;
-        }
-
-        if ($this->isSqlite()) {
-            $row = $this->fetch(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
-                [$tableName]
-            );
-            return !empty($row);
         }
 
         if ($schema !== null && $schema !== '') {
@@ -352,17 +327,11 @@ class Database
 
     /**
      * Run migrations.
-     * SQLite: existing migration files under database/migrations.
      * PostgreSQL: modular schema files under database/postgresql/v2.
      */
     public function migrate(): void
     {
-        if ($this->isPostgres()) {
-            $this->migratePostgresql();
-            return;
-        }
-
-        $this->migrateSqlite();
+        $this->migratePostgresql();
     }
 
     /**
@@ -381,30 +350,6 @@ class Database
         foreach ($files as $file) {
             require_once $file;
             Logger::info('Seed executed: ' . basename($file));
-        }
-    }
-
-    private function connectSqlite(): void
-    {
-        $dbPath = DB_PATH;
-        $dbDir = dirname($dbPath);
-
-        if (!is_dir($dbDir)) {
-            mkdir($dbDir, 0755, true);
-        }
-
-        try {
-            $this->pdo = new PDO('sqlite:' . $dbPath, null, null, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
-            ]);
-
-            $this->pdo->exec('PRAGMA foreign_keys = ON');
-            $this->pdo->exec('PRAGMA journal_mode = WAL');
-            $this->pdo->exec('PRAGMA synchronous = NORMAL');
-        } catch (PDOException $e) {
-            throw new Exception('SQLite connection failed: ' . $e->getMessage());
         }
     }
 
@@ -575,69 +520,6 @@ class Database
         ];
     }
 
-    private function migrateSqlite(): void
-    {
-        $migrationsDir = DATABASE_PATH . '/migrations';
-        if (!is_dir($migrationsDir)) {
-            return;
-        }
-
-        $this->pdo->exec("
-            CREATE TABLE IF NOT EXISTS migrations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                executed_at TEXT DEFAULT (CURRENT_TIMESTAMP)
-            )
-        ");
-
-        $executed = $this->fetchAll('SELECT name FROM migrations');
-        $executedNames = array_column($executed, 'name');
-
-        $sqlFiles = glob($migrationsDir . '/*.sql') ?: [];
-        $phpFiles = glob($migrationsDir . '/*.php') ?: [];
-        $files = array_merge($sqlFiles, $phpFiles);
-        sort($files);
-
-        foreach ($files as $file) {
-            $name = basename($file);
-            if (in_array($name, $executedNames, true)) {
-                continue;
-            }
-
-            $ext = pathinfo($file, PATHINFO_EXTENSION);
-            if ($ext === 'php') {
-                require_once $file;
-                $funcName = 'migrate_' . pathinfo($name, PATHINFO_FILENAME);
-                if (function_exists($funcName)) {
-                    $funcName($this);
-                }
-            } else {
-                $sql = file_get_contents($file);
-                $statements = array_filter(array_map('trim', explode(';', (string)$sql)));
-
-                foreach ($statements as $statement) {
-                    if ($statement === '') {
-                        continue;
-                    }
-
-                    try {
-                        $this->pdo->exec($statement);
-                    } catch (PDOException $e) {
-                        $msg = $e->getMessage();
-                        if (strpos($msg, 'duplicate column name') !== false ||
-                            strpos($msg, 'already exists') !== false) {
-                            continue;
-                        }
-                        throw $e;
-                    }
-                }
-            }
-
-            $this->query('INSERT INTO migrations (name) VALUES (?)', [$name]);
-            Logger::info('Migration executed: ' . $name);
-        }
-    }
-
     private function migratePostgresql(): void
     {
         $schemaDir = DATABASE_PATH . '/postgresql/v2';
@@ -774,4 +656,3 @@ class Database
         throw new Exception('Cannot unserialize singleton');
     }
 }
-

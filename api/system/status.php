@@ -122,7 +122,8 @@ $metrics['php'] = [
     'post_max_size' => ini_get('post_max_size'),
     'extensions' => [
         'pdo' => extension_loaded('pdo'),
-        'pdo_sqlite' => extension_loaded('pdo_sqlite'),
+        'pdo_pgsql' => extension_loaded('pdo_pgsql'),
+        'pgsql' => extension_loaded('pgsql'),
         'gd' => extension_loaded('gd'),
         'curl' => extension_loaded('curl'),
         'json' => extension_loaded('json'),
@@ -161,23 +162,18 @@ $diskFree = @disk_free_space($storagePath);
 $diskTotal = @disk_total_space($storagePath);
 
 // Database size/path
-if ($db->isPostgres()) {
-    $dbPath = sprintf(
-        'pgsql://%s:%s/%s',
-        defined('DB_PG_HOST') ? DB_PG_HOST : '127.0.0.1',
-        defined('DB_PG_PORT') ? (string)DB_PG_PORT : '5432',
-        defined('DB_PG_NAME') ? DB_PG_NAME : 'market_etiket'
-    );
+$dbPath = sprintf(
+    'pgsql://%s:%s/%s',
+    defined('DB_PG_HOST') ? DB_PG_HOST : '127.0.0.1',
+    defined('DB_PG_PORT') ? (string)DB_PG_PORT : '5432',
+    defined('DB_PG_NAME') ? DB_PG_NAME : 'market_etiket'
+);
+$dbSize = 0;
+try {
+    $sizeRow = $db->fetch("SELECT pg_database_size(current_database()) AS size");
+    $dbSize = (int)($sizeRow['size'] ?? 0);
+} catch (Exception $e) {
     $dbSize = 0;
-    try {
-        $sizeRow = $db->fetch("SELECT pg_database_size(current_database()) AS size");
-        $dbSize = (int)($sizeRow['size'] ?? 0);
-    } catch (Exception $e) {
-        $dbSize = 0;
-    }
-} else {
-    $dbPath = BASE_PATH . '/database/omnex.db';
-    $dbSize = file_exists($dbPath) ? filesize($dbPath) : 0;
 }
 
 // Total application storage (storage folder + database)
@@ -215,11 +211,8 @@ foreach ($tables as $table) {
     }
 }
 
-$dbType = $db->isPostgres() ? 'PostgreSQL' : 'SQLite';
-$dbVersionQuery = $db->isPostgres()
-    ? "SELECT version() as version"
-    : "SELECT sqlite_version() as version";
-$dbVersion = $db->fetch($dbVersionQuery)['version'] ?? 'Unknown';
+$dbType = 'PostgreSQL';
+$dbVersion = $db->fetch("SELECT version() as version")['version'] ?? 'Unknown';
 
 $metrics['database'] = [
     'type' => $dbType,
@@ -249,17 +242,9 @@ try {
         [$today]
     );
 
-    $monthExpr = $db->isPostgres()
-        ? "to_char(created_at, 'YYYY-MM')"
-        : "strftime('%Y-%m', created_at)";
-
-    $hourExpr = $db->isPostgres()
-        ? "to_char(created_at, 'HH24')"
-        : "strftime('%H', created_at)";
-
-    $minuteExpr = $db->isPostgres()
-        ? "to_char(created_at, 'HH24:MI')"
-        : "strftime('%H:%M', created_at)";
+    $monthExpr = "to_char(created_at, 'YYYY-MM')";
+    $hourExpr = "to_char(created_at, 'HH24')";
+    $minuteExpr = "to_char(created_at, 'HH24:MI')";
 
     // This month's API calls
     $monthStats = $db->fetch(

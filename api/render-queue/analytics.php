@@ -25,7 +25,6 @@ $companyId = Auth::getActiveCompanyId();
 $now = date('Y-m-d H:i:s');
 $since24h = date('Y-m-d H:i:s', strtotime('-24 hours'));
 $since7d = date('Y-m-d H:i:s', strtotime('-7 days'));
-$isPostgres = $db->isPostgres();
 
 // ========================================
 // 1. GENEL KUYRUK DURUMU
@@ -66,12 +65,9 @@ $activeItems = $db->fetch(
 $queueStatus['processing_items'] = (int)($activeItems['count'] ?? 0);
 
 // Şu an işlenmeye hazır olan pending job sayısı (scheduled_at geçmiş veya NULL)
-$readyCondition = $isPostgres
-    ? "(scheduled_at IS NULL OR scheduled_at <= CURRENT_TIMESTAMP)
-       AND (next_retry_at IS NULL OR next_retry_at <= CURRENT_TIMESTAMP)"
-    : "(scheduled_at IS NULL OR REPLACE(scheduled_at, 'T', ' ') <= ?)
-       AND (next_retry_at IS NULL OR REPLACE(next_retry_at, 'T', ' ') <= ?)";
-$readyParams = $isPostgres ? [$companyId] : [$companyId, $now, $now];
+$readyCondition = "(scheduled_at IS NULL OR scheduled_at <= CURRENT_TIMESTAMP)
+       AND (next_retry_at IS NULL OR next_retry_at <= CURRENT_TIMESTAMP)";
+$readyParams = [$companyId];
 $readyToProcess = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue
@@ -195,9 +191,7 @@ $errorAnalysis['last_24h'] = $last24hErrors;
 // ========================================
 
 // Ortalama tamamlanma süresi (son 100 iş)
-$durationSecondsExpr = $isPostgres
-    ? "EXTRACT(EPOCH FROM (completed_at - started_at))"
-    : "CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS REAL)";
+$durationSecondsExpr = "EXTRACT(EPOCH FROM (completed_at - started_at))";
 $avgCompletionTime = $db->fetch(
     "SELECT
         AVG(duration_seconds) as avg_seconds,
@@ -238,9 +232,7 @@ if ($performanceMetrics['sample_size'] > 0) {
 }
 
 // Cihaz başına ortalama süre
-$perDeviceSecondsExpr = $isPostgres
-    ? "(EXTRACT(EPOCH FROM (completed_at - started_at)) / NULLIF(devices_total, 0))"
-    : "(CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS REAL) / NULLIF(devices_total, 0))";
+$perDeviceSecondsExpr = "(EXTRACT(EPOCH FROM (completed_at - started_at)) / NULLIF(devices_total, 0))";
 $avgPerDevice = $db->fetch(
     "SELECT AVG(per_device_seconds) as avg_per_device
      FROM (
@@ -308,9 +300,7 @@ $trends = [
 ];
 
 // Saatlik trend (son 24 saat)
-$hourBucketExpr = $db->isPostgres()
-    ? "to_char(date_trunc('hour', created_at), 'YYYY-MM-DD HH24:00')"
-    : "strftime('%Y-%m-%d %H:00', created_at)";
+$hourBucketExpr = "to_char(date_trunc('hour', created_at), 'YYYY-MM-DD HH24:00')";
 $hourlyTrend = $db->fetchAll(
     "SELECT
         $hourBucketExpr as hour,
@@ -331,10 +321,8 @@ $trends['hourly'] = $hourlyTrend;
 // ========================================
 
 // Retry bekleyen itemlar
-$retryReadyCondition = $isPostgres
-    ? "rqi.next_retry_at <= CURRENT_TIMESTAMP"
-    : "REPLACE(rqi.next_retry_at, 'T', ' ') <= ?";
-$retryPendingParams = $isPostgres ? [$companyId] : [$companyId, $now];
+$retryReadyCondition = "rqi.next_retry_at <= CURRENT_TIMESTAMP";
+$retryPendingParams = [$companyId];
 $retryPending = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue_items rqi
