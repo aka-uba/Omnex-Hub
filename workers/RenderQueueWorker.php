@@ -209,14 +209,19 @@ class RenderQueueWorker
             // 4. Job tamamland??
             $duration = round((microtime(true) - $startTime) * 1000);
 
+            // Store stats in result JSON column
+            $existingResult = $this->db->fetch("SELECT result FROM render_queue WHERE id = ?", [$queueId]);
+            $resultData = json_decode($existingResult['result'] ?? '{}', true) ?: [];
+            $resultData['stats'] = [
+                'processed' => $totalProcessed,
+                'success' => $totalSuccess,
+                'failed' => $totalFailed,
+                'skipped' => $totalSkipped,
+                'duration_ms' => $duration
+            ];
+
             $this->db->update('render_queue', [
-                'result' => json_encode([
-                    'processed' => $totalProcessed,
-                    'success' => $totalSuccess,
-                    'failed' => $totalFailed,
-                    'skipped' => $totalSkipped,
-                    'duration_ms' => $duration
-                ]),
+                'result' => json_encode($resultData),
                 'updated_at' => date('Y-m-d H:i:s')
             ], 'id = ?', [$queueId]);
 

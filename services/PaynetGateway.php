@@ -499,24 +499,37 @@ class PaynetGateway
         $id = $this->db->generateUuid();
         $referenceNo = 'OMX-' . strtoupper(substr(md5(uniqid()), 0, 8)) . '-' . time();
 
+        // Store extras in metadata JSON (payment_transactions doesn't have individual columns for these)
+        $metadata = $data['metadata'] ?? [];
+        if (!is_array($metadata)) {
+            $metadata = [];
+        }
+        if (!empty($data['license_plan'])) {
+            $metadata['license_plan'] = $data['license_plan'];
+        }
+        if (!empty($data['license_period'])) {
+            $metadata['license_period'] = $data['license_period'];
+        }
+        if (isset($data['license_extension_days'])) {
+            $metadata['license_extension_days'] = $data['license_extension_days'];
+        }
+        $metadata['ip_address'] = $_SERVER['REMOTE_ADDR'] ?? null;
+        $metadata['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
         $this->db->insert('payment_transactions', [
             'id' => $id,
             'company_id' => $data['company_id'],
-            'user_id' => $data['user_id'] ?? null,
             'license_id' => $data['license_id'] ?? null,
             'provider' => 'paynet',
-            'reference_no' => $referenceNo,
             'amount' => $data['amount'],
             'currency' => $data['currency'] ?? 'TRY',
             'installment' => $data['installment'] ?? 1,
             'status' => 'pending',
             'transaction_type' => $data['transaction_type'] ?? 'sale',
-            'license_plan' => $data['license_plan'] ?? null,
-            'license_period' => $data['license_period'] ?? null,
-            'license_extension_days' => $data['license_extension_days'] ?? null,
-            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-            'metadata' => isset($data['metadata']) ? json_encode($data['metadata']) : null
+            'reference_no' => $referenceNo,
+            'metadata' => json_encode($metadata),
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ]);
 
         return [
@@ -533,30 +546,32 @@ class PaynetGateway
         $id = $this->db->generateUuid();
         $referenceNo = $data['reference_no'] ?? ('PMT-' . strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 10)));
 
+        // Store extras in metadata JSON (payment_transactions schema is limited)
+        $metadata = isset($data['metadata']) ? (is_array($data['metadata']) ? $data['metadata'] : []) : [];
+        $metadata['session_id'] = $data['session_id'] ?? null;
+        $metadata['token_id'] = $data['token_id'] ?? null;
+        $metadata['basket_id'] = $data['basket_id'] ?? null;
+        $metadata['conversation_id'] = $data['conversation_id'] ?? null;
+        $metadata['buyer_email'] = $data['buyer_email'] ?? null;
+        $metadata['buyer_name'] = $data['buyer_name'] ?? null;
+        $metadata['buyer_phone'] = $data['buyer_phone'] ?? null;
+        $metadata['buyer_ip'] = $data['buyer_ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null);
+        $metadata['plan_id'] = $data['plan_id'] ?? null;
+        $metadata['reference_no'] = $referenceNo;
+
         $this->db->insert('payment_transactions', [
             'id' => $id,
             'company_id' => $data['company_id'],
-            'user_id' => $data['user_id'] ?? null,
             'license_id' => $data['license_id'] ?? null,
-            'transaction_type' => $data['transaction_type'] ?? 'license_purchase',
+            'provider' => 'paynet',
+            'provider_transaction_id' => $data['provider_transaction_id'] ?? null,
             'amount' => $data['amount'],
             'currency' => $data['currency'] ?? 'TRY',
             'status' => $data['status'] ?? 'pending',
-            'provider' => 'paynet',
-            'provider_transaction_id' => $data['provider_transaction_id'] ?? null,
-            'provider_payment_id' => $data['provider_payment_id'] ?? null,
-            'reference_no' => $referenceNo,
-            'session_id' => $data['session_id'] ?? null,
-            'token_id' => $data['token_id'] ?? null,
-            'basket_id' => $data['basket_id'] ?? null,
-            'conversation_id' => $data['conversation_id'] ?? null,
+            'transaction_type' => $data['transaction_type'] ?? 'license_purchase',
             'installment' => $data['installment'] ?? 1,
-            'buyer_email' => $data['buyer_email'] ?? null,
-            'buyer_name' => $data['buyer_name'] ?? null,
-            'buyer_phone' => $data['buyer_phone'] ?? null,
-            'buyer_ip' => $data['buyer_ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null),
-            'plan_id' => $data['plan_id'] ?? null,
-            'metadata' => isset($data['metadata']) ? json_encode($data['metadata']) : null,
+            'reference_no' => $referenceNo,
+            'metadata' => json_encode($metadata),
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -571,12 +586,10 @@ class PaynetGateway
     {
         $updateData = [];
 
+        // Direct column fields that exist in payment_transactions
         $allowedFields = [
-            'transaction_id', 'session_id', 'token_id', 'status',
-            'is_3d', 'tds_status', 'card_holder_name', 'card_masked_pan',
-            'card_brand', 'card_bank_name', 'error_code', 'error_message',
-            'provider_response', 'provider_transaction_id', 'provider_payment_id',
-            'paid_at', 'completed_at'
+            'status', 'error_message', 'provider_transaction_id',
+            'transaction_type', 'installment', 'paid_at'
         ];
 
         foreach ($allowedFields as $field) {
@@ -585,14 +598,41 @@ class PaynetGateway
             }
         }
 
+        // Card info goes into card_info JSON column
+        $cardInfo = [];
+        foreach (['card_holder_name', 'card_masked_pan', 'card_brand', 'card_bank_name'] as $cardField) {
+            if (isset($data[$cardField])) {
+                $cardInfo[$cardField] = $data[$cardField];
+            }
+        }
+        if (!empty($cardInfo)) {
+            $updateData['card_info'] = json_encode($cardInfo);
+        }
+
+        // Callback/provider response goes into callback_data
         if (isset($data['raw_response'])) {
-            $updateData['provider_response'] = is_array($data['raw_response'])
+            $updateData['callback_data'] = is_array($data['raw_response'])
                 ? json_encode($data['raw_response'])
                 : $data['raw_response'];
         } elseif (isset($data['callback_data'])) {
-            $updateData['provider_response'] = is_array($data['callback_data'])
+            $updateData['callback_data'] = is_array($data['callback_data'])
                 ? json_encode($data['callback_data'])
                 : $data['callback_data'];
+        }
+
+        // Extra fields go into metadata JSON
+        $metaFields = ['session_id', 'token_id', 'is_3d', 'tds_status', 'error_code', 'paid_at'];
+        $metaUpdate = [];
+        foreach ($metaFields as $mf) {
+            if (isset($data[$mf])) {
+                $metaUpdate[$mf] = $data[$mf];
+            }
+        }
+        if (!empty($metaUpdate)) {
+            // Merge with existing metadata
+            $existing = $this->db->fetch("SELECT metadata FROM payment_transactions WHERE id = ?", [$id]);
+            $existingMeta = json_decode($existing['metadata'] ?? '{}', true) ?: [];
+            $updateData['metadata'] = json_encode(array_merge($existingMeta, $metaUpdate));
         }
 
         if (!empty($updateData)) {
@@ -634,8 +674,10 @@ class PaynetGateway
      */
     private function createNewLicense($transaction)
     {
-        $plan = $transaction['license_plan'] ?? 'Standard';
-        $period = $transaction['license_period'] ?? 'monthly';
+        // license_plan and license_period are stored in metadata JSON
+        $meta = json_decode($transaction['metadata'] ?? '{}', true) ?: [];
+        $plan = $meta['license_plan'] ?? 'Standard';
+        $period = $meta['license_period'] ?? 'monthly';
 
         // Plan limitlerini al
         $planData = $this->db->fetch(
@@ -671,11 +713,12 @@ class PaynetGateway
             'id' => $licenseId,
             'company_id' => $transaction['company_id'],
             'license_key' => $licenseKey,
-            'type' => $plan,
+            'plan_id' => $planData['id'] ?? null,
             'valid_from' => $startDate,
             'valid_until' => $endDate,
             'status' => 'active',
-            'max_devices' => $planData ? ($planData['esl_limit'] + $planData['tv_limit']) : 100
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
         ]);
 
         // Transaction'i guncelle
@@ -714,8 +757,10 @@ class PaynetGateway
 
         $baseDate = ($currentEnd > $now) ? $currentEnd : $now;
 
-        $period = $transaction['license_period'] ?? 'monthly';
-        $extensionDays = $transaction['license_extension_days'];
+        // license_period and license_extension_days are stored in metadata JSON
+        $meta = json_decode($transaction['metadata'] ?? '{}', true) ?: [];
+        $period = $meta['license_period'] ?? 'monthly';
+        $extensionDays = $meta['license_extension_days'] ?? null;
 
         if ($extensionDays) {
             $baseDate->modify("+{$extensionDays} days");
@@ -857,9 +902,7 @@ class PaynetGateway
      */
     public function getLicensePlans(bool $includeInactive = false)
     {
-        $activePlanFilter = $this->db->isPostgres()
-            ? "(status = 'active' OR is_active IS TRUE)"
-            : "(status = 'active' OR is_active = 1)";
+        $activePlanFilter = "(status = 'active' OR is_active = true)";
 
         $query = "SELECT * FROM license_plans";
         if (!$includeInactive) {

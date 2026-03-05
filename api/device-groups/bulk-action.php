@@ -59,7 +59,7 @@ try {
                             'id' => $db->generateUuid(),
                             'device_id' => $device['id'],
                             'command' => 'send_template',
-                            'payload' => json_encode(['template_id' => $templateId]),
+                            'parameters' => json_encode(['template_id' => $templateId]),
                             'status' => 'pending',
                             'created_at' => date('Y-m-d H:i:s')
                         ]);
@@ -75,7 +75,7 @@ try {
                             'id' => $db->generateUuid(),
                             'device_id' => $device['id'],
                             'command' => 'send_playlist',
-                            'payload' => json_encode(['playlist_id' => $playlistId]),
+                            'parameters' => json_encode(['playlist_id' => $playlistId]),
                             'status' => 'pending',
                             'created_at' => date('Y-m-d H:i:s')
                         ]);
@@ -88,7 +88,7 @@ try {
                         'id' => $db->generateUuid(),
                         'device_id' => $device['id'],
                         'command' => 'refresh',
-                        'payload' => null,
+                        'parameters' => null,
                         'status' => 'pending',
                         'created_at' => date('Y-m-d H:i:s')
                     ]);
@@ -100,7 +100,7 @@ try {
                         'id' => $db->generateUuid(),
                         'device_id' => $device['id'],
                         'command' => 'restart',
-                        'payload' => null,
+                        'parameters' => null,
                         'status' => 'pending',
                         'created_at' => date('Y-m-d H:i:s')
                     ]);

@@ -398,16 +398,16 @@ if ($assignment && $assignment['content_id']) {
     // content_id product_renders'da degilse media tablosunda ara (direkt medya atamasi)
     if (!$taskData && $assignment['content_type'] === 'image') {
         $media = $db->fetch(
-            "SELECT id, filename, path, mime_type FROM media WHERE id = ?",
+            "SELECT id, name, file_path, mime_type FROM media WHERE id = ?",
             [$assignment['content_id']]
         );
 
-        if ($media && $media['path']) {
-            $fullPath = BASE_PATH . '/storage/' . $media['path'];
+        if ($media && $media['file_path']) {
+            $fullPath = BASE_PATH . '/storage/' . $media['file_path'];
             if (file_exists($fullPath)) {
                 $md5 = md5_file($fullPath);
-                $fileName = $media['filename'];
-                $pictureUrl = rtrim($serverBaseUrl, '/') . '/storage/' . $media['path'];
+                $fileName = $media['name'];
+                $pictureUrl = rtrim($serverBaseUrl, '/') . '/storage/' . $media['file_path'];
                 $newNlast = crc32($md5) & 0x7FFFFFFF;
 
                 $taskData = [

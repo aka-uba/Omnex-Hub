@@ -915,8 +915,7 @@ class NotificationService
             'id' => $this->db->generateUuid(),
             'notification_id' => $notificationId,
             'user_id' => $userId,
-            'status' => self::STATUS_UNREAD,
-            'created_at' => date('Y-m-d H:i:s')
+            'status' => 'unread',
         ]);
     }
 

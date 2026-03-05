@@ -14,12 +14,8 @@ $user = Auth::user();
 
 $request = new Request();
 $method = $request->getMethod();
-$activeProviderFilter = $db->isPostgres()
-    ? "(status = 'active' OR is_active IS TRUE)"
-    : "(status = 'active' OR is_active = 1)";
-$activeProviderOrder = $db->isPostgres()
-    ? "CASE WHEN is_active IS TRUE THEN 0 ELSE 1 END, COALESCE(updated_at, created_at) DESC"
-    : "CASE WHEN is_active = 1 THEN 0 ELSE 1 END, datetime(COALESCE(updated_at, created_at)) DESC";
+$activeProviderFilter = "(status = 'active' OR is_active = true)";
+$activeProviderOrder = "CASE WHEN is_active = true THEN 0 ELSE 1 END, COALESCE(updated_at, created_at) DESC";
 
 if ($method !== 'GET') {
     Response::methodNotAllowed('Sadece GET desteklenir');

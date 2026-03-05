@@ -169,9 +169,7 @@ class LicenseService
     public static function markExpiredLicenses(): int
     {
         $db = Database::getInstance();
-        $unlimitedExpr = $db->isPostgres()
-            ? '(p.is_unlimited IS TRUE OR p.plan_type IN (\'enterprise\', \'ultimate\', \'unlimited\'))'
-            : '(p.is_unlimited = 1 OR p.plan_type IN (\'enterprise\', \'ultimate\', \'unlimited\'))';
+        $unlimitedExpr = "(p.is_unlimited = true OR p.plan_type IN ('enterprise', 'ultimate', 'unlimited'))";
 
         $result = $db->query(
             "UPDATE licenses
@@ -603,7 +601,7 @@ class LicenseService
         $db = Database::getInstance();
 
         if ($activeOnly) {
-            $where = $db->isPostgres() ? "WHERE is_active IS TRUE" : "WHERE is_active = 1";
+            $where = "WHERE is_active = true";
         } else {
             $where = "";
         }

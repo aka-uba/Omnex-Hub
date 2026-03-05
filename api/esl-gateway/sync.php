@@ -71,7 +71,7 @@ try {
             'action' => 'esl_sync',
             'entity_type' => 'product',
             'entity_id' => $productId,
-            'details' => json_encode([
+            'new_values' => json_encode([
                 'device_ip' => $deviceIp,
                 'product_name' => $product['name']
             ]),

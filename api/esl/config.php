@@ -28,13 +28,14 @@ $companyId = $device['company_id'];
 
 // Get company settings
 $companySettings = $db->fetch(
-    "SELECT value FROM settings WHERE company_id = ? AND key = 'esl_config'",
+    "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
     [$companyId]
 );
 
 $eslConfig = [];
-if ($companySettings && $companySettings['value']) {
-    $eslConfig = json_decode($companySettings['value'], true) ?: [];
+if ($companySettings && $companySettings['data']) {
+    $allSettings = json_decode($companySettings['data'], true) ?: [];
+    $eslConfig = $allSettings['esl_config'] ?? [];
 }
 
 // Get device-specific settings from metadata
@@ -64,18 +65,16 @@ $defaultConfig = [
 // Merge configurations: default < company < device
 $config = array_merge($defaultConfig, $eslConfig, $deviceConfig);
 
-// Get device group settings if in a group
+// Get device group info if in a group
+// Note: device_groups table has no metadata/config column - group-level ESL config is not yet supported
 if (!empty($device['group_id'])) {
-    $groupSettings = $db->fetch(
-        "SELECT metadata FROM device_groups WHERE id = ?",
+    $groupInfo = $db->fetch(
+        "SELECT name, description FROM device_groups WHERE id = ?",
         [$device['group_id']]
     );
 
-    if ($groupSettings && $groupSettings['metadata']) {
-        $groupConfig = json_decode($groupSettings['metadata'], true) ?: [];
-        if (isset($groupConfig['esl_config'])) {
-            $config = array_merge($config, $groupConfig['esl_config']);
-        }
+    if ($groupInfo) {
+        $config['group_name'] = $groupInfo['name'];
     }
 }
 

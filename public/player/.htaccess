@@ -10,6 +10,8 @@ RewriteEngine On
 
 # Ensure proper MIME types for JavaScript modules
 <IfModule mod_mime.c>
+    AddDefaultCharset UTF-8
+    AddCharset UTF-8 .html .css .js .mjs .json .webmanifest
     AddType application/javascript .js
     AddType text/javascript .mjs
 </IfModule>

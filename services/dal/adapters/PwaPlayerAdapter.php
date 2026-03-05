@@ -124,7 +124,7 @@ class PwaPlayerAdapter extends AbstractDeviceAdapter
                 'id'         => $this->db->generateUuid(),
                 'device_id'  => $deviceId,
                 'command'    => $action,
-                'params'     => !empty($params) ? json_encode($params) : null,
+                'parameters' => !empty($params) ? json_encode($params) : null,
                 'status'     => 'pending',
                 'created_at' => date('Y-m-d H:i:s'),
             ]);

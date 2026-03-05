@@ -90,7 +90,7 @@ try {
     echo "✅ Updated {$updatedCount} device(s) to offline status\n";
 
     // Cleanup: Eski heartbeat kayıtlarını sil (30 günden eski)
-    $cleanupSql = "DELETE FROM device_heartbeats WHERE created_at < datetime('now', '-30 days')";
+    $cleanupSql = "DELETE FROM device_heartbeats WHERE created_at < now() - INTERVAL '30 days'";
     $deleted = $db->query($cleanupSql);
 
     if ($deleted > 0) {

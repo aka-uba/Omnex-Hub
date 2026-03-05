@@ -128,13 +128,13 @@ class GatewayBridgeDecorator extends AbstractDeviceAdapter
         try {
             // Komutu kuyruga ekle
             $this->db->insert('gateway_commands', [
-                'id'         => $commandId,
-                'gateway_id' => $gatewayId,
-                'device_id'  => $deviceId,
-                'type'       => $command,
-                'payload'    => json_encode($params),
-                'status'     => 'pending',
-                'created_at' => date('Y-m-d H:i:s'),
+                'id'               => $commandId,
+                'gateway_id'       => $gatewayId,
+                'device_id'        => $deviceId,
+                'command'          => $command,
+                'parameters'       => json_encode($params),
+                'status'           => 'pending',
+                'created_at'       => date('Y-m-d H:i:s'),
             ]);
 
             // Sonucu bekle (polling)
@@ -145,7 +145,7 @@ class GatewayBridgeDecorator extends AbstractDeviceAdapter
                 usleep($pollInterval);
 
                 $cmd = $this->db->fetch(
-                    "SELECT status, result, error FROM gateway_commands WHERE id = ?",
+                    "SELECT status, result FROM gateway_commands WHERE id = ?",
                     [$commandId]
                 );
 
@@ -166,9 +166,10 @@ class GatewayBridgeDecorator extends AbstractDeviceAdapter
                 }
 
                 if ($status === 'failed') {
+                    $failData = json_decode($cmd['result'] ?? '{}', true) ?: [];
                     return [
                         'success' => false,
-                        'error'   => $cmd['error'] ?? 'Gateway command failed',
+                        'error'   => $failData['error'] ?? 'Gateway command failed',
                     ];
                 }
 
@@ -178,8 +179,8 @@ class GatewayBridgeDecorator extends AbstractDeviceAdapter
             // Timeout
             // Komutu timeout olarak isaretle
             $this->db->update('gateway_commands', [
-                'status'     => 'timeout',
-                'updated_at' => date('Y-m-d H:i:s'),
+                'status'       => 'timeout',
+                'completed_at' => date('Y-m-d H:i:s'),
             ], 'id = ?', [$commandId]);
 
             return [

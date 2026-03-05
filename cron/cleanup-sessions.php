@@ -16,10 +16,10 @@ $startTime = microtime(true);
 $db = Database::getInstance();
 
 // Süresi dolmuş sessionları say
-$expiredCount = $db->fetchColumn("SELECT COUNT(*) FROM sessions WHERE expires_at <= datetime('now')");
+$expiredCount = $db->fetchColumn("SELECT COUNT(*) FROM sessions WHERE expires_at <= now()");
 
 // Süresi dolmuş sessionları sil
-$db->query("DELETE FROM sessions WHERE expires_at <= datetime('now')");
+$db->query("DELETE FROM sessions WHERE expires_at <= now()");
 
 $duration = round((microtime(true) - $startTime) * 1000, 2);
 

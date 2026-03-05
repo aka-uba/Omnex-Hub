@@ -36,12 +36,8 @@ $search = $request->query('search', '');
 $type = $request->query('type', '');
 $folderId = $request->query('folder_id', '');
 $showScope = $request->query('scope', ''); // '', 'company', 'public', 'all'
-$publicMediaCondition = $db->isPostgres()
-    ? "(is_public IS TRUE OR scope = 'public')"
-    : "(is_public = 1 OR scope = 'public')";
-$publicMediaOrUnboundCondition = $db->isPostgres()
-    ? "(is_public IS TRUE OR scope = 'public' OR company_id IS NULL)"
-    : "(is_public = 1 OR scope = 'public' OR company_id IS NULL)";
+$publicMediaCondition = "(is_public = true OR scope = 'public')";
+$publicMediaOrUnboundCondition = "(is_public = true OR scope = 'public' OR company_id IS NULL)";
 
 // Build query
 $where = [];

@@ -242,11 +242,14 @@ class EslSignValidator
                     'id' => $this->db->generateUuid(),
                     'device_id' => $deviceId,
                     'battery_level' => $info['battery'] ?? null,
-                    'wifi_signal' => $info['wifi_signal'] ?? null,
-                    'firmware_version' => $info['version'] ?? null,
+                    'signal_strength' => $info['wifi_signal'] ?? $info['signal_strength'] ?? null,
                     'uptime' => $info['uptime'] ?? null,
-                    'free_storage' => $info['free_storage'] ?? null,
+                    'storage_free' => $info['free_storage'] ? (int)$info['free_storage'] : null,
                     'ip_address' => $info['ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null),
+                    'metadata' => json_encode([
+                        'firmware_version' => $info['version'] ?? null,
+                        'source' => 'esl_sign_validator'
+                    ]),
                     'created_at' => date('Y-m-d H:i:s')
                 ]);
             } catch (Exception $e) {

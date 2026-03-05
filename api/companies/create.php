@@ -75,8 +75,6 @@ if ($planId) {
             'company_id' => $id,
             'plan_id' => $planId,
             'license_key' => $licenseKey,
-            'type' => $plan['plan_type'] ?? 'standard',
-            'period' => ($plan['duration_months'] ?? 12) >= 12 ? 'yearly' : 'monthly',
             'valid_from' => date('Y-m-d H:i:s'),
             'valid_until' => $endDate,
             'status' => 'active'

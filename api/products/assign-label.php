@@ -27,12 +27,8 @@ if (!$product) {
 $deviceId = $request->input('device_id');
 $templateId = $request->input('template_id');
 $force = $request->input('force', false);
-$publicTemplateFilter = $db->isPostgres()
-    ? "(company_id = ? OR is_public IS TRUE OR scope = 'system' OR company_id IS NULL)"
-    : "(company_id = ? OR is_public = 1 OR scope = 'system' OR company_id IS NULL)";
-$templateJoin = $db->isPostgres()
-    ? 'LEFT JOIN templates t ON CAST(p.assigned_template_id AS TEXT) = CAST(t.id AS TEXT)'
-    : 'LEFT JOIN templates t ON p.assigned_template_id = t.id';
+$publicTemplateFilter = "(company_id = ? OR is_public = true OR scope = 'system' OR company_id IS NULL)";
+$templateJoin = 'LEFT JOIN templates t ON CAST(p.assigned_template_id AS TEXT) = CAST(t.id AS TEXT)';
 
 if (!$deviceId) {
     Response::badRequest('Cihaz ID gerekli');
@@ -192,6 +188,7 @@ $db->update('devices', [
 
 // Log device action
 $db->insert('device_logs', [
+    'id' => $db->generateUuid(),
     'device_id' => $deviceId,
     'action' => 'send',
     'content_type' => 'product',

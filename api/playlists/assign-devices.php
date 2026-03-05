@@ -101,6 +101,7 @@ try {
 
         // Activity log
         $db->insert('device_logs', [
+            'id' => $db->generateUuid(),
             'device_id' => $deviceId,
             'action' => 'sync',
             'content_type' => 'playlist',
@@ -141,6 +142,7 @@ try {
 
     foreach ($removedDeviceIds as $deviceId) {
         $db->insert('device_logs', [
+            'id' => $db->generateUuid(),
             'device_id' => $deviceId,
             // Keep action value compatible with existing CHECK constraints across deployments.
             'action' => 'sync',

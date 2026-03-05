@@ -31,10 +31,6 @@ RewriteRule ^ - [L]
 # This ensures all API routing goes through the main router
 RewriteRule ^(.*)$ index.php [QSA,L]
 
-# CORS headers for API
-<IfModule mod_headers.c>
-    Header always set Access-Control-Allow-Origin "*"
-    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With, X-CSRF-Token, X-Active-Company"
-    Header always set Access-Control-Max-Age "3600"
-</IfModule>
+# CORS headers are handled by ApiGuardMiddleware (PHP) to avoid
+# duplicate headers. Do NOT add Apache-level CORS headers here.
+# See: middleware/ApiGuardMiddleware.php

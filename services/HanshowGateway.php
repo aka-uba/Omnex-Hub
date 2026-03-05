@@ -885,12 +885,40 @@ class HanshowGateway
     {
         foreach ($firmwares as $fw) {
             $this->db->query(
-                "INSERT OR REPLACE INTO hanshow_firmwares
+                "INSERT INTO hanshow_firmwares
                 (id, name, description, magnet, led, mpd, generation, heartbeat, direction,
                 battery, freezer, dpi, ic, display_mode, screen_type, resolution_x, resolution_y,
                 screen_color, screen_size, refresh_time, flash_size, max_package, osd_version,
                 max_page_num, esl_model, mix_mode, screen_model, cached_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    description = EXCLUDED.description,
+                    magnet = EXCLUDED.magnet,
+                    led = EXCLUDED.led,
+                    mpd = EXCLUDED.mpd,
+                    generation = EXCLUDED.generation,
+                    heartbeat = EXCLUDED.heartbeat,
+                    direction = EXCLUDED.direction,
+                    battery = EXCLUDED.battery,
+                    freezer = EXCLUDED.freezer,
+                    dpi = EXCLUDED.dpi,
+                    ic = EXCLUDED.ic,
+                    display_mode = EXCLUDED.display_mode,
+                    screen_type = EXCLUDED.screen_type,
+                    resolution_x = EXCLUDED.resolution_x,
+                    resolution_y = EXCLUDED.resolution_y,
+                    screen_color = EXCLUDED.screen_color,
+                    screen_size = EXCLUDED.screen_size,
+                    refresh_time = EXCLUDED.refresh_time,
+                    flash_size = EXCLUDED.flash_size,
+                    max_package = EXCLUDED.max_package,
+                    osd_version = EXCLUDED.osd_version,
+                    max_page_num = EXCLUDED.max_page_num,
+                    esl_model = EXCLUDED.esl_model,
+                    mix_mode = EXCLUDED.mix_mode,
+                    screen_model = EXCLUDED.screen_model,
+                    cached_at = CURRENT_TIMESTAMP",
                 [
                     $fw['id'],
                     $fw['name'] ?? '',

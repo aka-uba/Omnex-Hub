@@ -25,9 +25,6 @@ try {
         'company_id' => $companyId,
         'name' => $data['name'],
         'description' => $data['description'] ?? null,
-        'color' => $data['color'] ?? '#228be6',
-        'device_type' => $data['device_type'] ?? null,
-        'created_by' => $user['id'],
         'created_at' => date('Y-m-d H:i:s'),
         'updated_at' => date('Y-m-d H:i:s')
     ]);

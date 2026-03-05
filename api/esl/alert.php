@@ -25,9 +25,7 @@ if (!$device) {
 }
 
 $deviceId = $device['id'] ?? $device['device_id'];
-$recentAlertExpr = $db->isPostgres()
-    ? "created_at > CURRENT_TIMESTAMP - INTERVAL '5 minutes'"
-    : "created_at > datetime('now', '-5 minutes')";
+$recentAlertExpr = "created_at > CURRENT_TIMESTAMP - INTERVAL '5 minutes'";
 
 // Get request data
 $data = $request->json();

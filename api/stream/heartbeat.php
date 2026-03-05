@@ -18,7 +18,7 @@ if (!$token) {
 }
 
 $device = $db->fetch(
-    "SELECT id, company_id, name, status FROM devices WHERE stream_token = ? AND stream_mode = 1",
+    "SELECT id, company_id, name, status FROM devices WHERE stream_token = ? AND stream_mode = true",
     [$token]
 );
 

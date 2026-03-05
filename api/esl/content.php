@@ -128,15 +128,15 @@ foreach ($assignments as $assignment) {
     // If content type is image, get media details
     if ($assignment['content_type'] === 'image') {
         $media = $db->fetch(
-            "SELECT id, filename, path, mime_type, width, height FROM media WHERE id = ?",
+            "SELECT id, name, file_path, mime_type, width, height FROM media WHERE id = ?",
             [$assignment['content_id']]
         );
 
         if ($media) {
             $item['image'] = [
                 'id' => $media['id'],
-                'filename' => $media['filename'],
-                'path' => $media['path'],
+                'filename' => $media['name'],
+                'path' => $media['file_path'],
                 'mimeType' => $media['mime_type'],
                 'width' => (int)$media['width'],
                 'height' => (int)$media['height']
@@ -154,7 +154,7 @@ foreach ($assignments as $assignment) {
         if ($playlist && $fullContent) {
             // Get playlist items
             $playlistItems = $db->fetchAll(
-                "SELECT pi.*, m.filename, m.path, m.mime_type
+                "SELECT pi.*, m.name as filename, m.file_path as path, m.mime_type
                  FROM playlist_items pi
                  LEFT JOIN media m ON pi.media_id = m.id
                  WHERE pi.playlist_id = ?

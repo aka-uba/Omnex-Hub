@@ -11,9 +11,7 @@ $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 $productId = $request->routeParam('id');
 $deviceId = $request->routeParam('labelId'); // labelId is actually device_id
-$publicTemplateFilter = $db->isPostgres()
-    ? "(company_id = ? OR is_public IS TRUE OR scope = 'system' OR company_id IS NULL)"
-    : "(company_id = ? OR is_public = 1 OR scope = 'system' OR company_id IS NULL)";
+$publicTemplateFilter = "(company_id = ? OR is_public = true OR scope = 'system' OR company_id IS NULL)";
 
 // Verify product exists and belongs to user's company
 $product = $db->fetch(

@@ -36,8 +36,8 @@ try {
                 c.name as company_name
          FROM tamsoft_settings ts
          LEFT JOIN companies c ON c.id = ts.company_id
-         WHERE ts.enabled = 1
-           AND ts.auto_sync_enabled = 1
+         WHERE ts.enabled = true
+           AND ts.auto_sync_enabled = true
            AND ts.username IS NOT NULL
            AND ts.username != ''"
     );

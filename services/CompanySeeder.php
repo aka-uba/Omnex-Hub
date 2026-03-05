@@ -279,9 +279,9 @@ class CompanySeeder
                     'version' => 1,
                     'parent_id' => $template['id'], // Link to original system template
                     'scope' => 'company',
-                    'is_forked' => 1,
-                    'is_default' => 0,
-                    'is_public' => 0,
+                    'is_forked' => true,
+                    'is_default' => false,
+                    'is_public' => false,
                     'status' => 'active',
                     'created_by' => null, // System created
                     'created_at' => date('Y-m-d H:i:s'),
@@ -511,7 +511,7 @@ class CompanySeeder
                     'mime_type' => $mimeType,
                     'file_size' => $file['size'],
                     'folder_id' => $folderId,
-                    'is_public' => 1,
+                    'is_public' => true,
                     'scope' => 'public',
                     'source' => 'seed',
                     'status' => 'active',

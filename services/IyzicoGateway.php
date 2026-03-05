@@ -185,9 +185,7 @@ class IyzicoGateway
     public function getLicensePlans(bool $includeInactive = false): array
     {
         // is_active veya status kolonu ile uyumlu sorgu
-        $activePlanFilter = $this->db->isPostgres()
-            ? "(status = 'active' OR is_active IS TRUE)"
-            : "(status = 'active' OR is_active = 1)";
+        $activePlanFilter = "(status = 'active' OR is_active = true)";
         $query = "SELECT * FROM license_plans";
         if (!$includeInactive) {
             $query .= " WHERE $activePlanFilter";

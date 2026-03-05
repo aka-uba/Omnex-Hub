@@ -4,6 +4,7 @@
  */
 
 require_once BASE_PATH . '/services/CompanyStorageService.php';
+require_once BASE_PATH . '/services/CompanySeeder.php';
 
 $email = $request->input('email');
 $password = $request->input('password');
@@ -60,12 +61,7 @@ try {
         'id' => $companyId,
         'name' => $companyName,
         'slug' => $companySlug,
-        'status' => 'active',
-        'settings' => json_encode([
-            'language' => 'tr',
-            'timezone' => 'Europe/Istanbul',
-            'currency' => 'TRY'
-        ])
+        'status' => 'active'
     ]);
 
     // Ensure company storage path exists for newly registered company
@@ -96,42 +92,25 @@ try {
         'id' => $licenseId,
         'company_id' => $companyId,
         'license_key' => 'TRIAL-' . strtoupper(bin2hex(random_bytes(8))),
-        'type' => 'trial',
-        'period' => 'monthly',
         'status' => 'active',
-        'user_limit' => 3,
-        'esl_limit' => 10,
-        'tv_limit' => 2,
-        'storage_limit' => 500,
         'features' => json_encode(['basic_templates', 'basic_signage']),
         'valid_from' => date('Y-m-d'),
         'valid_until' => date('Y-m-d', strtotime('+30 days'))
     ]);
 
-    // Create default import mapping
-    $mappingId = $db->generateUuid();
-    $db->insert('import_mappings', [
-        'id' => $mappingId,
-        'company_id' => $companyId,
-        'name' => 'Varsayılan Mapping',
-        'description' => 'Otomatik oluşturulmuş varsayılan veri eşleme',
-        'format' => 'auto',
-        'config' => json_encode([
-            'fieldMapping' => [
-                'sku' => ['field' => 'STOK_KODU', 'required' => true, 'transform' => 'trim'],
-                'barcode' => ['field' => 'BARKOD', 'alternates' => ['BARKOD_NO', 'EAN']],
-                'name' => ['field' => 'URUN_ADI', 'required' => true],
-                'current_price' => ['field' => 'SATIS_FIYATI', 'transform' => 'number', 'required' => true],
-                'previous_price' => ['field' => 'ESKI_FIYAT', 'transform' => 'number'],
-                'unit' => ['field' => 'BIRIM', 'default' => 'adet'],
-                'category' => ['field' => 'KATEGORI']
-            ]
-        ]),
-        'is_default' => 1,
-        'created_by' => $userId
-    ]);
-
     $db->commit();
+
+    // Seed default company data (settings, categories, templates, etc.)
+    try {
+        $seeder = new CompanySeeder($companyId);
+        $seeder->seedAll();
+    } catch (Exception $seedError) {
+        // Seeding failure should not break registration
+        Logger::warning('Company seeding failed', [
+            'company_id' => $companyId,
+            'error' => $seedError->getMessage()
+        ]);
+    }
 
     // Generate tokens
     $user = $db->fetch("SELECT * FROM users WHERE id = ?", [$userId]);

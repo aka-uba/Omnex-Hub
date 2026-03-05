@@ -28,7 +28,7 @@ if (preg_match('/[\/\\\\]|\.\./', $filename)) {
 
 // Hafif token dogrulama (sadece varlik kontrolu - performans icin)
 $device = $db->fetch(
-    "SELECT id, company_id FROM devices WHERE stream_token = ? AND stream_mode = 1",
+    "SELECT id, company_id FROM devices WHERE stream_token = ? AND stream_mode = true",
     [$token]
 );
 

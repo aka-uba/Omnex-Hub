@@ -118,7 +118,7 @@ $id = $db->insert('templates', [
 // Tek ortak şablon kuralı: label_printer için diğerlerini kapat
 if ($frontendType === 'label_printer' && $isDefault && $templateCompanyId) {
     $db->query(
-        "UPDATE templates SET is_default = 0
+        "UPDATE templates SET is_default = false
          WHERE company_id = ? AND category = 'label_printer' AND id != ?",
         [$templateCompanyId, $id]
     );

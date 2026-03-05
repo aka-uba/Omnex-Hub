@@ -1586,15 +1586,15 @@ if ($deviceId) {
             $result['device_ip'] = $device['ip_address'];
             $result['send_result'] = $sendResult;
 
-            // Cihazın son gönderim bilgisini güncelle (JSON formatında product_id ve template_id koru)
+            // Cihazın son gönderim bilgisini güncelle
             $db->update('devices', [
                 'current_content' => json_encode([
                     'type' => 'product',
                     'product_id' => $productId ?? null,
                     'template_id' => $templateId ?? null,
-                    'file_path' => $sendResult['file_path'] ?? ('files/task/' . $device['device_id'] . '.jpg'),
                     'sent_at' => date('Y-m-d H:i:s')
                 ]),
+                'current_template_id' => $templateId ?? null,
                 'last_sync' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ], 'id = ?', [$deviceId]);

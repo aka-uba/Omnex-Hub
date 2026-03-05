@@ -44,7 +44,7 @@ if ($parentId) {
 }
 
 if ($activeOnly) {
-    $where[] = $db->isPostgres() ? 'b.is_active IS TRUE' : 'b.is_active = 1';
+    $where[] = 'b.is_active = true';
 }
 
 $whereClause = implode(' AND ', $where);

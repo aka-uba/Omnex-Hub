@@ -336,9 +336,7 @@ $pendingCount = $db->fetch(
     $pendingCountParams
 )['count'] ?? 0;
 
-$processingRecentCondition = $isPostgres
-    ? "(q.started_at IS NOT NULL AND q.started_at >= CURRENT_TIMESTAMP - INTERVAL '10 minutes')"
-    : "(q.started_at IS NOT NULL AND REPLACE(q.started_at, 'T', ' ') >= datetime('now', '-10 minutes'))";
+$processingRecentCondition = "(q.started_at IS NOT NULL AND q.started_at >= CURRENT_TIMESTAMP - INTERVAL '10 minutes')";
 $processingCount = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue q
@@ -2040,7 +2038,7 @@ function processForPWAPlayer($db, $device, $template, $product): array
         'id' => $commandId,
         'device_id' => $device['id'],
         'command' => 'refresh_content',
-        'params' => json_encode([
+        'parameters' => json_encode([
             'template_id' => $template['id'] ?? null,
             'product_id' => $product['id'] ?? null
         ]),

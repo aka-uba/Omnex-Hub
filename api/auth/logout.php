@@ -20,10 +20,9 @@ if ($token) {
     $payload = Auth::validateToken($token);
 
     if ($payload && isset($payload['sid'])) {
-        // Mark session as expired
+        // Mark session as expired by setting expires_at to now
         $db->update('sessions', [
-            'expires_at' => date('Y-m-d H:i:s'),
-            'is_active' => 0
+            'expires_at' => date('Y-m-d H:i:s')
         ], 'id = ?', [$payload['sid']]);
     }
 }

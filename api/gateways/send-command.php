@@ -72,11 +72,10 @@ $db->insert('gateway_commands', [
     'gateway_id' => $gatewayId,
     'device_id' => $deviceId,
     'command' => $command,
-    'parameters' => json_encode($parameters),
+    'parameters' => json_encode(array_merge($parameters, ['created_by' => $user['id']])),
     'priority' => $priority,
     'status' => 'pending',
-    'expires_at' => $expiresAt,
-    'created_by' => $user['id']
+    'expires_at' => $expiresAt
 ]);
 
 Response::success([

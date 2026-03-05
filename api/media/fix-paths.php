@@ -71,11 +71,7 @@ $directories['public_samples_files_preview'] = $diskFiles;
 $whereClause = '';
 $params = [];
 if ($filterScope === 'public') {
-    if ($db->isPostgres()) {
-        $whereClause = "WHERE (is_public IS TRUE OR scope = 'public' OR company_id IS NULL)";
-    } else {
-        $whereClause = "WHERE (is_public = 1 OR scope = 'public' OR company_id IS NULL)";
-    }
+    $whereClause = "WHERE (is_public = true OR scope = 'public' OR company_id IS NULL)";
 }
 
 $allMedia = $db->fetchAll("SELECT id, file_path, company_id, scope, is_public, name, file_type FROM media $whereClause ORDER BY created_at DESC", $params);

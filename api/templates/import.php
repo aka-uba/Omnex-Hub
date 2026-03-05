@@ -235,8 +235,9 @@ if ($results['imported'] > 0) {
             'action' => 'template_import',
             'entity_type' => 'template',
             'entity_id' => null,
-            'description' => $results['imported'] . ' şablon içe aktarıldı',
-            'metadata' => json_encode($results),
+            'new_values' => json_encode(array_merge($results, [
+                'description' => $results['imported'] . ' şablon içe aktarıldı'
+            ])),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
             'created_at' => date('Y-m-d H:i:s')

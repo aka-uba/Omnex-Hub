@@ -9,7 +9,7 @@ $role = $user['role'] ?? 'Viewer';
 $companyId = Auth::getActiveCompanyId();
 
 // Get menu items
-$where = "WHERE visible = 1";
+$where = "WHERE visible = true";
 $params = [];
 
 if ($companyId) {

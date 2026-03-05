@@ -813,22 +813,12 @@ class RenderCacheService
     private function recoverStaleProcessingJobs(?string $companyId = null, array $filters = [], int $staleSeconds = 120): int
     {
         $seconds = max(30, (int)$staleSeconds);
-        if ($this->db->isPostgres()) {
-            $sql = "UPDATE render_jobs
-                    SET status = 'pending',
-                        started_at = NULL
-                    WHERE status = 'processing'
-                      AND (started_at IS NULL OR started_at < (CURRENT_TIMESTAMP - (? * INTERVAL '1 second')))";
-            $params = [$seconds];
-        } else {
-            $modifier = '-' . $seconds . ' seconds';
-            $sql = "UPDATE render_jobs
-                    SET status = 'pending',
-                        started_at = NULL
-                    WHERE status = 'processing'
-                      AND (started_at IS NULL OR started_at < datetime('now', ?))";
-            $params = [$modifier];
-        }
+        $sql = "UPDATE render_jobs
+                SET status = 'pending',
+                    started_at = NULL
+                WHERE status = 'processing'
+                  AND (started_at IS NULL OR started_at < (CURRENT_TIMESTAMP - (? * INTERVAL '1 second')))";
+        $params = [$seconds];
 
         if ($companyId) {
             $sql .= " AND company_id = ?";
@@ -985,9 +975,7 @@ class RenderCacheService
      */
     public function getStats(string $companyId): array
     {
-        $last24hExpr = $this->db->isPostgres()
-            ? "CURRENT_TIMESTAMP - INTERVAL '24 hours'"
-            : "datetime('now', '-24 hours')";
+        $last24hExpr = "CURRENT_TIMESTAMP - INTERVAL '24 hours'";
         // Cache istatistikleri
         $cacheStats = $this->db->fetch(
             "SELECT
@@ -1051,19 +1039,12 @@ class RenderCacheService
      */
     public function cleanupOldJobs(int $daysOld = 7): int
     {
-        if ($this->db->isPostgres()) {
-            $result = $this->db->query(
-                "DELETE FROM render_jobs
-                 WHERE status IN ('completed', 'failed')
-                   AND completed_at < (CURRENT_TIMESTAMP - (? * INTERVAL '1 day'))",
-                [$daysOld]
-            );
-        } else {
-            $result = $this->db->query(
-                "DELETE FROM render_jobs WHERE status IN ('completed', 'failed') AND completed_at < datetime('now', '-' || ? || ' days')",
-                [$daysOld]
-            );
-        }
+        $result = $this->db->query(
+            "DELETE FROM render_jobs
+             WHERE status IN ('completed', 'failed')
+               AND completed_at < (CURRENT_TIMESTAMP - (? * INTERVAL '1 day'))",
+            [$daysOld]
+        );
 
         return $result->rowCount();
     }

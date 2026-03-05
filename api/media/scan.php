@@ -215,7 +215,7 @@ try {
             $absoluteFilePath = $file['path'];
 
             $isPublicSample = ($relativeFilePath === 'public/samples' || str_starts_with($relativeFilePath, 'public/samples/'));
-            $publicMediaFilter = $db->isPostgres() ? 'company_id IS NULL OR is_public IS TRUE' : 'company_id IS NULL OR is_public = 1';
+            $publicMediaFilter = 'company_id IS NULL OR is_public = true';
 
             if ($isPublicSample) {
                 $existing = $db->fetch(

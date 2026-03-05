@@ -289,9 +289,7 @@ class StorageService
 
             // Deduplikasyon: Son 24 saatte aynı uyarı gönderilmiş mi?
             $title = $percentage >= 90 ? 'Depolama Alani Kritik' : 'Depolama Alani Azaliyor';
-            $recentExpr = $this->db->isPostgres()
-                ? "CURRENT_TIMESTAMP - INTERVAL '24 hours'"
-                : "datetime('now', '-24 hours')";
+            $recentExpr = "CURRENT_TIMESTAMP - INTERVAL '24 hours'";
             $existing = $this->db->fetch(
                 "SELECT id FROM notifications WHERE company_id = ? AND title = ? AND created_at >= $recentExpr",
                 [$companyId, $title]

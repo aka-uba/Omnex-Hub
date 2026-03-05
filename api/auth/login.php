@@ -48,7 +48,7 @@ if (!$user) {
             'user_id' => null,
             'action' => 'login_failed',
             'entity_type' => 'auth',
-            'description' => 'Failed login attempt - user not found: ' . $email,
+            'old_values' => json_encode(['reason' => 'user_not_found', 'email' => $email]),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'created_at' => date('Y-m-d H:i:s')
@@ -69,7 +69,7 @@ if (!Auth::verifyPassword($password, $user['password_hash'])) {
             'user_id' => $user['id'] ?? null,
             'action' => 'login_failed',
             'entity_type' => 'auth',
-            'description' => 'Failed login attempt - invalid password: ' . $email,
+            'old_values' => json_encode(['reason' => 'invalid_password', 'email' => $email]),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'created_at' => date('Y-m-d H:i:s')

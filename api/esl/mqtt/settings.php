@@ -143,15 +143,10 @@ $mqttDeviceCount = $db->fetchColumn(
 
 // Son 24 saatteki heartbeat sayisi
 $recentHeartbeats = $db->fetchColumn(
-    $db->isPostgres()
-        ? "SELECT COUNT(*) FROM device_heartbeats dh
-           JOIN devices d ON dh.device_id = d.id
-           WHERE d.company_id = ? AND d.communication_mode = 'mqtt'
-             AND dh.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'"
-        : "SELECT COUNT(*) FROM device_heartbeats dh
-           JOIN devices d ON dh.device_id = d.id
-           WHERE d.company_id = ? AND d.communication_mode = 'mqtt'
-             AND dh.created_at > datetime('now', '-24 hours')",
+    "SELECT COUNT(*) FROM device_heartbeats dh
+       JOIN devices d ON dh.device_id = d.id
+       WHERE d.company_id = ? AND d.communication_mode = 'mqtt'
+         AND dh.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'",
     [$companyId]
 );
 

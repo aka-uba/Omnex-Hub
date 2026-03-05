@@ -10,7 +10,7 @@ if (!$email) {
     Response::badRequest('E-posta adresi gerekli');
 }
 
-$user = $db->fetch("SELECT id, name, email FROM users WHERE email = ?", [$email]);
+$user = $db->fetch("SELECT id, first_name, last_name, email FROM users WHERE email = ?", [$email]);
 
 // Always return success (don't reveal if email exists)
 if ($user) {

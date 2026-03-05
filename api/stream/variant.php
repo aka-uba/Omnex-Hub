@@ -31,7 +31,7 @@ if (!$token || !$profile) {
 
 // Token dogrula
 $device = $db->fetch(
-    "SELECT * FROM devices WHERE stream_token = ? AND stream_mode = 1",
+    "SELECT * FROM devices WHERE stream_token = ? AND stream_mode = true",
     [$token]
 );
 
