@@ -505,8 +505,8 @@ class OmnexPlayer {
             <div class="pwa-install-content">
                 <div class="pwa-install-icon">
                     <svg viewBox="0 0 100 100" width="60" height="60">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#4f46e5" stroke-width="3"/>
-                        <circle cx="50" cy="50" r="25" fill="#4f46e5"/>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#18c8c8" stroke-width="3"/>
+                        <circle cx="50" cy="50" r="25" fill="#18c8c8"/>
                     </svg>
                 </div>
                 <h2>Kurulum Seçenekleri</h2>
@@ -820,7 +820,7 @@ class OmnexPlayer {
                     line-height: 1.5;
                 }
                 .step-number {
-                    background: #4f46e5;
+                    background: #18c8c8;
                     color: white;
                     width: 24px;
                     height: 24px;
@@ -835,7 +835,7 @@ class OmnexPlayer {
                 .instruction-note {
                     margin-top: 1rem;
                     padding: 0.75rem;
-                    background: rgba(79, 70, 229, 0.2);
+                    background: rgba(24, 200, 200, 0.2);
                     border-radius: 8px;
                     color: rgba(255,255,255,0.8);
                     font-size: 0.85rem;
@@ -846,7 +846,7 @@ class OmnexPlayer {
                     text-align: center;
                 }
                 .btn-close-instructions {
-                    background: #4f46e5;
+                    background: #18c8c8;
                     color: white;
                     border: none;
                     padding: 0.75rem 2rem;
@@ -1888,7 +1888,7 @@ class OmnexPlayer {
                     text: syncCode,
                     width: size,
                     height: size,
-                    colorDark: '#4f46e5',   // QR code color (purple)
+                    colorDark: '#18c8c8',   // QR code color (purple)
                     colorLight: '#0f0f23',  // Background (dark theme)
                     correctLevel: QRCode.CorrectLevel.M
                 });
@@ -1914,11 +1914,11 @@ class OmnexPlayer {
         container.innerHTML = `
             <div class="qr-placeholder" style="text-align: center; padding: 1rem;">
                 <svg viewBox="0 0 100 100" width="80" height="80" style="opacity: 0.5;">
-                    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#2f73ff" stroke-width="2"/>
-                    <rect x="20" y="20" width="20" height="20" fill="#2f73ff"/>
-                    <rect x="60" y="20" width="20" height="20" fill="#2f73ff"/>
-                    <rect x="20" y="60" width="20" height="20" fill="#2f73ff"/>
-                    <rect x="45" y="45" width="10" height="10" fill="#2f73ff"/>
+                    <rect x="10" y="10" width="80" height="80" fill="none" stroke="#18c8c8" stroke-width="2"/>
+                    <rect x="20" y="20" width="20" height="20" fill="#18c8c8"/>
+                    <rect x="60" y="20" width="20" height="20" fill="#18c8c8"/>
+                    <rect x="20" y="60" width="20" height="20" fill="#18c8c8"/>
+                    <rect x="45" y="45" width="10" height="10" fill="#18c8c8"/>
                 </svg>
                 <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-top: 0.5rem;">Kodu panele girin</p>
             </div>
@@ -2306,9 +2306,9 @@ class OmnexPlayer {
 
         overlay.innerHTML = `
             <div style="text-align: center; color: white; padding: 2rem;">
-                <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#4f46e5" stroke-width="1.5" style="margin-bottom: 1.5rem;">
+                <svg viewBox="0 0 24 24" width="80" height="80" fill="none" stroke="#18c8c8" stroke-width="1.5" style="margin-bottom: 1.5rem;">
                     <circle cx="12" cy="12" r="10"/>
-                    <polygon points="10,8 16,12 10,16" fill="#4f46e5"/>
+                    <polygon points="10,8 16,12 10,16" fill="#18c8c8"/>
                 </svg>
                 <h2 style="font-size: 1.5rem; margin: 0 0 0.75rem 0; font-weight: 600;">Oynatmak için Dokunun</h2>
                 <p style="font-size: 1rem; opacity: 0.7; margin: 0;">Videoları oynatmak için ekrana dokunun</p>
