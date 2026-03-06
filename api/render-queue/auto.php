@@ -96,9 +96,9 @@ $companyId = Auth::getActiveCompanyId();
 $data = $request->all();
 $targetDeviceId = $data['target_device_id'] ?? null;
 $targetTemplateId = $data['target_template_id'] ?? null;
-$assignedDeviceJoin = $db->isPostgres()
-    ? "INNER JOIN devices d ON CAST(d.id AS TEXT) = CAST(p.assigned_device_id AS TEXT)"
-    : "INNER JOIN devices d ON d.id = p.assigned_device_id";
+$assignedProductDeviceJoin = $db->isPostgres()
+    ? 'INNER JOIN devices d ON CAST(d.id AS TEXT) = CAST(p.assigned_device_id AS TEXT)'
+    : 'INNER JOIN devices d ON d.id = p.assigned_device_id';
 
 // Format 1: product_ids array - look up labels from database
 if (!empty($data['product_ids']) && is_array($data['product_ids'])) {
@@ -157,7 +157,7 @@ if (!empty($data['product_ids']) && is_array($data['product_ids'])) {
     $assignedProducts = $db->fetchAll(
         "SELECT p.id as product_id, p.assigned_device_id, p.assigned_template_id, d.id as device_id, d.current_template_id
          FROM products p
-         $assignedDeviceJoin
+         {$assignedProductDeviceJoin}
          WHERE p.company_id = ?
          AND p.assigned_device_id IS NOT NULL
          AND p.id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")",

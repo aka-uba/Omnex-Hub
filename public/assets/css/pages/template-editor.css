@@ -2042,18 +2042,33 @@
     flex-shrink: 0;
 }
 
-/* Property Color Row (renk + buton yan yana) */
-.property-color-row {
+/* Property Color Row (renk + hex + opsiyonel buton) */
+.property-color-row,
+.property-color-input {
     display: flex;
     gap: var(--space-1);
     align-items: center;
 }
 
-.property-color-row .form-color {
-    flex: 1;
+.property-color-row .form-color,
+.property-color-input .form-color {
+    width: 38px;
+    min-width: 38px;
+    flex: 0 0 38px;
+    height: 28px;
+    padding: 1px;
 }
 
-.property-color-row .btn-clear-stroke {
+.property-color-row .form-color-hex,
+.property-color-input .form-color-hex {
+    flex: 1;
+    min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    text-transform: uppercase;
+}
+
+.property-color-row .btn-clear-stroke,
+.property-color-input .btn-clear-stroke {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2068,19 +2083,22 @@
     flex-shrink: 0;
 }
 
-.property-color-row .btn-clear-stroke:hover {
+.property-color-row .btn-clear-stroke:hover,
+.property-color-input .btn-clear-stroke:hover {
     background: var(--bg-secondary);
     color: var(--text-primary);
     border-color: var(--color-primary);
 }
 
-.property-color-row .btn-clear-stroke.active {
+.property-color-row .btn-clear-stroke.active,
+.property-color-input .btn-clear-stroke.active {
     background: var(--color-primary-light, rgba(34, 139, 230, 0.1));
     color: var(--color-primary);
     border-color: var(--color-primary);
 }
 
-.property-color-row .btn-clear-stroke i {
+.property-color-row .btn-clear-stroke i,
+.property-color-input .btn-clear-stroke i {
     font-size: 0.8rem;
 }
 

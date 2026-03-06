@@ -18,7 +18,6 @@ export class TemplateListPage {
         this.viewMode = localStorage.getItem('template_view_mode') || 'grid';
         this.pagination = { page: 1, perPage: 20, total: 0 };
         this.dataTable = null;
-        this.listSelectionObserver = null;
         this.selectedTemplates = new Set();
         this.isSuperAdmin = (this.app.auth?.getRole() || '').toLowerCase() === 'superadmin';
     }
@@ -32,95 +31,6 @@ export class TemplateListPage {
 
     isSharedTemplate(template) {
         return template?.scope === 'system' || template?.company_id === null;
-    }
-
-    canManageTemplate(template) {
-        return this.isSuperAdmin || !this.isSharedTemplate(template);
-    }
-
-    getSelectionLockMarkup(isLocked) {
-        if (!isLocked) return '';
-        return `
-            <span class="selection-lock-indicator" title="${this.__('messages.sharedDeleteBlocked')}">
-                <i class="ti ti-lock"></i>
-            </span>
-        `;
-    }
-
-    normalizeSelectedTemplateIds(selectedRows = []) {
-        const allowedIds = selectedRows
-            .map(row => (typeof row === 'object' ? row?.id : row))
-            .filter(Boolean)
-            .filter(id => {
-                const template = this.templates.find(t => t.id === id);
-                return this.canManageTemplate(template);
-            });
-
-        return new Set(allowedIds);
-    }
-
-    applyListSelectionPermissions() {
-        if (!this.dataTable || this.isSuperAdmin) return;
-
-        const selectableIds = new Set();
-        this.selectedTemplates.forEach(id => {
-            const template = this.templates.find(t => t.id === id);
-            if (this.canManageTemplate(template)) {
-                selectableIds.add(id);
-            }
-        });
-        this.selectedTemplates = selectableIds;
-        this.dataTable.state.selectedRows = new Set(selectableIds);
-
-        const rowCheckboxes = this.dataTable.container.querySelectorAll('[data-table-select-row]');
-        rowCheckboxes.forEach(checkbox => {
-            const rowKey = checkbox.getAttribute('data-table-select-row');
-            const template = this.templates.find(t => t.id === rowKey);
-            const isLocked = !this.canManageTemplate(template);
-            const cell = checkbox.closest('.data-table-td-checkbox');
-            const existingIndicator = cell?.querySelector('.selection-lock-indicator');
-
-            if (isLocked) {
-                checkbox.checked = false;
-                checkbox.disabled = true;
-                cell?.classList.add('selection-locked');
-                if (cell && !existingIndicator) {
-                    cell.insertAdjacentHTML('beforeend', this.getSelectionLockMarkup(true));
-                }
-            } else {
-                cell?.classList.remove('selection-locked');
-                existingIndicator?.remove();
-            }
-        });
-
-        this.dataTable.updateSelectionCount?.();
-
-        const selectAll = this.dataTable.container.querySelector('[data-table-select-all]');
-        if (selectAll) {
-            const selectableCount = this.templates.filter(template => this.canManageTemplate(template)).length;
-            selectAll.checked = selectableCount > 0 && selectableIds.size === selectableCount;
-            selectAll.indeterminate = selectableIds.size > 0 && selectableIds.size < selectableCount;
-        }
-    }
-
-    observeListSelectionPermissions() {
-        if (!this.dataTable || this.isSuperAdmin || this.listSelectionObserver) return;
-
-        const body = this.dataTable.container.querySelector('[data-table-body]');
-        const cards = this.dataTable.container.querySelector('[data-table-cards]');
-        const targets = [body, cards].filter(Boolean);
-        if (targets.length === 0) return;
-
-        this.listSelectionObserver = new MutationObserver(() => {
-            this.applyListSelectionPermissions();
-        });
-
-        targets.forEach((target) => {
-            this.listSelectionObserver.observe(target, {
-                childList: true,
-                subtree: true
-            });
-        });
     }
 
     render() {
@@ -279,15 +189,14 @@ export class TemplateListPage {
             const isPortrait = aspectRatio < 1;
             const isSelected = this.selectedTemplates.has(t.id);
             const isShared = this.isSharedTemplate(t);
-            const canEdit = this.canManageTemplate(t);
+            const canEdit = this.isSuperAdmin || !isShared;
 
             return `
             <div class="template-card ${isSelected ? 'selected' : ''}" data-template-id="${t.id}">
-                <div class="template-card-checkbox ${canEdit ? '' : 'has-lock'}">
+                <div class="template-card-checkbox">
                     <input type="checkbox" class="form-checkbox template-checkbox"
                         data-id="${t.id}" ${isSelected ? 'checked' : ''} ${canEdit ? '' : 'disabled'}
                         onclick="${canEdit ? `event.stopPropagation(); window.templateListPage?.toggleSelect('${t.id}')` : 'event.stopPropagation();'}">
-                    ${this.getSelectionLockMarkup(!canEdit)}
                 </div>
                 <div class="template-card-preview ${isPortrait ? 'portrait' : 'landscape'}">
                     ${t.thumbnail && t.thumbnail.startsWith('data:')
@@ -346,9 +255,8 @@ export class TemplateListPage {
             },
             exportFilename: 'sablonlar',
             exportTitle: this.__('title'),
-            onSelectionChange: (selectedRows) => {
-                this.selectedTemplates = this.normalizeSelectedTemplateIds(selectedRows);
-                this.applyListSelectionPermissions();
+            onSelectionChange: (selectedIds) => {
+                this.selectedTemplates = new Set(selectedIds);
                 this.updateBulkActions();
             },
             onRowClick: (row) => {
@@ -443,7 +351,7 @@ export class TemplateListPage {
                     label: this.__('actions.edit'),
                     onClick: (row) => window.location.hash = `#/templates/${row.id}/edit`,
                     class: 'btn-ghost text-primary',
-                    visible: (row) => this.canManageTemplate(row)
+                    visible: (row) => this.isSuperAdmin || !this.isSharedTemplate(row)
                 },
                 {
                     name: 'delete',
@@ -451,7 +359,7 @@ export class TemplateListPage {
                     label: this.__('actions.delete'),
                     onClick: (row) => this.delete(row.id),
                     class: 'btn-ghost text-danger',
-                    visible: (row) => this.canManageTemplate(row)
+                    visible: (row) => this.isSuperAdmin || !this.isSharedTemplate(row)
                 }
             ],
             pagination: true,
@@ -459,9 +367,6 @@ export class TemplateListPage {
             searchable: false,
             emptyText: this.__('empty')
         });
-
-        this.observeListSelectionPermissions();
-        this.applyListSelectionPermissions();
     }
 
     /**
@@ -602,7 +507,6 @@ export class TemplateListPage {
         this.updateGridSelection();
         if (this.dataTable) {
             this.dataTable.clearSelection?.();
-            this.applyListSelectionPermissions();
         }
     }
 
@@ -615,7 +519,7 @@ export class TemplateListPage {
         const selectedIds = Array.from(this.selectedTemplates);
         const deletableIds = selectedIds.filter(id => {
             const template = this.templates.find(t => t.id === id);
-            return this.canManageTemplate(template);
+            return this.isSuperAdmin || !this.isSharedTemplate(template);
         });
         const skippedCount = selectedIds.length - deletableIds.length;
 
@@ -713,7 +617,6 @@ export class TemplateListPage {
             }
         } else if (mode === 'list' && this.dataTable) {
             this.dataTable.setData(this.templates);
-            this.applyListSelectionPermissions();
         }
     }
 
@@ -753,7 +656,6 @@ export class TemplateListPage {
             // Update list view
             if (this.dataTable) {
                 this.dataTable.setData(this.templates);
-                this.applyListSelectionPermissions();
             }
 
             // Update stats after loading
@@ -818,7 +720,7 @@ export class TemplateListPage {
 
     async delete(id) {
         const template = this.templates.find(t => t.id === id);
-        if (!this.canManageTemplate(template)) {
+        if (!this.isSuperAdmin && this.isSharedTemplate(template)) {
             Toast.warning(this.__('messages.sharedDeleteBlocked'));
             return;
         }
@@ -1266,8 +1168,6 @@ export class TemplateListPage {
 
     destroy() {
         window.templateListPage = null;
-        this.listSelectionObserver?.disconnect();
-        this.listSelectionObserver = null;
         // Remove hover popup
         const popup = document.getElementById('image-hover-popup');
         if (popup) popup.remove();

@@ -29,6 +29,29 @@ class MqttBrokerService
     }
 
     /**
+     * DÄ±ÅŸ kullanÄ±m iÃ§in benzersiz push_id Ã¼ret.
+     */
+    public function createPushId(?string $seed = null): int
+    {
+        return $this->generatePushId($seed);
+    }
+
+    /**
+     * Cihaz komutlarÄ± iÃ§in Ã§akÄ±ÅŸma olasÄ±lÄ±ÄŸÄ± dÃ¼ÅŸÃ¼k push_id Ã¼retir.
+     */
+    private function generatePushId(?string $seed = null): int
+    {
+        try {
+            $randomPart = bin2hex(random_bytes(8));
+        } catch (Throwable $e) {
+            $randomPart = uniqid('', true);
+        }
+        $entropy = ($seed ?? '') . '|' . microtime(true) . '|' . $randomPart;
+        $hash = (int)sprintf('%u', crc32($entropy));
+        return $hash > 0 ? $hash : random_int(1, 2147483647);
+    }
+
+    /**
      * PavoDisplay API dokümantasyonuna göre sign hesapla.
      *
      * Algoritma:
@@ -403,7 +426,7 @@ class MqttBrokerService
             $clientId = $this->normalizeClientId((string)($device['mqtt_client_id'] ?? $device['device_id'] ?? ''));
             $payloadData = [
                 'action' => $command['action'] ?? 'updatelabel',
-                'push_id' => (int)($command['push_id'] ?? time()),
+                'push_id' => (int)($command['push_id'] ?? $this->generatePushId($deviceId)),
                 'clientid' => $clientId
             ];
 
@@ -647,7 +670,7 @@ class MqttBrokerService
                 // updatelabel + Data parse farklarindan dogan uyumsuzluklari azaltir.
                 $commandPayload = [
                     'action' => 'updatelabel',
-                    'push_id' => time(),
+                    'push_id' => $this->generatePushId($deviceId . ':' . (string)$contentVersion),
                     'clientid' => $clientId,
                     'priority' => 5
                 ];

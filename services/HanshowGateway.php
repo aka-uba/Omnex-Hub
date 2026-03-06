@@ -783,11 +783,32 @@ class HanshowGateway
      */
     private function convertFabricObject($obj, $product)
     {
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $width = (float)(($obj['width'] ?? 100) * ($obj['scaleX'] ?? 1));
+        $height = (float)(($obj['height'] ?? 50) * ($obj['scaleY'] ?? 1));
+        $originX = strtolower((string)($obj['originX'] ?? 'left'));
+        $originY = strtolower((string)($obj['originY'] ?? 'top'));
+
+        // Fabric left/top, originX/Y'ye gore center veya right/bottom referansli olabilir.
+        $startX = $left;
+        $startY = $top;
+        if ($originX === 'center') {
+            $startX -= $width / 2;
+        } elseif ($originX === 'right') {
+            $startX -= $width;
+        }
+        if ($originY === 'center') {
+            $startY -= $height / 2;
+        } elseif ($originY === 'bottom') {
+            $startY -= $height;
+        }
+
         $block = [
-            'start_x' => (int)($obj['left'] ?? 0),
-            'start_y' => (int)($obj['top'] ?? 0),
-            'end_x' => (int)(($obj['left'] ?? 0) + (($obj['width'] ?? 100) * ($obj['scaleX'] ?? 1))),
-            'end_y' => (int)(($obj['top'] ?? 0) + (($obj['height'] ?? 50) * ($obj['scaleY'] ?? 1))),
+            'start_x' => (int)round($startX),
+            'start_y' => (int)round($startY),
+            'end_x' => (int)round($startX + $width),
+            'end_y' => (int)round($startY + $height),
             'content_color' => $this->convertColor($obj['fill'] ?? '#000000')
         ];
 

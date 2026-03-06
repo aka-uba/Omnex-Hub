@@ -65,15 +65,13 @@ $activeItems = $db->fetch(
 $queueStatus['processing_items'] = (int)($activeItems['count'] ?? 0);
 
 // Şu an işlenmeye hazır olan pending job sayısı (scheduled_at geçmiş veya NULL)
-$readyCondition = "(scheduled_at IS NULL OR scheduled_at <= CURRENT_TIMESTAMP)
-       AND (next_retry_at IS NULL OR next_retry_at <= CURRENT_TIMESTAMP)";
-$readyParams = [$companyId];
 $readyToProcess = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue
      WHERE company_id = ? AND status = 'pending'
-       AND $readyCondition",
-    $readyParams
+       AND (scheduled_at IS NULL OR REPLACE(scheduled_at, 'T', ' ') <= ?)
+       AND (next_retry_at IS NULL OR REPLACE(next_retry_at, 'T', ' ') <= ?)",
+    [$companyId, $now, $now]
 );
 $queueStatus['ready_to_process'] = (int)($readyToProcess['count'] ?? 0);
 
@@ -191,23 +189,25 @@ $errorAnalysis['last_24h'] = $last24hErrors;
 // ========================================
 
 // Ortalama tamamlanma süresi (son 100 iş)
-$durationSecondsExpr = "EXTRACT(EPOCH FROM (completed_at - started_at))";
 $avgCompletionTime = $db->fetch(
     "SELECT
-        AVG(duration_seconds) as avg_seconds,
-        MIN(duration_seconds) as min_seconds,
-        MAX(duration_seconds) as max_seconds,
+        AVG(
+            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
+        ) as avg_seconds,
+        MIN(
+            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
+        ) as min_seconds,
+        MAX(
+            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
+        ) as max_seconds,
         COUNT(*) as sample_size
-     FROM (
-        SELECT $durationSecondsExpr as duration_seconds
-        FROM render_queue
-        WHERE company_id = ?
-          AND status = 'completed'
-          AND started_at IS NOT NULL
-          AND completed_at IS NOT NULL
-        ORDER BY completed_at DESC
-        LIMIT 100
-     ) recent_jobs",
+     FROM render_queue
+     WHERE company_id = ?
+       AND status = 'completed'
+       AND started_at IS NOT NULL
+       AND completed_at IS NOT NULL
+     ORDER BY completed_at DESC
+     LIMIT 100",
     [$companyId]
 );
 
@@ -232,20 +232,20 @@ if ($performanceMetrics['sample_size'] > 0) {
 }
 
 // Cihaz başına ortalama süre
-$perDeviceSecondsExpr = "(EXTRACT(EPOCH FROM (completed_at - started_at)) / NULLIF(devices_total, 0))";
 $avgPerDevice = $db->fetch(
-    "SELECT AVG(per_device_seconds) as avg_per_device
-     FROM (
-        SELECT $perDeviceSecondsExpr as per_device_seconds
-        FROM render_queue
-        WHERE company_id = ?
-          AND status = 'completed'
-          AND devices_total > 0
-          AND started_at IS NOT NULL
-          AND completed_at IS NOT NULL
-        ORDER BY completed_at DESC
-        LIMIT 100
-     ) recent_jobs",
+    "SELECT
+        AVG(
+            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS REAL) /
+            NULLIF(devices_total, 0)
+        ) as avg_per_device
+     FROM render_queue
+     WHERE company_id = ?
+       AND status = 'completed'
+       AND devices_total > 0
+       AND started_at IS NOT NULL
+       AND completed_at IS NOT NULL
+     ORDER BY completed_at DESC
+     LIMIT 100",
     [$companyId]
 );
 
@@ -300,16 +300,15 @@ $trends = [
 ];
 
 // Saatlik trend (son 24 saat)
-$hourBucketExpr = "to_char(date_trunc('hour', created_at), 'YYYY-MM-DD HH24:00')";
 $hourlyTrend = $db->fetchAll(
     "SELECT
-        $hourBucketExpr as hour,
+        strftime('%Y-%m-%d %H:00', created_at) as hour,
         COUNT(*) as jobs,
         SUM(devices_total) as devices
      FROM render_queue
      WHERE company_id = ?
        AND created_at >= ?
-     GROUP BY 1
+     GROUP BY strftime('%Y-%m-%d %H:00', created_at)
      ORDER BY hour ASC",
     [$companyId, $since24h]
 );
@@ -321,8 +320,6 @@ $trends['hourly'] = $hourlyTrend;
 // ========================================
 
 // Retry bekleyen itemlar
-$retryReadyCondition = "rqi.next_retry_at <= CURRENT_TIMESTAMP";
-$retryPendingParams = [$companyId];
 $retryPending = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue_items rqi
@@ -331,8 +328,8 @@ $retryPending = $db->fetch(
        AND rqi.status = 'pending'
        AND rqi.retry_count > 0
        AND rqi.next_retry_at IS NOT NULL
-       AND $retryReadyCondition",
-    $retryPendingParams
+       AND REPLACE(rqi.next_retry_at, 'T', ' ') <= ?",
+    [$companyId, $now]
 );
 
 $retryAnalysis = [

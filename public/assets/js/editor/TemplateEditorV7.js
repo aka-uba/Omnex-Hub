@@ -35,6 +35,7 @@ import {
     Triangle,
     FabricText,
     IText,
+    Textbox,
     FabricImage,
     Group,
     Line,
@@ -702,7 +703,11 @@ export class TemplateEditorV7 {
      * @returns {Promise<fabric.IText>}
      */
     async addText(text = '', options = {}) {
-        const obj = await this.objectFactory.createText(text || this.__('editor.elements.newText'), options);
+        const obj = await this.objectFactory.createTextbox(text || this.__('editor.elements.newText'), {
+            originX: 'left',
+            originY: 'top',
+            ...options
+        });
         // ObjectFactory zaten canvas'a ekliyor
         if (obj && this.canvas) {
             this.canvas.setActiveObject(obj);
@@ -1064,9 +1069,11 @@ export class TemplateEditorV7 {
 
             case 'price':
                 // Fiyat metni (büyük font) - canvas'ta okunabilir label göster
-                obj = await this.objectFactory.createText(this._getFieldLabel(fieldKey), {
+                obj = await this.objectFactory.createTextbox(this._getFieldLabel(fieldKey), {
                     fontSize: 36,
                     fontWeight: 'bold',
+                    originX: 'left',
+                    originY: 'top',
                     fill: '#e74c3c',
                     [CUSTOM_PROPS.CUSTOM_TYPE]: 'price',
                     [CUSTOM_PROPS.IS_DATA_FIELD]: true,
@@ -1077,8 +1084,10 @@ export class TemplateEditorV7 {
 
             case 'date':
                 // Tarih metni - canvas'ta okunabilir label göster
-                obj = await this.objectFactory.createText(this._getFieldLabel(fieldKey), {
+                obj = await this.objectFactory.createTextbox(this._getFieldLabel(fieldKey), {
                     fontSize: 14,
+                    originX: 'left',
+                    originY: 'top',
                     fill: '#666666',
                     [CUSTOM_PROPS.CUSTOM_TYPE]: 'date',
                     [CUSTOM_PROPS.IS_DATA_FIELD]: true,
@@ -1089,8 +1098,10 @@ export class TemplateEditorV7 {
 
             default:
                 // Normal metin alanı - canvas'ta okunabilir label göster
-                obj = await this.objectFactory.createText(this._getFieldLabel(fieldKey), {
+                obj = await this.objectFactory.createTextbox(this._getFieldLabel(fieldKey), {
                     fontSize: 20,
+                    originX: 'left',
+                    originY: 'top',
                     [CUSTOM_PROPS.CUSTOM_TYPE]: 'dynamic-text',
                     [CUSTOM_PROPS.IS_DATA_FIELD]: true,
                     [CUSTOM_PROPS.DYNAMIC_FIELD]: fieldKey,
@@ -1261,10 +1272,204 @@ export class TemplateEditorV7 {
     }
 
     /**
+     * Dynamic text olarak kullanılan legacy Text nesnelerini Textbox'a çevir.
+     * Böylece kaydedilmiş width korunur ve seçim kutusu gerçek alanı gösterir.
+     * @private
+     * @param {Array<Object>} [originalJsonObjects=[]]
+     */
+    _upgradeDynamicTextObjectsToTextbox(originalJsonObjects = []) {
+        if (!this.canvas || typeof Textbox !== 'function') return;
+
+        const objects = this.canvas.getObjects();
+        if (!Array.isArray(objects) || objects.length === 0) return;
+
+        const activeObject = this.canvas.getActiveObject();
+        let hasChanges = false;
+
+        objects.forEach((obj, index) => {
+            if (!obj) return;
+
+            const type = String(obj.type || '').toLowerCase();
+            if (!['text', 'i-text', 'itext', 'fabrictext'].includes(type)) return;
+
+            const jsonObj = originalJsonObjects[index] || null;
+            const jsonType = String(jsonObj?.type || '').toLowerCase();
+
+            const customType = String(
+                obj[CUSTOM_PROPS.CUSTOM_TYPE] ||
+                obj.customType ||
+                jsonObj?.[CUSTOM_PROPS.CUSTOM_TYPE] ||
+                jsonObj?.customType ||
+                ''
+            ).toLowerCase();
+
+            const dynamicField =
+                obj[CUSTOM_PROPS.DYNAMIC_FIELD] ||
+                obj.dynamicField ||
+                jsonObj?.[CUSTOM_PROPS.DYNAMIC_FIELD] ||
+                jsonObj?.dynamicField ||
+                '';
+
+            const isDataField = !!(
+                obj[CUSTOM_PROPS.IS_DATA_FIELD] ||
+                obj.isDataField ||
+                jsonObj?.[CUSTOM_PROPS.IS_DATA_FIELD] ||
+                jsonObj?.isDataField
+            );
+
+            const isDynamicLike =
+                !!dynamicField ||
+                isDataField ||
+                customType === 'dynamic-text' ||
+                customType === 'price' ||
+                customType === 'date';
+
+            const jsonWidth = Number(jsonObj?.width);
+            const liveWidth = Number(obj.width);
+            const hasWidthDrift = Number.isFinite(jsonWidth) && Number.isFinite(liveWidth) && (jsonWidth - liveWidth) > 2;
+
+            if (!isDynamicLike && jsonType !== 'textbox' && !hasWidthDrift) return;
+
+            const desiredWidthRaw = jsonObj?.width ?? obj.width ?? (typeof obj.getScaledWidth === 'function' ? obj.getScaledWidth() : 0);
+            const desiredWidth = Math.max(1, Number(desiredWidthRaw) || 1);
+            const sourceHeightRaw = jsonObj?.height ?? obj.height ?? (typeof obj.getScaledHeight === 'function' ? obj.getScaledHeight() : 0);
+            const sourceHeight = Math.max(1, Number(sourceHeightRaw) || 1);
+            const normalizedPos = this._resolveLeftTopFromOrigin(obj, desiredWidth, sourceHeight);
+
+            const textbox = new Textbox(obj.text || '', {
+                left: normalizedPos.left,
+                top: normalizedPos.top,
+                originX: 'left',
+                originY: 'top',
+                angle: obj.angle || 0,
+                scaleX: obj.scaleX || 1,
+                scaleY: obj.scaleY || 1,
+                skewX: obj.skewX || 0,
+                skewY: obj.skewY || 0,
+                flipX: !!obj.flipX,
+                flipY: !!obj.flipY,
+                width: desiredWidth,
+                splitByGrapheme: jsonObj?.splitByGrapheme ?? obj.splitByGrapheme ?? true,
+                fontFamily: obj.fontFamily || 'Arial',
+                fontSize: obj.fontSize || 20,
+                fontWeight: obj.fontWeight || 'normal',
+                fontStyle: obj.fontStyle || 'normal',
+                textAlign: obj.textAlign || 'left',
+                lineHeight: obj.lineHeight || 1.16,
+                charSpacing: obj.charSpacing || 0,
+                underline: !!obj.underline,
+                overline: !!obj.overline,
+                linethrough: !!obj.linethrough,
+                fill: obj.fill || '#000000',
+                stroke: obj.stroke || null,
+                strokeWidth: obj.strokeWidth || 0,
+                strokeUniform: obj.strokeUniform !== false,
+                shadow: obj.shadow || null,
+                backgroundColor: obj.backgroundColor || '',
+                opacity: obj.opacity ?? 1,
+                visible: obj.visible !== false,
+                selectable: obj.selectable !== false,
+                evented: obj.evented !== false,
+                hasControls: obj.hasControls !== false,
+                hasBorders: obj.hasBorders !== false,
+                lockMovementX: !!obj.lockMovementX,
+                lockMovementY: !!obj.lockMovementY,
+                lockRotation: !!obj.lockRotation,
+                lockScalingX: !!obj.lockScalingX,
+                lockScalingY: !!obj.lockScalingY,
+                lockSkewingX: !!obj.lockSkewingX,
+                lockSkewingY: !!obj.lockSkewingY,
+                lockUniScaling: !!obj.lockUniScaling,
+                padding: obj.padding || 0
+            });
+
+            SERIALIZABLE_PROPS.forEach((key) => {
+                const fromJson = jsonObj && jsonObj[key] !== undefined ? jsonObj[key] : undefined;
+                const fromObj = obj[key] !== undefined ? obj[key] : undefined;
+                const value = fromJson !== undefined ? fromJson : fromObj;
+                if (value === undefined || value === null) return;
+
+                try {
+                    textbox.set(key, value);
+                    textbox[key] = value;
+                } catch (e) {
+                    // ignore non-settable props
+                }
+            });
+
+            this.canvas.remove(obj);
+            this.canvas.add(textbox);
+            this.canvas.moveTo(textbox, index);
+            textbox.setCoords?.();
+
+            if (activeObject === obj) {
+                this.canvas.setActiveObject(textbox);
+            }
+
+            hasChanges = true;
+        });
+
+        if (hasChanges) {
+            this.canvas.requestRenderAll();
+        }
+    }
+
+    /**
      * snake_case → camelCase dönüşümü
      * @param {string} str - snake_case string
      * @returns {string} camelCase string
      */
+    _resolveLeftTopFromOrigin(obj, baseWidth, baseHeight) {
+        const scaleX = Number(obj?.scaleX) || 1;
+        const scaleY = Number(obj?.scaleY) || 1;
+        const scaledW = (Number(baseWidth) || 0) * scaleX;
+        const scaledH = (Number(baseHeight) || 0) * scaleY;
+
+        let left = Number(obj?.left) || 0;
+        let top = Number(obj?.top) || 0;
+
+        const originX = String(obj?.originX || 'left').toLowerCase();
+        const originY = String(obj?.originY || 'top').toLowerCase();
+
+        if (originX === 'center') left -= scaledW / 2;
+        else if (originX === 'right') left -= scaledW;
+
+        if (originY === 'center') top -= scaledH / 2;
+        else if (originY === 'bottom') top -= scaledH;
+
+        return { left, top };
+    }
+
+    _normalizeTextObjectOrigins() {
+        if (!this.canvas) return;
+
+        const objects = this.canvas.getObjects();
+        let changed = false;
+
+        objects.forEach((obj) => {
+            const type = String(obj?.type || '').toLowerCase();
+            if (!['text', 'i-text', 'itext', 'textbox', 'fabrictext'].includes(type)) return;
+
+            const originX = String(obj.originX || 'left').toLowerCase();
+            const originY = String(obj.originY || 'top').toLowerCase();
+            if (originX === 'left' && originY === 'top') return;
+
+            const pos = this._resolveLeftTopFromOrigin(obj, obj.width || 1, obj.height || 1);
+            obj.set({
+                left: pos.left,
+                top: pos.top,
+                originX: 'left',
+                originY: 'top'
+            });
+            obj.setCoords?.();
+            changed = true;
+        });
+
+        if (changed) {
+            this.canvas.requestRenderAll();
+        }
+    }
+
     _snakeToCamel(str) {
         return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
     }
@@ -1604,7 +1809,7 @@ export class TemplateEditorV7 {
      * Grid'i göster/gizle
      */
     toggleGrid() {
-        this.gridManager?.toggleGrid();
+        return this.gridManager?.toggleGrid();
     }
 
     /**
@@ -2079,6 +2284,10 @@ export class TemplateEditorV7 {
             }
             // ==========================================================================================
 
+            // Legacy kayıtlarda Text olarak gelen dynamic/metin kutularını önce dönüştür.
+            // Burada index eşleşmesi halen korunur (overlay temizliği yapılmadan önce).
+            this._upgradeDynamicTextObjectsToTextbox(originalJsonObjects);
+
             // ==================== FIX: Yüklenen region overlay'leri temizle ====================
             // NOT: Multi-product-frame Group'ları (customType veya frameCols/frameRows ile tanınır)
             // excludeFromExport olsa bile korunmalı — onlar frame boyutunu tanımlar
@@ -2109,6 +2318,12 @@ export class TemplateEditorV7 {
             this._repairDynamicFieldProps();
             // ===========================================================================
 
+            // Eksik dynamic props onarımından sonra da Text -> Textbox yükseltmesini tekrar dene.
+            this._upgradeDynamicTextObjectsToTextbox([]);
+
+            // Metinlerde sol hizalama tutarlılığı için origin'i left/top'a normalize et.
+            this._normalizeTextObjectOrigins();
+
             // ==================== FIX: Multi-product-frame Group props onar ===========
             // Fabric.js v7 loadFromJSON sonrası Group objelerin custom prop'ları
             // .set() ile değil plain property olarak gelir. Bunları .set() ile yeniden ata.
@@ -2123,10 +2338,15 @@ export class TemplateEditorV7 {
             // Video placeholder overlay'lerini geri yükle
             this._restoreVideoOverlays();
 
-            // Grid çizgilerini yeniden oluştur (loadFromJSON mevcut grid'i sildi)
-            if (this.gridManager && this.gridManager.isGridVisible()) {
-                this.gridManager._removeGrid();
-                this.gridManager._createGrid();
+            // Grid çizgilerini görünürlük state'i ile senkronize et
+            // (loadFromJSON mevcut çizgileri silebilir).
+            if (this.gridManager) {
+                if (typeof this.gridManager.refreshGridVisibility === 'function') {
+                    this.gridManager.refreshGridVisibility();
+                } else if (this.gridManager.isGridVisible()) {
+                    this.gridManager._removeGrid();
+                    this.gridManager._createGrid();
+                }
             }
 
             this.canvas.requestRenderAll();
@@ -3026,10 +3246,12 @@ export class TemplateEditorV7 {
                     <div>
                         <label style="display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:#495057;">Çizgi Rengi</label>
                         <input type="color" id="bc-edit-linecolor" value="${currentLineColor}" style="width:100%;height:38px;border:1px solid #dee2e6;border-radius:6px;cursor:pointer;padding:2px;">
+                        <input type="text" id="bc-edit-linecolor-hex" value="${currentLineColor}" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid #dee2e6;border-radius:6px;font-size:13px;box-sizing:border-box;font-family:ui-monospace,Consolas,monospace;text-transform:uppercase;" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
                     </div>
                     <div>
                         <label style="display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:#495057;">Arka Plan</label>
                         <input type="color" id="bc-edit-bg" value="${currentBg}" style="width:100%;height:38px;border:1px solid #dee2e6;border-radius:6px;cursor:pointer;padding:2px;">
+                        <input type="text" id="bc-edit-bg-hex" value="${currentBg}" style="margin-top:6px;width:100%;padding:8px 10px;border:1px solid #dee2e6;border-radius:6px;font-size:13px;box-sizing:border-box;font-family:ui-monospace,Consolas,monospace;text-transform:uppercase;" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
                     </div>
                 </div>
 
@@ -3069,14 +3291,64 @@ export class TemplateEditorV7 {
         };
         updatePreview();
 
+        const normalizeHex = (value, fallback = '#000000') => {
+            const raw = String(value || '').trim();
+            if (!raw) return fallback.toUpperCase();
+            const prefixed = raw.startsWith('#') ? raw : `#${raw}`;
+            if (/^#[0-9a-fA-F]{3}$/.test(prefixed)) {
+                return `#${prefixed[1]}${prefixed[1]}${prefixed[2]}${prefixed[2]}${prefixed[3]}${prefixed[3]}`.toUpperCase();
+            }
+            if (/^#[0-9a-fA-F]{6}$/.test(prefixed)) {
+                return prefixed.toUpperCase();
+            }
+            return fallback.toUpperCase();
+        };
+
+        const bindColorHexPair = (colorId, hexId) => {
+            const colorInput = overlay.querySelector(`#${colorId}`);
+            const hexInput = overlay.querySelector(`#${hexId}`);
+            if (!colorInput || !hexInput) return;
+
+            const syncHex = () => {
+                hexInput.value = normalizeHex(colorInput.value, '#000000');
+            };
+            syncHex();
+
+            colorInput.addEventListener('input', () => {
+                syncHex();
+                updatePreview();
+            });
+
+            hexInput.addEventListener('input', () => {
+                let next = hexInput.value.trim().toUpperCase();
+                if (next && !next.startsWith('#')) {
+                    next = `#${next}`;
+                }
+                if (!/^#[0-9A-F]{0,6}$/.test(next)) return;
+                hexInput.value = next;
+                if (/^#[0-9A-F]{6}$/.test(next)) {
+                    colorInput.value = next;
+                    updatePreview();
+                }
+            });
+
+            hexInput.addEventListener('blur', () => {
+                const normalized = normalizeHex(hexInput.value, colorInput.value || '#000000');
+                hexInput.value = normalized;
+                colorInput.value = normalized;
+            });
+        };
+
+        bindColorHexPair('bc-edit-linecolor', 'bc-edit-linecolor-hex');
+        bindColorHexPair('bc-edit-bg', 'bc-edit-bg-hex');
+
         // Event'ler
         overlay.querySelector('#bc-edit-value').addEventListener('input', updatePreview);
         overlay.querySelector('#bc-edit-format').addEventListener('change', updatePreview);
         overlay.querySelector('#bc-edit-height').addEventListener('input', updatePreview);
         overlay.querySelector('#bc-edit-linewidth').addEventListener('input', updatePreview);
         overlay.querySelector('#bc-edit-displayvalue').addEventListener('change', updatePreview);
-        overlay.querySelector('#bc-edit-linecolor').addEventListener('input', updatePreview);
-        overlay.querySelector('#bc-edit-bg').addEventListener('input', updatePreview);
+        // Renk alanlari bindColorHexPair icinde updatePreview ile baglandi.
 
         const close = () => overlay.remove();
         overlay.querySelector('.modal-close-btn').addEventListener('click', close);

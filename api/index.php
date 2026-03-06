@@ -29,10 +29,6 @@ if (defined('PRODUCTION_MODE') && PRODUCTION_MODE) {
 
 // Custom error handler to catch all errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    if (!(error_reporting() & $errno)) {
-        return false;
-    }
-
     // Log the error
     error_log("PHP Error [$errno]: $errstr in $errfile on line $errline");
 
@@ -76,77 +72,11 @@ register_shutdown_function(function() {
     }
 });
 
-/**
- * Check whether IP belongs to given CIDR.
- */
-function ipInCidr(string $ip, string $cidr): bool
-{
-    if (!str_contains($cidr, '/')) {
-        return $ip === $cidr;
-    }
-
-    [$subnet, $mask] = explode('/', $cidr, 2);
-    $maskBits = (int)$mask;
-    if ($maskBits < 0 || $maskBits > 32) {
-        return false;
-    }
-
-    $ipLong = ip2long($ip);
-    $subnetLong = ip2long($subnet);
-    if ($ipLong === false || $subnetLong === false) {
-        return false;
-    }
-
-    $netmask = -1 << (32 - $maskBits);
-    $subnetNet = $subnetLong & $netmask;
-    return ($ipLong & $netmask) === $subnetNet;
-}
-
-/**
- * Parse trusted proxies from env and return normalized list.
- */
-function getTrustedProxies(): array
-{
-    $raw = (string)(getenv('OMNEX_TRUSTED_PROXIES') ?: '');
-    if ($raw === '') {
-        return ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'];
-    }
-
-    $parts = array_filter(array_map('trim', explode(',', $raw)));
-    return array_values($parts);
-}
-
-/**
- * Validate whether remote IP is in trusted proxies list.
- */
-function isTrustedProxy(string $remoteIp, array $trustedProxies): bool
-{
-    if ($remoteIp === '') {
-        return false;
-    }
-
-    foreach ($trustedProxies as $proxy) {
-        if ($proxy === '') {
-            continue;
-        }
-
-        if ($proxy === $remoteIp) {
-            return true;
-        }
-
-        if (str_contains($proxy, '/') && ipInCidr($remoteIp, $proxy)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 // HTTPS enforcement in production
 if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
-    $trustedProxies = getTrustedProxies();
+    $trustedProxies = ['127.0.0.1', '::1'];
     $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
-    $isFromTrustedProxy = isTrustedProxy((string)$remoteAddr, $trustedProxies);
+    $isFromTrustedProxy = in_array($remoteAddr, $trustedProxies);
 
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 
@@ -161,9 +91,12 @@ if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
     }
 }
 
-// Initialize database connection
+// Initialize database and run migrations if needed
 try {
     $db = Database::getInstance();
+    $db->migrate();
+    // Note: Seeds are NOT auto-executed anymore
+    // Run seeds manually via: php database/seeds/manual/manav_products_seed.php
 } catch (Exception $e) {
     Logger::error('Database initialization failed', ['error' => $e->getMessage()]);
 }
@@ -204,13 +137,6 @@ $router->get('/api/csrf-token', function($request) {
     Response::success([
         'token' => CsrfMiddleware::getToken()
     ]);
-});
-
-// =====================================================
-// Health Check Route (Public - no auth required)
-// =====================================================
-$router->get('/api/health', function($request) {
-    require API_PATH . '/health.php';
 });
 
 // API Routes
@@ -558,17 +484,6 @@ $router->group(['prefix' => '/api/devices', 'middleware' => ['auth']], function(
         require API_PATH . '/devices/network-config.php';
     });
 
-    // Bluetooth password management (PavoDisplay/Kexin device protection)
-    $router->get('/{id}/bt-password', function($request) {
-        require API_PATH . '/devices/bt-password.php';
-    });
-    $router->post('/{id}/bt-password', function($request) {
-        require API_PATH . '/devices/bt-password.php';
-    });
-    $router->delete('/{id}/bt-password', function($request) {
-        require API_PATH . '/devices/bt-password.php';
-    });
-
     // Network scan for PavoDisplay devices
     $router->post('/scan', function($request) {
         require API_PATH . '/devices/scan.php';
@@ -879,43 +794,6 @@ $router->group(['prefix' => '/api/licenses', 'middleware' => ['auth', 'admin']],
 
     $router->put('/{id}/device-pricing', function($request) {
         require API_PATH . '/licenses/device-pricing.php';
-    });
-});
-
-// =====================================================
-// Tenant Backup Routes (Admin)
-// =====================================================
-$router->group(['prefix' => '/api/tenant-backup', 'middleware' => ['auth', 'admin']], function($router) {
-    $router->get('/settings', function($request) {
-        require API_PATH . '/tenant-backup/settings.php';
-    });
-
-    $router->put('/settings', function($request) {
-        require API_PATH . '/tenant-backup/update-settings.php';
-    });
-
-    $router->get('/list', function($request) {
-        require API_PATH . '/tenant-backup/list.php';
-    });
-
-    $router->post('/export', function($request) {
-        require API_PATH . '/tenant-backup/export.php';
-    });
-
-    $router->post('/import', function($request) {
-        require API_PATH . '/tenant-backup/import.php';
-    });
-
-    $router->get('/download/{id}', function($request) {
-        require API_PATH . '/tenant-backup/download.php';
-    });
-
-    $router->get('/status/{id}', function($request) {
-        require API_PATH . '/tenant-backup/status.php';
-    });
-
-    $router->delete('/{id}', function($request) {
-        require API_PATH . '/tenant-backup/delete.php';
     });
 });
 
@@ -1624,34 +1502,6 @@ $router->group(['prefix' => '/api/integrations', 'middleware' => ['auth']], func
 });
 
 // =====================================================
-// ERP Import Routes (File-based import)
-// =====================================================
-
-// Public endpoint: ERP systems push files via API key (no session auth)
-$router->post('/api/import/upload', function($request) {
-    require API_PATH . '/import/upload.php';
-});
-
-// Protected endpoints: Import settings, history, files
-$router->group(['prefix' => '/api/import', 'middleware' => ['auth']], function($router) {
-    $router->get('/settings', function($request) {
-        require API_PATH . '/import/settings.php';
-    });
-    $router->put('/settings', function($request) {
-        require API_PATH . '/import/settings.php';
-    });
-    $router->get('/history', function($request) {
-        require API_PATH . '/import/history.php';
-    });
-    $router->get('/files', function($request) {
-        require API_PATH . '/import/files.php';
-    });
-    $router->post('/files/import', function($request) {
-        require API_PATH . '/import/files.php';
-    });
-});
-
-// =====================================================
 // Payment Routes (Iyzico + Paynet)
 // =====================================================
 
@@ -2015,21 +1865,6 @@ $router->group(['prefix' => '/api/bundles', 'middleware' => ['auth']], function(
 
     $router->delete('/{id}', function($request) {
         require API_PATH . '/bundles/delete.php';
-    });
-});
-
-// =====================================================
-// Field Binding Routes (Device/Product Lookup & Template Suggestions)
-// =====================================================
-$router->group(['prefix' => '/api/field-binding', 'middleware' => ['auth']], function($router) {
-    // Lookup device or product by code (barcode, SKU, MAC, IP, ID)
-    $router->post('/lookup', function($request) {
-        require API_PATH . '/field-binding/lookup.php';
-    });
-
-    // Get scored template suggestions for a device type/screen
-    $router->get('/templates', function($request) {
-        require API_PATH . '/field-binding/templates.php';
     });
 });
 

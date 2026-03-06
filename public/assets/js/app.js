@@ -240,9 +240,6 @@ class App {
         this.router.addRoute('/devices/:id', () => this.loadProtectedPage('devices/DeviceDetail'));
         this.router.addRoute('/signage', () => this.loadProtectedPage('signage/PlaylistList'));
         this.router.addRoute('/signage/playlists', () => this.loadProtectedPage('signage/PlaylistList'));
-        this.router.addRoute('/signage/playlists/ops', () => this.loadProtectedPage('signage/PlaylistListOps'));
-        this.router.addRoute('/signage/playlists/cards', () => this.loadProtectedPage('signage/PlaylistListCards'));
-        this.router.addRoute('/signage/playlists/studio', () => this.loadProtectedPage('signage/PlaylistListStudio'));
         this.router.addRoute('/signage/playlists/new', () => this.loadProtectedPage('signage/PlaylistDetail'));
         this.router.addRoute('/signage/playlists/:id', () => this.loadProtectedPage('signage/PlaylistDetail'));
         this.router.addRoute('/signage/schedules', () => this.loadProtectedPage('signage/ScheduleList'));
@@ -261,9 +258,6 @@ class App {
         this.router.addRoute('/notifications', () => this.loadProtectedPage('notifications/NotificationList'));
         this.router.addRoute('/notifications/settings', () => this.loadProtectedPage('notifications/NotificationSettings'));
 
-        // Field Binding (Camera-based device-product binding)
-        this.router.addRoute('/field-binding', () => this.loadProtectedPage('field-binding/FieldBinding'));
-
         // Web Templates (VvvebJs HTML Editor)
         this.router.addRoute('/web-templates', () => this.loadProtectedPage('web-templates/WebTemplateList'));
         this.router.addRoute('/web-templates/new', () => this.loadProtectedPage('web-templates/WebTemplateEditor'));
@@ -281,7 +275,6 @@ class App {
         this.router.addRoute('/admin/setup-wizard', () => this.loadAdminPage('admin/SetupWizard'));
         this.router.addRoute('/admin/queue', () => this.loadAdminPage('queue/QueueDashboard'));
         this.router.addRoute('/admin/branches', () => this.loadAdminPage('admin/BranchManagement'));
-        this.router.addRoute('/admin/backups', () => this.loadAdminPage('admin/TenantBackupPage'));
 
         // About page (all users)
         this.router.addRoute('/about', () => this.loadProtectedPage('About'));
@@ -473,3 +466,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 export default App;
+

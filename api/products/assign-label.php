@@ -13,6 +13,9 @@ $db = Database::getInstance();
 $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 $productId = $request->routeParam('id');
+$templateJoinExpr = $db->isPostgres()
+    ? 'LEFT JOIN templates t ON CAST(p.assigned_template_id AS TEXT) = CAST(t.id AS TEXT)'
+    : 'LEFT JOIN templates t ON p.assigned_template_id = t.id';
 
 // Verify product exists and belongs to user's company
 $product = $db->fetch(
@@ -27,8 +30,6 @@ if (!$product) {
 $deviceId = $request->input('device_id');
 $templateId = $request->input('template_id');
 $force = $request->input('force', false);
-$publicTemplateFilter = "(company_id = ? OR is_public = true OR scope = 'system' OR company_id IS NULL)";
-$templateJoin = 'LEFT JOIN templates t ON CAST(p.assigned_template_id AS TEXT) = CAST(t.id AS TEXT)';
 
 if (!$deviceId) {
     Response::badRequest('Cihaz ID gerekli');
@@ -47,7 +48,7 @@ if (!$device) {
 // If template specified, verify it exists
 if ($templateId) {
     $template = $db->fetch(
-        "SELECT id FROM templates WHERE id = ? AND $publicTemplateFilter",
+        "SELECT id FROM templates WHERE id = ? AND (company_id = ? OR is_public IS TRUE OR scope = 'system' OR company_id IS NULL)",
         [$templateId, $companyId]
     );
 
@@ -60,7 +61,7 @@ if ($templateId) {
 $existingAssignment = $db->fetch(
     "SELECT p.id, p.name, p.sku, t.name as template_name
      FROM products p
-     $templateJoin
+     {$templateJoinExpr}
      WHERE p.assigned_device_id = ? AND p.company_id = ? AND p.id != ?",
     [$deviceId, $companyId, $productId]
 );
@@ -188,7 +189,6 @@ $db->update('devices', [
 
 // Log device action
 $db->insert('device_logs', [
-    'id' => $db->generateUuid(),
     'device_id' => $deviceId,
     'action' => 'send',
     'content_type' => 'product',

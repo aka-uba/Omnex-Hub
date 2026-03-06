@@ -328,6 +328,17 @@ class RenderQueueWorker
      */
     private function getOrRenderImage(array $job, array $renderParams): ?string
     {
+        // Queue API'den gelen pre-render/cached dosya yolu varsa onu kullan.
+        $jobImagePath = trim((string)($job['rendered_image_path'] ?? ''));
+        if ($jobImagePath !== '') {
+            $resolvedJobImagePath = $this->resolveQueuedImagePath($jobImagePath);
+            if ($resolvedJobImagePath !== null && file_exists($resolvedJobImagePath)) {
+                $this->log("  Queue image path kullaniliyor: " . basename($resolvedJobImagePath));
+                return $resolvedJobImagePath;
+            }
+            $this->log("  Queue image path bulunamadi, yeniden render denenecek: {$jobImagePath}", 'warn');
+        }
+
         $template = $renderParams['template'];
         $product = $renderParams['product'];
 
@@ -355,7 +366,18 @@ class RenderQueueWorker
         );
 
         // Cache'den kontrol et
-        $cachePath = $this->gateway->getCachedRender($job['company_id'], 'esl_android', $cacheKey);
+        $cachePath = false;
+        if (method_exists($this->gateway, 'getCachedRender')) {
+            $cachePath = $this->gateway->getCachedRender($job['company_id'], 'esl_android', $cacheKey);
+        } elseif (method_exists($this->gateway, 'getRenderFromCache')) {
+            $cachePath = $this->gateway->getRenderFromCache(
+                (string)$job['company_id'],
+                'esl_android',
+                (string)($renderParams['locale'] ?? 'tr'),
+                (string)$template['id'],
+                (string)$cacheKey
+            );
+        }
 
         if ($cachePath && file_exists($cachePath)) {
             $this->log("  Cache hit: $cacheKey");
@@ -368,6 +390,40 @@ class RenderQueueWorker
     }
 
     /**
+     * Render queue kaydindaki dosya yolunu absolute path'e normalize et.
+     */
+    private function resolveQueuedImagePath(string $path): ?string
+    {
+        $candidate = trim($path);
+        if ($candidate === '') {
+            return null;
+        }
+
+        if (file_exists($candidate)) {
+            return $candidate;
+        }
+
+        if (str_starts_with($candidate, '/storage/')) {
+            $mapped = BASE_PATH . '/public' . $candidate;
+            if (file_exists($mapped)) {
+                return $mapped;
+            }
+        } elseif (str_starts_with($candidate, 'storage/')) {
+            $mapped = BASE_PATH . '/public/' . $candidate;
+            if (file_exists($mapped)) {
+                return $mapped;
+            }
+        } else {
+            $mapped = BASE_PATH . '/' . ltrim($candidate, '/');
+            if (file_exists($mapped)) {
+                return $mapped;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Template'i render et
      */
     private function renderTemplate(array $job, array $template, ?array $product, array $params): ?string
@@ -377,20 +433,36 @@ class RenderQueueWorker
         if (file_exists($rendererPath)) {
             require_once $rendererPath;
             $renderer = new TemplateRenderer();
+            $templateFile = trim((string)($template['template_file'] ?? ''));
 
-            $result = $renderer->renderForDevice(
-                $template['template_path'] ?? null,
-                $product ?? [],
-                null,
-                [
-                    'width' => $params['width'],
-                    'height' => $params['height'],
-                    'company_name' => $this->getCompanyName($job['company_id'])
-                ]
-            );
+            if ($templateFile !== '') {
+                try {
+                    $result = $renderer->renderForDevice(
+                        $templateFile,
+                        $product ?? [],
+                        null,
+                        [
+                            'width' => $params['width'],
+                            'height' => $params['height'],
+                            'company_name' => $this->getCompanyName($job['company_id'])
+                        ]
+                    );
 
-            if (!empty($result['image_file']) && file_exists($result['image_file'])) {
-                return $result['image_file'];
+                    $imageFile = (string)($result['image_file'] ?? '');
+                    if ($imageFile !== '' && file_exists($imageFile)) {
+                        // Headless browser yoksa TemplateRenderer HTML dosyasi dondurebilir.
+                        // Küyük/payload akisi için gecerli bir bitmap dosyasi sart.
+                        $imageInfo = @getimagesize($imageFile);
+                        if (is_array($imageInfo) && !empty($imageInfo[0]) && !empty($imageInfo[1])) {
+                            return $imageFile;
+                        }
+                        $this->log("  Template render output is not an image, fallback to simple image", 'warn');
+                    }
+                } catch (Throwable $e) {
+                    $this->log("  Template render failed, fallback to simple image: " . $e->getMessage(), 'warn');
+                }
+            } else {
+                $this->log("  Template file missing, fallback to simple image", 'warn');
             }
         }
 
@@ -422,8 +494,12 @@ class RenderQueueWorker
             imagestring($img, 5, 50, 100, "Fiyat: $price TL", $black);
         }
 
-        // Ge??ici dosyaya kaydet
-        $tempPath = sys_get_temp_dir() . '/render_' . uniqid() . '.jpg';
+        // Küyük/HTTP payload akisinin dosyayi çozebilmesi için uygulama storage altina yaz.
+        $renderDir = STORAGE_PATH . '/renders';
+        if (!is_dir($renderDir)) {
+            mkdir($renderDir, 0755, true);
+        }
+        $tempPath = $renderDir . '/render_' . uniqid() . '.jpg';
         imagejpeg($img, $tempPath, 90);
         imagedestroy($img);
 
@@ -457,10 +533,12 @@ class RenderQueueWorker
         $heartbeatTimeoutSeconds = (int)($runtimeConfig['gateway_heartbeat_timeout_seconds'] ?? 120);
 
         $directDevices = [];
-        $directItemMap = [];
+        $directItemMapByClient = [];
+        $directItemMapByIp = [];
         $gatewayItems = [];
         $hanshowItems = [];
         $mqttItems = [];
+        $httpItems = [];
 
         foreach ($items as $item) {
             $communicationMode = strtolower(trim((string)($item['communication_mode'] ?? 'http-server')));
@@ -481,6 +559,10 @@ class RenderQueueWorker
 
             if ($communicationMode === 'mqtt') {
                 $mqttItems[] = $item;
+                continue;
+            }
+            if ($communicationMode === 'http') {
+                $httpItems[] = $item;
                 continue;
             }
 
@@ -510,14 +592,22 @@ class RenderQueueWorker
                 continue;
             }
 
+            $clientId = (string)($item['client_id'] ?? '');
+            $deviceIp = (string)($item['ip_address'] ?? '');
+
             $directDevices[] = [
                 'id' => $item['device_id'],
-                'ip_address' => $item['ip_address'],
-                'device_id' => $item['client_id'],
+                'ip_address' => $deviceIp,
+                'device_id' => $clientId,
                 'type' => $item['device_type'],
                 'name' => $item['device_name']
             ];
-            $directItemMap[$item['device_id']] = $item;
+            if ($clientId !== '') {
+                $directItemMapByClient[$clientId] = $item;
+            }
+            if ($deviceIp !== '') {
+                $directItemMapByIp[$deviceIp] = $item;
+            }
         }
 
         // Hanshow ESL: HanshowGateway ile gonder
@@ -535,41 +625,99 @@ class RenderQueueWorker
             $result['failed'] += $mqttResult['failed'];
         }
 
+        if (!empty($httpItems)) {
+            $httpResult = $this->sendToHttpDevices($httpItems, $imagePath, $job, $taskConfig);
+            $result['processed'] += $httpResult['processed'];
+            $result['success'] += $httpResult['success'];
+            $result['failed'] += $httpResult['failed'];
+        }
+
         if (!empty($directDevices)) {
-            $this->gateway->sendToMultipleDevicesParallel(
+            $batchResult = $this->gateway->sendToMultipleDevicesParallel(
                 $directDevices,
                 $imagePath,
-                $taskConfig,
-                function($deviceId, $status, $message) use (&$result, &$directItemMap) {
-                    $item = $directItemMap[$deviceId] ?? null;
-                    if (!$item) {
-                        return;
-                    }
-
-                    $itemId = $item['id'];
-
-                    if ($status === 'success') {
-                        $this->queueService->updateItemStatus($itemId, 'completed');
-                        $result['success']++;
-                    } elseif ($status === 'skipped') {
-                        $this->queueService->updateItemStatus(
-                            $itemId,
-                            'skipped',
-                            null,
-                            null,
-                            null,
-                            $message
-                        );
-                        $result['skipped']++;
-                    } else {
-                        $this->queueService->updateItemStatus($itemId, 'failed', $message ?: 'Direct send failed');
-                        $this->queueService->incrementItemRetry($itemId);
-                        $result['failed']++;
-                    }
-
-                    $result['processed']++;
-                }
+                $taskConfig
             );
+
+            $processedItemIds = [];
+            $details = is_array($batchResult['details'] ?? null) ? $batchResult['details'] : [];
+
+            foreach ($details as $detailKey => $detail) {
+                $item = $directItemMapByClient[(string)$detailKey] ?? null;
+                if (!$item) {
+                    $detailIp = is_array($detail) ? (string)($detail['device_ip'] ?? '') : '';
+                    if ($detailIp !== '') {
+                        $item = $directItemMapByIp[$detailIp] ?? null;
+                    }
+                }
+                if (!$item) {
+                    continue;
+                }
+
+                $itemId = (string)($item['id'] ?? '');
+                if ($itemId === '' || isset($processedItemIds[$itemId])) {
+                    continue;
+                }
+
+                $isSuccess = !empty($detail['success']);
+                $isSkipped = !empty($detail['skipped']);
+                $errorMessage = is_array($detail) ? (string)($detail['error'] ?? '') : '';
+
+                if ($isSuccess && !$isSkipped) {
+                    $this->queueService->updateItemStatus(
+                        $itemId,
+                        'completed',
+                        null,
+                        null,
+                        $batchResult['image_md5'] ?? null
+                    );
+                    $result['success']++;
+                } elseif ($isSuccess && $isSkipped) {
+                    $this->queueService->updateItemStatus(
+                        $itemId,
+                        'skipped',
+                        null,
+                        null,
+                        null,
+                        (string)($detail['reason'] ?? 'Delta match')
+                    );
+                    $result['skipped']++;
+                } else {
+                    $this->queueService->updateItemStatus(
+                        $itemId,
+                        'failed',
+                        $errorMessage !== '' ? $errorMessage : 'Direct send failed'
+                    );
+                    $this->queueService->incrementItemRetry($itemId);
+                    $result['failed']++;
+                }
+
+                $processedItemIds[$itemId] = true;
+                $result['processed']++;
+            }
+
+            // Detail donusu eksikse item'in pending kalmasini engelle.
+            foreach ($directDevices as $deviceInfo) {
+                $lookupClientId = (string)($deviceInfo['device_id'] ?? '');
+                $lookupIp = (string)($deviceInfo['ip_address'] ?? '');
+                $item = ($lookupClientId !== '' ? ($directItemMapByClient[$lookupClientId] ?? null) : null)
+                    ?: ($lookupIp !== '' ? ($directItemMapByIp[$lookupIp] ?? null) : null);
+
+                if (!$item) {
+                    continue;
+                }
+
+                $itemId = (string)($item['id'] ?? '');
+                if ($itemId === '' || isset($processedItemIds[$itemId])) {
+                    continue;
+                }
+
+                $this->queueService->updateItemStatus($itemId, 'failed', 'Direct send result missing');
+                $this->queueService->incrementItemRetry($itemId);
+                $processedItemIds[$itemId] = true;
+                $result['failed']++;
+                $result['processed']++;
+            }
         }
 
         $gatewayBatchResults = $this->processGatewayBatch($gatewayItems, $imagePath, $taskConfig, $job, $runtimeConfig);
@@ -675,6 +823,104 @@ class RenderQueueWorker
                 $result['success']++;
             } else {
                 $error = (string)($mqttResult['error'] ?? 'MQTT delivery failed');
+                $this->queueService->updateItemStatus($item['id'], 'failed', $error);
+                $this->queueService->incrementItemRetry($item['id']);
+                $result['failed']++;
+            }
+
+            $result['processed']++;
+        }
+
+        return $result;
+    }
+
+    /**
+     * HTTP pull modundaki cihazlara payload yazar.
+     * Cihazlar endpoint polling ile icerigi ceker.
+     */
+    private function sendToHttpDevices(array $items, string $imagePath, array $job, array $taskConfig): array
+    {
+        $result = ['processed' => 0, 'success' => 0, 'failed' => 0];
+
+        $companyId = (string)($job['company_id'] ?? '');
+        $productId = (string)($job['product_id'] ?? '');
+        $templateId = (string)($job['template_id'] ?? '');
+
+        if ($companyId === '') {
+            foreach ($items as $item) {
+                $this->queueService->updateItemStatus($item['id'], 'failed', 'HTTP delivery icin company_id eksik');
+                $this->queueService->incrementItemRetry($item['id']);
+                $result['failed']++;
+                $result['processed']++;
+            }
+            return $result;
+        }
+
+        $product = [];
+        if ($productId !== '') {
+            $row = $this->db->fetch("SELECT * FROM products WHERE id = ?", [$productId]);
+            if (is_array($row)) {
+                $product = $row;
+            }
+        }
+
+        $designData = [];
+        if ($templateId !== '') {
+            $template = $this->db->fetch("SELECT design_data FROM templates WHERE id = ?", [$templateId]);
+            $rawDesign = is_array($template) ? ($template['design_data'] ?? null) : null;
+            if (is_string($rawDesign) && $rawDesign !== '') {
+                $decodedDesign = json_decode($rawDesign, true);
+                if (is_array($decodedDesign)) {
+                    $designData = $decodedDesign;
+                }
+            }
+        }
+
+        require_once BASE_PATH . '/services/EslSignValidator.php';
+        $eslValidator = new EslSignValidator();
+
+        foreach ($items as $item) {
+            $deviceId = (string)($item['device_id'] ?? '');
+            if ($deviceId === '') {
+                $result['failed']++;
+                $result['processed']++;
+                continue;
+            }
+
+            $deviceRow = [
+                'id' => $deviceId,
+                'company_id' => $companyId,
+                'device_id' => $item['client_id'] ?? null,
+                'mqtt_client_id' => $item['mqtt_client_id'] ?? null,
+                'screen_width' => $item['screen_width'] ?? null,
+                'screen_height' => $item['screen_height'] ?? null,
+                'type' => $item['device_type'] ?? 'esl'
+            ];
+
+            $sendParams = [
+                'image' => $imagePath,
+                'width' => (int)($taskConfig['width'] ?? 800),
+                'height' => (int)($taskConfig['height'] ?? 1280),
+                'priority' => $taskConfig['priority'] ?? 'normal',
+                'product' => $product
+            ];
+            if (!empty($designData)) {
+                $sendParams['design_data'] = $designData;
+            }
+
+            $httpResult = $eslValidator->queueContentForHttpDevice(
+                $deviceRow,
+                $sendParams,
+                $companyId,
+                $templateId !== '' ? $templateId : null,
+                $productId !== '' ? $productId : null
+            );
+
+            if (!empty($httpResult['success'])) {
+                $this->queueService->updateItemStatus($item['id'], 'completed');
+                $result['success']++;
+            } else {
+                $error = (string)($httpResult['error'] ?? 'HTTP payload queue failed');
                 $this->queueService->updateItemStatus($item['id'], 'failed', $error);
                 $this->queueService->incrementItemRetry($item['id']);
                 $result['failed']++;
@@ -1086,8 +1332,9 @@ class RenderQueueWorker
     {
         $batchResult = ['processed' => 0, 'success' => 0, 'failed' => 0, 'skipped' => 0];
 
-        // item map olustur (device ID -> queue item eslestirmesi)
-        $itemMap = [];
+        // Result map'ler: client id / ip -> queue item
+        $itemMapByClient = [];
+        $itemMapByIp = [];
         $devices = [];
         foreach ($entries as $entry) {
             $device = $entry['device'];
@@ -1102,7 +1349,14 @@ class RenderQueueWorker
             }
 
             $devices[] = $device;
-            $itemMap[$device['id']] = $item;
+            $clientId = (string)($device['device_id'] ?? $device['client_id'] ?? '');
+            $ipAddress = (string)($device['ip_address'] ?? '');
+            if ($clientId !== '') {
+                $itemMapByClient[$clientId] = $item;
+            }
+            if ($ipAddress !== '') {
+                $itemMapByIp[$ipAddress] = $item;
+            }
         }
 
         if (empty($devices)) {
@@ -1115,31 +1369,77 @@ class RenderQueueWorker
             'priority' => $options['priority'] ?? 'normal',
         ];
 
-        $adapter->sendBatch(
-            $devices,
-            $imagePath,
-            $taskConfig,
-            function ($deviceId, $status, $message) use (&$batchResult, &$itemMap) {
-                $item = $itemMap[$deviceId] ?? null;
-                if (!$item) return;
+        $rawResult = $adapter->sendBatch($devices, $imagePath, $taskConfig);
+        $details = is_array($rawResult['details'] ?? null) ? $rawResult['details'] : [];
+        $processedItemIds = [];
 
-                $itemId = $item['id'];
-
-                if ($status === 'success') {
-                    $this->queueService->updateItemStatus($itemId, 'completed');
-                    $batchResult['success']++;
-                } elseif ($status === 'skipped') {
-                    $this->queueService->updateItemStatus($itemId, 'skipped', null, null, null, $message);
-                    $batchResult['skipped']++;
-                } else {
-                    $this->queueService->updateItemStatus($itemId, 'failed', $message ?: 'Direct send failed');
-                    $this->queueService->incrementItemRetry($itemId);
-                    $batchResult['failed']++;
+        foreach ($details as $detailKey => $detail) {
+            $item = $itemMapByClient[(string)$detailKey] ?? null;
+            if (!$item) {
+                $detailIp = is_array($detail) ? (string)($detail['device_ip'] ?? '') : '';
+                if ($detailIp !== '') {
+                    $item = $itemMapByIp[$detailIp] ?? null;
                 }
-
-                $batchResult['processed']++;
             }
-        );
+            if (!$item) {
+                continue;
+            }
+
+            $itemId = (string)($item['id'] ?? '');
+            if ($itemId === '' || isset($processedItemIds[$itemId])) {
+                continue;
+            }
+
+            $isSuccess = !empty($detail['success']);
+            $isSkipped = !empty($detail['skipped']);
+            $errorMessage = is_array($detail) ? (string)($detail['error'] ?? '') : '';
+
+            if ($isSuccess && !$isSkipped) {
+                $this->queueService->updateItemStatus(
+                    $itemId,
+                    'completed',
+                    null,
+                    null,
+                    $rawResult['image_md5'] ?? null
+                );
+                $batchResult['success']++;
+            } elseif ($isSuccess && $isSkipped) {
+                $this->queueService->updateItemStatus(
+                    $itemId,
+                    'skipped',
+                    null,
+                    null,
+                    null,
+                    (string)($detail['reason'] ?? 'Delta match')
+                );
+                $batchResult['skipped']++;
+            } else {
+                $this->queueService->updateItemStatus(
+                    $itemId,
+                    'failed',
+                    $errorMessage !== '' ? $errorMessage : 'Direct send failed'
+                );
+                $this->queueService->incrementItemRetry($itemId);
+                $batchResult['failed']++;
+            }
+
+            $processedItemIds[$itemId] = true;
+            $batchResult['processed']++;
+        }
+
+        foreach ($entries as $entry) {
+            $item = $entry['item'];
+            $itemId = (string)($item['id'] ?? '');
+            if ($itemId === '' || isset($processedItemIds[$itemId])) {
+                continue;
+            }
+
+            $this->queueService->updateItemStatus($itemId, 'failed', 'Batch send result missing');
+            $this->queueService->incrementItemRetry($itemId);
+            $processedItemIds[$itemId] = true;
+            $batchResult['failed']++;
+            $batchResult['processed']++;
+        }
 
         return $batchResult;
     }
@@ -1390,4 +1690,3 @@ if (isset($options['status'])) {
 
 // Worker'?? ??al????t??r
 $worker->run();
-

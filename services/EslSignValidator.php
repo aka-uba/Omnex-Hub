@@ -244,7 +244,9 @@ class EslSignValidator
                     'battery_level' => $info['battery'] ?? null,
                     'signal_strength' => $info['wifi_signal'] ?? $info['signal_strength'] ?? null,
                     'uptime' => $info['uptime'] ?? null,
-                    'storage_free' => $info['free_storage'] ? (int)$info['free_storage'] : null,
+                    'storage_free' => isset($info['free_storage']) && $info['free_storage'] !== null && $info['free_storage'] !== ''
+                        ? (int)$info['free_storage']
+                        : null,
                     'ip_address' => $info['ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null),
                     'metadata' => json_encode([
                         'firmware_version' => $info['version'] ?? null,

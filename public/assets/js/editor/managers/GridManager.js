@@ -534,6 +534,29 @@ export class GridManager {
     }
 
     /**
+     * Grid görünürlük durumunu canvas ile senkronize et.
+     * loadFromJSON sonrası çizgiler canvas'tan silinip internal state true kalmış olabilir.
+     */
+    refreshGridVisibility() {
+        if (!this.canvas) return;
+
+        if (!this._gridVisible) {
+            if (this._gridLines.length > 0) {
+                this._removeGrid();
+                this.canvas.requestRenderAll();
+            }
+            return;
+        }
+
+        const canvasObjects = this.canvas.getObjects();
+        const hasAttachedGridLine = this._gridLines.some(line => canvasObjects.includes(line));
+
+        if (!hasAttachedGridLine) {
+            this._createGrid();
+        }
+    }
+
+    /**
      * Grid boyutunu değiştir
      * @param {number} size - Yeni grid boyutu (px)
      */

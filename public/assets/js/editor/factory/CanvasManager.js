@@ -488,7 +488,7 @@ export class CanvasManager {
     _bindKeyboardEvents() {
         this._eventHandlers.keydown = (e) => {
             // Space: Pan modu toggle
-            if (e.code === 'Space' && !e.repeat) {
+            if (e.code === 'Space' && !e.repeat && !this._isInputFocused()) {
                 e.preventDefault();
                 this.enablePan();
             }
@@ -532,7 +532,7 @@ export class CanvasManager {
 
         this._eventHandlers.keyup = (e) => {
             // Space: Pan modu kapat
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && !this._isInputFocused()) {
                 this.disablePan();
             }
         };
@@ -1077,6 +1077,8 @@ export class CanvasManager {
             scaleX: 1,
             scaleY: 1
         });
+        obj.set(CUSTOM_PROPS.TEXT_AUTO_WIDTH, false);
+        obj[CUSTOM_PROPS.TEXT_AUTO_WIDTH] = false;
 
         // Fabric.js v7 text cache ve koordinatları güncelle
         if (obj.initDimensions) obj.initDimensions();
@@ -1114,6 +1116,8 @@ export class CanvasManager {
             scaleX: 1,
             scaleY: 1
         });
+        obj.set(CUSTOM_PROPS.TEXT_AUTO_WIDTH, false);
+        obj[CUSTOM_PROPS.TEXT_AUTO_WIDTH] = false;
 
         obj.setCoords();
     }

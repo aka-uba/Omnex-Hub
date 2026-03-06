@@ -301,10 +301,6 @@ foreach ($devices as &$device) {
         ?? $device['last_sync']
         ?? $device['updated_at'];
 
-    // Bluetooth protection indicator (don't expose encrypted password)
-    $device['bt_protected'] = !empty($device['bt_password_encrypted']);
-    unset($device['bt_password_encrypted']);
-
     // New fields for device approval/registration system
     $device['approval_status'] = $device['approval_status'] ?? 'approved';
     $device['sync_code'] = $device['sync_code'] ?? null;

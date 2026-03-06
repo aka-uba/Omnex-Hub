@@ -145,15 +145,9 @@
         },
         "plans": {
             "free": "Kostenlos",
-            "starter": "Starter",
-            "standard": "Starter",
-            "subscription": "Starter",
-            "professional": "Professionell",
+            "standard": "Standard",
+            "professional": "Professional",
             "enterprise": "Enterprise",
-            "business": "Professionell",
-            "ultimate": "Enterprise",
-            "unlimited": "Unbegrenzt",
-            "trial": "Testversion",
             "noPlan": "Plan auswählen",
             "branches": "Filialen"
         },
@@ -217,8 +211,7 @@
         "revokeConfirm": "Sind Sie sicher, dass Sie diese Lizenz widerrufen möchten?",
         "pageTabs": {
             "licenses": "Lizenzen",
-            "plans": "Pläne",
-            "labels": "Etikettgroessen"
+            "plans": "Pläne"
         },
         "tabs": {
             "info": "Allgemeine Informationen",
@@ -236,18 +229,6 @@
             "recommended": "Empfohlen",
             "enterprise": "Enterprise",
             "inactive": "Inaktiv",
-            "names": {
-                "free": "Kostenlos",
-                "starter": "Starter",
-                "professional": "Professionell",
-                "enterprise": "Enterprise"
-            },
-            "descriptions": {
-                "free": "Kostenloser Plan zum Erkunden der Grundfunktionen",
-                "starter": "Ideales Einstiegspaket für kleine Unternehmen",
-                "professional": "Professionelle Lösung für wachsende Unternehmen",
-                "enterprise": "Unbegrenzte Lösung für Unternehmensanforderungen"
-            },
             "months": "Monate",
             "lifetime": "Lebenslang",
             "notFound": "Plan nicht gefunden",
@@ -338,8 +319,8 @@
                 "signage_support": "Digital-Signage-Support",
                 "custom_integration": "Benutzerdefinierte Integration",
                 "white_label": "White Label",
-                "per_device_pricing": "Preis pro Gerät",
-                "multi_location": "Unterstützung für mehrere Standorte",
+                "per_device_pricing": "Preis pro Ger\u00e4t",
+                "multi_location": "Unterst\u00fctzung f\u00fcr mehrere Standorte",
                 "analytics": "Analysen & Statistiken",
                 "export_reports": "Berichtsexport",
                 "bulk_import": "Massenimport",
@@ -654,8 +635,7 @@
             "category": "Kategorie",
             "categories": "Kategorien",
             "notification": "Benachrichtigung",
-            "notifications": "Benachrichtigungen",
-            "labels": "Etikettgroessen"
+            "notifications": "Benachrichtigungen"
         },
         "archive": {
             "title": "Archivierung und Bereinigung",
@@ -773,8 +753,7 @@
             "audit_logs": "Prüfprotokolle",
             "sessions": "Sitzungen",
             "settings": "Einstellungen",
-            "licenses": "Lizenzen",
-            "labels": "Etikettgroessen"
+            "licenses": "Lizenzen"
         }
     },
     "setupWizard": {
@@ -811,11 +790,7 @@
         "infoText": "Der Einrichtungsassistent ermöglicht es Ihnen, schnell Demo-Daten in Ihr System zu laden.",
         "infoItem1": "Vorhandene Daten werden aktualisiert, nicht gelöscht (Upsert)",
         "infoItem2": "Demo-Daten können später gelöscht werden",
-        "infoItem3": "Sie können Daten in verschiedenen Sprachen laden",
-        "licensePlans": "Lizenzpakete",
-        "licensePlansDesc": "Standard Lizenzpaketdaten",
-        "labelSizes": "Etikettgroessen",
-        "labelSizesDesc": "Standard Etikettgroessen"
+        "infoItem3": "Sie können Daten in verschiedenen Sprachen laden"
     },
     "logManagement": {
         "title": "Protokollverwaltung",

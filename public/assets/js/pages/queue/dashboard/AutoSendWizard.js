@@ -23,8 +23,8 @@
 import { Logger } from '../../../core/Logger.js';
 import { Toast } from '../../../components/Toast.js';
 import { Modal } from '../../../components/Modal.js';
-import { getTemplateRenderer } from '../../../services/TemplateRenderer.js?v=1.0.70';
-import { getRenderWorker } from '../../../components/RenderWorker.js?v=1.0.67';
+import { getTemplateRenderer, shouldPreserveHelperObjectsForTemplate } from '../../../services/TemplateRenderer.js?v=1.0.73';
+import { getRenderWorker } from '../../../components/RenderWorker.js?v=1.0.69';
 
 /**
  * AutoSendWizard init fonksiyonu
@@ -1060,7 +1060,10 @@ class AutoSendWizard {
                 }
 
                 // Render the template with product data
-                const renderedImage = await renderer.render(template, product);
+                const renderOptions = {
+                    preserveHelpers: shouldPreserveHelperObjectsForTemplate(template)
+                };
+                const renderedImage = await renderer.render(template, product, renderOptions);
 
                 if (renderedImage) {
                     preRenderedImages[productId] = renderedImage;

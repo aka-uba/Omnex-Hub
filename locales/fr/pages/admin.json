@@ -145,15 +145,9 @@
         },
         "plans": {
             "free": "Gratuit",
-            "starter": "Démarrage",
-            "standard": "Démarrage",
-            "subscription": "Démarrage",
+            "standard": "Standard",
             "professional": "Professionnel",
-            "enterprise": "Entreprise",
-            "business": "Professionnel",
-            "ultimate": "Entreprise",
-            "unlimited": "Illimité",
-            "trial": "Essai",
+            "enterprise": "Enterprise",
             "noPlan": "Sélectionner un plan",
             "branches": "succursales"
         },
@@ -217,8 +211,7 @@
         "revokeConfirm": "Êtes-vous sûr de vouloir révoquer cette licence ?",
         "pageTabs": {
             "licenses": "Licences",
-            "plans": "Plans",
-            "labels": "Tailles d etiquette"
+            "plans": "Plans"
         },
         "tabs": {
             "info": "Informations générales",
@@ -236,18 +229,6 @@
             "recommended": "Recommandé",
             "enterprise": "Enterprise",
             "inactive": "Inactif",
-            "names": {
-                "free": "Gratuit",
-                "starter": "Démarrage",
-                "professional": "Professionnel",
-                "enterprise": "Entreprise"
-            },
-            "descriptions": {
-                "free": "Plan gratuit pour découvrir les fonctionnalités de base",
-                "starter": "Pack de démarrage idéal pour les petites entreprises",
-                "professional": "Solution professionnelle pour les entreprises en croissance",
-                "enterprise": "Solution illimitée pour les besoins des entreprises"
-            },
             "months": "mois",
             "lifetime": "À vie",
             "notFound": "Plan introuvable",
@@ -654,8 +635,7 @@
             "category": "Catégorie",
             "categories": "Catégories",
             "notification": "Notification",
-            "notifications": "Notifications",
-            "labels": "Tailles d etiquette"
+            "notifications": "Notifications"
         },
         "archive": {
             "title": "Archivage et nettoyage",
@@ -773,8 +753,7 @@
             "audit_logs": "Journaux d'audit",
             "sessions": "Sessions",
             "settings": "Paramètres",
-            "licenses": "Licences",
-            "labels": "Tailles d etiquette"
+            "licenses": "Licences"
         }
     },
     "setupWizard": {
@@ -811,11 +790,7 @@
         "infoText": "L'assistant de configuration vous permet de charger rapidement des données de démonstration dans votre système.",
         "infoItem1": "Les données existantes seront mises à jour, pas supprimées (upsert)",
         "infoItem2": "Les données de démonstration peuvent être effacées plus tard",
-        "infoItem3": "Vous pouvez charger des données dans différentes langues",
-        "licensePlans": "Forfaits de licence",
-        "licensePlansDesc": "Donnees de forfait de licence par defaut",
-        "labelSizes": "Tailles d etiquette",
-        "labelSizesDesc": "Definitions de taille d etiquette par defaut"
+        "infoItem3": "Vous pouvez charger des données dans différentes langues"
     },
     "logManagement": {
         "title": "Gestion des journaux",

@@ -145,15 +145,9 @@
         },
         "plans": {
             "free": "Free",
-            "starter": "Starter",
-            "standard": "Starter",
-            "subscription": "Starter",
+            "standard": "Standard",
             "professional": "Professional",
             "enterprise": "Enterprise",
-            "business": "Professional",
-            "ultimate": "Enterprise",
-            "unlimited": "Unlimited",
-            "trial": "Trial",
             "noPlan": "Select plan",
             "branches": "branches"
         },
@@ -217,8 +211,7 @@
         "revokeConfirm": "Are you sure you want to revoke this license?",
         "pageTabs": {
             "licenses": "Licenses",
-            "plans": "Plans",
-            "labels": "Label Sizes"
+            "plans": "Plans"
         },
         "tabs": {
             "info": "General Information",
@@ -236,18 +229,6 @@
             "recommended": "Recommended",
             "enterprise": "Enterprise",
             "inactive": "Inactive",
-            "names": {
-                "free": "Free",
-                "starter": "Starter",
-                "professional": "Professional",
-                "enterprise": "Enterprise"
-            },
-            "descriptions": {
-                "free": "Free plan to explore basic features",
-                "starter": "Ideal starter package for small businesses",
-                "professional": "Professional solution for growing businesses",
-                "enterprise": "Unlimited solution for enterprise needs"
-            },
             "months": "months",
             "lifetime": "Lifetime",
             "notFound": "Plan not found",
@@ -654,8 +635,7 @@
             "category": "Category",
             "categories": "Categories",
             "notification": "Notification",
-            "notifications": "Notifications",
-            "labels": "Label Sizes"
+            "notifications": "Notifications"
         },
         "archive": {
             "title": "Archiving and Cleanup",
@@ -773,8 +753,7 @@
             "audit_logs": "Audit Logs",
             "sessions": "Sessions",
             "settings": "Settings",
-            "licenses": "Licenses",
-            "labels": "Label Sizes"
+            "licenses": "Licenses"
         }
     },
     "setupWizard": {
@@ -811,11 +790,7 @@
         "infoText": "The setup wizard allows you to quickly load demo data into your system.",
         "infoItem1": "Existing data will be updated, not deleted (upsert)",
         "infoItem2": "Demo data can be cleared later",
-        "infoItem3": "You can load data in different languages",
-        "licensePlans": "License Plans",
-        "licensePlansDesc": "Default license plan package data",
-        "labelSizes": "Label Sizes",
-        "labelSizesDesc": "Default label size definitions"
+        "infoItem3": "You can load data in different languages"
     },
     "logManagement": {
         "title": "Log Management",

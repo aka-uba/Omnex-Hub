@@ -243,7 +243,7 @@ if (
     $targetCompanyId = $template['company_id'] ?? $companyId;
     if ($targetCompanyId) {
         $db->query(
-            "UPDATE templates SET is_default = false
+            "UPDATE templates SET is_default = 0
              WHERE company_id = ? AND category = 'label_printer' AND id != ?",
             [$targetCompanyId, $id]
         );

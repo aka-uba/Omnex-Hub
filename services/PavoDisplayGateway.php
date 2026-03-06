@@ -1743,6 +1743,12 @@ class PavoDisplayGateway
             $bgColor = imagecolorallocate($image, 255, 255, 255); // Varsayılan beyaz
         }
 
+        // Base snapshot: dynamic image replace adiminda ust katmanlari geri yuklemek icin.
+        $baseSnapshot = imagecreatetruecolor($dstWidth, $dstHeight);
+        if ($baseSnapshot) {
+            imagecopy($baseSnapshot, $image, 0, 0, 0, 0, $dstWidth, $dstHeight);
+        }
+
         $dynamicCount = 0;
         $renderedCount = 0;
 
@@ -1805,6 +1811,19 @@ class PavoDisplayGateway
                         // görünmesini engelle. Alanı arka plan rengiyle doldur, sonra product image çiz.
                         $this->eraseObjectArea($image, $obj, $scaleX, $scaleY, $bgColor, $log);
                         $this->renderImageOnPosition($image, $resolvedPath, $obj, $scaleX, $scaleY, $log);
+                        if ($baseSnapshot) {
+                            $this->restoreUpperLayerPixels(
+                                $image,
+                                $baseSnapshot,
+                                $designData['objects'],
+                                $index,
+                                $obj,
+                                $scaleX,
+                                $scaleY,
+                                $fontPath,
+                                $log
+                            );
+                        }
                         $renderedCount++;
                     } else {
                         $log("  IMAGE-PLACEHOLDER: Dosya bulunamadı: " . ($resolvedPath ?? $targetUrl));
@@ -1839,6 +1858,16 @@ class PavoDisplayGateway
                 $value = (string)$resolvedText;
                 $log("  ResolvedText: {$value}");
             }
+
+            $effectiveFieldName = $dynamicField;
+            if (!$effectiveFieldName && is_string($rawText) && preg_match('/\{\{\s*([^}\s]+)\s*\}\}/u', $rawText, $fieldMatch)) {
+                $effectiveFieldName = $fieldMatch[1];
+            }
+            $isPriceLikeField = $this->isPriceLikeDynamicField($effectiveFieldName, $customType);
+            $priceFractionScale = $this->normalizePriceFractionScale($obj['priceFractionScale'] ?? 1.0);
+            $priceFractionDigits = $this->normalizePriceFractionDigits($obj['priceFractionDigits'] ?? -1);
+            $priceMidlineEnabled = !empty($obj['priceMidlineEnabled']);
+            $priceMidlineThickness = $this->normalizePriceMidlineThickness($obj['priceMidlineThickness'] ?? 1);
 
             // Barkod/QR nesnelerini özel işle
             $customType = $obj['customType'] ?? '';
@@ -1960,11 +1989,19 @@ class PavoDisplayGateway
             // Metin sarmalama (word-wrap) - genişlik varsa satırlara böl
             $lines = [];
             if ($scaledWidth > 0) {
-                $lines = $this->wrapText($value, $scaledFontSize, $fontPath, $scaledWidth, $fontWeight);
+                if ($isPriceLikeField || !empty($obj['textAutoWidth'])) {
+                    $scaledFontSize = $this->fitSingleLineFontSize($value, $scaledFontSize, $fontPath, $scaledWidth);
+                    $lines = [$value];
+                } else {
+                    $lines = $this->wrapText($value, $scaledFontSize, $fontPath, $scaledWidth, $fontWeight);
+                }
             } else {
                 $lines = [$value]; // Genişlik yoksa tek satır
             }
             $log("  Lines: " . count($lines) . " satır (wrap width={$scaledWidth})");
+            if ($isPriceLikeField) {
+                $log("  Price style: digits={$priceFractionDigits} fractionScale={$priceFractionScale} midline=" . ($priceMidlineEnabled ? '1' : '0'));
+            }
 
             // Satır yüksekliği hesapla
             $lineHeight = (float)($obj['lineHeight'] ?? 1.16);
@@ -1976,8 +2013,15 @@ class PavoDisplayGateway
             // Maskeleme dikdörtgeni çiz (eski metni kapat)
             $maskWidth = $scaledWidth > 0 ? $scaledWidth : 0;
             foreach ($lines as $line) {
-                $bbox = imagettfbbox($scaledFontSize, 0, $fontPath, $line);
-                $lineWidth = abs($bbox[2] - $bbox[0]);
+                $metrics = $this->measureTextLineMetrics(
+                    $line,
+                    $scaledFontSize,
+                    $fontPath,
+                    $isPriceLikeField,
+                    $priceFractionDigits,
+                    $priceFractionScale
+                );
+                $lineWidth = $metrics['width'];
                 $maskWidth = max($maskWidth, $lineWidth);
             }
             $maskRight = $scaledLeft + $maskWidth + 5;
@@ -1989,9 +2033,17 @@ class PavoDisplayGateway
             $currentY = $scaledTop;
             foreach ($lines as $lineIdx => $line) {
                 // Font metrikleri
-                $bbox = imagettfbbox($scaledFontSize, 0, $fontPath, $line);
-                $lineWidth = abs($bbox[2] - $bbox[0]);
-                $lineAscent = abs($bbox[7] - $bbox[1]);
+                $metrics = $this->measureTextLineMetrics(
+                    $line,
+                    $scaledFontSize,
+                    $fontPath,
+                    $isPriceLikeField,
+                    $priceFractionDigits,
+                    $priceFractionScale
+                );
+                $lineWidth = $metrics['width'];
+                $lineAscent = $metrics['ascent'];
+                $priceSegments = $metrics['priceSegments'];
 
                 // Hizalama (textAlign)
                 $lineX = $scaledLeft;
@@ -2003,25 +2055,59 @@ class PavoDisplayGateway
 
                 $textY = $currentY + $lineAscent;
                 $log("  LINE #{$lineIdx}: '{$line}' at ({$lineX}, {$textY}) align={$textAlign} angle={$textAngle}");
+                $strokePx = $textStrokeWidth > 0 ? max(1, (int)round($textStrokeWidth * $scaleX)) : 0;
 
-                // 1. Gölge çiz (varsa)
-                if ($shadowColorGd) {
-                    imagettftext($image, $scaledFontSize, $textAngle, $lineX + $shadowOffsetX, $textY + $shadowOffsetY, $shadowColorGd, $fontPath, $line);
-                }
-
-                // 2. Metin outline/stroke çiz (varsa)
-                if ($strokeColorGd && $textStrokeWidth > 0) {
-                    $sw = max(1, (int)round($textStrokeWidth * $scaleX));
-                    for ($sx = -$sw; $sx <= $sw; $sx++) {
-                        for ($sy = -$sw; $sy <= $sw; $sy++) {
-                            if ($sx === 0 && $sy === 0) continue;
-                            imagettftext($image, $scaledFontSize, $textAngle, $lineX + $sx, $textY + $sy, $strokeColorGd, $fontPath, $line);
+                if ($priceSegments && (float)$textAngle === 0.0) {
+                    $cursorX = $lineX;
+                    foreach ($priceSegments as $segment) {
+                        $segText = $segment['text'] ?? '';
+                        if ($segText === '') {
+                            continue;
                         }
+                        $segFontSize = (int)($segment['fontSize'] ?? $scaledFontSize);
+                        $this->drawTextSegmentWithEffects(
+                            $image,
+                            $segText,
+                            $segFontSize,
+                            $textAngle,
+                            $cursorX,
+                            $textY,
+                            $textColor,
+                            $shadowColorGd,
+                            $shadowOffsetX,
+                            $shadowOffsetY,
+                            $strokeColorGd,
+                            $strokePx,
+                            $fontPath
+                        );
+                        $cursorX += (int)($segment['width'] ?? 0);
                     }
+                } else {
+                    $this->drawTextSegmentWithEffects(
+                        $image,
+                        $line,
+                        $scaledFontSize,
+                        $textAngle,
+                        $lineX,
+                        $textY,
+                        $textColor,
+                        $shadowColorGd,
+                        $shadowOffsetX,
+                        $shadowOffsetY,
+                        $strokeColorGd,
+                        $strokePx,
+                        $fontPath
+                    );
                 }
 
-                // 3. Ana metin (angle desteği ile)
-                imagettftext($image, $scaledFontSize, $textAngle, $lineX, $textY, $textColor, $fontPath, $line);
+                if ($priceMidlineEnabled && (float)$textAngle === 0.0) {
+                    $lineY = (int)round($textY - ($lineAscent * 0.40));
+                    $lineEndX = $lineX + max(1, $lineWidth - 1);
+                    $lineThickness = max(1, (int)round($priceMidlineThickness * min($scaleX, $scaleY)));
+                    imagesetthickness($image, $lineThickness);
+                    imageline($image, $lineX, $lineY, $lineEndX, $lineY, $textColor);
+                    imagesetthickness($image, 1);
+                }
 
                 $currentY += $lineSpacing;
             }
@@ -2030,6 +2116,349 @@ class PavoDisplayGateway
         }
 
         $log("=== SONUÇ: {$dynamicCount} dinamik alan bulundu, {$renderedCount} tanesi render edildi ===");
+        if ($baseSnapshot) {
+            imagedestroy($baseSnapshot);
+        }
+    }
+
+    private function isPriceLikeDynamicField($dynamicField, string $customType = ''): bool
+    {
+        $normalizedType = strtolower(trim((string)$customType));
+        if ($normalizedType === 'price') {
+            return true;
+        }
+
+        $fieldName = strtolower(trim((string)$dynamicField, "{} \t\n\r\0\x0B"));
+        if ($fieldName === '') {
+            return false;
+        }
+
+        return in_array($fieldName, [
+            'current_price',
+            'currentprice',
+            'price',
+            'previous_price',
+            'previousprice',
+            'old_price',
+            'oldprice',
+            'alis_fiyati',
+            'bundle_total_price',
+            'bundle_final_price',
+            'price_with_currency'
+        ], true);
+    }
+
+    private function normalizePriceFractionScale($rawValue): float
+    {
+        $value = (float)$rawValue;
+        if ($value <= 0) {
+            $value = 1.0;
+        }
+
+        return max(0.30, min(1.0, $value));
+    }
+
+    private function normalizePriceFractionDigits($rawValue): int
+    {
+        $value = (int)$rawValue;
+        if (!in_array($value, [-1, 1, 2], true)) {
+            return -1;
+        }
+
+        return $value;
+    }
+
+    private function normalizePriceMidlineThickness($rawValue): int
+    {
+        $value = (int)$rawValue;
+        if ($value < 1) {
+            $value = 1;
+        }
+
+        return min(8, $value);
+    }
+
+    private function fitSingleLineFontSize(string $text, int $fontSize, string $fontPath, int $maxWidth): int
+    {
+        if ($maxWidth <= 0) {
+            return $fontSize;
+        }
+
+        $size = max(8, $fontSize);
+        while ($size > 8) {
+            $bbox = imagettfbbox($size, 0, $fontPath, $text);
+            $width = abs($bbox[2] - $bbox[0]);
+            if ($width <= $maxWidth) {
+                break;
+            }
+            $size--;
+        }
+
+        return $size;
+    }
+
+    private function splitPriceForRendering(string $text, int $fractionDigits = -1): ?array
+    {
+        if (!preg_match('/^(.*\d)([,.])(\d+)(\D*)$/u', trim($text), $matches)) {
+            return null;
+        }
+
+        $major = $matches[1] . $matches[2];
+        $fraction = $matches[3];
+        $suffix = $matches[4] ?? '';
+
+        if ($fractionDigits === 1) {
+            $fraction = mb_substr($fraction, 0, 1);
+        } elseif ($fractionDigits === 2) {
+            $fraction = mb_substr($fraction, 0, 2);
+            if (mb_strlen($fraction) < 2) {
+                $fraction = str_pad($fraction, 2, '0');
+            }
+        }
+
+        if ($fraction === '') {
+            return null;
+        }
+
+        return [
+            'major' => $major,
+            'fraction' => $fraction,
+            'suffix' => $suffix,
+        ];
+    }
+
+    private function measureTextLineMetrics(
+        string $line,
+        int $fontSize,
+        string $fontPath,
+        bool $priceLike = false,
+        int $priceFractionDigits = -1,
+        float $priceFractionScale = 1.0
+    ): array {
+        $bbox = imagettfbbox($fontSize, 0, $fontPath, $line);
+        $fallbackWidth = abs($bbox[2] - $bbox[0]);
+        $fallbackAscent = abs($bbox[7] - $bbox[1]);
+
+        if (!$priceLike) {
+            return [
+                'width' => $fallbackWidth,
+                'ascent' => max(1, $fallbackAscent),
+                'priceSegments' => null,
+            ];
+        }
+
+        $parts = $this->splitPriceForRendering($line, $priceFractionDigits);
+        if (!$parts) {
+            return [
+                'width' => $fallbackWidth,
+                'ascent' => max(1, $fallbackAscent),
+                'priceSegments' => null,
+            ];
+        }
+
+        $fractionFontSize = max(6, (int)round($fontSize * $priceFractionScale));
+        $segments = [
+            ['text' => $parts['major'], 'fontSize' => $fontSize],
+            ['text' => $parts['fraction'], 'fontSize' => $fractionFontSize],
+            ['text' => $parts['suffix'], 'fontSize' => $fontSize],
+        ];
+
+        $totalWidth = 0;
+        $maxAscent = 1;
+        foreach ($segments as $i => $segment) {
+            $segmentText = $segment['text'];
+            if ($segmentText === '') {
+                $segments[$i]['width'] = 0;
+                continue;
+            }
+            $segBbox = imagettfbbox($segment['fontSize'], 0, $fontPath, $segmentText);
+            $segWidth = abs($segBbox[2] - $segBbox[0]);
+            $segAscent = abs($segBbox[7] - $segBbox[1]);
+            $segments[$i]['width'] = $segWidth;
+            $totalWidth += $segWidth;
+            $maxAscent = max($maxAscent, $segAscent);
+        }
+
+        return [
+            'width' => max(1, $totalWidth),
+            'ascent' => $maxAscent,
+            'priceSegments' => $segments,
+        ];
+    }
+
+    private function drawTextSegmentWithEffects(
+        $image,
+        string $text,
+        int $fontSize,
+        float $angle,
+        int $x,
+        int $y,
+        $textColor,
+        $shadowColor,
+        int $shadowOffsetX,
+        int $shadowOffsetY,
+        $strokeColor,
+        int $strokePx,
+        string $fontPath
+    ): void {
+        if ($text === '') {
+            return;
+        }
+
+        if ($shadowColor) {
+            imagettftext($image, $fontSize, $angle, $x + $shadowOffsetX, $y + $shadowOffsetY, $shadowColor, $fontPath, $text);
+        }
+
+        if ($strokeColor && $strokePx > 0) {
+            for ($sx = -$strokePx; $sx <= $strokePx; $sx++) {
+                for ($sy = -$strokePx; $sy <= $strokePx; $sy++) {
+                    if ($sx === 0 && $sy === 0) {
+                        continue;
+                    }
+                    imagettftext($image, $fontSize, $angle, $x + $sx, $y + $sy, $strokeColor, $fontPath, $text);
+                }
+            }
+        }
+
+        imagettftext($image, $fontSize, $angle, $x, $y, $textColor, $fontPath, $text);
+    }
+
+    private function restoreUpperLayerPixels(
+        $image,
+        $baseSnapshot,
+        array $objects,
+        int $currentIndex,
+        array $currentObject,
+        float $scaleX,
+        float $scaleY,
+        ?string $fontPath,
+        callable $log
+    ): void {
+        $sourceBounds = $this->getObjectPixelBounds($currentObject, $scaleX, $scaleY, $fontPath, $image);
+        if (!$sourceBounds) {
+            return;
+        }
+
+        $restoreCount = 0;
+        $total = count($objects);
+        for ($i = $currentIndex + 1; $i < $total; $i++) {
+            $upper = $objects[$i] ?? null;
+            if (!is_array($upper) || (($upper['visible'] ?? true) === false)) {
+                continue;
+            }
+
+            $upperBounds = $this->getObjectPixelBounds($upper, $scaleX, $scaleY, $fontPath, $image);
+            if (!$upperBounds) {
+                continue;
+            }
+
+            $overlap = $this->intersectBounds($sourceBounds, $upperBounds);
+            if (!$overlap) {
+                continue;
+            }
+
+            $copyW = $overlap['x2'] - $overlap['x1'] + 1;
+            $copyH = $overlap['y2'] - $overlap['y1'] + 1;
+            if ($copyW <= 0 || $copyH <= 0) {
+                continue;
+            }
+
+            imagecopy(
+                $image,
+                $baseSnapshot,
+                $overlap['x1'],
+                $overlap['y1'],
+                $overlap['x1'],
+                $overlap['y1'],
+                $copyW,
+                $copyH
+            );
+            $restoreCount++;
+        }
+
+        if ($restoreCount > 0) {
+            $log("  restoreUpperLayerPixels: {$restoreCount} ust katman bolgesi geri yuklendi");
+        }
+    }
+
+    private function getObjectPixelBounds(array $obj, float $scaleX, float $scaleY, ?string $fontPath, $image): ?array
+    {
+        $type = strtolower((string)($obj['type'] ?? ''));
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $width = (float)($obj['width'] ?? 0);
+        $height = (float)($obj['height'] ?? 0);
+        $objScaleX = (float)($obj['scaleX'] ?? 1.0);
+        $objScaleY = (float)($obj['scaleY'] ?? 1.0);
+        $originX = strtolower((string)($obj['originX'] ?? 'left'));
+        $originY = strtolower((string)($obj['originY'] ?? 'top'));
+        $angle = (float)($obj['angle'] ?? 0);
+
+        $effectiveWidth = $width * $objScaleX;
+        $effectiveHeight = $height * $objScaleY;
+        $adjLeft = $left;
+        $adjTop = $top;
+
+        if ($originX === 'center') {
+            $adjLeft -= ($effectiveWidth / 2);
+        } elseif ($originX === 'right') {
+            $adjLeft -= $effectiveWidth;
+        }
+        if ($originY === 'center') {
+            $adjTop -= ($effectiveHeight / 2);
+        } elseif ($originY === 'bottom') {
+            $adjTop -= $effectiveHeight;
+        }
+
+        $x1 = (int)floor($adjLeft * $scaleX);
+        $y1 = (int)floor($adjTop * $scaleY);
+        $x2 = (int)ceil(($adjLeft + $effectiveWidth) * $scaleX);
+        $y2 = (int)ceil(($adjTop + $effectiveHeight) * $scaleY);
+
+        if (in_array($type, ['text', 'i-text', 'itext', 'textbox'], true) && $fontPath) {
+            $fontSize = (float)($obj['fontSize'] ?? 20);
+            $scaledFontSize = (int)max(8, ($fontSize * $objScaleY) * min($scaleX, $scaleY));
+            $lineHeight = (float)($obj['lineHeight'] ?? 1.16);
+            $text = (string)($obj['text'] ?? '');
+            $bbox = imagettfbbox($scaledFontSize, $angle, $fontPath, $text !== '' ? $text : 'M');
+            if (is_array($bbox)) {
+                $w = max(abs($bbox[2] - $bbox[0]), abs($bbox[4] - $bbox[6]));
+                $h = max(abs($bbox[1] - $bbox[7]), (int)round($scaledFontSize * $lineHeight));
+                if ($w > 0) {
+                    $x2 = max($x2, $x1 + (int)$w + 6);
+                }
+                if ($h > 0) {
+                    $y2 = max($y2, $y1 + (int)$h + 6);
+                }
+            }
+        }
+
+        $imgW = imagesx($image);
+        $imgH = imagesy($image);
+        $x1 = max(0, min($imgW - 1, $x1));
+        $y1 = max(0, min($imgH - 1, $y1));
+        $x2 = max(0, min($imgW - 1, $x2));
+        $y2 = max(0, min($imgH - 1, $y2));
+
+        if ($x2 <= $x1 || $y2 <= $y1) {
+            return null;
+        }
+
+        return ['x1' => $x1, 'y1' => $y1, 'x2' => $x2, 'y2' => $y2];
+    }
+
+    private function intersectBounds(array $a, array $b): ?array
+    {
+        $x1 = max($a['x1'], $b['x1']);
+        $y1 = max($a['y1'], $b['y1']);
+        $x2 = min($a['x2'], $b['x2']);
+        $y2 = min($a['y2'], $b['y2']);
+
+        if ($x2 <= $x1 || $y2 <= $y1) {
+            return null;
+        }
+
+        return ['x1' => $x1, 'y1' => $y1, 'x2' => $x2, 'y2' => $y2];
     }
 
     /**
@@ -2514,6 +2943,8 @@ class PavoDisplayGateway
         // Fiyatı formatla
         $formattedPrice = number_format((float)$currentPrice, 2, ',', '.');
         $formattedPrevPrice = $previousPrice ? number_format((float)$previousPrice, 2, ',', '.') : '';
+        $formattedPriceWithCurrency = $formattedPrice . ' ₺';
+        $formattedPrevPriceWithCurrency = $formattedPrevPrice ? ($formattedPrevPrice . ' ₺') : '';
 
         return [
             // Temel bilgiler
@@ -2525,10 +2956,17 @@ class PavoDisplayGateway
             'slug' => $product['slug'] ?? '',
 
             // Fiyat bilgileri
-            'current_price' => $formattedPrice . ' ₺',
-            'price' => $formattedPrice . ' ₺',
-            'previous_price' => $formattedPrevPrice ? $formattedPrevPrice . ' ₺' : '',
-            'old_price' => $formattedPrevPrice ? $formattedPrevPrice . ' ₺' : '',
+            'current_price' => $formattedPriceWithCurrency,
+            'price' => $formattedPriceWithCurrency,
+            'price_with_currency' => $formattedPriceWithCurrency,
+            'current_price_value' => $formattedPrice,
+            'price_value' => $formattedPrice,
+            'previous_price' => $formattedPrevPriceWithCurrency,
+            'old_price' => $formattedPrevPriceWithCurrency,
+            'previous_price_with_currency' => $formattedPrevPriceWithCurrency,
+            'old_price_with_currency' => $formattedPrevPriceWithCurrency,
+            'previous_price_value' => $formattedPrevPrice,
+            'old_price_value' => $formattedPrevPrice,
             'vat_rate' => ($product['vat_rate'] ?? '18') . '%',
             'discount_percent' => ($product['discount_percent'] ?? '') . '%',
             'campaign_text' => $product['campaign_text'] ?? '',
@@ -5191,3 +5629,4 @@ class PavoDisplayGateway
         return true;
     }
 }
+

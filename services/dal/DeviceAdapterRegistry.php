@@ -214,6 +214,13 @@ class DeviceAdapterRegistry
             ]);
         }
 
+        // HTTP pull cihazlar (icerigi cihaz serverdan polling ile alir)
+        if (class_exists('HttpPullAdapter')) {
+            $this->register(new HttpPullAdapter(), [
+                ['communication_mode' => 'http'],
+            ]);
+        }
+
         // PavoDisplay ESL (HTTP-SERVER, en yaygin)
         if (class_exists('PavoDisplayAdapter')) {
             $this->register(new PavoDisplayAdapter(), [

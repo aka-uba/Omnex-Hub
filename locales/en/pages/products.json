@@ -86,6 +86,8 @@
         "dragDrop": "Drag and drop file here or",
         "selectFile": "Please select a file",
         "hint": "TXT, CSV, JSON, XML or XLSX (maximum 10MB)",
+        "preview": "Preview",
+        "mapping": "Field Mapping",
         "mappingMode": "Mapping Mode",
         "auto": "Auto Map",
         "manual": "Manual Map",

@@ -101,7 +101,6 @@ try {
 
         // Activity log
         $db->insert('device_logs', [
-            'id' => $db->generateUuid(),
             'device_id' => $deviceId,
             'action' => 'sync',
             'content_type' => 'playlist',
@@ -120,9 +119,8 @@ try {
     $affectedDeviceIds = array_values(array_unique(array_merge($deviceIds, $removedDeviceIds)));
 
     // Ensure all affected devices refresh immediately (assigned + unassigned).
-    // Reset stream_started_at so live HLS window restarts from beginning with new playlist.
     foreach ($affectedDeviceIds as $deviceId) {
-        $db->query("UPDATE devices SET updated_at = CURRENT_TIMESTAMP, stream_started_at = NULL WHERE id = ?", [$deviceId]);
+        $db->query("UPDATE devices SET updated_at = CURRENT_TIMESTAMP WHERE id = ?", [$deviceId]);
 
         $commandId = $db->generateUuid();
         $db->query(
@@ -142,7 +140,6 @@ try {
 
     foreach ($removedDeviceIds as $deviceId) {
         $db->insert('device_logs', [
-            'id' => $db->generateUuid(),
             'device_id' => $deviceId,
             // Keep action value compatible with existing CHECK constraints across deployments.
             'action' => 'sync',
@@ -181,7 +178,6 @@ try {
 
     Response::serverError('Cihaz atamalari kaydedilemedi');
 }
-
 
 
 

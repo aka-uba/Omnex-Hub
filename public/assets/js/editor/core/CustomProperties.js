@@ -86,6 +86,26 @@ export const CUSTOM_PROPS = {
      */
     DECIMAL_PLACES: 'decimalPlaces',
 
+    /**
+     * Fiyat alanında virgülden sonraki kısmın ölçek oranı (0.3 - 1.0)
+     */
+    PRICE_FRACTION_SCALE: 'priceFractionScale',
+
+    /**
+     * Fiyat alanında virgülden sonra kaç hane gösterileceği (-1: otomatik, 1/2)
+     */
+    PRICE_FRACTION_DIGITS: 'priceFractionDigits',
+
+    /**
+     * Fiyat alanında orta çizgi (strike line) gösterilsin mi
+     */
+    PRICE_MIDLINE_ENABLED: 'priceMidlineEnabled',
+
+    /**
+     * Fiyat orta çizgi kalınlığı (px)
+     */
+    PRICE_MIDLINE_THICKNESS: 'priceMidlineThickness',
+
     // ==========================================
     // BARKOD ÖZELLİKLERİ
     // ==========================================
@@ -390,6 +410,7 @@ export const CUSTOM_PROPS = {
      * Maksimum satır sayısı (0 = sınırsız)
      */
     MAX_LINES: 'maxLines',
+    TEXT_AUTO_WIDTH: 'textAutoWidth',
 
     // ==========================================
     // LEGACY UYUMLULUK
@@ -525,6 +546,10 @@ export const SERIALIZABLE_PROPS = [
     CUSTOM_PROPS.FIELD_FORMAT,
     CUSTOM_PROPS.CURRENCY_SYMBOL,
     CUSTOM_PROPS.DECIMAL_PLACES,
+    CUSTOM_PROPS.PRICE_FRACTION_SCALE,
+    CUSTOM_PROPS.PRICE_FRACTION_DIGITS,
+    CUSTOM_PROPS.PRICE_MIDLINE_ENABLED,
+    CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS,
 
     // Barkod
     CUSTOM_PROPS.BARCODE_VALUE,
@@ -570,6 +595,7 @@ export const SERIALIZABLE_PROPS = [
     CUSTOM_PROPS.TEXT_FIT,
     CUSTOM_PROPS.MIN_FONT_SIZE,
     CUSTOM_PROPS.MAX_LINES,
+    CUSTOM_PROPS.TEXT_AUTO_WIDTH,
 
     // Arkaplan
     CUSTOM_PROPS.BACKGROUND_TYPE,

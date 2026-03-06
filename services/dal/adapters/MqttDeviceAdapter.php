@@ -78,7 +78,7 @@ class MqttDeviceAdapter extends AbstractDeviceAdapter
         $productId = $options['product_id'] ?? null;
 
         $sendParams = [
-            'image_path' => $imagePath,
+            'image'      => $imagePath,
             'width'      => $options['width'] ?? $device['screen_width'] ?? 800,
             'height'     => $options['height'] ?? $device['screen_height'] ?? 1280,
             'priority'   => $options['priority'] ?? 'normal',
@@ -153,7 +153,7 @@ class MqttDeviceAdapter extends AbstractDeviceAdapter
         $mqttAction = $mqttActionMap[$action] ?? $action;
         $commandPayload = [
             'action'   => $mqttAction,
-            'push_id'  => time(),
+            'push_id'  => $this->mqttService->createPushId($deviceId . ':' . $action),
             'clientid' => $device['device_id'] ?? $device['mqtt_client_id'] ?? '',
             'priority' => in_array($action, ['reboot', 'firmware_upgrade']) ? 10 : 5,
         ];

@@ -86,6 +86,8 @@
         "dragDrop": "Glissez-déposez le fichier ici ou",
         "selectFile": "Veuillez sélectionner un fichier",
         "hint": "TXT, CSV, JSON, XML ou XLSX (maximum 10 Mo)",
+        "preview": "Aperçu",
+        "mapping": "Correspondance des champs",
         "mappingMode": "Mode de correspondance",
         "auto": "Correspondance automatique",
         "manual": "Correspondance manuelle",

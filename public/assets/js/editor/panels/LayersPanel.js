@@ -690,48 +690,162 @@ export class LayersPanel extends PanelBase {
         if (!objects || !this.canvas) return;
 
         const activeSelection = this.canvas.getActiveObject();
+        const hasRotatedObject = objects.some(obj => Math.abs(Number(obj?.angle || 0)) > 0.01);
 
-        // Seçim grubunun sınır kutusunu al
-        const groupBound = activeSelection.getBoundingRect(true);
+        if (hasRotatedObject) {
+            // Rotasyonlu nesnelerde mevcut boundingRect hizalama daha güvenli
+            const groupBound = activeSelection.getBoundingRect(true);
+            objects.forEach(obj => {
+                const objBound = obj.getBoundingRect(true);
+                switch (direction) {
+                    case 'left':
+                        obj.set('left', obj.left + (groupBound.left - objBound.left));
+                        break;
+                    case 'centerH': {
+                        const groupCenterX = groupBound.left + groupBound.width / 2;
+                        const objCenterX = objBound.left + objBound.width / 2;
+                        obj.set('left', obj.left + (groupCenterX - objCenterX));
+                        break;
+                    }
+                    case 'right': {
+                        const groupRight = groupBound.left + groupBound.width;
+                        const objRight = objBound.left + objBound.width;
+                        obj.set('left', obj.left + (groupRight - objRight));
+                        break;
+                    }
+                    case 'top':
+                        obj.set('top', obj.top + (groupBound.top - objBound.top));
+                        break;
+                    case 'centerV': {
+                        const groupCenterY = groupBound.top + groupBound.height / 2;
+                        const objCenterY = objBound.top + objBound.height / 2;
+                        obj.set('top', obj.top + (groupCenterY - objCenterY));
+                        break;
+                    }
+                    case 'bottom': {
+                        const groupBottom = groupBound.top + groupBound.height;
+                        const objBottom = objBound.top + objBound.height;
+                        obj.set('top', obj.top + (groupBottom - objBottom));
+                        break;
+                    }
+                }
+                obj.setCoords();
+            });
+        } else {
+            // Rotasyonsuz nesnelerde origin/anchor bazlı hizalama:
+            // Text/Textbox iç girinti farklarından etkilenmez, kutu başlangıcını eşitler.
+            const anchorBounds = objects.map(obj => this._getAnchorBounds(obj));
+            const minLeft = Math.min(...anchorBounds.map(b => b.left));
+            const maxRight = Math.max(...anchorBounds.map(b => b.right));
+            const minTop = Math.min(...anchorBounds.map(b => b.top));
+            const maxBottom = Math.max(...anchorBounds.map(b => b.bottom));
+            const centerX = (minLeft + maxRight) / 2;
+            const centerY = (minTop + maxBottom) / 2;
 
-        objects.forEach(obj => {
-            // Nesnenin grup içindeki mutlak konumunu hesapla
-            const objBound = obj.getBoundingRect(true);
-
-            switch (direction) {
-                case 'left':
-                    obj.set('left', obj.left + (groupBound.left - objBound.left));
-                    break;
-                case 'centerH':
-                    const groupCenterX = groupBound.left + groupBound.width / 2;
-                    const objCenterX = objBound.left + objBound.width / 2;
-                    obj.set('left', obj.left + (groupCenterX - objCenterX));
-                    break;
-                case 'right':
-                    const groupRight = groupBound.left + groupBound.width;
-                    const objRight = objBound.left + objBound.width;
-                    obj.set('left', obj.left + (groupRight - objRight));
-                    break;
-                case 'top':
-                    obj.set('top', obj.top + (groupBound.top - objBound.top));
-                    break;
-                case 'centerV':
-                    const groupCenterY = groupBound.top + groupBound.height / 2;
-                    const objCenterY = objBound.top + objBound.height / 2;
-                    obj.set('top', obj.top + (groupCenterY - objCenterY));
-                    break;
-                case 'bottom':
-                    const groupBottom = groupBound.top + groupBound.height;
-                    const objBottom = objBound.top + objBound.height;
-                    obj.set('top', obj.top + (groupBottom - objBottom));
-                    break;
-            }
-            obj.setCoords();
-        });
+            objects.forEach(obj => {
+                switch (direction) {
+                    case 'left':
+                        this._setObjectXByAnchor(obj, 'left', minLeft);
+                        break;
+                    case 'centerH':
+                        this._setObjectXByAnchor(obj, 'center', centerX);
+                        break;
+                    case 'right':
+                        this._setObjectXByAnchor(obj, 'right', maxRight);
+                        break;
+                    case 'top':
+                        this._setObjectYByAnchor(obj, 'top', minTop);
+                        break;
+                    case 'centerV':
+                        this._setObjectYByAnchor(obj, 'center', centerY);
+                        break;
+                    case 'bottom':
+                        this._setObjectYByAnchor(obj, 'bottom', maxBottom);
+                        break;
+                }
+                obj.setCoords();
+            });
+        }
 
         activeSelection.setCoords();
         this.canvas.requestRenderAll();
         eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'align' });
+    }
+
+    /**
+     * Objenin origin'e göre anchor sınırlarını hesapla (rotasyonsuz varsayım).
+     * @private
+     * @param {Object} obj
+     * @returns {{left:number,right:number,top:number,bottom:number}}
+     */
+    _getAnchorBounds(obj) {
+        const width = Math.max(0, (Number(obj?.width) || 0) * (Number(obj?.scaleX) || 1));
+        const height = Math.max(0, (Number(obj?.height) || 0) * (Number(obj?.scaleY) || 1));
+
+        const originX = String(obj?.originX || 'left').toLowerCase();
+        const originY = String(obj?.originY || 'top').toLowerCase();
+
+        const rawLeft = Number(obj?.left) || 0;
+        const rawTop = Number(obj?.top) || 0;
+
+        let left = rawLeft;
+        if (originX === 'center') left = rawLeft - (width / 2);
+        else if (originX === 'right') left = rawLeft - width;
+
+        let top = rawTop;
+        if (originY === 'center') top = rawTop - (height / 2);
+        else if (originY === 'bottom') top = rawTop - height;
+
+        return {
+            left,
+            right: left + width,
+            top,
+            bottom: top + height
+        };
+    }
+
+    /**
+     * Objenin X konumunu hedef anchor'a göre ayarla.
+     * @private
+     * @param {Object} obj
+     * @param {'left'|'center'|'right'} anchor
+     * @param {number} value
+     */
+    _setObjectXByAnchor(obj, anchor, value) {
+        const width = Math.max(0, (Number(obj?.width) || 0) * (Number(obj?.scaleX) || 1));
+        const originX = String(obj?.originX || 'left').toLowerCase();
+
+        let centerX = value;
+        if (anchor === 'left') centerX = value + (width / 2);
+        else if (anchor === 'right') centerX = value - (width / 2);
+
+        let nextLeft = centerX;
+        if (originX === 'left') nextLeft = centerX - (width / 2);
+        else if (originX === 'right') nextLeft = centerX + (width / 2);
+
+        obj.set('left', nextLeft);
+    }
+
+    /**
+     * Objenin Y konumunu hedef anchor'a göre ayarla.
+     * @private
+     * @param {Object} obj
+     * @param {'top'|'center'|'bottom'} anchor
+     * @param {number} value
+     */
+    _setObjectYByAnchor(obj, anchor, value) {
+        const height = Math.max(0, (Number(obj?.height) || 0) * (Number(obj?.scaleY) || 1));
+        const originY = String(obj?.originY || 'top').toLowerCase();
+
+        let centerY = value;
+        if (anchor === 'top') centerY = value + (height / 2);
+        else if (anchor === 'bottom') centerY = value - (height / 2);
+
+        let nextTop = centerY;
+        if (originY === 'top') nextTop = centerY - (height / 2);
+        else if (originY === 'bottom') nextTop = centerY + (height / 2);
+
+        obj.set('top', nextTop);
     }
 
     /**
@@ -744,50 +858,93 @@ export class LayersPanel extends PanelBase {
         if (!objects || objects.length < 3 || !this.canvas) return;
 
         const activeSelection = this.canvas.getActiveObject();
+        const hasRotatedObject = objects.some(obj => Math.abs(Number(obj?.angle || 0)) > 0.01);
 
-        if (direction === 'horizontal') {
-            // Nesneleri sol kenarlarına göre sırala
-            const sorted = [...objects].sort((a, b) => {
-                return a.getBoundingRect(true).left - b.getBoundingRect(true).left;
-            });
+        if (hasRotatedObject) {
+            if (direction === 'horizontal') {
+                // Nesneleri sol kenarlarına göre sırala
+                const sorted = [...objects].sort((a, b) => {
+                    return a.getBoundingRect(true).left - b.getBoundingRect(true).left;
+                });
 
-            const bounds = sorted.map(obj => obj.getBoundingRect(true));
-            const firstLeft = bounds[0].left;
-            const lastRight = bounds[bounds.length - 1].left + bounds[bounds.length - 1].width;
-            const totalObjWidth = bounds.reduce((sum, b) => sum + b.width, 0);
+                const bounds = sorted.map(obj => obj.getBoundingRect(true));
+                const firstLeft = bounds[0].left;
+                const lastRight = bounds[bounds.length - 1].left + bounds[bounds.length - 1].width;
+                const totalObjWidth = bounds.reduce((sum, b) => sum + b.width, 0);
+                const totalSpace = (lastRight - firstLeft) - totalObjWidth;
+                const gap = totalSpace / (sorted.length - 1);
+
+                let currentX = firstLeft;
+                sorted.forEach((obj, i) => {
+                    const bound = bounds[i];
+                    if (i > 0) {
+                        obj.set('left', obj.left + (currentX - bound.left));
+                        obj.setCoords();
+                    }
+                    currentX = currentX + bound.width + gap;
+                });
+            } else {
+                // Nesneleri üst kenarlarına göre sırala
+                const sorted = [...objects].sort((a, b) => {
+                    return a.getBoundingRect(true).top - b.getBoundingRect(true).top;
+                });
+
+                const bounds = sorted.map(obj => obj.getBoundingRect(true));
+                const firstTop = bounds[0].top;
+                const lastBottom = bounds[bounds.length - 1].top + bounds[bounds.length - 1].height;
+                const totalObjHeight = bounds.reduce((sum, b) => sum + b.height, 0);
+                const totalSpace = (lastBottom - firstTop) - totalObjHeight;
+                const gap = totalSpace / (sorted.length - 1);
+
+                let currentY = firstTop;
+                sorted.forEach((obj, i) => {
+                    const bound = bounds[i];
+                    if (i > 0) {
+                        obj.set('top', obj.top + (currentY - bound.top));
+                        obj.setCoords();
+                    }
+                    currentY = currentY + bound.height + gap;
+                });
+            }
+        } else if (direction === 'horizontal') {
+            const items = objects
+                .map(obj => ({ obj, bounds: this._getAnchorBounds(obj) }))
+                .sort((a, b) => a.bounds.left - b.bounds.left);
+
+            const firstLeft = items[0].bounds.left;
+            const lastRight = items[items.length - 1].bounds.right;
+            const totalObjWidth = items.reduce((sum, item) => sum + (item.bounds.right - item.bounds.left), 0);
             const totalSpace = (lastRight - firstLeft) - totalObjWidth;
-            const gap = totalSpace / (sorted.length - 1);
+            const gap = totalSpace / (items.length - 1);
 
-            let currentX = firstLeft;
-            sorted.forEach((obj, i) => {
-                const bound = bounds[i];
-                if (i > 0) {
-                    obj.set('left', obj.left + (currentX - bound.left));
-                    obj.setCoords();
+            let currentLeft = firstLeft;
+            items.forEach((item, idx) => {
+                const width = item.bounds.right - item.bounds.left;
+                if (idx > 0) {
+                    this._setObjectXByAnchor(item.obj, 'left', currentLeft);
+                    item.obj.setCoords();
                 }
-                currentX = currentX + bound.width + gap;
+                currentLeft += width + gap;
             });
         } else {
-            // Nesneleri üst kenarlarına göre sırala
-            const sorted = [...objects].sort((a, b) => {
-                return a.getBoundingRect(true).top - b.getBoundingRect(true).top;
-            });
+            const items = objects
+                .map(obj => ({ obj, bounds: this._getAnchorBounds(obj) }))
+                .sort((a, b) => a.bounds.top - b.bounds.top);
 
-            const bounds = sorted.map(obj => obj.getBoundingRect(true));
-            const firstTop = bounds[0].top;
-            const lastBottom = bounds[bounds.length - 1].top + bounds[bounds.length - 1].height;
-            const totalObjHeight = bounds.reduce((sum, b) => sum + b.height, 0);
+            const firstTop = items[0].bounds.top;
+            const lastBottom = items[items.length - 1].bounds.bottom;
+            const totalObjHeight = items.reduce((sum, item) => sum + (item.bounds.bottom - item.bounds.top), 0);
             const totalSpace = (lastBottom - firstTop) - totalObjHeight;
-            const gap = totalSpace / (sorted.length - 1);
+            const gap = totalSpace / (items.length - 1);
 
-            let currentY = firstTop;
-            sorted.forEach((obj, i) => {
-                const bound = bounds[i];
-                if (i > 0) {
-                    obj.set('top', obj.top + (currentY - bound.top));
-                    obj.setCoords();
+            let currentTop = firstTop;
+            items.forEach((item, idx) => {
+                const height = item.bounds.bottom - item.bounds.top;
+                if (idx > 0) {
+                    this._setObjectYByAnchor(item.obj, 'top', currentTop);
+                    item.obj.setCoords();
                 }
-                currentY = currentY + bound.height + gap;
+                currentTop += height + gap;
             });
         }
 

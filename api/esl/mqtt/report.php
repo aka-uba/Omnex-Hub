@@ -242,7 +242,7 @@ try {
     }
 
     // Report yaniti ulasmamis olabilir: ACK'siz sent komutlari tekrar pending'e al.
-    $mqttService->requeueStaleSentCommands($deviceId, 45, 3);
+    $mqttService->requeueStaleSentCommands($deviceId, 15, 5);
 
     $pendingCommands = $mqttService->getPendingCommands($deviceId, 10);
     if (!empty($pendingCommands)) {
@@ -252,7 +252,7 @@ try {
         foreach ($pendingCommands as $cmd) {
             $params = is_array($cmd['parameters'] ?? null) ? $cmd['parameters'] : [];
             $action = (string)($params['action'] ?? $cmd['command'] ?? 'updatelabel');
-            $pushValue = $params['push_id'] ?? time();
+            $pushValue = $params['push_id'] ?? $mqttService->createPushId($deviceId . ':' . ($cmd['id'] ?? 'fallback'));
 
             $commandsPayload[] = [
                 'action' => $action,

@@ -623,14 +623,16 @@
                 "imageDesc": "Statisches Bild hinzufügen (PNG, JPG, WebP)",
                 "videoDesc": "Video-Platzhalter hinzufügen (MP4, WebM)"
             },
-            "videoSettings": "Video-Einstellungen",
-            "autoplay": "Automatische Wiedergabe",
-            "autoplayDesc": "Video startet automatisch",
-            "loop": "Schleife",
-            "loopDesc": "Video wiederholt sich, wenn beendet",
-            "muted": "Stumm",
-            "mutedDesc": "Video startet stumm",
-            "placeholderSize": "Platzhaltergröße",
+            "videoSettings": {
+                "title": "Video-Einstellungen",
+                "autoplay": "Automatische Wiedergabe",
+                "autoplayDesc": "Video startet automatisch",
+                "loop": "Schleife",
+                "loopDesc": "Video wiederholt sich, wenn beendet",
+                "muted": "Stumm",
+                "mutedDesc": "Video startet stumm",
+                "placeholderSize": "Platzhaltergröße"
+            },
             "imageInfo": "Wählen Sie ein Bild aus der Medienbibliothek aus oder laden Sie ein neues Bild hoch.",
             "videoInfo": "Videos werden in Signage-Vorlagen automatisch abgespielt. In ESL-Vorlagen werden Videos als Platzhalter angezeigt."
         },

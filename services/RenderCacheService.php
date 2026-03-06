@@ -394,17 +394,18 @@ class RenderCacheService
     {
         // Worker crash/refresh sonrası "processing"te kalan işleri geri al.
         $this->recoverStaleProcessingJobs($companyId, $filters);
-        $productJoin = $this->db->isPostgres()
-            ? 'LEFT JOIN products p ON CAST(p.id AS TEXT) = CAST(rj.product_id AS TEXT)'
-            : 'LEFT JOIN products p ON p.id = rj.product_id';
-        $templateJoin = $this->db->isPostgres()
-            ? 'LEFT JOIN templates t ON CAST(t.id AS TEXT) = CAST(rj.template_id AS TEXT)'
-            : 'LEFT JOIN templates t ON t.id = rj.template_id';
+
+        $jobProductJoin = $this->db->isPostgres()
+            ? "LEFT JOIN products p ON CAST(p.id AS TEXT) = CAST(rj.product_id AS TEXT)"
+            : "LEFT JOIN products p ON p.id = rj.product_id";
+        $jobTemplateJoin = $this->db->isPostgres()
+            ? "LEFT JOIN templates t ON CAST(t.id AS TEXT) = CAST(rj.template_id AS TEXT)"
+            : "LEFT JOIN templates t ON t.id = rj.template_id";
 
         $sql = "SELECT rj.*, p.name as product_name, t.name as template_name
                 FROM render_jobs rj
-                $productJoin
-                $templateJoin
+                {$jobProductJoin}
+                {$jobTemplateJoin}
                 WHERE rj.status = 'pending'";
         $params = [];
 
@@ -813,6 +814,7 @@ class RenderCacheService
     private function recoverStaleProcessingJobs(?string $companyId = null, array $filters = [], int $staleSeconds = 120): int
     {
         $seconds = max(30, (int)$staleSeconds);
+
         $sql = "UPDATE render_jobs
                 SET status = 'pending',
                     started_at = NULL
@@ -975,7 +977,6 @@ class RenderCacheService
      */
     public function getStats(string $companyId): array
     {
-        $last24hExpr = "CURRENT_TIMESTAMP - INTERVAL '24 hours'";
         // Cache istatistikleri
         $cacheStats = $this->db->fetch(
             "SELECT
@@ -1007,7 +1008,7 @@ class RenderCacheService
                 COUNT(*) as jobs_created,
                 SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as jobs_completed
              FROM render_jobs
-             WHERE company_id = ? AND created_at >= $last24hExpr",
+             WHERE company_id = ? AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '24 hours')",
             [$companyId]
         );
 
@@ -1049,4 +1050,3 @@ class RenderCacheService
         return $result->rowCount();
     }
 }
-

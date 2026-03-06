@@ -16,6 +16,10 @@ export class TemplateRenderer {
         this._codeLibrariesPromise = null;
     }
 
+    _shouldHideHelpers(renderOptions = {}) {
+        return !renderOptions.preserveHelpers;
+    }
+
     /**
      * Fabric.js kütüphanesini yükle
      * @returns {Promise<void>}
@@ -524,6 +528,146 @@ export class TemplateRenderer {
         return `${label}: ${formattedValue}`;
     }
 
+    _getObjectProperty(obj, key, defaultValue = undefined) {
+        if (!obj || typeof obj !== 'object') return defaultValue;
+        if (obj[key] !== undefined) return obj[key];
+        if (typeof obj.get === 'function') {
+            const fromGetter = obj.get(key);
+            if (fromGetter !== undefined) return fromGetter;
+        }
+        return defaultValue;
+    }
+
+    _setObjectProperty(obj, key, value) {
+        if (!obj || typeof obj !== 'object') return;
+        if (typeof obj.set === 'function') {
+            try {
+                obj.set(key, value);
+            } catch (e) {
+                // ignore and keep direct assignment fallback
+            }
+        }
+        obj[key] = value;
+    }
+
+    _isPriceFieldKey(fieldKey) {
+        const key = String(fieldKey || '').trim().toLowerCase();
+        return [
+            'current_price',
+            'previous_price',
+            'price_with_currency',
+            'price',
+            'old_price',
+            'bundle_total_price',
+            'bundle_final_price',
+            'alis_fiyati'
+        ].includes(key);
+    }
+
+    _isPriceObjectField(obj, fieldKey = '') {
+        const customType = String(
+            this._getObjectProperty(obj, 'customType', this._getObjectProperty(obj, 'custom_type', ''))
+        ).trim().toLowerCase();
+        if (customType === 'price') return true;
+        return this._isPriceFieldKey(fieldKey);
+    }
+
+    _findPriceFractionRange(text) {
+        const raw = String(text ?? '');
+        const match = raw.match(/([,.])(\d+)(?=\D*$)/);
+        if (!match || typeof match.index !== 'number') return null;
+
+        const digits = String(match[2] || '');
+        const start = match.index + String(match[1] || '').length;
+        const end = start + digits.length;
+
+        if (!digits || end <= start) return null;
+        return { start, end, digits };
+    }
+
+    _applyPriceTextOptions(obj, fieldKey, rawText) {
+        let text = String(rawText ?? '');
+        if (!this._isPriceObjectField(obj, fieldKey)) {
+            return {
+                text,
+                styles: null,
+                linethrough: null
+            };
+        }
+
+        const digitsRaw = Number(this._getObjectProperty(obj, 'priceFractionDigits', -1));
+        const digits = [1, 2].includes(digitsRaw) ? digitsRaw : -1;
+
+        let fractionRange = this._findPriceFractionRange(text);
+        let shrinkEnd = fractionRange ? fractionRange.end : 0;
+        if (digits > 0 && fractionRange) {
+            const nextDigits = fractionRange.digits.padEnd(digits, '0').slice(0, digits);
+            text = `${text.slice(0, fractionRange.start)}${nextDigits}${text.slice(fractionRange.end)}`;
+            fractionRange = {
+                start: fractionRange.start,
+                end: fractionRange.start + nextDigits.length,
+                digits: nextDigits
+            };
+            shrinkEnd = fractionRange.end;
+        }
+        const trailing = text.slice(shrinkEnd);
+        if (trailing && trailing.trim()) {
+            shrinkEnd = text.length;
+        }
+
+        const scaleRaw = Number(this._getObjectProperty(obj, 'priceFractionScale', 1));
+        const fractionScale = Number.isFinite(scaleRaw) ? Math.max(0.3, Math.min(1, scaleRaw)) : 1;
+        const baseFontSize = Number(this._getObjectProperty(obj, 'fontSize', 24)) || 24;
+
+        let styles = {};
+        if (fractionRange && fractionScale < 0.999) {
+            const scaledFontSize = Math.max(1, Number((baseFontSize * fractionScale).toFixed(2)));
+            const deltaY = -Math.max(0, Number(((baseFontSize - scaledFontSize) * 0.7).toFixed(2)));
+            const lineStyles = {};
+            for (let charIndex = fractionRange.start; charIndex < shrinkEnd; charIndex++) {
+                lineStyles[charIndex] = {
+                    fontSize: scaledFontSize,
+                    deltaY
+                };
+            }
+            styles = { 0: lineStyles };
+        }
+
+        const midlineEnabled = !!this._getObjectProperty(obj, 'priceMidlineEnabled', false);
+        const midlineThicknessRaw = Number(this._getObjectProperty(obj, 'priceMidlineThickness', 1));
+        const midlineThickness = Math.max(1, Math.min(8, Number.isFinite(midlineThicknessRaw) ? midlineThicknessRaw : 1));
+
+        return {
+            text,
+            styles,
+            linethrough: midlineEnabled,
+            textDecorationThickness: midlineThickness
+        };
+    }
+
+    _setObjectTextWithFormatting(obj, rawText, fieldKey = '') {
+        const result = this._applyPriceTextOptions(obj, fieldKey, rawText);
+        this._setObjectProperty(obj, 'text', result.text);
+
+        if (result.styles !== null) {
+            this._setObjectProperty(obj, 'styles', result.styles || {});
+        }
+
+        if (result.linethrough !== null) {
+            this._setObjectProperty(obj, 'linethrough', result.linethrough);
+        }
+        if (result.textDecorationThickness !== null && result.textDecorationThickness !== undefined) {
+            this._setObjectProperty(obj, 'textDecorationThickness', result.textDecorationThickness);
+        }
+
+        if (typeof obj?.initDimensions === 'function') {
+            obj.initDimensions();
+        }
+        if (typeof obj?.setCoords === 'function') {
+            obj.setCoords();
+        }
+    }
+
     _computeObjectTopCenter(obj) {
         const width = (Number(obj?.width) || 0) * (Number(obj?.scaleX) || 1);
         const height = (Number(obj?.height) || 0) * (Number(obj?.scaleY) || 1);
@@ -718,22 +862,24 @@ export class TemplateRenderer {
                 const isTextType = ['text', 'textbox', 'i-text', 'itext'].includes(type);
                 const fieldKey = this._getObjectFieldKey(obj, textContent);
 
-                const value = fieldKey ? this._getProductValue(product, fieldKey) : '';
+                const value = fieldKey ? this._getProductValue(product, fieldKey, obj) : '';
                 const hasValue = value !== null && value !== undefined && String(value).trim() !== '';
 
                 if (isTextType) {
                     if (hasPlaceholder && !dynamicFieldRaw) {
                         const isStandalonePlaceholder = this._isStandalonePlaceholderText(textContent);
-                        obj.text = textContent.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_match, key) => {
+                        const replacedText = textContent.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_match, key) => {
                             const normalizedKey = String(key || '').trim();
-                            const val = this._getProductValue(product, normalizedKey);
+                            const val = this._getProductValue(product, normalizedKey, obj);
                             if (isStandalonePlaceholder) {
                                 return this._formatDisplayValueForObject(obj, normalizedKey, val, product, textContent);
                             }
                             return this._formatFieldValueForText(normalizedKey, val, product);
                         });
+                        this._setObjectTextWithFormatting(obj, replacedText, fieldKey);
                     } else if (fieldKey) {
-                        obj.text = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
+                        const displayText = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
+                        this._setObjectTextWithFormatting(obj, displayText, fieldKey);
                     }
                 }
 
@@ -803,7 +949,7 @@ export class TemplateRenderer {
      * @param {Object} product - Ürün verisi
      * @returns {Promise<string>} - PNG base64 data URL
      */
-    async render(template, product) {
+    async render(template, product, renderOptions = {}) {
         // Önce Fabric.js'in yüklü olduğundan emin ol
         await this._loadFabric();
 
@@ -828,7 +974,9 @@ export class TemplateRenderer {
 
                 // Normalize image sources (file:// and basePath fixes)
                 this._normalizeDesignDataSources(designData);
-                this._hideNonRenderableObjects(designData.objects);
+                if (this._shouldHideHelpers(renderOptions)) {
+                    this._hideNonRenderableObjects(designData.objects);
+                }
                 await this._replaceSingleFieldsInJSON(designData.objects, product);
 
                 // Orijinal obje verilerini sakla (custom properties için)
@@ -987,7 +1135,7 @@ export class TemplateRenderer {
             if (!dynamicField && !isDataField && !hasPlaceholder && !fieldKey) return;
             if (!fieldKey) return;
 
-            const value = this._getProductValue(product, fieldKey);
+            const value = this._getProductValue(product, fieldKey, obj);
 
             if (isTextType) {
                 if (hasPlaceholder && !dynamicField) {
@@ -996,16 +1144,16 @@ export class TemplateRenderer {
                     const matches = textContent.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g);
                     for (const match of matches) {
                         const key = String(match[1] || '').trim();
-                        const val = this._getProductValue(product, key);
+                        const val = this._getProductValue(product, key, obj);
                         const formatted = isStandalonePlaceholder
                             ? this._formatDisplayValueForObject(obj, key, val, product, textContent)
                             : this._formatFieldValueForText(key, val, product);
                         newText = newText.replace(match[0], formatted);
                     }
-                    obj.set('text', newText);
+                    this._setObjectTextWithFormatting(obj, newText, fieldKey);
                 } else {
                     const displayText = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
-                    obj.set('text', displayText);
+                    this._setObjectTextWithFormatting(obj, displayText, fieldKey);
                 }
                 return;
             }
@@ -1086,7 +1234,7 @@ export class TemplateRenderer {
             }
 
             // Ürün verisinden değeri al
-            let value = this._getProductValue(product, fieldKey);
+            let value = this._getProductValue(product, fieldKey, obj);
 
             // Değeri uygula
             if (isTextType) {
@@ -1097,33 +1245,20 @@ export class TemplateRenderer {
                     const matches = textContent.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g);
                     for (const match of matches) {
                         const key = String(match[1] || '').trim();
-                        const val = this._getProductValue(product, key);
+                        const val = this._getProductValue(product, key, obj);
                         const formatted = isStandalonePlaceholder
                             ? this._formatDisplayValueForObject(obj, key, val, product, textContent)
                             : this._formatFieldValueForText(key, val, product);
                         newText = newText.replace(match[0], formatted);
                     }
-                    obj.set('text', newText);
+                    this._setObjectTextWithFormatting(obj, newText, fieldKey);
                 } else {
                     const displayText = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
-                    obj.set('text', displayText);
+                    this._setObjectTextWithFormatting(obj, displayText, fieldKey);
                 }
             } else if ((['dynamic-image', 'slot-image', 'image-placeholder'].includes(customType) || (customType === 'slot-media' && this._isImageFieldKey(fieldKey))) && value) {
                 // Görsel alanı için URL'yi yükle - async
-                // imageIndex kontrolü: 0 = kapak görseli (varsayılan), 1+ = diğer görseller
-                const imageIndex = parseInt(obj.imageIndex ?? 0) || 0;
-                let imageUrl = value; // Varsayılan: kapak görseli URL'si
-
-                if (imageIndex > 0 && product) {
-                    // Belirli indeksteki görseli resolve et
-                    const resolvedUrl = this._resolveProductImageByIndex(product, imageIndex);
-                    if (resolvedUrl) {
-                        imageUrl = resolvedUrl;
-                    }
-                    // resolvedUrl boşsa fallback olarak kapak görseli (value) kullanılır
-                }
-
-                const loadPromise = this._loadImageForObjectAsync(obj, imageUrl, index);
+                const loadPromise = this._loadImageForObjectAsync(obj, value, index);
                 imageLoadPromises.push(loadPromise);
             } else if (['dynamic-image', 'slot-image', 'image-placeholder'].includes(customType) || (customType === 'slot-media' && this._isImageFieldKey(fieldKey))) {
                 obj.visible = false;
@@ -1173,9 +1308,10 @@ export class TemplateRenderer {
      * Ürün verisinden alan değerini al
      * @param {Object} product - Ürün verisi
      * @param {string} fieldKey - Alan anahtarı
+     * @param {Object|null} sourceObject - Render edilen nesne (örn. imageIndex için)
      * @returns {string} - Alan değeri
      */
-    _getProductValue(product, fieldKey) {
+    _getProductValue(product, fieldKey, sourceObject = null) {
         // Özel alanlar
         const specialFields = {
             'date_today': new Date().toLocaleDateString('tr-TR'),
@@ -1213,8 +1349,8 @@ export class TemplateRenderer {
             'campaign_text': product.campaign_text || '',
             'price_updated_at': this._formatDate(product.price_updated_at),
             'price_valid_until': this._formatDate(product.price_valid_until),
-            'image_url': this._resolveProductImage(product),
-            'bundle_image_url': this._resolveProductImage(product),
+            'image_url': this._resolveProductImage(product, sourceObject),
+            'bundle_image_url': this._resolveProductImage(product, sourceObject),
             'video_url': product.video_url
         };
 
@@ -1318,37 +1454,24 @@ export class TemplateRenderer {
     }
 
     /**
-     * Ürün görselini image_url > image/image_path > images[0] sırasıyla çöz.
+     * Ürün görselini çözer.
+     * sourceObject.imageIndex tanımlıysa önce ürün images[] listesinde ilgili index'i dener.
      * @param {Object} product
+     * @param {Object|null} sourceObject
      * @returns {string}
      */
-    _resolveProductImage(product) {
+    _resolveProductImage(product, sourceObject = null) {
         if (!product) return '';
 
-        if (product.image_url) return product.image_url;
-        if (product.cover_image) return product.cover_image;
-        if (product.image) return product.image;
-        if (product.product_image) return product.product_image;
-        if (product.image_path) return product.image_path;
-        if (product.erp_image_url) return product.erp_image_url;
-        if (product.default_image_url) return product.default_image_url;
-        if (product.thumbnail) return product.thumbnail;
+        const readObjectProp = (obj, key) => {
+            if (!obj || typeof obj !== 'object') return undefined;
+            if (obj[key] !== undefined) return obj[key];
+            if (typeof obj.get === 'function') return obj.get(key);
+            return undefined;
+        };
 
-        let images = product.images;
-        if (typeof images === 'string') {
-            try {
-                images = JSON.parse(images);
-            } catch (e) {
-                images = [];
-            }
-        }
-
-        if (Array.isArray(images) && images.length > 0) {
-            const coverIndex = Number(product.cover_image_index);
-            const candidate = Number.isInteger(coverIndex) && coverIndex >= 0 && coverIndex < images.length
-                ? images[coverIndex]
-                : images[0];
-
+        const resolveImageCandidate = (candidate) => {
+            if (!candidate) return '';
             if (typeof candidate === 'string') return candidate;
             if (candidate && typeof candidate === 'object') {
                 return candidate.url ||
@@ -1362,6 +1485,46 @@ export class TemplateRenderer {
                     candidate.image ||
                     '';
             }
+            return '';
+        };
+
+        let images = product.images;
+        if (typeof images === 'string') {
+            try {
+                images = JSON.parse(images);
+            } catch (e) {
+                images = [];
+            }
+        }
+
+        const selectedImageIndexRaw = readObjectProp(sourceObject, 'imageIndex') ?? readObjectProp(sourceObject, 'image_index');
+        const selectedImageIndex = Number(selectedImageIndexRaw);
+        const hasSelectedImageIndex = Number.isInteger(selectedImageIndex) && selectedImageIndex >= 0;
+
+        if (hasSelectedImageIndex && Array.isArray(images) && images.length > 0) {
+            const indexedCandidate = resolveImageCandidate(images[selectedImageIndex]);
+            if (indexedCandidate) return indexedCandidate;
+
+            const firstCandidate = resolveImageCandidate(images[0]);
+            if (firstCandidate) return firstCandidate;
+        }
+
+        if (product.image_url) return product.image_url;
+        if (product.cover_image) return product.cover_image;
+        if (product.image) return product.image;
+        if (product.product_image) return product.product_image;
+        if (product.image_path) return product.image_path;
+        if (product.erp_image_url) return product.erp_image_url;
+        if (product.default_image_url) return product.default_image_url;
+        if (product.thumbnail) return product.thumbnail;
+
+        if (Array.isArray(images) && images.length > 0) {
+            const coverIndex = Number(product.cover_image_index);
+            const candidate = Number.isInteger(coverIndex) && coverIndex >= 0 && coverIndex < images.length
+                ? images[coverIndex]
+                : images[0];
+            const resolvedCandidate = resolveImageCandidate(candidate);
+            if (resolvedCandidate) return resolvedCandidate;
         }
 
         if (product.extra_data) {
@@ -1377,36 +1540,6 @@ export class TemplateRenderer {
             }
         }
 
-        return '';
-    }
-
-    /**
-     * Belirli bir indeksteki ürün görselini resolve et (çoklu görsel desteği)
-     * @param {Object} product - Ürün verisi
-     * @param {number} index - Görsel indeksi (0=kapak, 1=2.görsel, 2=3.görsel, ...)
-     * @returns {string} Görsel URL'si veya boş string (fallback için)
-     */
-    _resolveProductImageByIndex(product, index) {
-        if (!product) return '';
-
-        let images = product.images;
-        if (typeof images === 'string') {
-            try { images = JSON.parse(images); } catch (e) { images = []; }
-        }
-
-        if (!Array.isArray(images) || images.length === 0) return '';
-
-        // İndeks sınır kontrolü — yoksa boş döner, caller kapak görseline fallback yapar
-        if (index >= images.length) return '';
-
-        const candidate = images[index];
-        if (typeof candidate === 'string') return candidate;
-        if (candidate && typeof candidate === 'object') {
-            return candidate.url || candidate.src || candidate.path ||
-                candidate.file_path || candidate.filename ||
-                candidate.storage_path || candidate.source_url ||
-                candidate.image_url || candidate.image || '';
-        }
         return '';
     }
 
@@ -1440,7 +1573,7 @@ export class TemplateRenderer {
                 fullUrl = MediaUtils.getDisplayUrl(imageUrl);
             }
 
-            // Orijinal pozisyon, boyut ve GÖRSEL özellikleri sakla
+            // Orijinal pozisyon ve boyut bilgilerini sakla
             const originalProps = {
                 left: obj.left,
                 top: obj.top,
@@ -1449,21 +1582,17 @@ export class TemplateRenderer {
                 angle: obj.angle || 0,
                 originX: obj.originX || 'left',
                 originY: obj.originY || 'top',
-                // Görsel özellikler (denetçi panelinden ayarlanan)
-                opacity: obj.opacity ?? 1,
+                opacity: (typeof obj.opacity === 'number') ? obj.opacity : 1,
+                visible: obj.visible !== false,
+                clipPath: obj.clipPath || null,
                 shadow: obj.shadow || null,
                 stroke: obj.stroke || null,
                 strokeWidth: obj.strokeWidth || 0,
-                strokeDashArray: obj.strokeDashArray || null,
-                rx: obj.rx || 0,
-                ry: obj.ry || 0,
-                flipX: obj.flipX || false,
-                flipY: obj.flipY || false,
-                skewX: obj.skewX || 0,
-                skewY: obj.skewY || 0,
-                clipPath: obj.clipPath || null,
-                visible: obj.visible !== false,
-                backgroundColor: obj.backgroundColor || ''
+                lockMovementX: !!obj.lockMovementX,
+                lockMovementY: !!obj.lockMovementY,
+                lockRotation: !!obj.lockRotation,
+                lockScalingX: !!obj.lockScalingX,
+                lockScalingY: !!obj.lockScalingY
             };
 
             // Canvas'taki objenin index'ini bul
@@ -1497,16 +1626,7 @@ export class TemplateRenderer {
                 const scaleX = originalProps.width / imgWidth;
                 const scaleY = originalProps.height / imgHeight;
 
-                // rx/ry varsa stroke'u Image'a DEĞİL ayrı border Rect'e uygula.
-                // Sebep: Image nesnesinde stroke her zaman dikdörtgen bounding box'u takip eder,
-                // clipPath'in oval/rounded şeklini takip etmez. Ayrı Rect overlay ile stroke
-                // doğal olarak rx/ry şeklini takip eder.
-                const hasRoundedCorners = (originalProps.rx > 0 || originalProps.ry > 0);
-                const hasStroke = originalProps.stroke && originalProps.strokeWidth > 0;
-                const needsBorderOverlay = hasRoundedCorners && hasStroke;
-
-                // Pozisyon + tüm görsel özelliklerini uygula
-                const imgProps = {
+                img.set({
                     left: originalProps.left,
                     top: originalProps.top,
                     scaleX: scaleX,
@@ -1514,106 +1634,38 @@ export class TemplateRenderer {
                     angle: originalProps.angle,
                     originX: originalProps.originX,
                     originY: originalProps.originY,
-                    selectable: false,
-                    evented: false,
-                    // Görsel özellikler
                     opacity: originalProps.opacity,
-                    // Oval + stroke varsa: stroke'u Image'a KOYMA, ayrı border Rect kullan
-                    stroke: needsBorderOverlay ? null : originalProps.stroke,
-                    strokeWidth: needsBorderOverlay ? 0 : originalProps.strokeWidth,
-                    flipX: originalProps.flipX,
-                    flipY: originalProps.flipY,
-                    skewX: originalProps.skewX,
-                    skewY: originalProps.skewY,
                     visible: originalProps.visible,
-                    backgroundColor: originalProps.backgroundColor
-                };
+                    shadow: originalProps.shadow,
+                    stroke: originalProps.stroke,
+                    strokeWidth: originalProps.strokeWidth,
+                    lockMovementX: originalProps.lockMovementX,
+                    lockMovementY: originalProps.lockMovementY,
+                    lockRotation: originalProps.lockRotation,
+                    lockScalingX: originalProps.lockScalingX,
+                    lockScalingY: originalProps.lockScalingY,
+                    selectable: false,
+                    evented: false
+                });
 
-                // Gölge
-                if (originalProps.shadow) {
-                    imgProps.shadow = originalProps.shadow;
-                }
-
-                // Kesikli kenarlık (oval border overlay yoksa)
-                if (originalProps.strokeDashArray && !needsBorderOverlay) {
-                    imgProps.strokeDashArray = originalProps.strokeDashArray;
-                }
-
-                img.set(imgProps);
-
-                // Köşe yuvarlaklığı (rx/ry): Image için clipPath ile uygulanır
-                if (hasRoundedCorners && fabric?.Rect) {
-                    const clipRx = originalProps.rx || originalProps.ry || 0;
-                    const clipRy = originalProps.ry || originalProps.rx || 0;
-                    try {
-                        const clipRect = new fabric.Rect({
-                            width: imgWidth,
-                            height: imgHeight,
-                            rx: clipRx / scaleX,  // Scale'e göre ayarla
-                            ry: clipRy / scaleY,
-                            originX: 'center',
-                            originY: 'center',
-                            left: 0,
-                            top: 0
-                        });
-                        img.set('clipPath', clipRect);
-                    } catch (clipErr) {
-                        // clipPath oluşturulamazsa devam et
-                    }
-                } else if (originalProps.clipPath) {
-                    // Mevcut clipPath'i koru
-                    img.set('clipPath', originalProps.clipPath);
+                if (originalProps.clipPath) {
+                    const hasFabricRect = (typeof fabric !== 'undefined' && fabric.Rect);
+                    const clip = (hasFabricRect && !(originalProps.clipPath instanceof fabric.Rect))
+                        ? new fabric.Rect(originalProps.clipPath)
+                        : originalProps.clipPath;
+                    img.set({ clipPath: clip });
                 }
 
                 // Eski placeholder'ı kaldır ve yeni görseli aynı pozisyona ekle
                 try {
-                    if (objIndex >= 0 && currentCanvas && currentCanvas.remove) {
+                    if (currentCanvas && currentCanvas.remove) {
+                        const liveIndex = currentCanvas.getObjects().indexOf(obj);
+                        const targetIndex = liveIndex >= 0 ? liveIndex : objIndex;
                         currentCanvas.remove(obj);
                         currentCanvas.add(img);
-                        if (img.moveTo) {
-                            img.moveTo(objIndex);
+                        if (img.moveTo && targetIndex >= 0) {
+                            img.moveTo(targetIndex);
                         }
-
-                        // Oval + stroke varsa: ayrı border Rect overlay ekle
-                        // Bu Rect'in fill'i yok (sadece kenarlık), rx/ry ile oval şekli takip eder.
-                        // Orijinal placeholder'ın width/height/scaleX/scaleY değerlerini kullanarak
-                        // rx/ry'nin Fabric.js tarafından doğru ölçeklenmesini sağla.
-                        if (needsBorderOverlay && fabric?.Rect) {
-                            try {
-                                const borderRect = new fabric.Rect({
-                                    left: originalProps.left,
-                                    top: originalProps.top,
-                                    // Orijinal placeholder'ın unscaled boyut + scale değerleri —
-                                    // Fabric.js rx/ry'yi scaleX/scaleY ile otomatik ölçekler
-                                    width: obj.width,
-                                    height: obj.height,
-                                    scaleX: obj.scaleX || 1,
-                                    scaleY: obj.scaleY || 1,
-                                    rx: obj.rx || originalProps.rx,
-                                    ry: obj.ry || originalProps.ry,
-                                    fill: 'transparent',
-                                    stroke: originalProps.stroke,
-                                    strokeWidth: originalProps.strokeWidth,
-                                    strokeDashArray: originalProps.strokeDashArray || null,
-                                    angle: originalProps.angle,
-                                    originX: originalProps.originX,
-                                    originY: originalProps.originY,
-                                    opacity: originalProps.opacity,
-                                    selectable: false,
-                                    evented: false,
-                                    // Gölge border overlay'e de uygulanabilir (opsiyonel)
-                                    // shadow: originalProps.shadow  // Gölge Image'da zaten var
-                                });
-                                currentCanvas.add(borderRect);
-                                // Border'ı Image'ın hemen üstüne yerleştir
-                                if (borderRect.moveTo) {
-                                    borderRect.moveTo(objIndex + 1);
-                                }
-                            } catch (borderErr) {
-                                console.warn('[TemplateRenderer] Border overlay oluşturma hatası:', borderErr);
-                            }
-                        }
-
                         if (currentCanvas.renderAll) {
                             currentCanvas.renderAll();
                         }
@@ -1824,7 +1876,7 @@ export class TemplateRenderer {
      * @param {Object} slotProductMap - { slotId: productData, ... } (slotId: 1-based integer)
      * @returns {Promise<string>} - PNG base64 data URL
      */
-    async renderMultiProduct(template, slotProductMap) {
+    async renderMultiProduct(template, slotProductMap, renderOptions = {}) {
         await this._loadFabric();
 
         return new Promise(async (resolve, reject) => {
@@ -1846,7 +1898,9 @@ export class TemplateRenderer {
                 designData = JSON.parse(JSON.stringify(designData));
 
                 this._normalizeDesignDataSources(designData);
-                this._hideNonRenderableObjects(designData.objects);
+                if (this._shouldHideHelpers(renderOptions)) {
+                    this._hideNonRenderableObjects(designData.objects);
+                }
 
                 // ============================================================
                 // ADIM 1: JSON seviyesinde dinamik alanları değiştir
@@ -2068,7 +2122,7 @@ export class TemplateRenderer {
 
             if (!fieldKey && !isSlotBarcode && !isSlotQrcode && !isSlotImage) return;
 
-            const value = fieldKey ? this._getProductValue(product, fieldKey) : '';
+            const value = fieldKey ? this._getProductValue(product, fieldKey, obj) : '';
             const hasRenderableValue = value !== null && value !== undefined && String(value).trim() !== '';
 
             if (slotBounds) {
@@ -2099,15 +2153,16 @@ export class TemplateRenderer {
                     const matches = textContent.matchAll(/\{\{\s*([^}]+?)\s*\}\}/g);
                     for (const match of matches) {
                         const key = String(match[1] || '').trim();
-                        const val = this._getProductValue(product, key);
+                        const val = this._getProductValue(product, key, obj);
                         const formatted = isStandalonePlaceholder
                             ? this._formatDisplayValueForObject(obj, key, val, product, textContent)
                             : this._formatFieldValueForText(key, val, product);
                         newText = newText.replace(match[0], formatted);
                     }
-                    obj.text = newText;
+                    this._setObjectTextWithFormatting(obj, newText, fieldKey);
                 } else if (fieldKey) {
-                    obj.text = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
+                    const displayText = this._formatDisplayValueForObject(obj, fieldKey, value, product, textContent);
+                    this._setObjectTextWithFormatting(obj, displayText, fieldKey);
                 }
 
                 if (fieldKey === 'previous_price') {
@@ -2363,6 +2418,11 @@ export class TemplateRenderer {
 
 // Singleton instance
 let rendererInstance = null;
+
+export function shouldPreserveHelperObjectsForTemplate(template) {
+    const type = String(template?.type || '').trim().toLowerCase();
+    return type === 'label_printer' || type === 'label';
+}
 
 export function getTemplateRenderer() {
     if (!rendererInstance) {

@@ -293,6 +293,12 @@ export class ObjectFactory {
             splitByGrapheme: true
         };
         const { fabricProps, customProps } = this._extractCustomProps(options, defaultTextboxOptions);
+        const hasExplicitWidth = Object.prototype.hasOwnProperty.call(options, 'width') &&
+            options.width !== undefined && options.width !== null;
+
+        if (!hasExplicitWidth) {
+            fabricProps.width = this._computeAutoTextboxWidth(text, fabricProps);
+        }
         const textbox = new Textbox(text, fabricProps);
 
         const customType = customProps[CUSTOM_PROPS.IS_DATA_FIELD] || customProps.isDynamicField
@@ -303,6 +309,11 @@ export class ObjectFactory {
             customProps[CUSTOM_PROPS.IS_DATA_FIELD] = true;
         }
         delete customProps.isDynamicField;
+
+        const hasAutoWidthProp = Object.prototype.hasOwnProperty.call(customProps, CUSTOM_PROPS.TEXT_AUTO_WIDTH);
+        customProps[CUSTOM_PROPS.TEXT_AUTO_WIDTH] = hasAutoWidthProp
+            ? Boolean(customProps[CUSTOM_PROPS.TEXT_AUTO_WIDTH])
+            : !hasExplicitWidth;
 
         this._applyBaseProperties(textbox, customType, customProps);
 
@@ -316,6 +327,45 @@ export class ObjectFactory {
     }
 
     /**
+     * Textbox için metne göre otomatik genişlik hesapla.
+     * Kullanıcı explicit width vermediyse uygulanır.
+     * @private
+     * @param {string} text
+     * @param {Object} fabricProps
+     * @returns {number}
+     */
+    _computeAutoTextboxWidth(text, fabricProps = {}) {
+        const sampleText = String(text ?? '');
+        const fontSize = Math.max(8, Number(fabricProps.fontSize) || 20);
+        const padding = Math.max(16, Math.round(fontSize * 0.6));
+        const minWidth = Math.max(80, Math.round(fontSize * 2.8));
+        const canvasWidth = this.canvas?.width || this.canvas?.getWidth?.() || 800;
+        const maxWidth = Math.max(minWidth + 20, Math.floor(canvasWidth * 0.9));
+
+        let measuredWidth = minWidth;
+        try {
+            const probe = new FabricText(sampleText || ' ', {
+                ...fabricProps,
+                left: 0,
+                top: 0,
+                originX: 'left',
+                originY: 'top',
+                angle: 0,
+                scaleX: 1,
+                scaleY: 1
+            });
+
+            measuredWidth = Math.ceil(
+                (typeof probe.getScaledWidth === 'function' ? probe.getScaledWidth() : (probe.width || minWidth)) + padding
+            );
+        } catch (e) {
+            measuredWidth = minWidth;
+        }
+
+        return Math.min(maxWidth, Math.max(minWidth, measuredWidth));
+    }
+
+    /**
      * Dinamik alan metni oluştur
      * @param {string} fieldKey - Dinamik alan anahtarı (DYNAMIC_FIELDS'den)
      * @param {Object} [options={}] - Metin özellikleri
@@ -324,29 +374,16 @@ export class ObjectFactory {
     async createDynamicText(fieldKey, options = {}) {
         // Placeholder metni
         const placeholder = options.placeholder || `{${fieldKey}}`;
-
-        const dynamicOptions = {
+        const textbox = await this.createTextbox(placeholder, {
             ...DEFAULT_TEXT_OPTIONS,
-            width: 200,
             fill: '#1565C0',
-            ...options
-        };
-
-        const textbox = new Textbox(placeholder, dynamicOptions);
-
-        this._applyBaseProperties(textbox, CUSTOM_TYPES.DYNAMIC_TEXT, {
             [CUSTOM_PROPS.IS_DATA_FIELD]: true,
             [CUSTOM_PROPS.DYNAMIC_FIELD]: fieldKey,
-            [CUSTOM_PROPS.PLACEHOLDER]: placeholder
+            [CUSTOM_PROPS.PLACEHOLDER]: placeholder,
+            ...options
         });
 
-        if (this.canvas) {
-            this.canvas.add(textbox);
-            this.canvas.requestRenderAll();
-            eventBus.emit(EVENTS.OBJECT_ADDED, { object: textbox });
-            eventBus.emit(EVENTS.FIELD_ADDED, { object: textbox, fieldKey });
-        }
-
+        eventBus.emit(EVENTS.FIELD_ADDED, { object: textbox, fieldKey });
         return textbox;
     }
 

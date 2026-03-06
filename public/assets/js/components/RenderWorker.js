@@ -9,7 +9,7 @@
  */
 
 import { Toast } from './Toast.js';
-import { getTemplateRenderer } from '../services/TemplateRenderer.js?v=1.0.70';
+import { getTemplateRenderer, shouldPreserveHelperObjectsForTemplate } from '../services/TemplateRenderer.js?v=1.0.73';
 
 export class RenderWorker {
     constructor(app) {
@@ -344,7 +344,10 @@ export class RenderWorker {
         try {
             // TemplateRenderer ile aynı render akışını kullan
             const renderer = getTemplateRenderer();
-            const imageBase64 = await renderer.render(template, product);
+            const renderOptions = {
+                preserveHelpers: shouldPreserveHelperObjectsForTemplate(template)
+            };
+            const imageBase64 = await renderer.render(template, product, renderOptions);
 
             if (!imageBase64) {
                 throw new Error('Render output is empty');

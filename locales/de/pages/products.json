@@ -86,6 +86,8 @@
         "dragDrop": "Datei hier ablegen oder",
         "selectFile": "Bitte wählen Sie eine Datei aus",
         "hint": "TXT, CSV, JSON, XML oder XLSX (maximal 10MB)",
+        "preview": "Vorschau",
+        "mapping": "Feldzuordnung",
         "mappingMode": "Zuordnungsmodus",
         "auto": "Automatisch zuordnen",
         "manual": "Manuell zuordnen",

@@ -106,7 +106,6 @@ if (class_exists('Logger')) {
 
 // Add device log entry for activity history
 $db->insert('device_logs', [
-    'id' => $db->generateUuid(),
     'device_id' => $deviceId,
     'action' => 'sync',
     'content_type' => 'playlist',
@@ -143,4 +142,3 @@ if ($warning) {
 }
 
 Response::success($response);
-

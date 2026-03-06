@@ -126,6 +126,15 @@ if (!empty($productIds)) {
 
     // Get all templates for lookup (include draft - user assigned them to devices)
     $templateLookup = [];
+    if ($withLabels) {
+        $allTemplates = $db->fetchAll(
+            "SELECT id, name FROM templates WHERE (company_id = ? OR scope = 'system' OR company_id IS NULL)",
+            [$companyId]
+        );
+        foreach ($allTemplates as $t) {
+            $templateLookup[$t['id']] = $t['name'];
+        }
+    }
 
     // Build device and template lookup maps
     $deviceLookup = [];

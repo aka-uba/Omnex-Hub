@@ -168,20 +168,18 @@ class RenderQueueService
     {
         $now = date('Y-m-d H:i:s');
         $maxAttempts = 3;
-        $isPostgres = $this->db->isPostgres();
 
         for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
             try {
                 $this->db->beginTransaction();
 
-                // Priority weight'e göre sırala
-                // PostgreSQL'de timestamptz alanları doğrudan CURRENT_TIMESTAMP ile karşılaştır.
-                // SQLite için eski T normalize yaklaşımını koru.
-                $readyCondition = $isPostgres
-                    ? "(q.scheduled_at IS NULL OR q.scheduled_at <= CURRENT_TIMESTAMP)
-                       AND (q.next_retry_at IS NULL OR q.next_retry_at <= CURRENT_TIMESTAMP)"
+                $readyCondition = $this->db->isPostgres()
+                    ? "(q.scheduled_at IS NULL OR q.scheduled_at <= ?)
+                       AND (q.next_retry_at IS NULL OR q.next_retry_at <= ?)"
                     : "(q.scheduled_at IS NULL OR REPLACE(q.scheduled_at, 'T', ' ') <= ?)
                        AND (q.next_retry_at IS NULL OR REPLACE(q.next_retry_at, 'T', ' ') <= ?)";
+
+                // Priority weight'e göre sırala
                 $sql = "
                     SELECT q.*,
                            pw.weight as priority_weight,
@@ -189,9 +187,9 @@ class RenderQueueService
                     FROM render_queue q
                     LEFT JOIN render_priority_weights pw ON q.priority = pw.priority
                     WHERE q.status = 'pending'
-                      AND $readyCondition
+                      AND {$readyCondition}
                 ";
-                $params = $isPostgres ? [] : [$now, $now];
+                $params = [$now, $now];
 
                 if ($companyId) {
                     $sql .= " AND q.company_id = ?";
@@ -239,11 +237,9 @@ class RenderQueueService
     public function getPendingItems(string $queueId, int $limit = 10): array
     {
         $now = date('Y-m-d H:i:s');
-        $isPostgres = $this->db->isPostgres();
-        $itemRetryReadyCondition = $isPostgres
-            ? "(qi.next_retry_at IS NULL OR qi.next_retry_at <= CURRENT_TIMESTAMP)"
+        $itemReadyCondition = $this->db->isPostgres()
+            ? "(qi.next_retry_at IS NULL OR qi.next_retry_at <= ?)"
             : "(qi.next_retry_at IS NULL OR REPLACE(qi.next_retry_at, 'T', ' ') <= ?)";
-        $params = $isPostgres ? [$queueId, $limit] : [$queueId, $now, $limit];
 
         return $this->db->fetchAll(
             "SELECT qi.*,
@@ -269,11 +265,11 @@ class RenderQueueService
              LEFT JOIN devices d ON qi.device_id = d.id
              LEFT JOIN gateway_devices gd ON qi.device_id = gd.device_id
              LEFT JOIN gateways gw ON gd.gateway_id = gw.id
-             WHERE qi.queue_id = ? AND qi.status = 'pending'
-               AND $itemRetryReadyCondition
-             ORDER BY qi.created_at ASC
-             LIMIT ?",
-            $params
+              WHERE qi.queue_id = ? AND qi.status = 'pending'
+               AND {$itemReadyCondition}
+              ORDER BY qi.created_at ASC
+              LIMIT ?",
+            [$queueId, $now, $limit]
         );
     }
 

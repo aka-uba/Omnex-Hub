@@ -439,7 +439,6 @@
         "licenses": "Licenses",
         "integrations": "Integrations",
         "auditLog": "Audit Log",
-        "tenantBackups": "Tenant Backups",
         "logManagement": "Log Management"
     },
     "languages": {
@@ -896,7 +895,6 @@
             "products": "Products",
             "bundles": "Bundles",
             "kunyeDistribution": "Kunye Distribution",
-            "fieldBinding": "Field Binding",
             "bulkSend": "Bulk Send",
             "templates": "Templates",
             "webTemplates": "Web Templates",
@@ -915,7 +913,6 @@
             "branches": "Branches",
             "licenses": "Licenses",
             "auditLog": "Audit Log",
-            "tenantBackups": "Tenant Backups",
             "logManagement": "Log Management",
             "setupWizard": "Setup Wizard"
         },

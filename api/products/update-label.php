@@ -11,7 +11,6 @@ $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 $productId = $request->routeParam('id');
 $deviceId = $request->routeParam('labelId'); // labelId is actually device_id
-$publicTemplateFilter = "(company_id = ? OR is_public = true OR scope = 'system' OR company_id IS NULL)";
 
 // Verify product exists and belongs to user's company
 $product = $db->fetch(
@@ -43,8 +42,11 @@ if (!$newDevice) {
 
 // If template specified, verify it exists
 if ($newTemplateId) {
+    $publicTemplateExpr = method_exists($db, 'isPostgres') && $db->isPostgres()
+        ? 'is_public IS TRUE'
+        : 'is_public = 1';
     $template = $db->fetch(
-        "SELECT id FROM templates WHERE id = ? AND $publicTemplateFilter",
+        "SELECT id FROM templates WHERE id = ? AND (company_id = ? OR {$publicTemplateExpr} OR scope = 'system' OR company_id IS NULL)",
         [$newTemplateId, $companyId]
     );
 

@@ -9,7 +9,7 @@ import { Logger } from '../../core/Logger.js';
 import { Toast } from '../../components/Toast.js';
 import { Modal } from '../../components/Modal.js';
 import { DataTable } from '../../components/DataTable.js';
-import { getTemplateRenderer } from '../../services/TemplateRenderer.js?v=1.0.70';
+import { getTemplateRenderer, shouldPreserveHelperObjectsForTemplate } from '../../services/TemplateRenderer.js?v=1.0.73';
 import { MediaUtils } from '../../utils/MediaUtils.js';
 import { ExportManager } from '../../utils/ExportManager.js';
 
@@ -19,10 +19,12 @@ export class ProductListPage {
         this.table = null;
         this.selectedProducts = [];
         this.mappingDefaults = this.loadMappingDefaults();
-        this._singleSendModalOpeningProducts = new Set();
-        this._singleSendInFlightProducts = new Set();
-        this._singleSendBusyToastAt = new Map();
-        this._queueProcessPromise = null;
+    }
+
+    _getRenderOptions(template) {
+        return {
+            preserveHelpers: shouldPreserveHelperObjectsForTemplate(template)
+        };
     }
 
     /**
@@ -687,12 +689,6 @@ export class ProductListPage {
      * Handle send to device action from DataTable actions
      */
     handleSendToDevice(row) {
-        const productId = this._getSingleSendProductKey(row?.id);
-        if (productId && this._isSingleSendBusy(productId)) {
-            this._notifySingleSendBusy(productId);
-            return;
-        }
-
         const productName = row.name || '';
         let assignedDeviceId = row.assigned_device_id || '';
         let assignedTemplateId = row.assigned_template_id || '';
@@ -703,39 +699,7 @@ export class ProductListPage {
             assignedTemplateId = assignedTemplateId || row.labels[0].template_id || '';
         }
 
-        if (productId) {
-            this._singleSendModalOpeningProducts.add(productId);
-        }
-
-        this.showSendToDeviceModal([row.id], productName, assignedDeviceId, assignedTemplateId)
-            .catch(error => {
-                Logger.error('Failed to open send-to-device modal:', error);
-            })
-            .finally(() => {
-                if (productId) {
-                    this._singleSendModalOpeningProducts.delete(productId);
-                }
-            });
-    }
-
-    _getSingleSendProductKey(productId) {
-        return String(productId || '').trim();
-    }
-
-    _isSingleSendBusy(productId) {
-        return this._singleSendModalOpeningProducts.has(productId)
-            || this._singleSendInFlightProducts.has(productId);
-    }
-
-    _notifySingleSendBusy(productId) {
-        const now = Date.now();
-        const lastToastAt = this._singleSendBusyToastAt.get(productId) || 0;
-        if ((now - lastToastAt) < 1500) {
-            return;
-        }
-
-        this._singleSendBusyToastAt.set(productId, now);
-        Toast.info(this.__('sendToDevice.queueProcessing'));
+        this.showSendToDeviceModal([row.id], productName, assignedDeviceId, assignedTemplateId);
     }
 
     /**
@@ -1152,7 +1116,7 @@ export class ProductListPage {
                         <div class="mb-4" id="manual-mapping-section">
                             <h4 class="font-medium mb-3 flex items-center gap-2">
                                 <i class="ti ti-arrows-exchange text-primary-600"></i>
-                                ${this.__('import.mapping.title')}
+                                ${this.__('import.mapping')}
                             </h4>
                             <label class="flex items-center gap-2 mb-3">
                                 <input type="checkbox" id="remember-mapping-defaults" class="form-checkbox" ${this.mappingDefaults.remember ? 'checked' : ''}>
@@ -1165,7 +1129,7 @@ export class ProductListPage {
 
                         <div class="label-info-box">
                             <div style="flex: 1;">
-                                <h4 class="font-medium mb-2">${this.__('import.preview.title')}</h4>
+                                <h4 class="font-medium mb-2">${this.__('import.preview')}</h4>
                                 <div class="overflow-x-auto" id="import-preview-table"></div>
                             </div>
                         </div>
@@ -1350,13 +1314,10 @@ export class ProductListPage {
             { key: 'erp_id', label: this.__('import.fields.erpId') }
         ];
 
-        // Priority: 1. User's remembered mappings, 2. API auto-detected mappings
-        const rememberedDefaults = this.applyMappingDefaults(sourceFields);
-        const autoDetected = data.detected_mappings || {};
-        const mergedDefaults = { ...autoDetected, ...rememberedDefaults };
+        const manualDefaults = this.applyMappingDefaults(sourceFields);
 
         container.innerHTML = targetFields.map(field => {
-            const autoValue = mergedDefaults[field.key] || '';
+            const autoValue = manualDefaults[field.key] || '';
             const isRequired = field.required ? '<span class="text-red-500">*</span>' : '';
 
             return `
@@ -1454,30 +1415,21 @@ export class ProductListPage {
         const container = document.getElementById('import-preview-table');
 
         const rows = data.mapped_data?.slice(0, 5) || [];
-        const fields = [
-            { key: 'sku', label: this.__('import.fields.sku') },
-            { key: 'name', label: this.__('import.fields.name') },
-            { key: 'current_price', label: this.__('import.fields.currentPrice') },
-            { key: 'category', label: this.__('import.fields.category') }
-        ];
+        const fields = ['sku', 'name', 'current_price', 'category'];
 
         container.innerHTML = `
             <table class="text-sm w-full">
                 <thead>
                     <tr class="text-left border-b">
-                        ${fields.map(f => `<th class="pb-2 pr-4">${escapeHTML(f.label)}</th>`).join('')}
+                        ${fields.map(f => `<th class="pb-2 pr-4">${f}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
                     ${rows.map(row => `
                         <tr class="border-b border-gray-100">
-                            ${fields.map(f => {
-                                const val = row[f.key];
-                                const display = (val !== null && val !== undefined && typeof val === 'object')
-                                    ? JSON.stringify(val)
-                                    : (val || '-');
-                                return `<td class="py-2 pr-4 truncate max-w-[150px]">${escapeHTML(String(display))}</td>`;
-                            }).join('')}
+                            ${fields.map(f => `
+                                <td class="py-2 pr-4 truncate max-w-[150px]">${escapeHTML(row[f] || '-')}</td>
+                            `).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1995,7 +1947,7 @@ export class ProductListPage {
 
         const templateOptions = templates.map(t => {
             const selected = t.id === assignedTemplateId ? 'selected' : '';
-            return `<option value="${t.id}" data-width="${t.width || 800}" data-height="${t.height || 1280}" data-name="${escapeHTML(t.name)}" data-thumbnail="${escapeHTML(t.thumbnail || '')}" data-preview="${escapeHTML(t.render_image || t.preview_url || '')}" ${selected}>
+            return `<option value="${t.id}" data-width="${t.width || 800}" data-height="${t.height || 1280}" data-name="${escapeHTML(t.name)}" data-preview="${escapeHTML(t.render_image || t.preview_url || t.thumbnail || t.preview_image || '')}" ${selected}>
                 ${escapeHTML(t.name)} (${t.width || 800}x${t.height || 1280})
             </option>`;
         }).join('');
@@ -2154,7 +2106,6 @@ export class ProductListPage {
                             name: selectedOption.dataset.name,
                             width: selectedOption.dataset.width,
                             height: selectedOption.dataset.height,
-                            thumbnail: selectedOption.dataset.thumbnail,
                             render_image: selectedOption.dataset.preview
                         };
                         previewCard.innerHTML = this._renderTemplatePreview(templateData);
@@ -2378,7 +2329,7 @@ export class ProductListPage {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Timeout mekanizması (90 saniye)
-        let timeoutId = setTimeout(() => {
+        const timeoutId = setTimeout(() => {
             Modal.close('send-progress-modal');
             Toast.error(this.__('sendToDevice.timeout'));
         }, 90000);
@@ -2843,7 +2794,7 @@ export class ProductListPage {
                     }
                 }
 
-                const renderedImage = await renderer.render(template, product);
+                const renderedImage = await renderer.render(template, product, this._getRenderOptions(template));
                 if (renderedImage) {
                     preRenderedImages[product.id] = renderedImage;
                 }
@@ -2878,35 +2829,13 @@ export class ProductListPage {
      * @private
      */
     async _triggerQueueProcessing() {
-        if (this._queueProcessPromise) {
-            return this._queueProcessPromise;
+        try {
+            await this.app.api.post('/render-queue/process', {
+                max_jobs: 10
+            });
+        } catch (error) {
+            Logger.warn('Queue processing trigger failed:', error);
         }
-
-        this._queueProcessPromise = (async () => {
-            try {
-                const maxRounds = 4;
-
-                for (let round = 0; round < maxRounds; round++) {
-                    const response = await this.app.api.post('/render-queue/process', {
-                        max_jobs: 5
-                    });
-
-                    const payload = response?.data || {};
-                    const hasMore = Boolean(payload.has_more);
-                    if (!hasMore) {
-                        break;
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, 250));
-                }
-            } catch (error) {
-                Logger.warn('Queue processing trigger failed:', error);
-            } finally {
-                this._queueProcessPromise = null;
-            }
-        })();
-
-        return this._queueProcessPromise;
     }
 
     /**
@@ -2915,8 +2844,7 @@ export class ProductListPage {
      * @returns {string} HTML string
      */
     _renderTemplatePreview(template) {
-        // Priority: thumbnail (Base64) > render_image > preview_url
-        let previewUrl = template.thumbnail || template.render_image || template.preview_url || '';
+        let previewUrl = template.render_image || template.preview_url || template.thumbnail || template.preview_image || '';
         const basePath = window.OmnexConfig?.basePath || '';
 
         // Build full URL - ensure proper path joining
@@ -2925,8 +2853,12 @@ export class ProductListPage {
             if (previewUrl.startsWith('http') || previewUrl.startsWith('data:')) {
                 fullUrl = previewUrl;
             } else {
-                // Add storage/ prefix if path starts with templates/
-                if (previewUrl.startsWith('templates/')) {
+                // Template paths are usually stored relative to storage root.
+                if (
+                    previewUrl.startsWith('templates/')
+                    || previewUrl.startsWith('companies/')
+                    || previewUrl.startsWith('renders/')
+                ) {
                     previewUrl = 'storage/' + previewUrl;
                 }
                 // Ensure path starts with /
@@ -2996,20 +2928,7 @@ export class ProductListPage {
      */
     async executeSendToDevice(productIds, deviceId, templateId) {
         const total = productIds.length;
-        const singleProductKey = total === 1
-            ? this._getSingleSendProductKey(productIds[0])
-            : '';
-        let lockAcquired = false;
-
-        if (singleProductKey) {
-            if (this._singleSendInFlightProducts.has(singleProductKey)) {
-                this._notifySingleSendBusy(singleProductKey);
-                return;
-            }
-
-            this._singleSendInFlightProducts.add(singleProductKey);
-            lockAcquired = true;
-        }
+        const forceFreshRenderForSingle = total === 1;
 
         // Progress modal göster
         Modal.show({
@@ -3039,12 +2958,17 @@ export class ProductListPage {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Timeout mekanizması (90 saniye)
-        let timeoutId = setTimeout(() => {
+        const timeoutId = setTimeout(() => {
             Modal.close('send-progress-modal');
             Toast.error(this.__('sendToDevice.timeout'));
         }, 90000);
 
         try {
+            if (forceFreshRenderForSingle) {
+                Logger.debug('Single send detected, bypassing cache and using fresh pre-render');
+                await this._submitSingleWithPreRender(productIds, deviceId, templateId);
+                clearTimeout(timeoutId);
+            } else {
             // Ürün verilerini hazırla
             const productData = productIds.map(id => ({
                 id: id,
@@ -3061,7 +2985,6 @@ export class ProductListPage {
             } else if (cacheStatus && (cacheStatus.pending_count > 0 || cacheStatus.not_cached_count > 0)) {
                 // Cache hazir degilse ilgili render job'larini bekle ve tekrar dene
                 clearTimeout(timeoutId);
-                timeoutId = null;
                 Modal.close('send-progress-modal');
                 await this._startRenderWorkerAndRetrySingle(cacheStatus, productIds, deviceId, templateId);
             } else if (cacheStatus && cacheStatus.ready_count > 0) {
@@ -3073,27 +2996,22 @@ export class ProductListPage {
                 Logger.debug('No cache available, falling back to pre-render');
                 await this._submitSingleWithPreRender(productIds, deviceId, templateId);
             }
+            clearTimeout(timeoutId);
+            }
         } catch (error) {
+            clearTimeout(timeoutId);
             Logger.error('Send to device failed:', error);
             Modal.close('send-progress-modal');
             Toast.error(error.message || this.__('sendToDevice.failed'));
-        } finally {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
+        }
 
-            // Refresh table to update assigned device/template info
-            this.table.refresh();
+        // Refresh table to update assigned device/template info
+        this.table.refresh();
 
-            // Clear selection
-            if (total > 1) {
-                this.selectedProducts = [];
-                this.table.clearSelection();
-            }
-
-            if (lockAcquired && singleProductKey) {
-                this._singleSendInFlightProducts.delete(singleProductKey);
-            }
+        // Clear selection
+        if (total > 1) {
+            this.selectedProducts = [];
+            this.table.clearSelection();
         }
     }
 
@@ -3263,6 +3181,11 @@ export class ProductListPage {
      */
     async _retrySingleSendWithCache(productIds, deviceId, templateId) {
         try {
+            if ((productIds?.length || 0) === 1) {
+                await this._submitSingleWithPreRender(productIds, deviceId, templateId);
+                return;
+            }
+
             const productData = productIds.map(id => ({
                 id,
                 template_id: templateId
@@ -3364,7 +3287,7 @@ export class ProductListPage {
                 const productRes = await this.app.api.get(`/products/${productId}`);
                 const product = productRes.data;
 
-                const renderedImage = await renderer.render(template, product);
+                const renderedImage = await renderer.render(template, product, this._getRenderOptions(template));
                 if (renderedImage) {
                     preRenderedImages[productId] = renderedImage;
                 }
@@ -5410,7 +5333,7 @@ export class ProductListPage {
 
             // Render composite image using TemplateRenderer
             const renderer = getTemplateRenderer();
-            const dataUrl = await renderer.renderMultiProduct(template, slotProductMap);
+            const dataUrl = await renderer.renderMultiProduct(template, slotProductMap, this._getRenderOptions(template));
 
             // Generate synthetic product ID
             const syntheticId = 'multi_' + Date.now();

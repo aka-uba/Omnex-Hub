@@ -157,12 +157,7 @@ if ($dalEnabled) {
         'user_id'     => $user['id'],
     ]);
 
-    if ($result['success'] || isSoftDeviceInfoFailure($action, $result['message'] ?? '')) {
-        if (!$result['success']) {
-            $result['success'] = true;
-            $result['soft_failure'] = true;
-            $result['reachable'] = false;
-        }
+    if ($result['success']) {
         Response::success($result);
     } else {
         Response::json(['success' => false, 'message' => $result['message'], 'data' => $result], 400);
@@ -538,17 +533,11 @@ if ($isHanshowEsl && $isHanshowAction) {
 // If device is behind a gateway, send command through gateway
 if ($useGateway && $isPavoDisplay && $action !== 'firmware_upgrade') {
     $gatewayResult = sendCommandViaGateway($db, $gatewayId, $action, $device, $body);
-    $responsePayload = array_merge($result, $gatewayResult);
 
-    if (($gatewayResult['success'] ?? false) || isSoftDeviceInfoFailure($action, $gatewayResult['message'] ?? '')) {
-        if (!($gatewayResult['success'] ?? false)) {
-            $responsePayload['success'] = true;
-            $responsePayload['soft_failure'] = true;
-            $responsePayload['reachable'] = false;
-        }
-        Response::success($responsePayload);
+    if ($gatewayResult['success']) {
+        Response::success(array_merge($result, $gatewayResult));
     } else {
-        Response::json(['success' => false, 'message' => $gatewayResult['message'], 'data' => $responsePayload], 400);
+        Response::json(['success' => false, 'message' => $gatewayResult['message'], 'data' => array_merge($result, $gatewayResult)], 400);
     }
     return;
 }
@@ -585,48 +574,10 @@ Logger::audit($action, 'devices', [
     'user_id' => $user['id']
 ]);
 
-if ($result['success'] || isSoftDeviceInfoFailure($action, $result['message'] ?? '')) {
-    if (!$result['success']) {
-        $result['success'] = true;
-        $result['soft_failure'] = true;
-        $result['reachable'] = false;
-    }
+if ($result['success']) {
     Response::success($result);
 } else {
     Response::json(['success' => false, 'message' => $result['message'], 'data' => $result], 400);
-}
-
-function isSoftDeviceInfoFailure($action, $message): bool
-{
-    if ($action !== 'device_info') {
-        return false;
-    }
-
-    $normalized = strtolower((string)$message);
-    if ($normalized === '') {
-        return false;
-    }
-
-    $offlinePatterns = [
-        'timeout',
-        'timed out',
-        'failed to connect',
-        'could not connect',
-        'connection refused',
-        'network is unreachable',
-        'no route to host',
-        'host is down',
-        'gateway yan',
-        'zaman a',
-    ];
-
-    foreach ($offlinePatterns as $pattern) {
-        if (strpos($normalized, $pattern) !== false) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 /**
@@ -792,16 +743,6 @@ function executeDirectControl($gateway, $action, $device, $ipAddress, $body, $db
                 }
             } else {
                 $result['message'] = $infoResult['error'] ?? 'Cihaz bilgileri alınamadı';
-                $result['device_info'] = [
-                    'name' => $device['name'] ?? null,
-                    'client_id' => $device['device_id'] ?? null,
-                    'model' => $device['model'] ?? null,
-                    'firmware' => $device['firmware_version'] ?? null,
-                    'screen_width' => $device['screen_width'] ?? null,
-                    'screen_height' => $device['screen_height'] ?? null,
-                    'free_space' => null,
-                    'total_storage' => null
-                ];
             }
             break;
 
@@ -1066,4 +1007,3 @@ function executeCommandQueue($action, $device, $db, $user, $result): array
 
     return $result;
 }
-

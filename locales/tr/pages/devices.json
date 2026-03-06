@@ -818,25 +818,7 @@
         "loadMqttSettings": "Sunucu ayarlarını yükle",
         "mqttSettingsLoaded": "MQTT ayarları yüklendi",
         "mqttNoSettings": "MQTT ayarları henüz yapılandırılmamış. Lütfen admin panelden MQTT ayarlarını yapın.",
-        "mqttUrlRequired": "MQTT Broker URL gereklidir",
-        "protection": {
-            "title": "BLE Güvenlik",
-            "status": "Koruma Durumu",
-            "protected": "Korumalı",
-            "unprotected": "Korumasız",
-            "settingPassword": "BLE koruma şifresi ayarlanıyor...",
-            "passwordSet": "BLE koruma şifresi ayarlandı",
-            "tokenError": "Cihaz token hatası döndürdü. Mevcut BLE şifresini kontrol edin.",
-            "viewPassword": "Şifreyi Göster",
-            "changePassword": "Şifreyi Değiştir",
-            "removePassword": "Şifreyi Kaldır",
-            "removeConfirm": "Cihazın BLE şifresini kaldırmak istediğinize emin misiniz? Bu işlem sadece sunucu kaydını siler, cihaz üzerindeki şifreyi kaldırmaz.",
-            "removed": "BLE şifresi kaldırıldı",
-            "noPassword": "Bu cihazda BLE şifresi ayarlanmamış.",
-            "passwordInfo": "Bu şifre cihazla Bluetooth iletişiminde kullanılır.",
-            "copied": "Şifre kopyalandı",
-            "unprotectedHint": "Bu cihaz BLE şifresiyle korunmuyor. Bluetooth wizard ile eklerken şifre otomatik atanır."
-        }
+        "mqttUrlRequired": "MQTT Broker URL gereklidir"
     },
     "control": {
         "title": "Cihaz Kontrolü",

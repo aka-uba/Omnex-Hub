@@ -279,7 +279,7 @@ if ($deviceId) {
             $mqttService = new MqttBrokerService();
             $mqttCmdResult = $mqttService->publishCommand($deviceId, [
                 'action' => 'updatelabel',
-                'push_id' => time(),
+                'push_id' => $mqttService->createPushId($deviceId . ':' . ($productId ?? 'preview')),
                 'clientid' => $device['device_id'] ?? $device['mqtt_client_id'],
                 'priority' => 5
             ], $companyId);

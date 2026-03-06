@@ -105,7 +105,13 @@ class PavoDisplayAdapter extends AbstractDeviceAdapter
         try {
             $result = $this->gateway->sendToMultipleDevicesParallel($devices, $imagePath, $taskConfig);
 
-            $detail = $result['details'][0] ?? [];
+            $detail = [];
+            if (is_array($result['details'] ?? null)) {
+                $firstDetail = reset($result['details']);
+                if (is_array($firstDetail)) {
+                    $detail = $firstDetail;
+                }
+            }
             $successCount = (int)($result['success'] ?? 0);
             $skippedCount = (int)($result['skipped'] ?? 0);
 

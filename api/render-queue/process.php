@@ -37,7 +37,6 @@ $companyId = Auth::getActiveCompanyId();
 $data = $request->all();
 $maxJobs = min(5, max(1, (int)($data['max_jobs'] ?? 1)));
 $now = date('Y-m-d H:i:s');
-$isPostgres = $db->isPostgres();
 
 $queueService = new RenderQueueService();
 
@@ -161,7 +160,6 @@ for ($i = 0; $i < $maxJobs; $i++) {
 
         foreach ($pendingItems as $item) {
             $startTime = microtime(true);
-            $device = null;
 
             try {
                 // Item'ı processing olarak işaretle
@@ -212,18 +210,6 @@ for ($i = 0; $i < $maxJobs; $i++) {
                         $durationMs,
                         $renderResult['md5'] ?? null
                     );
-                    if (!$isGatewayQueued) {
-                        syncPendingSendLogStatus(
-                            $db,
-                            $job,
-                            $item,
-                            $device,
-                            'success',
-                            null,
-                            $durationMs,
-                            ['render_result' => $renderResult]
-                        );
-                    }
                     $jobResult['devices_sent']++;
                     $devicesSent++;
                 } else {
@@ -232,16 +218,6 @@ for ($i = 0; $i < $maxJobs; $i++) {
                         'failed',
                         $renderResult['error'] ?? 'Bilinmeyen hata',
                         $durationMs
-                    );
-                    syncPendingSendLogStatus(
-                        $db,
-                        $job,
-                        $item,
-                        $device,
-                        'failed',
-                        $renderResult['error'] ?? 'Send failed',
-                        $durationMs,
-                        ['render_result' => $renderResult]
                     );
                     $jobResult['devices_failed']++;
                     $jobResult['errors'][] = [
@@ -255,15 +231,6 @@ for ($i = 0; $i < $maxJobs; $i++) {
                 $durationMs = (int)((microtime(true) - $startTime) * 1000);
                 $queueService->updateItemStatus(
                     $item['id'],
-                    'failed',
-                    $e->getMessage(),
-                    $durationMs
-                );
-                syncPendingSendLogStatus(
-                    $db,
-                    $job,
-                    $item,
-                    $device,
                     'failed',
                     $e->getMessage(),
                     $durationMs
@@ -323,27 +290,21 @@ for ($i = 0; $i < $maxJobs; $i++) {
 }
 
 // Hala bekleyen iş var mı?
-$pendingReadyCondition = $isPostgres
-    ? "(scheduled_at IS NULL OR scheduled_at <= CURRENT_TIMESTAMP)
-       AND (next_retry_at IS NULL OR next_retry_at <= CURRENT_TIMESTAMP)"
-    : "(scheduled_at IS NULL OR REPLACE(scheduled_at, 'T', ' ') <= ?)
-       AND (next_retry_at IS NULL OR REPLACE(next_retry_at, 'T', ' ') <= ?)";
-$pendingCountParams = $isPostgres ? [$companyId] : [$companyId, $now, $now];
 $pendingCount = $db->fetch(
     "SELECT COUNT(*) as count FROM render_queue
      WHERE company_id = ? AND status = 'pending'
-       AND $pendingReadyCondition",
-    $pendingCountParams
+       AND (scheduled_at IS NULL OR scheduled_at <= ?)
+       AND (next_retry_at IS NULL OR next_retry_at <= ?)",
+    [$companyId, $now, $now]
 )['count'] ?? 0;
 
-$processingRecentCondition = "(q.started_at IS NOT NULL AND q.started_at >= CURRENT_TIMESTAMP - INTERVAL '10 minutes')";
 $processingCount = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue q
      WHERE q.company_id = ?
        AND q.status = 'processing'
        AND (
-            $processingRecentCondition
+            (q.started_at IS NOT NULL AND q.started_at >= (CURRENT_TIMESTAMP - INTERVAL '10 minutes'))
             OR EXISTS (
                 SELECT 1
                 FROM render_queue_items qi
@@ -368,90 +329,6 @@ $response = [
 ];
 
 Response::success($response);
-
-/**
- * Keep device_logs(send/pending) aligned with render queue result.
- */
-function syncPendingSendLogStatus(
-    $db,
-    array $job,
-    array $item,
-    ?array $device,
-    string $status,
-    ?string $errorMessage = null,
-    ?int $durationMs = null,
-    array $context = []
-): void {
-    if (!in_array($status, ['success', 'failed'], true)) {
-        return;
-    }
-
-    $productId = trim((string)($job['product_id'] ?? ''));
-    if ($productId === '') {
-        return;
-    }
-
-    $deviceId = trim((string)($device['id'] ?? ($item['device_id'] ?? '')));
-    if ($deviceId === '') {
-        return;
-    }
-
-    $templateId = $job['template_id'] ?? null;
-    $candidates = $db->fetchAll(
-        "SELECT id, request_data
-         FROM device_logs
-         WHERE device_id = ?
-           AND action = 'send'
-           AND status = 'pending'
-           AND content_type = 'product'
-           AND content_id = ?
-         ORDER BY created_at DESC
-         LIMIT 20",
-        [$deviceId, $productId]
-    );
-
-    if (empty($candidates)) {
-        return;
-    }
-
-    $targetLogId = $candidates[0]['id'];
-    if (!empty($templateId)) {
-        foreach ($candidates as $candidate) {
-            $requestData = json_decode((string)($candidate['request_data'] ?? ''), true);
-            $candidateTemplateId = is_array($requestData) ? ($requestData['template_id'] ?? null) : null;
-            if ((string)$candidateTemplateId === (string)$templateId) {
-                $targetLogId = $candidate['id'];
-                break;
-            }
-        }
-    }
-
-    $responseData = [
-        'queue_id' => $job['id'] ?? null,
-        'queue_item_id' => $item['id'] ?? null,
-        'communication_mode' => $device['communication_mode'] ?? null,
-        'delivery_status' => $status
-    ];
-
-    if (isset($context['render_result']) && is_array($context['render_result'])) {
-        $renderResult = $context['render_result'];
-        $responseData['via_gateway'] = (bool)($renderResult['via_gateway'] ?? false);
-        $responseData['queued'] = (bool)($renderResult['queued'] ?? false);
-        if (!empty($renderResult['md5'])) {
-            $responseData['md5'] = $renderResult['md5'];
-        }
-        if (!empty($renderResult['message'])) {
-            $responseData['message'] = $renderResult['message'];
-        }
-    }
-
-    $db->update('device_logs', [
-        'status' => $status,
-        'duration_ms' => $durationMs,
-        'error_message' => $status === 'failed' ? ($errorMessage ?: 'Send failed') : null,
-        'response_data' => json_encode($responseData)
-    ], 'id = ?', [$targetLogId]);
-}
 
 /**
  * Cihaza render gönder
@@ -1452,7 +1329,6 @@ function processForPavoDisplay(
         }
 
         // 3c. Şablon video içermiyorsa ürün videolarını temizle
-        // Kural: Template içinde video placeholder/region yoksa ürün videosu gönderilmez.
         if (!$hasVideoRegion && !$videoPlaceholderFound && !$hasVideoPlaceholderInDesign) {
             if (!empty($videos)) {
                 $log("Şablon tasarımında video placeholder YOK - ürün videoları temizlendi (" . count($videos) . " video atlandı)");
@@ -1510,14 +1386,11 @@ function processForPavoDisplay(
                 // Fallback: grid_layout'a göre hesapla
                 $normalizedLayout = $gridLayout ?? 'split_vertical';
                 if ($normalizedLayout === 'split_vertical') {
-                    $vh = (int)($deviceHeight * 0.5);
-                    $vp = ['x' => 0, 'y' => max(0, $deviceHeight - $vh), 'width' => $deviceWidth, 'height' => $vh];
+                    $vp = ['x' => 0, 'y' => 0, 'width' => $deviceWidth, 'height' => (int)($deviceHeight * 0.5)];
                 } elseif ($normalizedLayout === 'split_vertical_60_40') {
-                    $vh = (int)($deviceHeight * 0.4);
-                    $vp = ['x' => 0, 'y' => max(0, $deviceHeight - $vh), 'width' => $deviceWidth, 'height' => $vh];
+                    $vp = ['x' => 0, 'y' => 0, 'width' => $deviceWidth, 'height' => (int)($deviceHeight * 0.6)];
                 } elseif ($normalizedLayout === 'split_vertical_40_60') {
-                    $vh = (int)($deviceHeight * 0.6);
-                    $vp = ['x' => 0, 'y' => max(0, $deviceHeight - $vh), 'width' => $deviceWidth, 'height' => $vh];
+                    $vp = ['x' => 0, 'y' => 0, 'width' => $deviceWidth, 'height' => (int)($deviceHeight * 0.4)];
                 } else {
                     $vp = ['x' => 0, 'y' => 0, 'width' => $deviceWidth, 'height' => (int)($deviceHeight * 0.5)];
                 }
@@ -2038,7 +1911,7 @@ function processForPWAPlayer($db, $device, $template, $product): array
         'id' => $commandId,
         'device_id' => $device['id'],
         'command' => 'refresh_content',
-        'parameters' => json_encode([
+        'params' => json_encode([
             'template_id' => $template['id'] ?? null,
             'product_id' => $product['id'] ?? null
         ]),

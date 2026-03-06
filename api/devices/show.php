@@ -12,7 +12,6 @@ if (!$user) {
 
 $companyId = Auth::getActiveCompanyId();
 $id = $request->routeParam('id');
-$playlistOrderColumn = $db->columnExists('playlist_items', 'sort_order') ? 'sort_order' : 'order_index';
 
 $device = $db->fetch(
     "SELECT d.*, g.name as group_name, c.name as company_name, b.name as branch_name
@@ -29,15 +28,7 @@ if (!$device) {
 }
 
 // Map type - use original_type from metadata if available
-$metadataRaw = $device['metadata'] ?? null;
-if (is_array($metadataRaw)) {
-    $metadata = $metadataRaw;
-} elseif (is_string($metadataRaw) && $metadataRaw !== '') {
-    $decodedMetadata = json_decode($metadataRaw, true);
-    $metadata = is_array($decodedMetadata) ? $decodedMetadata : [];
-} else {
-    $metadata = [];
-}
+$metadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];
 $device['serial_number'] = $device['device_id'];
 $device['db_type'] = $device['type'];
 
@@ -120,12 +111,7 @@ $productId = null;
 $assignedAt = null;
 
 if (!empty($device['current_content'])) {
-    $contentData = null;
-    if (is_array($device['current_content'])) {
-        $contentData = $device['current_content'];
-    } elseif (is_string($device['current_content'])) {
-        $contentData = json_decode($device['current_content'], true);
-    }
+    $contentData = json_decode($device['current_content'], true);
 
     if ($contentData && isset($contentData['template_id'])) {
         $templateId = $contentData['template_id'];
@@ -157,18 +143,12 @@ if (!$templateId && !empty($device['current_template_id'])) {
     $templateId = $device['current_template_id'];
 }
 
-$templateIdText = is_scalar($templateId) ? trim((string)$templateId) : '';
-$isTemplateUuid = preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $templateIdText) === 1;
-$templateLookupExpr = $db->isPostgres()
-    ? 'CAST(id AS TEXT) = CAST(? AS TEXT)'
-    : 'id = ?';
-
 // If we have a template ID (from any source), load template details and render cache
-if ($templateId && (!$db->isPostgres() || $isTemplateUuid)) {
+if ($templateId) {
     // Get template details
     $template = $db->fetch(
         "SELECT id, name, type, target_device_type, render_image, preview_image, grid_layout, created_at, updated_at
-         FROM templates WHERE $templateLookupExpr AND (company_id = ? OR scope = 'system' OR company_id IS NULL)",
+         FROM templates WHERE id = ? AND (company_id = ? OR scope = 'system' OR company_id IS NULL)",
         [$templateId, $companyId]
     );
 
@@ -193,15 +173,7 @@ if ($templateId && (!$db->isPostgres() || $isTemplateUuid)) {
     $deviceType = $device['db_type'] ?? $device['type'] ?? 'esl';
 
     // Try user locale first, fallback to 'tr'
-    $userPrefsRaw = $user['preferences'] ?? null;
-    if (is_array($userPrefsRaw)) {
-        $userPrefs = $userPrefsRaw;
-    } elseif (is_string($userPrefsRaw) && $userPrefsRaw !== '') {
-        $decodedPrefs = json_decode($userPrefsRaw, true);
-        $userPrefs = is_array($decodedPrefs) ? $decodedPrefs : [];
-    } else {
-        $userPrefs = [];
-    }
+    $userPrefs = !empty($user['preferences']) ? json_decode($user['preferences'], true) : [];
     $locales = array_unique(array_filter([$userPrefs['language'] ?? null, 'tr', 'en']));
 
     $renderFile = null;
@@ -233,7 +205,7 @@ if ($templateId && (!$db->isPostgres() || $isTemplateUuid)) {
 }
 
 // Try render cache (preferred for device content preview)
-if (empty($device['render_image_url']) && $productId && $templateId && (!$db->isPostgres() || $isTemplateUuid)) {
+if (empty($device['render_image_url']) && $productId && $templateId) {
     try {
         $renderCache = $db->fetch(
             "SELECT image_path, rendered_at FROM render_cache
@@ -252,7 +224,7 @@ if (empty($device['render_image_url']) && $productId && $templateId && (!$db->is
 }
 
 // Fallback to product_renders (new render tracking)
-if (empty($device['render_image_url']) && $productId && $templateId && (!$db->isPostgres() || $isTemplateUuid)) {
+if (empty($device['render_image_url']) && $productId && $templateId) {
     try {
         $productRender = $db->fetch(
             "SELECT file_path FROM product_renders
@@ -271,35 +243,19 @@ if (empty($device['render_image_url']) && $productId && $templateId && (!$db->is
 }
 
 // Get assigned playlist (active)
-$playlistJoin = $db->isPostgres()
-    ? "LEFT JOIN playlists p ON dca.content_type = 'playlist' AND CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
-    : "LEFT JOIN playlists p ON dca.content_id = p.id AND dca.content_type = 'playlist'";
-
 $assignedContent = $db->fetch(
     "SELECT dca.*, p.name as playlist_name, p.description as playlist_description,
             p.items as playlist_items, p.status as playlist_status,
             p.orientation, p.layout_type, p.default_duration
      FROM device_content_assignments dca
-     $playlistJoin
+     LEFT JOIN playlists p ON dca.content_id = p.id AND dca.content_type = 'playlist'
      WHERE dca.device_id = ? AND dca.status = 'active'
      ORDER BY dca.created_at DESC
      LIMIT 1",
     [$id]
 );
 
-if ($assignedContent && (($assignedContent['content_type'] ?? '') === 'playlist') && !empty($assignedContent['content_id'])) {
-    $playlistItemsRaw = $assignedContent['playlist_items'] ?? '[]';
-    if (is_array($playlistItemsRaw)) {
-        $playlistItems = $playlistItemsRaw;
-    } elseif (is_string($playlistItemsRaw) && $playlistItemsRaw !== '') {
-        $playlistItems = json_decode($playlistItemsRaw, true);
-    } else {
-        $playlistItems = [];
-    }
-    if (!is_array($playlistItems)) {
-        $playlistItems = [];
-    }
-
+if ($assignedContent) {
     $device['assigned_playlist'] = [
         'id' => $assignedContent['content_id'],
         'name' => $assignedContent['playlist_name'],
@@ -308,16 +264,16 @@ if ($assignedContent && (($assignedContent['content_type'] ?? '') === 'playlist'
         'orientation' => $assignedContent['orientation'],
         'layout_type' => $assignedContent['layout_type'],
         'default_duration' => $assignedContent['default_duration'],
-        'items' => $playlistItems,
+        'items' => json_decode($assignedContent['playlist_items'] ?: '[]', true),
         'assigned_at' => $assignedContent['created_at']
     ];
 
     if (empty($device['assigned_playlist']['items']) || !is_array($device['assigned_playlist']['items'])) {
         $normalizedItems = $db->fetchAll(
-            "SELECT id, media_id, duration, {$playlistOrderColumn} as order_index
+            "SELECT id, media_id, duration, order_index
              FROM playlist_items
              WHERE playlist_id = ?
-             ORDER BY {$playlistOrderColumn} ASC",
+             ORDER BY order_index ASC",
             [$assignedContent['content_id']]
         );
 
@@ -360,18 +316,10 @@ if ($assignedContent && (($assignedContent['content_type'] ?? '') === 'playlist'
     }
 }
 
-// Bluetooth protection indicator (don't expose encrypted password)
-$device['bt_protected'] = !empty($device['bt_password_encrypted']);
-unset($device['bt_password_encrypted']);
-
 // Sanitize current_content - don't send raw base64 data to frontend
 if (!empty($device['current_content']) && !isValidImagePath($device['current_content'])) {
     // If it's valid JSON, keep it; otherwise clear it
-    if (is_array($device['current_content'])) {
-        $parsed = $device['current_content'];
-    } else {
-        $parsed = json_decode((string)$device['current_content'], true);
-    }
+    $parsed = json_decode($device['current_content'], true);
     if (!$parsed) {
         $device['current_content'] = null;
     }

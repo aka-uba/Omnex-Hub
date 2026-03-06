@@ -110,6 +110,7 @@ export class PropertyPanel extends PanelBase {
      */
     setSelectedObject(object) {
         this._selectedObject = object;
+        this._applyPriceFormattingToTargets(this._getTextTargets());
         this.refresh();
     }
 
@@ -235,7 +236,8 @@ export class PropertyPanel extends PanelBase {
             displayName = objectName || (this.__('editor.elements.multiProductFrame'));
             typeBadge = this.__('editor.elements.multiProductFrame');
         } else if (this._isTextObject()) {
-            const text = obj.text || '';
+            const textTarget = this._getPrimaryTextTarget() || obj;
+            const text = textTarget.text || '';
             displayName = text.length > 30 ? text.substring(0, 30) + '...' : text;
             displayName = displayName || objectName || (this.__('editor.elements.text'));
             typeBadge = this._getTypeDisplayName(customType);
@@ -384,19 +386,35 @@ export class PropertyPanel extends PanelBase {
      * @returns {string}
      */
     _renderTextSection() {
-        const obj = this._selectedObject;
-        const fontFamily = obj.fontFamily || 'Arial';
-        const fontSize = obj.fontSize || 16;
-        const fontWeight = obj.fontWeight || 'normal';
-        const fontStyle = obj.fontStyle || 'normal';
-        const underline = obj.underline || false;
-        const linethrough = obj.linethrough || false;
-        const textAlign = obj.textAlign || 'left';
-        const fill = obj.fill || '#000000';
-        const lineHeight = obj.lineHeight || 1.16;
-        const charSpacing = obj.charSpacing || 0;
+        const textTarget = this._getPrimaryTextTarget() || this._selectedObject;
+        const fontFamily = textTarget?.fontFamily || 'Arial';
+        const fontSize = textTarget?.fontSize || 16;
+        const normalizedFontWeight = this._normalizeFontWeight(textTarget?.fontWeight || 'normal');
+        const fontStyle = textTarget?.fontStyle || 'normal';
+        const underline = textTarget?.underline || false;
+        const linethrough = textTarget?.linethrough || false;
+        const textAlign = textTarget?.textAlign || 'left';
+        const fill = textTarget?.fill || '#000000';
+        const lineHeight = textTarget?.lineHeight || 1.16;
+        const charSpacing = textTarget?.charSpacing || 0;
+        const textValue = String(textTarget?.text ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
 
-        const fonts = ['Arial', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Poppins', 'Oswald', 'Raleway'];
+        const fonts = [
+            'Arial',
+            'Inter',
+            'Roboto',
+            'SF Pro Display',
+            'Montserrat',
+            'Poppins',
+            'Noto Sans',
+            'Open Sans',
+            'Lato',
+            'Oswald',
+            'Raleway'
+        ];
 
         return `
             <div class="property-section">
@@ -405,6 +423,10 @@ export class PropertyPanel extends PanelBase {
                     <span>${this.__('editor.properties.text')}</span>
                 </div>
                 <div class="property-section-body">
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.content') || 'Metin İçeriği'}</label>
+                        <textarea class="form-input" data-property="text" rows="3">${textValue}</textarea>
+                    </div>
                     <div class="property-item">
                         <label>${this.__('editor.properties.fontFamily')}</label>
                         <select class="form-select" data-property="fontFamily">
@@ -417,14 +439,24 @@ export class PropertyPanel extends PanelBase {
                             <input type="number" class="form-input" data-property="fontSize" value="${fontSize}" min="8" max="200">
                         </div>
                         <div class="property-item">
-                            <label>${this.__('editor.properties.color')}</label>
-                            <input type="color" class="form-color" data-property="fill" value="${fill}">
+                            <label>${this.__('editor.properties.fontWeight') || 'Font Weight'}</label>
+                            <select class="form-select" data-property="fontWeight">
+                                <option value="300" ${normalizedFontWeight === '300' ? 'selected' : ''}>Light (300)</option>
+                                <option value="400" ${normalizedFontWeight === '400' ? 'selected' : ''}>Regular (400)</option>
+                                <option value="500" ${normalizedFontWeight === '500' ? 'selected' : ''}>Medium (500)</option>
+                                <option value="600" ${normalizedFontWeight === '600' ? 'selected' : ''}>SemiBold (600)</option>
+                                <option value="700" ${normalizedFontWeight === '700' ? 'selected' : ''}>Bold (700)</option>
+                            </select>
                         </div>
+                    </div>
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.color')}</label>
+                        ${this._renderColorInput('fill', fill)}
                     </div>
                     <div class="property-item">
                         <label>${this.__('editor.properties.style')}</label>
                         <div class="property-btn-group">
-                            <button type="button" class="prop-style-btn ${fontWeight === 'bold' ? 'active' : ''}" data-action="toggle-bold" title="Bold">
+                            <button type="button" class="prop-style-btn ${this._isBoldWeight(normalizedFontWeight) ? 'active' : ''}" data-action="toggle-bold" title="Bold">
                                 <i class="ti ti-bold"></i>
                             </button>
                             <button type="button" class="prop-style-btn ${fontStyle === 'italic' ? 'active' : ''}" data-action="toggle-italic" title="Italic">
@@ -488,7 +520,7 @@ export class PropertyPanel extends PanelBase {
                 <div class="property-section-body">
                     <div class="property-item">
                         <label>${this.__('editor.properties.fill')}</label>
-                        <input type="color" class="form-color" data-property="fill" value="${fill}">
+                        ${this._renderColorInput('fill', fill)}
                     </div>
                 </div>
             </div>
@@ -641,8 +673,9 @@ export class PropertyPanel extends PanelBase {
                     <div class="property-grid-2">
                         <div class="property-item">
                             <label>${this.__('editor.properties.stroke')}</label>
-                            <div class="property-color-row">
-                                <input type="color" class="form-color" data-property="stroke" value="${strokeColor}">
+                            <div class="property-color-row property-color-input with-action">
+                                <input type="color" class="form-color" data-property="stroke" value="${this._normalizeColorHex(strokeColor)}">
+                                <input type="text" class="form-input form-color-hex" data-color-hex-for="stroke" value="${this._normalizeColorHex(strokeColor)}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
                                 <button type="button" class="btn-icon btn-clear-stroke ${!hasStroke ? 'active' : ''}" data-action="clear-stroke" title="${this.__('editor.properties.noStroke')}">
                                     <i class="ti ti-circle-off"></i>
                                 </button>
@@ -704,7 +737,7 @@ export class PropertyPanel extends PanelBase {
                     <div class="shadow-controls ${hasShadow ? '' : 'hidden'}">
                         <div class="property-item">
                             <label>${this.__('editor.properties.shadowColor')}</label>
-                            <input type="color" class="form-color" data-property="shadow-color" value="${hexColor}">
+                            ${this._renderColorInput('shadow-color', hexColor)}
                         </div>
                         <div class="property-grid-2">
                             <div class="property-item">
@@ -758,6 +791,97 @@ export class PropertyPanel extends PanelBase {
         }
 
         return '#000000';
+    }
+
+    /**
+     * Color input + hex text input ortak renderer
+     * @private
+     * @param {string} property
+     * @param {string} color
+     * @returns {string}
+     */
+    _renderColorInput(property, color) {
+        const hex = this._normalizeColorHex(color);
+        return `
+            <div class="property-color-input">
+                <input type="color" class="form-color" data-property="${property}" value="${hex}">
+                <input type="text" class="form-input form-color-hex" data-color-hex-for="${property}" value="${hex}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
+            </div>
+        `;
+    }
+
+    /**
+     * Font weight degerini normalize et
+     * @private
+     * @param {string|number} weight
+     * @returns {string}
+     */
+    _normalizeFontWeight(weight) {
+        const raw = String(weight ?? '').trim().toLowerCase();
+        if (raw === 'bold') return '700';
+        if (raw === 'normal' || raw === '') return '400';
+
+        const parsed = parseInt(raw, 10);
+        if (!Number.isFinite(parsed)) return '400';
+
+        if (parsed < 350) return '300';
+        if (parsed < 450) return '400';
+        if (parsed < 550) return '500';
+        if (parsed < 650) return '600';
+        return '700';
+    }
+
+    /**
+     * Bold butonunun aktiflik kontrolu
+     * @private
+     * @param {string|number} weight
+     * @returns {boolean}
+     */
+    _isBoldWeight(weight) {
+        return parseInt(this._normalizeFontWeight(weight), 10) >= 700;
+    }
+
+    /**
+     * Renk degerini #RRGGBB formatina normalize et
+     * @private
+     * @param {string} value
+     * @param {string} fallback
+     * @returns {string}
+     */
+    _normalizeColorHex(value, fallback = '#000000') {
+        const fallbackHex = (fallback || '#000000').toUpperCase();
+        if (!value || typeof value !== 'string') return fallbackHex;
+
+        let normalized = value.trim();
+        if (normalized === '') return fallbackHex;
+
+        if (normalized.startsWith('rgb')) {
+            return this._shadowColorToHex(normalized).toUpperCase();
+        }
+
+        if (!normalized.startsWith('#')) {
+            normalized = `#${normalized}`;
+        }
+
+        if (/^#[0-9a-fA-F]{3}$/.test(normalized)) {
+            return `#${normalized[1]}${normalized[1]}${normalized[2]}${normalized[2]}${normalized[3]}${normalized[3]}`.toUpperCase();
+        }
+
+        if (/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+            return normalized.toUpperCase();
+        }
+
+        return fallbackHex;
+    }
+
+    /**
+     * Hex renk dogrulamasi
+     * @private
+     * @param {string} value
+     * @returns {boolean}
+     */
+    _isHexColor(value) {
+        return /^#[0-9a-fA-F]{6}$/.test(String(value || '').trim());
     }
 
     /**
@@ -886,12 +1010,47 @@ export class PropertyPanel extends PanelBase {
      */
     _renderResponsiveSection() {
         const obj = this._selectedObject;
+        const textTarget = this._getPrimaryTextTarget() || obj;
         const anchorX = obj[CUSTOM_PROPS.ANCHOR_X] || 'left';
         const anchorY = obj[CUSTOM_PROPS.ANCHOR_Y] || 'top';
         const textFit = obj[CUSTOM_PROPS.TEXT_FIT] || 'none';
         const minFontSize = obj[CUSTOM_PROPS.MIN_FONT_SIZE] || 8;
         const maxLines = obj[CUSTOM_PROPS.MAX_LINES] || 0;
         const isText = this._isTextObject();
+        const rawTextValue = String(textTarget?.text ?? textTarget?.get?.('text') ?? '');
+        const dynamicPlaceholderMatch = rawTextValue.match(/\{\{\s*([^}\s]+)\s*\}\}/);
+        const dynamicField =
+            textTarget?.[CUSTOM_PROPS.DYNAMIC_FIELD] ||
+            textTarget?.get?.(CUSTOM_PROPS.DYNAMIC_FIELD) ||
+            textTarget?.dynamic_field ||
+            dynamicPlaceholderMatch?.[1] ||
+            '';
+        const customType = textTarget?.[CUSTOM_PROPS.CUSTOM_TYPE] || textTarget?.get?.(CUSTOM_PROPS.CUSTOM_TYPE) || '';
+        const isPriceText = isText && this._isPriceLikeField(dynamicField, customType);
+
+        const fractionScaleRaw =
+            textTarget?.[CUSTOM_PROPS.PRICE_FRACTION_SCALE] ??
+            textTarget?.get?.(CUSTOM_PROPS.PRICE_FRACTION_SCALE) ??
+            1;
+        const fractionScalePercent = Math.max(30, Math.min(100, Math.round((Number(fractionScaleRaw) || 1) * 100)));
+
+        const fractionDigitsRaw =
+            textTarget?.[CUSTOM_PROPS.PRICE_FRACTION_DIGITS] ??
+            textTarget?.get?.(CUSTOM_PROPS.PRICE_FRACTION_DIGITS) ??
+            -1;
+        const fractionDigits = [-1, 1, 2].includes(Number(fractionDigitsRaw)) ? Number(fractionDigitsRaw) : -1;
+
+        const midlineEnabledRaw =
+            textTarget?.[CUSTOM_PROPS.PRICE_MIDLINE_ENABLED] ??
+            textTarget?.get?.(CUSTOM_PROPS.PRICE_MIDLINE_ENABLED) ??
+            false;
+        const midlineEnabled = !!midlineEnabledRaw;
+
+        const midlineThicknessRaw =
+            textTarget?.[CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS] ??
+            textTarget?.get?.(CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS) ??
+            1;
+        const midlineThickness = Math.max(1, Math.min(8, Number(midlineThicknessRaw) || 1));
 
         return `
             <div class="property-section property-section-responsive">
@@ -945,6 +1104,30 @@ export class PropertyPanel extends PanelBase {
                         <label>${this.__('editor.properties.maxLines') || 'Max Satır'}</label>
                         <input type="number" class="form-input form-input-sm" data-property="maxLines" value="${maxLines}" min="0" max="20">
                     </div>
+                    ${isPriceText ? `
+                    <div class="property-item">
+                        <label>Fiyat Ondalık Hane</label>
+                        <select class="form-select form-select-sm" data-property="priceFractionDigits">
+                            <option value="-1" ${fractionDigits === -1 ? 'selected' : ''}>Otomatik</option>
+                            <option value="1" ${fractionDigits === 1 ? 'selected' : ''}>1 Hane</option>
+                            <option value="2" ${fractionDigits === 2 ? 'selected' : ''}>2 Hane</option>
+                        </select>
+                    </div>
+                    <div class="property-item">
+                        <label>Ondalık Boyut (%)</label>
+                        <input type="number" class="form-input form-input-sm" data-property="priceFractionScalePercent" value="${fractionScalePercent}" min="30" max="100">
+                    </div>
+                    <div class="property-item property-checkbox">
+                        <label>
+                            <input type="checkbox" data-property="priceMidlineEnabled" ${midlineEnabled ? 'checked' : ''}>
+                            Fiyat Orta Çizgi
+                        </label>
+                    </div>
+                    <div class="property-item">
+                        <label>Çizgi Kalınlığı</label>
+                        <input type="number" class="form-input form-input-sm" data-property="priceMidlineThickness" value="${midlineThickness}" min="1" max="8">
+                    </div>
+                    ` : ''}
                     ` : ''}
                 </div>
             </div>
@@ -958,9 +1141,55 @@ export class PropertyPanel extends PanelBase {
         if (!this.element) return;
 
         // Input değişiklikleri
-        this.$$('input[data-property], select[data-property]').forEach(input => {
+        this.$$('input[data-property], select[data-property], textarea[data-property]').forEach(input => {
             this._addEventListener(input, 'input', (e) => this._handlePropertyChange(e));
             this._addEventListener(input, 'change', (e) => this._handlePropertyChange(e));
+        });
+
+        // Color picker yanindaki #hex text alanlari
+        this.$$('[data-color-hex-for]').forEach(hexInput => {
+            const property = hexInput.dataset.colorHexFor;
+            const colorInput = hexInput
+                .closest('.property-color-input, .property-color-row')
+                ?.querySelector(`input[type="color"][data-property="${property}"]`);
+
+            if (!property || !colorInput) return;
+
+            const syncHexFromColor = () => {
+                hexInput.value = this._normalizeColorHex(colorInput.value);
+            };
+
+            syncHexFromColor();
+
+            this._addEventListener(colorInput, 'input', syncHexFromColor);
+            this._addEventListener(colorInput, 'change', syncHexFromColor);
+
+            this._addEventListener(hexInput, 'input', () => {
+                let next = hexInput.value.trim().toUpperCase();
+                if (next && !next.startsWith('#')) {
+                    next = `#${next}`;
+                }
+
+                // Yazarken sadece # + 0..6 hex karaktere izin ver
+                if (!/^#[0-9A-F]{0,6}$/.test(next)) {
+                    return;
+                }
+
+                hexInput.value = next;
+                if (this._isHexColor(next)) {
+                    colorInput.value = next;
+                    colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+
+            this._addEventListener(hexInput, 'blur', () => {
+                const normalized = this._normalizeColorHex(hexInput.value, colorInput.value || '#000000');
+                hexInput.value = normalized;
+                if (colorInput.value !== normalized) {
+                    colorInput.value = normalized;
+                    colorInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
         });
 
         // Style butonları
@@ -1058,7 +1287,13 @@ export class PropertyPanel extends PanelBase {
 
         // Özel işlemler
         const objType = (this._selectedObject.type || '').toLowerCase();
-        const isTextObject = ['text', 'i-text', 'itext', 'textbox'].includes(objType);
+        const isTextObject = this._isDirectTextObject(this._selectedObject);
+        const textTargets = this._getTextTargets();
+        const hasTextTargets = textTargets.length > 0;
+        let shouldApplyPriceFormatting = false;
+        const applyCustomTextProperty = (propName, propValue) => {
+            this._applyCustomTextProperty(propName, propValue, textTargets, hasTextTargets);
+        };
 
         switch (property) {
             case 'width':
@@ -1066,6 +1301,7 @@ export class PropertyPanel extends PanelBase {
                     // Metin nesneleri için doğrudan width set et (scaleX kullanma, stretch olur)
                     this._selectedObject.set({ width: value, scaleX: 1 });
                     if (this._selectedObject.initDimensions) this._selectedObject.initDimensions();
+                    this._markTextWidthManual(this._selectedObject);
                 } else {
                     // Diğer nesneler için scale ile boyutlandır
                     const currentWidth = this._selectedObject.width * this._selectedObject.scaleX;
@@ -1123,8 +1359,131 @@ export class PropertyPanel extends PanelBase {
                 this._updateShadowProperty(property, value);
                 break;
 
+            case 'fill': {
+                const normalizedFill = this._normalizeColorHex(String(value), '#000000');
+                if (hasTextTargets) {
+                    textTargets.forEach(target => target.set('fill', normalizedFill));
+                } else {
+                    this._selectedObject.set('fill', normalizedFill);
+                }
+                break;
+            }
+
+            case 'stroke':
+                this._selectedObject.set('stroke', this._normalizeColorHex(String(value), '#000000'));
+                if ((this._selectedObject.strokeWidth || 0) <= 0) {
+                    this._selectedObject.set('strokeWidth', 1);
+                }
+                break;
+
+            case 'strokeWidth': {
+                const safeWidth = Math.max(0, Number(value) || 0);
+                this._selectedObject.set('strokeWidth', safeWidth);
+                if (safeWidth > 0) {
+                    const currentStroke = this._selectedObject.stroke;
+                    const hasVisibleStroke = typeof currentStroke === 'string' && currentStroke !== '' && currentStroke !== 'transparent';
+                    if (!hasVisibleStroke) {
+                        const strokePicker = this.$('input[type="color"][data-property="stroke"]');
+                        const fallbackStroke = this._normalizeColorHex(strokePicker?.value || '#000000');
+                        this._selectedObject.set('stroke', fallbackStroke);
+                    }
+                }
+                break;
+            }
+
+            case 'text':
+                if (hasTextTargets) {
+                    textTargets.forEach(target => {
+                        target.set('text', String(value ?? ''));
+                        this._applyAutoTextboxWidthIfEnabled(target);
+                        target.initDimensions?.();
+                        target.setCoords?.();
+                    });
+                } else {
+                    this._selectedObject.set('text', String(value ?? ''));
+                    this._applyAutoTextboxWidthIfEnabled(this._selectedObject);
+                    this._selectedObject.initDimensions?.();
+                    this._selectedObject.setCoords?.();
+                }
+                shouldApplyPriceFormatting = true;
+                break;
+
+            case 'fontFamily':
+            case 'fontSize':
+            case 'fontStyle':
+            case 'underline':
+            case 'linethrough':
+            case 'textAlign':
+            case 'lineHeight':
+            case 'charSpacing':
+                if (hasTextTargets) {
+                    textTargets.forEach(target => {
+                        target.set(property, value);
+                        this._applyAutoTextboxWidthIfEnabled(target);
+                        target.initDimensions?.();
+                        target.setCoords?.();
+                    });
+                } else {
+                    this._selectedObject.set(property, value);
+                    this._applyAutoTextboxWidthIfEnabled(this._selectedObject);
+                }
+                if (property === 'fontSize') {
+                    shouldApplyPriceFormatting = true;
+                }
+                break;
+
+            case 'fontWeight':
+                if (hasTextTargets) {
+                    const nextWeight = this._normalizeFontWeight(value);
+                    textTargets.forEach(target => {
+                        target.set('fontWeight', nextWeight);
+                        this._applyAutoTextboxWidthIfEnabled(target);
+                        target.initDimensions?.();
+                        target.setCoords?.();
+                    });
+                } else {
+                    this._selectedObject.set('fontWeight', this._normalizeFontWeight(value));
+                    this._applyAutoTextboxWidthIfEnabled(this._selectedObject);
+                }
+                break;
+
+            case 'priceFractionDigits': {
+                const digits = parseInt(value, 10);
+                const safeDigits = [-1, 1, 2].includes(digits) ? digits : -1;
+                applyCustomTextProperty(CUSTOM_PROPS.PRICE_FRACTION_DIGITS, safeDigits);
+                shouldApplyPriceFormatting = true;
+                break;
+            }
+
+            case 'priceFractionScalePercent': {
+                const safePercent = Math.max(30, Math.min(100, Number(value) || 100));
+                const scale = safePercent / 100;
+                applyCustomTextProperty(CUSTOM_PROPS.PRICE_FRACTION_SCALE, scale);
+                shouldApplyPriceFormatting = true;
+                break;
+            }
+
+            case 'priceMidlineEnabled':
+                applyCustomTextProperty(CUSTOM_PROPS.PRICE_MIDLINE_ENABLED, !!value);
+                shouldApplyPriceFormatting = true;
+                break;
+
+            case 'priceMidlineThickness': {
+                const safeThickness = Math.max(1, Math.min(8, Number(value) || 1));
+                applyCustomTextProperty(CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS, safeThickness);
+                shouldApplyPriceFormatting = true;
+                break;
+            }
+
             default:
                 this._selectedObject.set(property, value);
+        }
+
+        if (shouldApplyPriceFormatting) {
+            const priceTargets = hasTextTargets
+                ? textTargets
+                : (isTextObject ? [this._selectedObject] : []);
+            this._applyPriceFormattingToTargets(priceTargets);
         }
 
         this.canvas.requestRenderAll();
@@ -1182,10 +1541,16 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     _toggleBold() {
-        if (!this._selectedObject) return;
+        const targets = this._getTextTargets();
+        if (targets.length === 0) return;
 
-        const current = this._selectedObject.fontWeight;
-        this._selectedObject.set('fontWeight', current === 'bold' ? 'normal' : 'bold');
+        const current = this._normalizeFontWeight(targets[0].fontWeight);
+        const nextWeight = this._isBoldWeight(current) ? '400' : '700';
+        targets.forEach(target => {
+            target.set('fontWeight', nextWeight);
+            target.initDimensions?.();
+            target.setCoords?.();
+        });
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
@@ -1196,10 +1561,15 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     _toggleItalic() {
-        if (!this._selectedObject) return;
+        const targets = this._getTextTargets();
+        if (targets.length === 0) return;
 
-        const current = this._selectedObject.fontStyle;
-        this._selectedObject.set('fontStyle', current === 'italic' ? 'normal' : 'italic');
+        const current = targets[0].fontStyle;
+        const nextStyle = current === 'italic' ? 'normal' : 'italic';
+        targets.forEach(target => {
+            target.set('fontStyle', nextStyle);
+            target.setCoords?.();
+        });
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
@@ -1210,10 +1580,14 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     _toggleUnderline() {
-        if (!this._selectedObject) return;
+        const targets = this._getTextTargets();
+        if (targets.length === 0) return;
 
-        const current = this._selectedObject.underline;
-        this._selectedObject.set('underline', !current);
+        const current = !!targets[0].underline;
+        targets.forEach(target => {
+            target.set('underline', !current);
+            target.setCoords?.();
+        });
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
@@ -1224,10 +1598,14 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     _toggleLinethrough() {
-        if (!this._selectedObject) return;
+        const targets = this._getTextTargets();
+        if (targets.length === 0) return;
 
-        const current = this._selectedObject.linethrough;
-        this._selectedObject.set('linethrough', !current);
+        const current = !!targets[0].linethrough;
+        targets.forEach(target => {
+            target.set('linethrough', !current);
+            target.setCoords?.();
+        });
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
@@ -1241,7 +1619,15 @@ export class PropertyPanel extends PanelBase {
     _setTextAlign(align) {
         if (!this._selectedObject) return;
 
-        this._selectedObject.set('textAlign', align);
+        const targets = this._getTextTargets();
+        if (targets.length > 0) {
+            targets.forEach(target => {
+                target.set('textAlign', align);
+                target.setCoords?.();
+            });
+        } else {
+            this._selectedObject.set('textAlign', align);
+        }
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
@@ -1297,10 +1683,293 @@ export class PropertyPanel extends PanelBase {
      * @returns {boolean}
      */
     _isTextObject() {
-        if (!this._selectedObject) return false;
-        const type = this._selectedObject.type;
-        return type === 'text' || type === 'i-text' || type === 'textbox' ||
-               type === 'Text' || type === 'FabricText' || type === 'Textbox' || type === 'IText';
+        return this._getTextTargets().length > 0;
+    }
+
+    /**
+     * Nesne doÄŸrudan metin mi?
+     * @private
+     * @param {Object|null} obj
+     * @returns {boolean}
+     */
+    _isDirectTextObject(obj) {
+        if (!obj) return false;
+        const type = String(obj.type || '').toLowerCase();
+        return type === 'text' || type === 'i-text' || type === 'itext' || type === 'textbox' || type === 'fabrictext';
+    }
+
+    /**
+     * Group/selection iÃ§indeki child nesneleri al
+     * @private
+     * @param {Object} obj
+     * @returns {Array}
+     */
+    _getObjectChildren(obj) {
+        if (!obj) return [];
+        if (typeof obj.getObjects === 'function') {
+            const children = obj.getObjects();
+            if (Array.isArray(children)) return children;
+        }
+        if (Array.isArray(obj._objects)) return obj._objects;
+        if (Array.isArray(obj.objects)) return obj.objects;
+        return [];
+    }
+
+    /**
+     * SeÃ§ili nesnede dÃ¼zenlenebilir metin hedeflerini al
+     * @private
+     * @returns {Array}
+     */
+    _getTextTargets() {
+        if (!this._selectedObject) return [];
+
+        const targets = [];
+        const visited = new Set();
+        const stack = [this._selectedObject];
+
+        while (stack.length > 0) {
+            const current = stack.pop();
+            if (!current || visited.has(current)) continue;
+            visited.add(current);
+
+            if (this._isDirectTextObject(current)) {
+                targets.push(current);
+                continue;
+            }
+
+            const children = this._getObjectChildren(current);
+            children.forEach(child => stack.push(child));
+        }
+
+        return targets;
+    }
+
+    /**
+     * Birincil metin hedefi
+     * @private
+     * @returns {Object|null}
+     */
+    _getPrimaryTextTarget() {
+        const targets = this._getTextTargets();
+        return targets.length > 0 ? targets[0] : null;
+    }
+
+    _isTextboxObject(obj) {
+        if (!obj) return false;
+        return String(obj.type || '').toLowerCase() === 'textbox';
+    }
+
+    _getTextAutoWidthFlag(obj) {
+        if (!obj) return false;
+        const directValue = obj[CUSTOM_PROPS.TEXT_AUTO_WIDTH];
+        const getterValue = typeof obj.get === 'function' ? obj.get(CUSTOM_PROPS.TEXT_AUTO_WIDTH) : undefined;
+        const resolved = getterValue !== undefined ? getterValue : directValue;
+        return resolved === true;
+    }
+
+    _setTextAutoWidthFlag(obj, enabled) {
+        if (!obj) return;
+        const flag = !!enabled;
+        try {
+            obj.set(CUSTOM_PROPS.TEXT_AUTO_WIDTH, flag);
+        } catch (e) {
+            // ignore
+        }
+        obj[CUSTOM_PROPS.TEXT_AUTO_WIDTH] = flag;
+    }
+
+    _markTextWidthManual(obj) {
+        if (!this._isTextboxObject(obj)) return;
+        this._setTextAutoWidthFlag(obj, false);
+    }
+
+    _applyAutoTextboxWidthIfEnabled(obj) {
+        if (!this._isTextboxObject(obj)) return;
+        if (!this._getTextAutoWidthFlag(obj)) return;
+
+        const nextWidth = this._computeAutoTextboxWidth(obj);
+        if (!Number.isFinite(nextWidth) || nextWidth <= 0) return;
+
+        const currentWidth = Number(obj.width) || 0;
+        if (Math.abs(currentWidth - nextWidth) < 1) return;
+
+        obj.set({
+            width: nextWidth,
+            scaleX: 1
+        });
+    }
+
+    _getTextMeasureContext() {
+        if (this._measureCtx) return this._measureCtx;
+        if (typeof document === 'undefined' || !document.createElement) return null;
+
+        const probeCanvas = document.createElement('canvas');
+        const ctx = probeCanvas.getContext('2d');
+        this._measureCtx = ctx || null;
+        return this._measureCtx;
+    }
+
+    _computeAutoTextboxWidth(obj) {
+        const textValue = String(obj?.text ?? '');
+        const lines = textValue.split(/\r?\n/);
+        const safeLines = lines.length > 0 ? lines : [''];
+        const fontSize = Math.max(8, Number(obj?.fontSize) || 16);
+        const fontFamily = String(obj?.fontFamily || 'Arial');
+        const fontStyle = String(obj?.fontStyle || 'normal');
+        const fontWeight = String(this._normalizeFontWeight(obj?.fontWeight || '400'));
+        const charSpacing = Number(obj?.charSpacing) || 0;
+
+        const minWidth = Math.max(80, Math.round(fontSize * 2.8));
+        const padding = Math.max(16, Math.round(fontSize * 0.6));
+        const canvasWidth = Number(this.canvas?.width || this.canvas?.getWidth?.() || 800);
+        const maxWidth = Math.max(minWidth + 20, Math.floor(canvasWidth * 0.9));
+
+        const ctx = this._getTextMeasureContext();
+        let measured = minWidth;
+
+        if (ctx) {
+            ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px \"${fontFamily}\"`;
+            safeLines.forEach((line) => {
+                const safeLine = line || ' ';
+                const baseWidth = ctx.measureText(safeLine).width;
+                const spacingWidth = Math.max(0, safeLine.length - 1) * ((charSpacing * fontSize) / 1000);
+                measured = Math.max(measured, Math.ceil(baseWidth + spacingWidth));
+            });
+        } else {
+            const longest = safeLines.reduce((max, line) => Math.max(max, String(line || '').length), 1);
+            measured = Math.max(minWidth, Math.ceil(longest * fontSize * 0.6));
+        }
+
+        return Math.min(maxWidth, Math.max(minWidth, measured + padding));
+    }
+
+    _isPriceLikeField(fieldName, customType) {
+        const normalizedField = String(fieldName || '').trim().toLowerCase();
+        const normalizedType = String(customType || '').trim().toLowerCase();
+        if (normalizedType === 'price') return true;
+
+        return [
+            'current_price',
+            'currentprice',
+            'previous_price',
+            'previousprice',
+            'old_price',
+            'oldprice',
+            'price_with_currency',
+            'price',
+            'alis_fiyati',
+            'bundle_total_price',
+            'bundle_final_price'
+        ].includes(normalizedField);
+    }
+
+    _readObjectProp(obj, key, defaultValue = undefined) {
+        if (!obj || typeof obj !== 'object') return defaultValue;
+        if (obj[key] !== undefined) return obj[key];
+        if (typeof obj.get === 'function') {
+            const fromGetter = obj.get(key);
+            if (fromGetter !== undefined) return fromGetter;
+        }
+        return defaultValue;
+    }
+
+    _findPriceFractionRange(text) {
+        const raw = String(text ?? '');
+        const match = raw.match(/([,.])(\d+)(?=\D*$)/);
+        if (!match || typeof match.index !== 'number') return null;
+
+        const digits = String(match[2] || '');
+        const start = match.index + String(match[1] || '').length;
+        const end = start + digits.length;
+        if (!digits || end <= start) return null;
+
+        return { start, end, digits };
+    }
+
+    _applyPriceDisplayFormatting(target) {
+        if (!target || !this._isDirectTextObject(target)) return;
+
+        const dynamicField = String(this._readObjectProp(target, CUSTOM_PROPS.DYNAMIC_FIELD, '')).trim().toLowerCase();
+        const customType = String(this._readObjectProp(target, CUSTOM_PROPS.CUSTOM_TYPE, '')).trim().toLowerCase();
+        if (!this._isPriceLikeField(dynamicField, customType)) return;
+
+        let text = String(this._readObjectProp(target, 'text', '') ?? '');
+        if (!text || /\{\{\s*[^}]+\s*\}\}/.test(text)) {
+            text = '24,89 ₺';
+        }
+
+        const digitsRaw = Number(this._readObjectProp(target, CUSTOM_PROPS.PRICE_FRACTION_DIGITS, -1));
+        const digits = [1, 2].includes(digitsRaw) ? digitsRaw : -1;
+
+        let fractionRange = this._findPriceFractionRange(text);
+        let shrinkEnd = fractionRange ? fractionRange.end : 0;
+        if (digits > 0 && fractionRange) {
+            const nextDigits = fractionRange.digits.padEnd(digits, '0').slice(0, digits);
+            text = `${text.slice(0, fractionRange.start)}${nextDigits}${text.slice(fractionRange.end)}`;
+            fractionRange = {
+                start: fractionRange.start,
+                end: fractionRange.start + nextDigits.length,
+                digits: nextDigits
+            };
+            shrinkEnd = fractionRange.end;
+        }
+        const trailing = text.slice(shrinkEnd);
+        if (trailing && trailing.trim()) {
+            shrinkEnd = text.length;
+        }
+
+        const scaleRaw = Number(this._readObjectProp(target, CUSTOM_PROPS.PRICE_FRACTION_SCALE, 1));
+        const fractionScale = Number.isFinite(scaleRaw) ? Math.max(0.3, Math.min(1, scaleRaw)) : 1;
+        const baseFontSize = Number(this._readObjectProp(target, 'fontSize', 24)) || 24;
+
+        let styles = {};
+        if (fractionRange && fractionScale < 0.999) {
+            const scaledFontSize = Math.max(1, Number((baseFontSize * fractionScale).toFixed(2)));
+            const deltaY = -Math.max(0, Number(((baseFontSize - scaledFontSize) * 0.7).toFixed(2)));
+            const lineStyles = {};
+            for (let charIndex = fractionRange.start; charIndex < shrinkEnd; charIndex++) {
+                lineStyles[charIndex] = {
+                    fontSize: scaledFontSize,
+                    deltaY
+                };
+            }
+            styles = { 0: lineStyles };
+        }
+
+        const midlineEnabled = !!this._readObjectProp(target, CUSTOM_PROPS.PRICE_MIDLINE_ENABLED, false);
+        const midlineThicknessRaw = Number(this._readObjectProp(target, CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS, 1));
+        const midlineThickness = Math.max(1, Math.min(8, Number.isFinite(midlineThicknessRaw) ? midlineThicknessRaw : 1));
+
+        target.set('text', text);
+        target.text = text;
+        target.set('styles', styles);
+        target.styles = styles;
+        target.set('linethrough', midlineEnabled);
+        target.linethrough = midlineEnabled;
+        target.set('textDecorationThickness', midlineThickness);
+        target.textDecorationThickness = midlineThickness;
+        target.initDimensions?.();
+        target.setCoords?.();
+    }
+
+    _applyPriceFormattingToTargets(targets = []) {
+        if (!Array.isArray(targets) || targets.length === 0) return;
+        targets.forEach((target) => this._applyPriceDisplayFormatting(target));
+    }
+
+    _applyCustomTextProperty(propName, propValue, textTargets, hasTextTargets) {
+        if (hasTextTargets) {
+            textTargets.forEach(target => {
+                target.set(propName, propValue);
+                target[propName] = propValue;
+                target.setCoords?.();
+            });
+            return;
+        }
+
+        this._selectedObject.set(propName, propValue);
+        this._selectedObject[propName] = propValue;
+        this._selectedObject.setCoords?.();
     }
 
     /**

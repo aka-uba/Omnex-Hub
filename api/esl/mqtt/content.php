@@ -318,8 +318,14 @@ $assignment = $db->fetch(
 );
 
 if ($assignment && $assignment['content_id']) {
-    if (($assignment['content_type'] ?? '') === 'mqtt_payload') {
-        $payloadPath = ltrim((string)$assignment['content_id'], '/');
+    $assignmentContentId = (string)$assignment['content_id'];
+    $assignmentContentType = (string)($assignment['content_type'] ?? '');
+    $looksLikePayloadPath = str_contains($assignmentContentId, '/esl/http-payloads/')
+        || str_contains($assignmentContentId, '/esl/mqtt-payloads/')
+        || str_ends_with($assignmentContentId, '.json');
+
+    if (in_array($assignmentContentType, ['mqtt_payload', 'http_payload'], true) || $looksLikePayloadPath) {
+        $payloadPath = ltrim($assignmentContentId, '/');
         $payloadFullPath = BASE_PATH . '/' . $payloadPath;
         if (file_exists($payloadFullPath)) {
             $payloadRaw = file_get_contents($payloadFullPath);
@@ -346,12 +352,13 @@ if ($assignment && $assignment['content_id']) {
 
     // content_id -> product_renders tablosundaki render'i bul
     $render = null;
-    if (!$taskData) {
+    $assignmentContentIsUuid = preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/', $assignmentContentId) === 1;
+    if (!$taskData && $assignmentContentIsUuid) {
         $render = $db->fetch(
             "SELECT pr.id, pr.product_id, pr.template_id, pr.file_path, pr.render_hash
              FROM product_renders pr
              WHERE pr.id = ? AND pr.status = 'completed'",
-            [$assignment['content_id']]
+            [$assignmentContentId]
         );
     }
 

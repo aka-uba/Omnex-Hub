@@ -8,7 +8,7 @@
 import { Modal } from '../../components/Modal.js';
 import { Toast } from '../../components/Toast.js';
 import { DataTable } from '../../components/DataTable.js';
-import { getTemplateRenderer } from '../../services/TemplateRenderer.js?v=1.0.70';
+import { getTemplateRenderer } from '../../services/TemplateRenderer.js?v=1.0.73';
 import { getRenderWorker } from '../../components/RenderWorker.js?v=1.0.67';
 
 // Modular components (Faz 2 refactor)
