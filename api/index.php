@@ -1868,6 +1868,34 @@ $router->group(['prefix' => '/api/bundles', 'middleware' => ['auth']], function(
     });
 });
 
+// =====================================================
+// ERP Import Routes (File-based import)
+// =====================================================
+
+// Public endpoint: ERP systems push files via API key (no session auth)
+$router->post('/api/import/upload', function($request) {
+    require API_PATH . '/import/upload.php';
+});
+
+// Protected endpoints: Import settings, history, files
+$router->group(['prefix' => '/api/import', 'middleware' => ['auth']], function($router) {
+    $router->get('/settings', function($request) {
+        require API_PATH . '/import/settings.php';
+    });
+    $router->put('/settings', function($request) {
+        require API_PATH . '/import/settings.php';
+    });
+    $router->get('/history', function($request) {
+        require API_PATH . '/import/history.php';
+    });
+    $router->get('/files', function($request) {
+        require API_PATH . '/import/files.php';
+    });
+    $router->post('/files/import', function($request) {
+        require API_PATH . '/import/files.php';
+    });
+});
+
 // Dispatch request
 try {
     $startTime = microtime(true);
