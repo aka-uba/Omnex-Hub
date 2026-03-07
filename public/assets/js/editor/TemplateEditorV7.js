@@ -28,6 +28,7 @@
 // Core modülleri
 import { eventBus, EVENTS } from './core/EventBus.js';
 import { CUSTOM_PROPS, CUSTOM_TYPES, DYNAMIC_FIELDS, SERIALIZABLE_PROPS } from './core/CustomProperties.js';
+import { FrameService } from './services/FrameService.js';
 import {
     Canvas,
     Rect,
@@ -247,6 +248,9 @@ export class TemplateEditorV7 {
         // Managers'ları başlat
         this._initManagers();
 
+        // Frame Service (9-slice frame overlay engine)
+        this.frameService = new FrameService();
+
         // Panels'leri başlat
         this._initPanels();
 
@@ -448,6 +452,8 @@ export class TemplateEditorV7 {
                 i18n: i18nFn,
                 collapsible: false
             });
+            this.propertyPanel.editor = this;
+            this.propertyPanel.setFrameService(this.frameService);
             this.propertyPanel.mount();
         }
 
@@ -504,6 +510,8 @@ export class TemplateEditorV7 {
                 i18n: i18nFn,
                 collapsible: false
             });
+            this._inspectorPropertyPanel.editor = this;
+            this._inspectorPropertyPanel.setFrameService(this.frameService);
             this._inspectorPropertyPanel.mount();
         }
 
@@ -555,8 +563,28 @@ export class TemplateEditorV7 {
             if (this.options.onObjectModified) {
                 this.options.onObjectModified(data.target);
             }
+            // Update frame overlay when framed object is modified
+            if (data.target && this.frameService?.hasFrame(data.target)) {
+                this.frameService.updateFrame(data.target, this.canvas);
+            }
         });
         this._subscriptions.push(objectModifiedSub);
+
+        // Frame: sync position during move (lightweight, no re-render)
+        const objectMovingSub = eventBus.on(EVENTS.OBJECT_MOVING, (data) => {
+            if (data.target && this.frameService?.hasFrame(data.target)) {
+                this._syncFramePosition(data.target);
+            }
+        });
+        this._subscriptions.push(objectMovingSub);
+
+        // Frame z-order sync: when layers are reordered, keep frames behind their targets
+        const canvasModifiedSub = eventBus.on(EVENTS.CANVAS_MODIFIED, (data) => {
+            if (data?.source === 'layers-order' || data?.source === 'layers-reorder') {
+                this.frameService?.syncAllZOrders(this.canvas);
+            }
+        });
+        this._subscriptions.push(canvasModifiedSub);
 
         // History change event
         const historyChangeSub = eventBus.on(EVENTS.HISTORY_CHANGE, (data) => {
@@ -715,6 +743,62 @@ export class TemplateEditorV7 {
         }
         this._saveHistory();
         return obj;
+    }
+
+    /**
+     * Shape Library'den şekil ekle (ShapePicker modal açar)
+     */
+    async addShape() {
+        const { ShapePicker } = await import('./components/ShapePicker.js');
+        const __ = (key) => {
+            if (typeof window.__ === 'function') return window.__(key);
+            return key;
+        };
+        ShapePicker.open({
+            __,
+            onSelect: async ({ shapeId, fill, stroke, strokeWidth, variant, radius }) => {
+                const obj = await this.objectFactory.createShape(shapeId, {
+                    fill, stroke, strokeWidth, variant, radius,
+                    width: 150, height: 105
+                });
+                if (obj && this.canvas) {
+                    this.canvas.setActiveObject(obj);
+                    this.canvas.requestRenderAll();
+                }
+                this._saveHistory();
+            }
+        });
+    }
+
+    /**
+     * Sync frame overlay position with target object (lightweight, during drag)
+     * @private
+     */
+    _syncFramePosition(targetObj) {
+        if (!targetObj || !this.canvas) return;
+
+        const overlayId = targetObj[CUSTOM_PROPS.FRAME_OVERLAY_ID];
+        if (!overlayId) return;
+
+        const frameObj = this.canvas.getObjects().find(
+            o => o[CUSTOM_PROPS.OBJECT_ID] === overlayId
+        );
+        if (!frameObj) return;
+
+        // Get blank offsets for positioning
+        const frameId = targetObj[CUSTOM_PROPS.FRAME_ID];
+        // Quick async-free positioning: just offset from stored blank values
+        // frameBlank is embedded in the frameDef but we don't have it synchronously.
+        // We'll use a simpler approach: compute offset from current positions difference
+        // The original offset was set during applyFrame. On move, preserve that offset.
+        const dL = frameObj._frameOffsetLeft ?? 0;
+        const dT = frameObj._frameOffsetTop ?? 0;
+
+        frameObj.set({
+            left: targetObj.left + dL,
+            top: targetObj.top + dT
+        });
+        frameObj.setCoords();
     }
 
     /**
@@ -1684,6 +1768,10 @@ export class TemplateEditorV7 {
         if (!selected || selected.length === 0) return;
 
         selected.forEach(obj => {
+            // Remove associated frame overlay if this object has one
+            if (this.frameService?.hasFrame(obj)) {
+                this.frameService.removeFrame(obj, this.canvas);
+            }
             this.canvas.remove(obj);
         });
 
@@ -2335,6 +2423,11 @@ export class TemplateEditorV7 {
             this._applyFieldDisplayLabels();
             // =========================================================================
 
+            // Frame overlay'lerini target nesneleriyle yeniden bağla
+            if (this.frameService) {
+                this.frameService.reconnectFrames(this.canvas);
+            }
+
             // Video placeholder overlay'lerini geri yükle
             this._restoreVideoOverlays();
 
@@ -2937,6 +3030,9 @@ export class TemplateEditorV7 {
         this.historyManager?.dispose();
         this.clipboardManager?.dispose();
         this.gridManager?.dispose();
+
+        // Frame service dispose
+        this.frameService?.dispose();
 
         // Panels dispose
         this.propertyPanel?.dispose();

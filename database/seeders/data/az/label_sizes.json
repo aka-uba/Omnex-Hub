@@ -613,6 +613,106 @@
             "is_default": false,
             "is_active": true,
             "sort_order": 61
+        },
+        {
+            "id": "ls-062",
+            "name": "A4 Şaquli (210x297 mm)",
+            "width": 210,
+            "height": 297,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 62
+        },
+        {
+            "id": "ls-063",
+            "name": "A4 Üfüqi (297x210 mm)",
+            "width": 297,
+            "height": 210,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 63
+        },
+        {
+            "id": "ls-064",
+            "name": "A5 Şaquli (148x210 mm)",
+            "width": 148,
+            "height": 210,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 64
+        },
+        {
+            "id": "ls-065",
+            "name": "A5 Üfüqi (210x148 mm)",
+            "width": 210,
+            "height": 148,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 65
+        },
+        {
+            "id": "ls-066",
+            "name": "A3 Şaquli (297x420 mm)",
+            "width": 297,
+            "height": 420,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 66
+        },
+        {
+            "id": "ls-067",
+            "name": "A3 Üfüqi (420x297 mm)",
+            "width": 420,
+            "height": 297,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 67
+        },
+        {
+            "id": "ls-068",
+            "name": "Letter Şaquli (216x279 mm)",
+            "width": 216,
+            "height": 279,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 68
+        },
+        {
+            "id": "ls-069",
+            "name": "Letter Üfüqi (279x216 mm)",
+            "width": 279,
+            "height": 216,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 69
+        },
+        {
+            "id": "ls-070",
+            "name": "Legal Şaquli (216x356 mm)",
+            "width": 216,
+            "height": 356,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 70
+        },
+        {
+            "id": "ls-071",
+            "name": "Legal Üfüqi (356x216 mm)",
+            "width": 356,
+            "height": 216,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 71
         }
     ],
     "locale": "az"

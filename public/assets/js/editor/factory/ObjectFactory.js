@@ -185,6 +185,7 @@ export class ObjectFactory {
             'dynamic-text': 'Dinamik Alan',
             'dynamic-image': 'Dinamik Görsel',
             'video-placeholder': 'Video',
+            shape: 'Sekil',
             group: 'Grup'
         };
         const name = typeNames[type] || type;
@@ -532,6 +533,89 @@ export class ObjectFactory {
         }
 
         return line;
+    }
+
+    /**
+     * Shape Library'den şekil oluştur
+     * SVG markup'tan fabric.js Group nesnesi oluşturur.
+     * @param {string} shapeId - ShapeLibraryData'daki shape ID
+     * @param {Object} [options={}] - Ek özellikler (fill, stroke, variant, radius, width, height, left, top)
+     * @returns {Promise<Object>} Fabric.js Group nesnesi
+     */
+    async createShape(shapeId, options = {}) {
+        // Lazy import to avoid circular dependency
+        const { getShapeById, SHAPE_VIEWBOX } = await import('../data/ShapeLibraryData.js');
+        const shapeDef = getShapeById(shapeId);
+        if (!shapeDef) {
+            console.warn(`[ObjectFactory] Shape not found: ${shapeId}`);
+            return null;
+        }
+
+        const {
+            fill = '#ff4d4f',
+            stroke = '#1f2937',
+            strokeWidth = 8,
+            variant = shapeDef.variants[0],
+            radius = 24,
+            width = 150,
+            height = 105,
+            ...restOptions
+        } = options;
+
+        // Generate SVG markup from shape definition
+        const svgInner = shapeDef.draw({ fillRef: fill, strokeWidth, variant, radius });
+        const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${SHAPE_VIEWBOX}" width="${width}" height="${height}">${svgInner}</svg>`;
+
+        // Replace currentColor with actual stroke color in the SVG
+        const colorizedSvg = svgString.replace(/currentColor/g, stroke);
+
+        // Fabric v7: loadSVGFromString returns a Promise (callback is ignored)
+        const result = await fabric.loadSVGFromString(colorizedSvg);
+        const objects = result?.objects;
+
+        if (!objects || objects.length === 0) {
+            console.warn(`[ObjectFactory] Failed to parse SVG for shape: ${shapeId}`);
+            return null;
+        }
+
+        let shapeObj;
+        if (objects.length === 1) {
+            shapeObj = objects[0];
+        } else {
+            shapeObj = new Group(objects, { ...V7_ORIGIN });
+        }
+
+        // Apply sizing and position
+        shapeObj.set({
+            ...V7_ORIGIN,
+            left: restOptions.left ?? (this.canvas ? this.canvas.getWidth() / 2 : 200),
+            top: restOptions.top ?? (this.canvas ? this.canvas.getHeight() / 2 : 150),
+            scaleX: width / (shapeObj.width || width),
+            scaleY: height / (shapeObj.height || height),
+            strokeUniform: true
+        });
+
+        // Extract custom props
+        const customProps = {};
+        for (const key of SERIALIZABLE_PROPS) {
+            if (restOptions[key] !== undefined) {
+                customProps[key] = restOptions[key];
+            }
+        }
+
+        // Set shape library props
+        customProps[CUSTOM_PROPS.SHAPE_LIBRARY_ID] = shapeId;
+        customProps[CUSTOM_PROPS.SHAPE_VARIANT] = variant;
+
+        this._applyBaseProperties(shapeObj, CUSTOM_TYPES.SHAPE, customProps);
+
+        if (this.canvas) {
+            this.canvas.add(shapeObj);
+            this.canvas.requestRenderAll();
+            eventBus.emit(EVENTS.OBJECT_ADDED, { object: shapeObj });
+        }
+
+        return shapeObj;
     }
 
     /**

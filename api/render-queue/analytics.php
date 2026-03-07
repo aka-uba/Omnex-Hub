@@ -69,8 +69,8 @@ $readyToProcess = $db->fetch(
     "SELECT COUNT(*) as count
      FROM render_queue
      WHERE company_id = ? AND status = 'pending'
-       AND (scheduled_at IS NULL OR REPLACE(scheduled_at, 'T', ' ') <= ?)
-       AND (next_retry_at IS NULL OR REPLACE(next_retry_at, 'T', ' ') <= ?)",
+       AND (scheduled_at IS NULL OR scheduled_at <= ?)
+       AND (next_retry_at IS NULL OR next_retry_at <= ?)",
     [$companyId, $now, $now]
 );
 $queueStatus['ready_to_process'] = (int)($readyToProcess['count'] ?? 0);
@@ -191,23 +191,20 @@ $errorAnalysis['last_24h'] = $last24hErrors;
 // Ortalama tamamlanma süresi (son 100 iş)
 $avgCompletionTime = $db->fetch(
     "SELECT
-        AVG(
-            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
-        ) as avg_seconds,
-        MIN(
-            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
-        ) as min_seconds,
-        MAX(
-            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS INTEGER)
-        ) as max_seconds,
+        AVG(duration_seconds) as avg_seconds,
+        MIN(duration_seconds) as min_seconds,
+        MAX(duration_seconds) as max_seconds,
         COUNT(*) as sample_size
-     FROM render_queue
-     WHERE company_id = ?
-       AND status = 'completed'
-       AND started_at IS NOT NULL
-       AND completed_at IS NOT NULL
-     ORDER BY completed_at DESC
-     LIMIT 100",
+     FROM (
+        SELECT EXTRACT(EPOCH FROM (completed_at - started_at)) as duration_seconds
+        FROM render_queue
+        WHERE company_id = ?
+          AND status = 'completed'
+          AND started_at IS NOT NULL
+          AND completed_at IS NOT NULL
+        ORDER BY completed_at DESC
+        LIMIT 100
+     ) recent_jobs",
     [$companyId]
 );
 
@@ -234,18 +231,19 @@ if ($performanceMetrics['sample_size'] > 0) {
 // Cihaz başına ortalama süre
 $avgPerDevice = $db->fetch(
     "SELECT
-        AVG(
-            CAST((julianday(completed_at) - julianday(started_at)) * 86400 AS REAL) /
-            NULLIF(devices_total, 0)
-        ) as avg_per_device
-     FROM render_queue
-     WHERE company_id = ?
-       AND status = 'completed'
-       AND devices_total > 0
-       AND started_at IS NOT NULL
-       AND completed_at IS NOT NULL
-     ORDER BY completed_at DESC
-     LIMIT 100",
+        AVG(duration_per_device) as avg_per_device
+     FROM (
+        SELECT
+            EXTRACT(EPOCH FROM (completed_at - started_at)) / NULLIF(devices_total, 0) as duration_per_device
+        FROM render_queue
+        WHERE company_id = ?
+          AND status = 'completed'
+          AND devices_total > 0
+          AND started_at IS NOT NULL
+          AND completed_at IS NOT NULL
+        ORDER BY completed_at DESC
+        LIMIT 100
+     ) recent_jobs",
     [$companyId]
 );
 
@@ -302,13 +300,13 @@ $trends = [
 // Saatlik trend (son 24 saat)
 $hourlyTrend = $db->fetchAll(
     "SELECT
-        strftime('%Y-%m-%d %H:00', created_at) as hour,
+        TO_CHAR(DATE_TRUNC('hour', created_at), 'YYYY-MM-DD HH24:00') as hour,
         COUNT(*) as jobs,
         SUM(devices_total) as devices
      FROM render_queue
      WHERE company_id = ?
        AND created_at >= ?
-     GROUP BY strftime('%Y-%m-%d %H:00', created_at)
+     GROUP BY DATE_TRUNC('hour', created_at)
      ORDER BY hour ASC",
     [$companyId, $since24h]
 );
@@ -328,7 +326,7 @@ $retryPending = $db->fetch(
        AND rqi.status = 'pending'
        AND rqi.retry_count > 0
        AND rqi.next_retry_at IS NOT NULL
-       AND REPLACE(rqi.next_retry_at, 'T', ' ') <= ?",
+       AND rqi.next_retry_at <= ?",
     [$companyId, $now]
 );
 

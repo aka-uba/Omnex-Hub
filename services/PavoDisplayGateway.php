@@ -1,12 +1,12 @@
-<?php
+﻿<?php
 /**
  * PavoDisplay Price Tag Gateway
  *
- * PavoDisplay marka elektronik fiyat etiketi cihazları ile iletişim sağlar.
- * Cihaz HTTP-SERVER modunda çalışır ve dosya tabanlı senkronizasyon yapar.
+ * PavoDisplay marka elektronik fiyat etiketi cihazlarÄ± ile iletiÅŸim saÄŸlar.
+ * Cihaz HTTP-SERVER modunda Ã§alÄ±ÅŸÄ±r ve dosya tabanlÄ± senkronizasyon yapar.
  *
  * Desteklenen Firmware: V3.36+
- * Ekran Boyutları: 800x1280, 1920x1080, 1280x800
+ * Ekran BoyutlarÄ±: 800x1280, 1920x1080, 1280x800
  */
 
 class PavoDisplayGateway
@@ -15,27 +15,27 @@ class PavoDisplayGateway
     private $connectTimeout = 5;
 
     /**
-     * PavoDisplay API dokümantasyonuna göre sign hesapla.
+     * PavoDisplay API dokÃ¼mantasyonuna gÃ¶re sign hesapla.
      *
      * Algoritma:
-     * 1. Tüm URL parametrelerini (sign hariç) alfabetik sırala
-     * 2. key1=value1&key2=value2 formatında birleştir
+     * 1. TÃ¼m URL parametrelerini (sign hariÃ§) alfabetik sÄ±rala
+     * 2. key1=value1&key2=value2 formatÄ±nda birleÅŸtir
      * 3. Sonuna &key=AppSecret ekle
      * 4. MD5 al ve uppercase yap
      *
-     * @param array $params URL query parametreleri (sign hariç)
-     * @param string $appSecret AppSecret değeri
+     * @param array $params URL query parametreleri (sign hariÃ§)
+     * @param string $appSecret AppSecret deÄŸeri
      * @return string Uppercase MD5 sign
      */
     private function calculateSign(array $params, string $appSecret): string
     {
-        // sign parametresini çıkar (varsa)
+        // sign parametresini Ã§Ä±kar (varsa)
         unset($params['sign']);
 
-        // Alfabetik sırala
+        // Alfabetik sÄ±rala
         ksort($params);
 
-        // key=value formatında birleştir
+        // key=value formatÄ±nda birleÅŸtir
         $parts = [];
         foreach ($params as $key => $value) {
             $parts[] = $key . '=' . $value;
@@ -50,11 +50,11 @@ class PavoDisplayGateway
      * Cihaza ping at ve online durumunu kontrol et
      *
      * @param string $ip Cihaz IP adresi
-     * @param bool $lightweight Hafif ping (sadece TCP bağlantı kontrolü)
+     * @param bool $lightweight Hafif ping (sadece TCP baÄŸlantÄ± kontrolÃ¼)
      */
     public function ping(string $ip, bool $lightweight = false): array
     {
-        // Hafif ping: sadece TCP bağlantısını kontrol et (HTTP isteği göndermeden)
+        // Hafif ping: sadece TCP baÄŸlantÄ±sÄ±nÄ± kontrol et (HTTP isteÄŸi gÃ¶ndermeden)
         if ($lightweight) {
             $startTime = microtime(true);
             $connection = @fsockopen($ip, 80, $errno, $errstr, 2);
@@ -101,17 +101,17 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaza dosya yükle
+     * Cihaza dosya yÃ¼kle
      *
      * @param string $ip Cihaz IP adresi
-     * @param string $filePath Hedef dosya yolu (files/task/ altında)
-     * @param string $content Dosya içeriği
-     * @param bool $clearSpace Yükleme öncesi alan temizle
-     * @param string|null $clientId Client ID (APK sync için)
+     * @param string $filePath Hedef dosya yolu (files/task/ altÄ±nda)
+     * @param string $content Dosya iÃ§eriÄŸi
+     * @param bool $clearSpace YÃ¼kleme Ã¶ncesi alan temizle
+     * @param string|null $clientId Client ID (APK sync iÃ§in)
      */
     public function uploadFile(string $ip, string $filePath, string $content, bool $clearSpace = false, ?string $clientId = null): array
     {
-        // Dosya yolu kontrolü
+        // Dosya yolu kontrolÃ¼
         if (strpos($filePath, 'files/task/') !== 0 && strpos($filePath, 'files/config/') !== 0) {
             $filePath = 'files/task/' . $filePath;
         }
@@ -124,7 +124,7 @@ class PavoDisplayGateway
             $url .= "&client_id=" . urlencode($clientId);
         }
 
-        // Binary dosya mı kontrol et (resim, video vb.)
+        // Binary dosya mÄ± kontrol et (resim, video vb.)
         $isBinary = false;
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
         if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif', 'mp4', 'avi', 'mov', 'webm'])) {
@@ -168,7 +168,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Dosya MD5 ve boyut kontrolü
+     * Dosya MD5 ve boyut kontrolÃ¼
      */
     public function checkFile(string $ip, string $filePath): array
     {
@@ -195,31 +195,31 @@ class PavoDisplayGateway
     }
 
     /**
-     * Task JSON oluştur ve yükle
+     * Task JSON oluÅŸtur ve yÃ¼kle
      *
-     * API Dokümantasyonuna göre doğru akış:
-     * 1. Resim/video dosyalarını yükle
-     * 2. Task dosyasını .js uzantısıyla yükle (LabelPicture formatında)
-     * 3. /replay endpoint'i ile ekranı güncelle
+     * API DokÃ¼mantasyonuna gÃ¶re doÄŸru akÄ±ÅŸ:
+     * 1. Resim/video dosyalarÄ±nÄ± yÃ¼kle
+     * 2. Task dosyasÄ±nÄ± .js uzantÄ±sÄ±yla yÃ¼kle (LabelPicture formatÄ±nda)
+     * 3. /replay endpoint'i ile ekranÄ± gÃ¼ncelle
      *
      * @param string $ip Cihaz IP
-     * @param array $product Ürün bilgileri
-     * @param array $template Şablon ayarları
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param array $template Åablon ayarlarÄ±
      * @param string|null $clientId Client ID
      */
     public function syncProduct(string $ip, array $product, array $template = [], ?string $clientId = null): array
     {
-        // Varsayılan şablon
+        // VarsayÄ±lan ÅŸablon
         $screenWidth = $template['width'] ?? 800;
         $screenHeight = $template['height'] ?? 1280;
 
-        // Client ID yoksa varsayılan oluştur
+        // Client ID yoksa varsayÄ±lan oluÅŸtur
         $clientId = $clientId ?? ('DEVICE_' . time());
 
-        // 1. Önce mevcut task klasörünü temizle (clearspace=1)
+        // 1. Ã–nce mevcut task klasÃ¶rÃ¼nÃ¼ temizle (clearspace=1)
         $this->uploadFile($ip, 'files/task/.clear', '', true, $clientId);
 
-        // 2. Ürün görseli varsa önce yükle
+        // 2. ÃœrÃ¼n gÃ¶rseli varsa Ã¶nce yÃ¼kle
         $imageName = null;
         $imagePath = null;
         $imageMD5 = null;
@@ -238,14 +238,14 @@ class PavoDisplayGateway
                 ];
             }
 
-            // MD5 doğrula
+            // MD5 doÄŸrula
             $imageCheck = $this->checkFile($ip, $imagePath);
             if ($imageCheck['exists']) {
                 $imageMD5 = $imageCheck['md5'];
             }
         }
 
-        // 3. Video dosyası varsa yükle
+        // 3. Video dosyasÄ± varsa yÃ¼kle
         $videoName = null;
         $videoPath = null;
         $videoMD5 = null;
@@ -265,7 +265,7 @@ class PavoDisplayGateway
             }
         }
 
-        // 4. Task JSON oluştur (API dokümantasyonundaki format)
+        // 4. Task JSON oluÅŸtur (API dokÃ¼mantasyonundaki format)
         $taskData = [
             'Id' => $clientId,
             'ItemCode' => $product['sku'] ?? $clientId,
@@ -303,7 +303,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // 5. Task dosyasını .js uzantısıyla yükle
+        // 5. Task dosyasÄ±nÄ± .js uzantÄ±sÄ±yla yÃ¼kle
         $taskJson = json_encode($taskData, JSON_UNESCAPED_UNICODE);
         $taskFileName = "{$clientId}.js";
         $taskFilePath = "files/task/{$taskFileName}";
@@ -317,7 +317,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // 6. /replay ile ekranı güncelle
+        // 6. /replay ile ekranÄ± gÃ¼ncelle
         $replayResult = $this->triggerReplay($ip, $taskFilePath);
 
         if (!$replayResult['success']) {
@@ -342,14 +342,14 @@ class PavoDisplayGateway
     }
 
     /**
-     * /replay endpoint'i ile ekran güncellemeyi tetikle
+     * /replay endpoint'i ile ekran gÃ¼ncellemeyi tetikle
      *
-     * API Dokümantasyonundan: GET /replay?task=files/task/xxx.js
-     * Bu endpoint task dosyasını okur ve ekranı günceller.
+     * API DokÃ¼mantasyonundan: GET /replay?task=files/task/xxx.js
+     * Bu endpoint task dosyasÄ±nÄ± okur ve ekranÄ± gÃ¼nceller.
      *
      * @param string $ip Cihaz IP adresi
-     * @param string $taskPath Task dosyasının yolu (files/task/xxx.js)
-     * @param string|null $sign İmza (opsiyonel - MD5)
+     * @param string $taskPath Task dosyasÄ±nÄ±n yolu (files/task/xxx.js)
+     * @param string|null $sign Ä°mza (opsiyonel - MD5)
      */
     public function triggerReplay(string $ip, string $taskPath, ?string $sign = null): array
     {
@@ -388,12 +388,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Eski tetikleme metodu (geriye uyumluluk için)
-     * @deprecated triggerReplay() kullanın
+     * Eski tetikleme metodu (geriye uyumluluk iÃ§in)
+     * @deprecated triggerReplay() kullanÄ±n
      */
     private function triggerDeviceRefresh(string $ip, string $clientId): void
     {
-        // Artık /replay kullanılıyor, bu metod sadece geriye uyumluluk için
+        // ArtÄ±k /replay kullanÄ±lÄ±yor, bu metod sadece geriye uyumluluk iÃ§in
         $taskPath = "files/task/{$clientId}.js";
         $this->triggerReplay($ip, $taskPath);
     }
@@ -420,8 +420,8 @@ class PavoDisplayGateway
     }
 
     /**
-     * Task JSON formatı oluştur
-     * APK'dan keşfedilen format: LabelText, LabelPicture, LabelVideo, VideoList
+     * Task JSON formatÄ± oluÅŸtur
+     * APK'dan keÅŸfedilen format: LabelText, LabelPicture, LabelVideo, VideoList
      */
     private function buildTaskJson(array $product, int $width, int $height, array $template = []): array
     {
@@ -435,7 +435,7 @@ class PavoDisplayGateway
             'VideoList' => []
         ];
 
-        // Ürün adı
+        // ÃœrÃ¼n adÄ±
         if (!empty($product['name'])) {
             $task['LabelText'][] = [
                 'id' => 1,
@@ -462,7 +462,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // Eski fiyat (üstü çizili)
+        // Eski fiyat (Ã¼stÃ¼ Ã§izili)
         if (!empty($product['previous_price']) && $product['previous_price'] != $product['current_price']) {
             $oldPriceText = number_format((float)$product['previous_price'], 2, ',', '.') . ' TL';
             $task['LabelText'][] = [
@@ -489,7 +489,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // Ürün görseli
+        // ÃœrÃ¼n gÃ¶rseli
         if (!empty($product['image_path']) || !empty($product['image_url'])) {
             $imageName = 'product_' . ($product['id'] ?? time()) . '.png';
             $task['LabelPicture'][] = [
@@ -502,43 +502,43 @@ class PavoDisplayGateway
             ];
         }
 
-        // Video desteği (opsiyonel)
-        // Not: Video yükleme syncProduct metodunda yapılıyor, burada sadece placeholder
-        // Gerçek video path syncProduct'ta set edilecek
+        // Video desteÄŸi (opsiyonel)
+        // Not: Video yÃ¼kleme syncProduct metodunda yapÄ±lÄ±yor, burada sadece placeholder
+        // GerÃ§ek video path syncProduct'ta set edilecek
 
         return $task;
     }
 
     /**
-     * Demo içerik ile sync testi yap
+     * Demo iÃ§erik ile sync testi yap
      * 
      * @param string $ip Cihaz IP adresi
      * @param string $demoType Demo tipi: 'strawberry', 'apple', 'lemon', 'cherry'
-     * @param string|null $clientId Client ID (APK sync için)
+     * @param string|null $clientId Client ID (APK sync iÃ§in)
      */
     public function syncDemo(string $ip, string $demoType = 'strawberry', ?string $clientId = null): array
     {
         $demoAssets = [
             'strawberry' => [
-                'image' => 'tasarımlar/cihazlar/base (2)/assets/Strawberry.png',
-                'name' => 'Kırmızı Çilek',
+                'image' => 'tasarÄ±mlar/cihazlar/base (2)/assets/Strawberry.png',
+                'name' => 'KÄ±rmÄ±zÄ± Ã‡ilek',
                 'price' => '18.99',
                 'unit' => 'TL/kg'
             ],
             'apple' => [
-                'image' => 'tasarımlar/cihazlar/base (2)/assets/Apple.png',
-                'name' => 'Kırmızı Elma',
+                'image' => 'tasarÄ±mlar/cihazlar/base (2)/assets/Apple.png',
+                'name' => 'KÄ±rmÄ±zÄ± Elma',
                 'price' => '24.50',
                 'unit' => 'TL/kg'
             ],
             'lemon' => [
-                'image' => 'tasarımlar/cihazlar/base (2)/assets/Lemon.png',
+                'image' => 'tasarÄ±mlar/cihazlar/base (2)/assets/Lemon.png',
                 'name' => 'Limon',
                 'price' => '12.99',
                 'unit' => 'TL/kg'
             ],
             'cherry' => [
-                'image' => 'tasarımlar/cihazlar/base (2)/assets/Cherry.png',
+                'image' => 'tasarÄ±mlar/cihazlar/base (2)/assets/Cherry.png',
                 'name' => 'Kiraz',
                 'price' => '35.00',
                 'unit' => 'TL/kg'
@@ -562,7 +562,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // Demo ürün bilgisi oluştur
+        // Demo Ã¼rÃ¼n bilgisi oluÅŸtur
         $product = [
             'id' => 'demo_' . $demoType,
             'name' => $demo['name'],
@@ -578,7 +578,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * HTTP isteği gönder
+     * HTTP isteÄŸi gÃ¶nder
      */
     private function httpRequest(string $url, string $method = 'GET', ?string $body = null, string $contentType = 'application/json', array $extraHeaders = [], ?int $timeoutOverride = null): array
     {
@@ -591,10 +591,10 @@ class PavoDisplayGateway
         // Content-Type belirleme
         if ($method === 'POST' && $body !== null) {
             if (is_string($body) && (strpos($body, '{') === 0 || strpos($body, '[') === 0)) {
-                // JSON içerik
+                // JSON iÃ§erik
                 $headers[] = 'Content-Type: application/json';
             } else {
-                // Binary içerik (resim, video vb.)
+                // Binary iÃ§erik (resim, video vb.)
                 $headers[] = 'Content-Type: application/octet-stream';
             }
         }
@@ -641,12 +641,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Ağdaki cihazları tara
+     * AÄŸdaki cihazlarÄ± tara
      *
-     * @param string $subnet Alt ağ (örn: 192.168.1)
-     * @param int $startIp Başlangıç IP (1-254)
-     * @param int $endIp Bitiş IP (1-254)
-     * @param callable|null $progressCallback İlerleme callback'i
+     * @param string $subnet Alt aÄŸ (Ã¶rn: 192.168.1)
+     * @param int $startIp BaÅŸlangÄ±Ã§ IP (1-254)
+     * @param int $endIp BitiÅŸ IP (1-254)
+     * @param callable|null $progressCallback Ä°lerleme callback'i
      */
     public function scanNetwork(string $subnet = '192.168.1', int $startIp = 1, int $endIp = 254, ?callable $progressCallback = null): array
     {
@@ -658,7 +658,7 @@ class PavoDisplayGateway
             $ip = "{$subnet}.{$i}";
             $current++;
 
-            // İlerleme bildir
+            // Ä°lerleme bildir
             if ($progressCallback) {
                 $progressCallback($current, $total, $ip);
             }
@@ -666,7 +666,7 @@ class PavoDisplayGateway
             $result = $this->ping($ip);
 
             if ($result['online']) {
-                // Cihaz bilgilerini almaya çalış
+                // Cihaz bilgilerini almaya Ã§alÄ±ÅŸ
                 $deviceInfo = $this->getDeviceInfo($ip);
 
                 $devices[] = [
@@ -686,7 +686,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Tek bir IP'yi hızlı tara ve PavoDisplay cihazı mı kontrol et
+     * Tek bir IP'yi hÄ±zlÄ± tara ve PavoDisplay cihazÄ± mÄ± kontrol et
      */
     public function scanSingleIp(string $ip): array
     {
@@ -718,7 +718,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaz bilgilerini almak için çeşitli endpoint'leri dene
+     * Cihaz bilgilerini almak iÃ§in Ã§eÅŸitli endpoint'leri dene
      */
     public function getDeviceInfo(string $ip): array
     {
@@ -731,10 +731,10 @@ class PavoDisplayGateway
             'screen_height' => 1280
         ];
 
-        // /check endpoint'i ile kontrol et (PavoDisplay imzası)
+        // /check endpoint'i ile kontrol et (PavoDisplay imzasÄ±)
         $checkResult = $this->checkFile($ip, 'files/task/test.txt');
 
-        // Eğer /check çalışıyorsa PavoDisplay cihazıdır
+        // EÄŸer /check Ã§alÄ±ÅŸÄ±yorsa PavoDisplay cihazÄ±dÄ±r
         if (isset($checkResult['exists']) || isset($checkResult['error'])) {
             $info['is_pavo_display'] = true;
         }
@@ -776,7 +776,7 @@ class PavoDisplayGateway
             }
         }
 
-        // Eğer client_id bulunamadıysa IP'den oluştur
+        // EÄŸer client_id bulunamadÄ±ysa IP'den oluÅŸtur
         if (!$info['client_id']) {
             $info['client_id'] = 'PAVO_' . str_replace('.', '', $ip);
         }
@@ -793,7 +793,7 @@ class PavoDisplayGateway
         $handles = [];
         $mh = curl_multi_init();
 
-        // Tüm IP'ler için cURL handle'ları oluştur
+        // TÃ¼m IP'ler iÃ§in cURL handle'larÄ± oluÅŸtur
         for ($i = $startIp; $i <= $endIp; $i++) {
             $ip = "{$subnet}.{$i}";
             $url = "http://{$ip}/check?file_path=" . urlencode('files/task/ping.txt');
@@ -811,14 +811,14 @@ class PavoDisplayGateway
             $handles[$ip] = $ch;
         }
 
-        // Paralel çalıştır
+        // Paralel Ã§alÄ±ÅŸtÄ±r
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh);
         } while ($running > 0);
 
-        // Sonuçları topla
+        // SonuÃ§larÄ± topla
         foreach ($handles as $ip => $ch) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $response = curl_multi_getcontent($ch);
@@ -837,7 +837,7 @@ class PavoDisplayGateway
 
         curl_multi_close($mh);
 
-        // Bulunan cihazların detaylı bilgilerini al
+        // Bulunan cihazlarÄ±n detaylÄ± bilgilerini al
         foreach ($devices as &$device) {
             $deviceInfo = $this->getDeviceInfo($device['ip']);
             $device = array_merge($device, $deviceInfo);
@@ -849,22 +849,22 @@ class PavoDisplayGateway
     /**
      * Bluetooth ile sync yap
      * 
-     * @param string $bluetoothName Bluetooth cihaz adı (örn: @B2A401A977)
-     * @param string $ip Cihaz IP adresi (WiFi üzerinden dosya yükleme için)
-     * @param array $product Ürün bilgileri
-     * @param array $template Şablon ayarları
+     * @param string $bluetoothName Bluetooth cihaz adÄ± (Ã¶rn: @B2A401A977)
+     * @param string $ip Cihaz IP adresi (WiFi Ã¼zerinden dosya yÃ¼kleme iÃ§in)
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param array $template Åablon ayarlarÄ±
      * @param string|null $clientId Client ID
      */
     public function syncViaBluetooth(string $bluetoothName, string $ip, array $product, array $template = [], ?string $clientId = null): array
     {
-        // Önce WiFi üzerinden dosyaları yükle
+        // Ã–nce WiFi Ã¼zerinden dosyalarÄ± yÃ¼kle
         $wifiSync = $this->syncProduct($ip, $product, $template, $clientId);
         
         if (!$wifiSync['success']) {
             return $wifiSync;
         }
 
-        // Bluetooth üzerinden tetikleme dene
+        // Bluetooth Ã¼zerinden tetikleme dene
         $btResult = $this->triggerBluetoothSync($bluetoothName, $clientId);
         
         return [
@@ -878,10 +878,10 @@ class PavoDisplayGateway
     }
 
     /**
-     * Bluetooth üzerinden sync tetikle
+     * Bluetooth Ã¼zerinden sync tetikle
      * 
-     * Not: PHP'den direkt Bluetooth erişimi sınırlıdır.
-     * Bu metod sistem komutlarını veya API endpoint'lerini kullanır.
+     * Not: PHP'den direkt Bluetooth eriÅŸimi sÄ±nÄ±rlÄ±dÄ±r.
+     * Bu metod sistem komutlarÄ±nÄ± veya API endpoint'lerini kullanÄ±r.
      */
     private function triggerBluetoothSync(string $bluetoothName, ?string $clientId = null): array
     {
@@ -893,16 +893,16 @@ class PavoDisplayGateway
             'note' => 'Bluetooth sync requires system-level access or API endpoint'
         ];
 
-        // Windows'ta Bluetooth komutları (eğer mevcut ise)
+        // Windows'ta Bluetooth komutlarÄ± (eÄŸer mevcut ise)
         if (PHP_OS_FAMILY === 'Windows') {
-            // PowerShell ile Bluetooth komutları deneyebiliriz
+            // PowerShell ile Bluetooth komutlarÄ± deneyebiliriz
             // Ancak bu genellikle admin yetkisi gerektirir
             $result['note'] = 'Windows Bluetooth access requires admin privileges';
         }
 
-        // Alternatif: Cihazın Bluetooth üzerinden HTTP endpoint'i olabilir
-        // Örneğin: Bluetooth üzerinden HTTP isteği gönderme
-        // Bu genellikle özel bir Bluetooth-HTTP bridge gerektirir
+        // Alternatif: CihazÄ±n Bluetooth Ã¼zerinden HTTP endpoint'i olabilir
+        // Ã–rneÄŸin: Bluetooth Ã¼zerinden HTTP isteÄŸi gÃ¶nderme
+        // Bu genellikle Ã¶zel bir Bluetooth-HTTP bridge gerektirir
 
         return $result;
     }
@@ -912,7 +912,7 @@ class PavoDisplayGateway
      */
     public function getBluetoothInfo(string $ip): array
     {
-        // Cihazdan Bluetooth bilgilerini almak için endpoint'leri dene
+        // Cihazdan Bluetooth bilgilerini almak iÃ§in endpoint'leri dene
         $endpoints = [
             '/bluetooth/info',
             '/info/bluetooth',
@@ -943,14 +943,14 @@ class PavoDisplayGateway
      * WiFi + Bluetooth kombinasyonu ile sync
      * 
      * @param string $ip Cihaz IP
-     * @param string $bluetoothName Bluetooth cihaz adı
-     * @param array $product Ürün bilgileri
-     * @param array $template Şablon ayarları
+     * @param string $bluetoothName Bluetooth cihaz adÄ±
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param array $template Åablon ayarlarÄ±
      * @param string|null $clientId Client ID
      */
     public function syncWiFiAndBluetooth(string $ip, string $bluetoothName, array $product, array $template = [], ?string $clientId = null): array
     {
-        // 1. WiFi üzerinden dosyaları yükle
+        // 1. WiFi Ã¼zerinden dosyalarÄ± yÃ¼kle
         $wifiResult = $this->syncProduct($ip, $product, $template, $clientId);
         
         if (!$wifiResult['success']) {
@@ -980,11 +980,11 @@ class PavoDisplayGateway
     }
 
     /**
-     * APK'nın sync butonunun yaptığı işlemleri taklit et
+     * APK'nÄ±n sync butonunun yaptÄ±ÄŸÄ± iÅŸlemleri taklit et
      * 
-     * APK analizinden bulunan bilgilere göre:
-     * - SyncDeviceUtils sınıfı sync işlemini yapıyor
-     * - Upload sonrası özel bir tetikleme endpoint'i çağrılıyor olabilir
+     * APK analizinden bulunan bilgilere gÃ¶re:
+     * - SyncDeviceUtils sÄ±nÄ±fÄ± sync iÅŸlemini yapÄ±yor
+     * - Upload sonrasÄ± Ã¶zel bir tetikleme endpoint'i Ã§aÄŸrÄ±lÄ±yor olabilir
      * 
      * @param string $ip Cihaz IP
      * @param string|null $clientId Client ID
@@ -993,7 +993,7 @@ class PavoDisplayGateway
     {
         $results = [];
         
-        // APK'nın muhtemelen çağırdığı endpoint'ler
+        // APK'nÄ±n muhtemelen Ã§aÄŸÄ±rdÄ±ÄŸÄ± endpoint'ler
         $triggerEndpoints = [
             '/sync',
             '/task',
@@ -1034,7 +1034,7 @@ class PavoDisplayGateway
             $results[$endpoint . '_GET'] = $response;
         }
         
-        // Başarılı olanları bul
+        // BaÅŸarÄ±lÄ± olanlarÄ± bul
         $successful = [];
         foreach($results as $key => $result) {
             if($result['success'] && isset($result['data'])) {
@@ -1051,19 +1051,19 @@ class PavoDisplayGateway
     }
 
     /**
-     * APK'nın tam sync akışını taklit et
+     * APK'nÄ±n tam sync akÄ±ÅŸÄ±nÄ± taklit et
      * 
-     * 1. Dosyaları yükle
+     * 1. DosyalarÄ± yÃ¼kle
      * 2. Sync tetikle
      * 
      * @param string $ip Cihaz IP
-     * @param array $product Ürün bilgileri
-     * @param array $template Şablon ayarları
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param array $template Åablon ayarlarÄ±
      * @param string|null $clientId Client ID
      */
     public function syncLikeAPK(string $ip, array $product, array $template = [], ?string $clientId = null): array
     {
-        // 1. Önce dosyaları yükle
+        // 1. Ã–nce dosyalarÄ± yÃ¼kle
         $uploadResult = $this->syncProduct($ip, $product, $template, $clientId);
         
         if (!$uploadResult['success']) {
@@ -1074,8 +1074,8 @@ class PavoDisplayGateway
             ];
         }
         
-        // 2. Sync tetikle (APK'nın yaptığı gibi)
-        sleep(1); // APK muhtemelen kısa bir bekleme yapıyor
+        // 2. Sync tetikle (APK'nÄ±n yaptÄ±ÄŸÄ± gibi)
+        sleep(1); // APK muhtemelen kÄ±sa bir bekleme yapÄ±yor
         $triggerResult = $this->triggerSyncLikeAPK($ip, $clientId);
         
         return [
@@ -1089,10 +1089,10 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaz storage alanını temizle
+     * Cihaz storage alanÄ±nÄ± temizle
      *
      * @param string $ip Cihaz IP adresi
-     * @return array Sonuç
+     * @return array SonuÃ§
      */
     public function clearSpace(string $ip): array
     {
@@ -1133,11 +1133,11 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaz detaylı bilgilerini al (Iotags endpoint)
+     * Cihaz detaylÄ± bilgilerini al (Iotags endpoint)
      *
      * @param string $ip Cihaz IP adresi
-     * @param string $appId App ID (varsayılan boş)
-     * @param string $appSecret App Secret (varsayılan boş)
+     * @param string $appId App ID (varsayÄ±lan boÅŸ)
+     * @param string $appSecret App Secret (varsayÄ±lan boÅŸ)
      * @return array Cihaz bilgileri
      */
     public function getDeviceDetails(string $ip, string $appId = '', string $appSecret = ''): array
@@ -1152,7 +1152,7 @@ class PavoDisplayGateway
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 3,               // 10 -> 3 saniye (hızlı yanıt)
+            CURLOPT_TIMEOUT => 3,               // 10 -> 3 saniye (hÄ±zlÄ± yanÄ±t)
             CURLOPT_CONNECTTIMEOUT => 2,         // 5 -> 2 saniye
             CURLOPT_HTTPHEADER => [
                 'Accept: application/json'
@@ -1189,27 +1189,27 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaz arka ışık kontrolü
+     * Cihaz arka Ä±ÅŸÄ±k kontrolÃ¼
      *
-     * NOT: HTTP-SERVER modunda parlaklık kontrolü desteklenmiyor!
-     * Bu özellik için Bluetooth veya MQTT gerekiyor.
+     * NOT: HTTP-SERVER modunda parlaklÄ±k kontrolÃ¼ desteklenmiyor!
+     * Bu Ã¶zellik iÃ§in Bluetooth veya MQTT gerekiyor.
      *
      * Bluetooth komutu: +SET-DEVICE:{"Hardware":{"brightness":100}, "Token":""}\r\n
      * MQTT komutu: {"action":"backlight-set","push_id":0,"clientid":"DEVICE_ID","backlight":100}
      *
      * @param string $ip Cihaz IP adresi
      * @param string $action 'on', 'off' veya 'set'
-     * @param int|null $level Parlaklık seviyesi (0-100, sadece action='set' için)
+     * @param int|null $level ParlaklÄ±k seviyesi (0-100, sadece action='set' iÃ§in)
      * @param string $appId App ID
      * @param string $appSecret App Secret
-     * @return array Sonuç
+     * @return array SonuÃ§
      */
     public function setBacklight(string $ip, string $action = 'on', ?int $level = null, string $appId = '', string $appSecret = ''): array
     {
-        // HTTP-SERVER modunda parlaklık kontrolü desteklenmiyor
-        // Ancak yine de deneyelim - belki firmware güncellendi
+        // HTTP-SERVER modunda parlaklÄ±k kontrolÃ¼ desteklenmiyor
+        // Ancak yine de deneyelim - belki firmware gÃ¼ncellendi
 
-        // Action'a göre endpoint belirle (sign her action için ayrı hesaplanır)
+        // Action'a gÃ¶re endpoint belirle (sign her action iÃ§in ayrÄ± hesaplanÄ±r)
         switch ($action) {
             case 'on':
                 $params = ['action' => 'backlight-on'];
@@ -1256,26 +1256,26 @@ class PavoDisplayGateway
         // HTTP-SERVER modunda desteklenmiyor - Bluetooth/MQTT gerekiyor
         return [
             'success' => false,
-            'error' => 'HTTP-SERVER modunda parlaklık kontrolü desteklenmiyor',
-            'hint' => 'Bluetooth veya MQTT kullanın',
+            'error' => 'HTTP-SERVER modunda parlaklÄ±k kontrolÃ¼ desteklenmiyor',
+            'hint' => 'Bluetooth veya MQTT kullanÄ±n',
             'bluetooth_command' => '+SET-DEVICE:{"Hardware":{"brightness":' . ($level ?? 100) . '}, "Token":""}',
             'mqtt_command' => '{"action":"backlight-set","push_id":0,"clientid":"DEVICE_ID","backlight":' . ($level ?? 100) . '}'
         ];
     }
 
     /**
-     * Cihazı yeniden başlat (HTTP-SERVER mode)
-     * NOT: HTTP-SERVER modunda doğrudan restart endpoint'i yoktur.
-     * Bu metod cihaza restart komutu göndermeye çalışır.
+     * CihazÄ± yeniden baÅŸlat (HTTP-SERVER mode)
+     * NOT: HTTP-SERVER modunda doÄŸrudan restart endpoint'i yoktur.
+     * Bu metod cihaza restart komutu gÃ¶ndermeye Ã§alÄ±ÅŸÄ±r.
      *
      * @param string $ip Cihaz IP adresi
      * @param string $appId App ID
      * @param string $appSecret App Secret
-     * @return array Sonuç
+     * @return array SonuÃ§
      */
     public function restartDevice(string $ip, string $appId = '', string $appSecret = ''): array
     {
-        // HTTP-SERVER modunda restart endpoint'i dene (her biri için ayrı sign)
+        // HTTP-SERVER modunda restart endpoint'i dene (her biri iÃ§in ayrÄ± sign)
         $endpointDefs = [
             ['path' => '/control', 'params' => ['action' => 'restart']],
             ['path' => '/control', 'params' => ['action' => 'reboot']],
@@ -1320,21 +1320,21 @@ class PavoDisplayGateway
     }
 
     /**
-     * Firmware güncelleme dosyasını cihaza yükle
+     * Firmware gÃ¼ncelleme dosyasÄ±nÄ± cihaza yÃ¼kle
      *
-     * WARNING: Bu işlem cihazı kalıcı olarak bozabilir!
-     * Yalnızca güvenilir kaynaklardan alınan firmware dosyalarını kullanın.
+     * WARNING: Bu iÅŸlem cihazÄ± kalÄ±cÄ± olarak bozabilir!
+     * YalnÄ±zca gÃ¼venilir kaynaklardan alÄ±nan firmware dosyalarÄ±nÄ± kullanÄ±n.
      *
      * @param string $ip Cihaz IP adresi
-     * @param string $content Firmware dosya içeriği (binary)
+     * @param string $content Firmware dosya iÃ§eriÄŸi (binary)
      * @param string $filePath Hedef dosya yolu (files/upgrade/firmware.pkg)
      * @param string $appId App ID
      * @param string $appSecret App Secret
-     * @return array Sonuç
+     * @return array SonuÃ§
      */
     public function uploadFirmware(string $ip, string $content, string $filePath, string $appId = '', string $appSecret = ''): array
     {
-        // Dosya yolu kontrolü - upgrade dizini kullan
+        // Dosya yolu kontrolÃ¼ - upgrade dizini kullan
         if (strpos($filePath, 'files/upgrade/') !== 0) {
             $filePath = 'files/upgrade/' . basename($filePath);
         }
@@ -1355,7 +1355,7 @@ class PavoDisplayGateway
                 'Content-Type: application/octet-stream',
                 'Content-Length: ' . strlen($content)
             ],
-            CURLOPT_TIMEOUT => 300, // 5 dakika timeout (büyük dosyalar için)
+            CURLOPT_TIMEOUT => 300, // 5 dakika timeout (bÃ¼yÃ¼k dosyalar iÃ§in)
             CURLOPT_CONNECTTIMEOUT => $this->connectTimeout
         ]);
 
@@ -1367,7 +1367,7 @@ class PavoDisplayGateway
         if ($curlError) {
             return [
                 'success' => false,
-                'error' => 'Bağlantı hatası: ' . $curlError
+                'error' => 'BaÄŸlantÄ± hatasÄ±: ' . $curlError
             ];
         }
 
@@ -1376,26 +1376,26 @@ class PavoDisplayGateway
         if ($httpCode === 200 && isset($data['STATE']) && $data['STATE'] === 'SUCCEED') {
             return [
                 'success' => true,
-                'message' => 'Firmware yüklendi, cihaz yeniden başlatılıyor'
+                'message' => 'Firmware yÃ¼klendi, cihaz yeniden baÅŸlatÄ±lÄ±yor'
             ];
         }
 
         return [
             'success' => false,
-            'error' => $data['message'] ?? 'Firmware yükleme başarısız',
+            'error' => $data['message'] ?? 'Firmware yÃ¼kleme baÅŸarÄ±sÄ±z',
             'http_code' => $httpCode,
             'response' => $response
         ];
     }
 
     /**
-     * Dosya varlığını detaylı kontrol et
+     * Dosya varlÄ±ÄŸÄ±nÄ± detaylÄ± kontrol et
      *
      * @param string $ip Cihaz IP adresi
      * @param string $filePath Dosya yolu
      * @param string $appId App ID
      * @param string $appSecret App Secret
-     * @return array Sonuç (exists, md5 vb.)
+     * @return array SonuÃ§ (exists, md5 vb.)
      */
     public function checkFileDetailed(string $ip, string $filePath, string $appId = '', string $appSecret = ''): array
     {
@@ -1436,23 +1436,23 @@ class PavoDisplayGateway
     }
 
     /**
-     * Ürün etiketini cihaza gönder (tam akış)
+     * ÃœrÃ¼n etiketini cihaza gÃ¶nder (tam akÄ±ÅŸ)
      *
-     * Akış:
+     * AkÄ±ÅŸ:
      * 1. Storage temizle (clearspace)
-     * 2. Görseli 800x1280 JPEG olarak hazırla
-     * 3. Görseli yükle
-     * 4. Task config yükle
+     * 2. GÃ¶rseli 800x1280 JPEG olarak hazÄ±rla
+     * 3. GÃ¶rseli yÃ¼kle
+     * 4. Task config yÃ¼kle
      * 5. Replay tetikle
      *
      * @param string $ip Cihaz IP adresi
      * @param string $clientId Cihaz Client ID (MAC adresi)
-     * @param string|resource $image Görsel dosya yolu veya GD image resource
-     * @param array $product Ürün bilgileri (dinamik alanlar için)
-     * @param int $width Hedef genişlik (varsayılan 800)
-     * @param int $height Hedef yükseklik (varsayılan 1280)
-     * @param array $designData Şablon design_data (dinamik alanlar için, opsiyonel)
-     * @return array Sonuç
+     * @param string|resource $image GÃ¶rsel dosya yolu veya GD image resource
+     * @param array $product ÃœrÃ¼n bilgileri (dinamik alanlar iÃ§in)
+     * @param int $width Hedef geniÅŸlik (varsayÄ±lan 800)
+     * @param int $height Hedef yÃ¼kseklik (varsayÄ±lan 1280)
+     * @param array $designData Åablon design_data (dinamik alanlar iÃ§in, opsiyonel)
+     * @return array SonuÃ§
      */
     public function sendLabel(string $ip, string $clientId, $image, array $product = [], int $width = 800, int $height = 1280, array $designData = []): array
     {
@@ -1466,7 +1466,7 @@ class PavoDisplayGateway
         $logFile = defined('STORAGE_PATH') ? STORAGE_PATH . '/logs/sendLabel_debug.log' : '/tmp/sendLabel_debug.log';
         $logDir = dirname($logFile);
         if (!is_dir($logDir)) @mkdir($logDir, 0755, true);
-        file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] === sendLabel ÇAĞRILDI ===\n", FILE_APPEND);
+        file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] === sendLabel Ã‡AÄRILDI ===\n", FILE_APPEND);
         file_put_contents($logFile, "IP: $ip, ClientID: $clientId, Width: $width, Height: $height\n", FILE_APPEND);
         file_put_contents($logFile, "Product keys: " . implode(', ', array_keys($product)) . "\n", FILE_APPEND);
         file_put_contents($logFile, "Product name: " . ($product['name'] ?? 'YOK') . "\n", FILE_APPEND);
@@ -1474,9 +1474,9 @@ class PavoDisplayGateway
         file_put_contents($logFile, "designData objects count: " . (isset($designData['objects']) ? count($designData['objects']) : 'YOK') . "\n", FILE_APPEND);
         file_put_contents($logFile, "designData _templateWidth: " . ($designData['_templateWidth'] ?? 'YOK') . "\n", FILE_APPEND);
 
-        // 1. Görseli hazırla (önce MD5 hesapla, delta kontrolü için)
+        // 1. GÃ¶rseli hazÄ±rla (Ã¶nce MD5 hesapla, delta kontrolÃ¼ iÃ§in)
         if (is_string($image)) {
-            // Dosya yolu verilmiş
+            // Dosya yolu verilmiÅŸ
             if (!file_exists($image)) {
                 $result['error'] = 'Image file not found: ' . $image;
                 return $result;
@@ -1492,7 +1492,7 @@ class PavoDisplayGateway
                 return $result;
             }
         } elseif (is_resource($image) || $image instanceof \GdImage) {
-            // GD resource verilmiş
+            // GD resource verilmiÅŸ
             $srcImage = $image;
         } else {
             $result['error'] = 'Invalid image parameter';
@@ -1505,7 +1505,7 @@ class PavoDisplayGateway
         // Hedef boyuta resize et
         $dstImage = imagecreatetruecolor($width, $height);
 
-        // Beyaz arka plan (JPEG transparanlık desteklemez)
+        // Beyaz arka plan (JPEG transparanlÄ±k desteklemez)
         $white = imagecolorallocate($dstImage, 255, 255, 255);
         imagefill($dstImage, 0, 0, $white);
 
@@ -1528,7 +1528,7 @@ class PavoDisplayGateway
             imagecopyresampled($dstImage, $srcImage, 0, 0, $cropX, $cropY, $width, $height, $cropWidth, $cropHeight);
         }
 
-        // 1b. DİNAMİK ALANLARI RENDER ET (GD ile)
+        // 1b. DÄ°NAMÄ°K ALANLARI RENDER ET (GD ile)
         if (!empty($designData) && !empty($product)) {
             $this->renderDynamicFields($dstImage, $designData, $product, $srcWidth, $srcHeight, $width, $height);
             $result['steps']['dynamic_fields'] = ['rendered' => true];
@@ -1539,7 +1539,7 @@ class PavoDisplayGateway
         imagejpeg($dstImage, null, 90);
         $imageContent = ob_get_clean();
 
-        // Sadece dosyadan oluşturduysak destroy et
+        // Sadece dosyadan oluÅŸturduysak destroy et
         if (is_string($image)) {
             imagedestroy($srcImage);
         }
@@ -1556,15 +1556,15 @@ class PavoDisplayGateway
             'md5' => $imageMd5
         ];
 
-        // 2. DELTA CHECK: Cihazda aynı dosya var mı kontrol et
+        // 2. DELTA CHECK: Cihazda aynÄ± dosya var mÄ± kontrol et
         $checkResult = $this->checkFile($ip, $targetFilePath);
         $result['steps']['delta_check'] = $checkResult;
 
         $needsUpload = true;
         if ($checkResult['exists'] && !empty($checkResult['md5'])) {
-            // MD5 karşılaştır (case-insensitive)
+            // MD5 karÅŸÄ±laÅŸtÄ±r (case-insensitive)
             if (strcasecmp($checkResult['md5'], $imageMd5) === 0) {
-                // Dosya zaten mevcut ve aynı, yükleme atla
+                // Dosya zaten mevcut ve aynÄ±, yÃ¼kleme atla
                 $needsUpload = false;
                 $result['skipped'] = true;
                 $result['steps']['upload'] = [
@@ -1576,7 +1576,7 @@ class PavoDisplayGateway
         }
 
         if ($needsUpload) {
-            // 3a. Storage temizle (sadece yükleme gerekiyorsa)
+            // 3a. Storage temizle (sadece yÃ¼kleme gerekiyorsa)
             $clearResult = $this->clearSpace($ip);
             $result['steps']['clear'] = $clearResult;
 
@@ -1585,7 +1585,7 @@ class PavoDisplayGateway
                 return $result;
             }
 
-            // 3b. Görseli yükle
+            // 3b. GÃ¶rseli yÃ¼kle
             $uploadResult = $this->uploadFile($ip, $targetFilePath, $imageContent);
             $result['steps']['upload'] = $uploadResult;
 
@@ -1595,7 +1595,7 @@ class PavoDisplayGateway
             }
         }
 
-        // 4. Task config oluştur ve yükle
+        // 4. Task config oluÅŸtur ve yÃ¼kle
         $pictureSafeLeftInset = $this->resolvePictureSafeLeftInset($designData, $product, 0);
         if ($pictureSafeLeftInset > 0) {
             file_put_contents($logFile, "LabelPicture safe-left inset uygulandi: {$pictureSafeLeftInset}px\n", FILE_APPEND);
@@ -1647,18 +1647,18 @@ class PavoDisplayGateway
     }
 
     /**
-     * Dinamik alanları GD ile görsele render et
+     * Dinamik alanlarÄ± GD ile gÃ¶rsele render et
      *
-     * Şablon design_data içindeki dynamicField özellikli elemanları bulur
-     * ve ürün verileriyle değiştirerek görsele yazar.
+     * Åablon design_data iÃ§indeki dynamicField Ã¶zellikli elemanlarÄ± bulur
+     * ve Ã¼rÃ¼n verileriyle deÄŸiÅŸtirerek gÃ¶rsele yazar.
      *
      * @param \GdImage $image GD image resource
-     * @param array $designData Şablon design_data (objects dizisi içermeli)
-     * @param array $product Ürün bilgileri
-     * @param int $srcWidth Kaynak görsel genişliği
-     * @param int $srcHeight Kaynak görsel yüksekliği
-     * @param int $dstWidth Hedef görsel genişliği
-     * @param int $dstHeight Hedef görsel yüksekliği
+     * @param array $designData Åablon design_data (objects dizisi iÃ§ermeli)
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param int $srcWidth Kaynak gÃ¶rsel geniÅŸliÄŸi
+     * @param int $srcHeight Kaynak gÃ¶rsel yÃ¼ksekliÄŸi
+     * @param int $dstWidth Hedef gÃ¶rsel geniÅŸliÄŸi
+     * @param int $dstHeight Hedef gÃ¶rsel yÃ¼ksekliÄŸi
      */
     private function renderDynamicFields($image, array $designData, array $product, int $srcWidth, int $srcHeight, int $dstWidth, int $dstHeight): void
     {
@@ -1671,12 +1671,12 @@ class PavoDisplayGateway
             file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] $msg\n", FILE_APPEND);
         };
 
-        $log("=== renderDynamicFields BAŞLADI ===");
+        $log("=== renderDynamicFields BAÅLADI ===");
         $log("Src: {$srcWidth}x{$srcHeight}, Dst: {$dstWidth}x{$dstHeight}");
         $log("Product keys: " . implode(', ', array_keys($product)));
         $log("Product name: " . ($product['name'] ?? 'YOK'));
 
-        // designData kontrolü
+        // designData kontrolÃ¼
         if (!isset($designData['objects']) || !is_array($designData['objects'])) {
             $log("designData objects dizisi yok");
             $log("designData keys: " . implode(', ', array_keys($designData)));
@@ -1684,14 +1684,14 @@ class PavoDisplayGateway
         }
 
         $log("designData keys: " . implode(', ', array_keys($designData)));
-        $log("Objects sayısı: " . count($designData['objects']));
+        $log("Objects sayÄ±sÄ±: " . count($designData['objects']));
 
-        // Şablon boyutu
+        // Åablon boyutu
         $templateWidth = (int)($designData['_templateWidth'] ?? $srcWidth);
         $templateHeight = (int)($designData['_templateHeight'] ?? $srcHeight);
         $log("Template size: {$templateWidth}x{$templateHeight}");
 
-        // Ölçekleme oranları
+        // Ã–lÃ§ekleme oranlarÄ±
         $scaleX = $dstWidth / $templateWidth;
         $scaleY = $dstHeight / $templateHeight;
         $log("Scale: X={$scaleX}, Y={$scaleY}");
@@ -1722,15 +1722,19 @@ class PavoDisplayGateway
         $log("Font: " . ($fontPath ?? 'YOK'));
 
         if (!$fontPath) {
-            $log("Font bulunamadı, metin render'ı yapılamıyor");
+            $log("Font bulunamadÄ±, metin render'Ä± yapÄ±lamÄ±yor");
             return;
         }
 
-        // Ürün değerlerini hazırla
+        $renderMode = strtolower((string)($designData['_dynamic_render_mode'] ?? $designData['dynamic_render_mode'] ?? 'full'));
+        $dynamicImageOnlyMode = in_array($renderMode, ['dynamic_image_only', 'image_only'], true);
+        $log("Dynamic render mode: " . ($dynamicImageOnlyMode ? 'dynamic_image_only' : 'full'));
+
+        // ÃœrÃ¼n deÄŸerlerini hazÄ±rla
         $fieldValues = $this->buildFieldValues($product);
         $log("Field values: " . json_encode($fieldValues, JSON_UNESCAPED_UNICODE));
 
-        // Arka plan rengini bul (maskeleme için)
+        // Arka plan rengini bul (maskeleme iÃ§in)
         $bgColor = null;
         if (isset($designData['background'])) {
             $bg = $designData['background'];
@@ -1740,26 +1744,34 @@ class PavoDisplayGateway
             }
         }
         if (!$bgColor) {
-            $bgColor = imagecolorallocate($image, 255, 255, 255); // Varsayılan beyaz
+            $bgColor = imagecolorallocate($image, 255, 255, 255); // VarsayÄ±lan beyaz
         }
 
-        // Base snapshot: dynamic image replace adiminda ust katmanlari geri yuklemek icin.
-        $baseSnapshot = imagecreatetruecolor($dstWidth, $dstHeight);
-        if ($baseSnapshot) {
-            imagecopy($baseSnapshot, $image, 0, 0, 0, 0, $dstWidth, $dstHeight);
-        }
+        $baseSnapshot = null;
 
         $dynamicCount = 0;
         $renderedCount = 0;
 
+        // ÃœrÃ¼n gÃ¶rseli render edilen alanlarÄ± takip et
+        // MASK adÄ±mÄ±nda bu alanlarÄ±n Ã¼rÃ¼n pikselleri korunacak (beyaz dolguyla ezilmeyecek)
+        $productImageAreas = [];
+
         foreach ($designData['objects'] as $index => $obj) {
-            // Dinamik alan var mı kontrol et
+            // Dinamik alan var mÄ± kontrol et
             $dynamicField = $obj['dynamicField'] ?? $obj['dynamic_field'] ?? null;
             $rawText = $obj['text'] ?? null;
             $resolvedText = null;
-
-            // Barkod/QR nesnelerinin dynamicField veya barcodeValue'dan da alan adı alınabilir
             $customType = $obj['customType'] ?? '';
+            $type = strtolower((string)($obj['type'] ?? 'unknown'));
+            $isImagePlaceholderType = in_array($customType, ['image-placeholder', 'dynamic-image', 'slot-image'], true);
+
+            if ($dynamicImageOnlyMode && !$isImagePlaceholderType) {
+                // Pre-render tabanli dynamic_image_only modunda sadece urun gorseli
+                // placeholder nesneleri islenir. Diger tum nesneler base render'dan gelir.
+                continue;
+            }
+
+            // Barkod/QR nesnelerinin dynamicField veya barcodeValue'dan da alan adÄ± alÄ±nabilir
             if (!$dynamicField && in_array($customType, ['barcode', 'qrcode'])) {
                 $barcodeVal = $obj['barcodeValue'] ?? $obj['qrValue'] ?? '';
                 if (is_string($barcodeVal) && preg_match('/^\{\{(\w+)\}\}$/', $barcodeVal, $m)) {
@@ -1777,14 +1789,14 @@ class PavoDisplayGateway
                 }
             }
 
-            // Dinamik görsel placeholder nesnelerini erken yakala (value hesabından önce)
-            // image-placeholder'ın dynamicField'i 'image_url' olabilir ama images[] dizisinden resolve edeceğiz
+            // Dinamik gÃ¶rsel placeholder nesnelerini erken yakala (value hesabÄ±ndan Ã¶nce)
+            // image-placeholder'Ä±n dynamicField'i 'image_url' olabilir ama images[] dizisinden resolve edeceÄŸiz
             if (in_array($customType, ['image-placeholder', 'dynamic-image', 'slot-image'])) {
                 $dynamicCount++;
                 $imageIndex = (int)($obj['imageIndex'] ?? 0);
                 $log("Object #{$index}: IMAGE-PLACEHOLDER imageIndex={$imageIndex}, customType={$customType}");
 
-                // Ürün görsellerini parse et
+                // ÃœrÃ¼n gÃ¶rsellerini parse et
                 $productImages = [];
                 if (!empty($product['images'])) {
                     $parsed = is_string($product['images']) ? json_decode($product['images'], true) : $product['images'];
@@ -1799,34 +1811,216 @@ class PavoDisplayGateway
                     $productImages[] = $product['image_url'];
                 }
 
-                // İndeksteki görseli bul — yoksa kapak görseline fallback
+                // Ä°ndeksteki gÃ¶rseli bul â€” yoksa kapak gÃ¶rseline fallback
                 $targetUrl = $productImages[$imageIndex] ?? $productImages[0] ?? null;
                 $log("  TARGET URL: " . ($targetUrl ?? 'YOK') . " (total images: " . count($productImages) . ")");
 
                 if ($targetUrl) {
                     $resolvedPath = $this->resolveImagePath($targetUrl, $product['company_id'] ?? null);
                     if ($resolvedPath && file_exists($resolvedPath)) {
-                        // PLACEHOLDER SİL — base image'da render edilmiş placeholder Rect'in
-                        // (gri dolgu + mavi çizgili kenarlık) product image'ın oval köşelerinden
-                        // görünmesini engelle. Alanı arka plan rengiyle doldur, sonra product image çiz.
-                        $this->eraseObjectArea($image, $obj, $scaleX, $scaleY, $bgColor, $log);
-                        $this->renderImageOnPosition($image, $resolvedPath, $obj, $scaleX, $scaleY, $log);
-                        if ($baseSnapshot) {
-                            $this->restoreUpperLayerPixels(
-                                $image,
-                                $baseSnapshot,
-                                $designData['objects'],
-                                $index,
-                                $obj,
-                                $scaleX,
-                                $scaleY,
-                                $fontPath,
-                                $log
-                            );
+                        // === Z-ORDER UYUMLU COMPOSÄ°TÄ°NG ===
+                        // Eski: eraseObjectArea â†’ renderImageOnPosition â†’ restoreUpperLayerPixels
+                        //   Problem: piksel threshold (R,G,B>200) placeholder text/stroke'u (#888888, #000000)
+                        //   ayÄ±rt edemiyordu, Ã¼rÃ¼n gÃ¶rseli Ã¼st nesneleri eziyordu.
+                        // Yeni: ÃœrÃ¼n gÃ¶rselini ÅEFFAF temp canvas'a render et, sonra piksel piksel
+                        //   akÄ±llÄ± birleÅŸtirme yap. Sadece placeholder pikselleri deÄŸiÅŸtirilir,
+                        //   Ã¼st katman nesneleri (z-index > image) dokunulmadan kalÄ±r.
+
+                        // 1) Åeffaf temp canvas oluÅŸtur (tam gÃ¶rÃ¼ntÃ¼ boyutunda)
+                        $tempProduct = imagecreatetruecolor($dstWidth, $dstHeight);
+                        imagesavealpha($tempProduct, true);
+                        imagealphablending($tempProduct, false);
+                        $tpFill = imagecolorallocatealpha($tempProduct, 0, 0, 0, 127);
+                        imagefill($tempProduct, 0, 0, $tpFill);
+                        imagealphablending($tempProduct, true);
+
+                        // 2) ÃœrÃ¼n gÃ¶rselini temp canvas'a render et (shadow, stroke, clip dahil)
+                        $this->renderImageOnPosition($tempProduct, $resolvedPath, $obj, $scaleX, $scaleY, $log);
+
+                        // 3) Ust katman nesne sinirlarini topla (z-index > image)
+                        // Not: Dinamik alan nesneleri (dynamicField/{{...}}) sonradan tekrar ciziliyor.
+                        // Bu nedenle burada sadece statik ust nesneleri koruyoruz.
+                        $upperObjBounds = [];
+                        $upperProtectedCount = 0;
+                        $upperSkippedCount = 0;
+                        $upperObjDebug = [];
+                        $upperSkippedDebug = [];
+                        $objTotal = count($designData['objects']);
+                        $currentOrder = $this->getObjectStackOrder($obj, $index);
+                        $isBackLayerPlaceholder = $this->isBackLayerPlaceholder($designData['objects'], $index, $obj);
+                        $placeholderKeyColors = $isBackLayerPlaceholder ? $this->getPlaceholderKeyColors($obj) : [];
+                        for ($ui = 0; $ui < $objTotal; $ui++) {
+                            if ($ui === $index) {
+                                continue;
+                            }
+                            $uObj = $designData['objects'][$ui] ?? null;
+                            if (!is_array($uObj) || (($uObj['visible'] ?? true) === false)) continue;
+                            $upperOrder = $this->getObjectStackOrder($uObj, $ui);
+                            if ($upperOrder < $currentOrder) {
+                                continue;
+                            }
+                            if (abs($upperOrder - $currentOrder) < 0.0001 && $ui <= $index) {
+                                continue;
+                            }
+                            $ub = $this->getObjectPixelBounds($uObj, $scaleX, $scaleY, $fontPath, $image);
+                            if (!$ub) {
+                                continue;
+                            }
+
+                            if ($this->shouldSkipUpperLayerProtection($uObj, $dynamicImageOnlyMode)) {
+                                $upperSkippedCount++;
+                                if (count($upperSkippedDebug) < 8) {
+                                    $upperSkippedDebug[] = $this->formatObjectForZOrderLog($uObj, $ui, $ub);
+                                }
+                                continue;
+                            }
+
+                            $upperObjBounds[] = $ub;
+                            $upperProtectedCount++;
+                            if (count($upperObjDebug) < 8) {
+                                $upperObjDebug[] = $this->formatObjectForZOrderLog($uObj, $ui, $ub);
+                            }
                         }
+                        $log("  Z-ORDER MAP: placeholderIndex={$index}, protectedUpper={$upperProtectedCount}, skippedDynamicUpper={$upperSkippedCount}");
+                        if (!empty($upperObjDebug)) {
+                            $log("  Z-ORDER protect list: " . implode(' | ', $upperObjDebug));
+                        }
+                        if (!empty($upperSkippedDebug)) {
+                            $log("  Z-ORDER skipped list: " . implode(' | ', $upperSkippedDebug));
+                        }
+                        $log("  Z-ORDER background mode: " . ($isBackLayerPlaceholder ? 'on' : 'off'));
+
+                        // 4) GÃ¶rsel sÄ±nÄ±rlarÄ±nÄ± hesapla (shadow + stroke marjÄ± dahil)
+                        $imgBounds = $this->getObjectPixelBounds($obj, $scaleX, $scaleY, $fontPath, $image);
+                        $strokePxW = (int)round(($obj['strokeWidth'] ?? 0) * max($scaleX, $scaleY));
+                        $shMargin = 0;
+                        $shData = $obj['shadow'] ?? null;
+                        if ($shData) {
+                            $shObj = is_string($shData) ? json_decode($shData, true) : (is_array($shData) ? $shData : null);
+                            if ($shObj) {
+                                $shBlur = (int)(($shObj['blur'] ?? 0) * max($scaleX, $scaleY));
+                                $shOX = abs((int)(($shObj['offsetX'] ?? 0) * $scaleX));
+                                $shOY = abs((int)(($shObj['offsetY'] ?? 0) * $scaleY));
+                                $shMargin = $shBlur + max($shOX, $shOY);
+                            }
+                        }
+                        $extraMrg = max($strokePxW + 2, $shMargin + 2);
+
+                        // 5) Arka plan RGB
+                        $bgR = ($bgColor >> 16) & 0xFF;
+                        $bgG = ($bgColor >> 8) & 0xFF;
+                        $bgB = $bgColor & 0xFF;
+
+                        // 6) Piksel piksel akÄ±llÄ± birleÅŸtirme
+                        if ($imgBounds) {
+                            $imgW = imagesx($image);
+                            $imgH = imagesy($image);
+                            $cx1 = max(0, $imgBounds['x1'] - $extraMrg);
+                            $cy1 = max(0, $imgBounds['y1'] - $extraMrg);
+                            $cx2 = min($imgW - 1, $imgBounds['x2'] + $extraMrg);
+                            $cy2 = min($imgH - 1, $imgBounds['y2'] + $extraMrg);
+
+                            $replacedPx = 0;
+                            $keptPx = 0;
+
+                            for ($py = $cy1; $py <= $cy2; $py++) {
+                                for ($px = $cx1; $px <= $cx2; $px++) {
+                                    // Temp canvas pikseli (Ã¼rÃ¼n gÃ¶rseli + shadow + stroke)
+                                    $tPx = imagecolorat($tempProduct, $px, $py);
+                                    $tA = ($tPx >> 24) & 0x7F; // 0=opak, 127=ÅŸeffaf
+
+                                    // Tamamen ÅŸeffaf â†’ Ã¼rÃ¼n gÃ¶rseli yok burda â†’ atla
+                                    if ($tA >= 120) continue;
+
+                                    // Orijinal piksel ($image = Fabric.js export, placeholder + Ã¼st nesneler)
+                                    $oPx = imagecolorat($image, $px, $py);
+                                    $oR = ($oPx >> 16) & 0xFF;
+                                    $oG = ($oPx >> 8) & 0xFF;
+                                    $oB = $oPx & 0xFF;
+
+                                    // Bu piksel herhangi bir Ã¼st nesnenin sÄ±nÄ±rlarÄ± iÃ§inde mi?
+                                    $inUpper = false;
+                                    foreach ($upperObjBounds as $ub) {
+                                        if ($px >= $ub['x1'] && $px <= $ub['x2'] && $py >= $ub['y1'] && $py <= $ub['y2']) {
+                                            $inUpper = true;
+                                            break;
+                                        }
+                                    }
+
+                                    $doReplace = false;
+
+                                    if ($isBackLayerPlaceholder) {
+                                        // Back-layer mode: replace only pixels that are placeholder/background-like.
+                                        $doReplace = $this->shouldReplaceBackLayerImagePixel(
+                                            $oR,
+                                            $oG,
+                                            $oB,
+                                            $bgR,
+                                            $bgG,
+                                            $bgB,
+                                            $placeholderKeyColors
+                                        );
+                                    } elseif (!$inUpper) {
+                                        // Üst nesne sınırları dışında → kesinlikle placeholder/bg → değiştir
+                                        $doReplace = true;
+                                    } else {
+                                        // Üst nesne sınırları içinde → dikkatli renk analizi
+                                        // Chroma (renk doygunluğu): yüksek = renkli üst nesne, düşük = gri placeholder
+                                        $maxCh = max($oR, $oG, $oB);
+                                        $minCh = min($oR, $oG, $oB);
+                                        $chroma = $maxCh - $minCh;
+
+                                        if ($chroma > 25) {
+                                            // Renkli piksel → kesinlikle üst nesne → koru
+                                            $doReplace = false;
+                                        } else {
+                                            // Gri tonlu piksel → arka plan veya placeholder olabilir
+                                            $brightness = ($oR + $oG + $oB) / 3;
+
+                                            if (abs($oR - $bgR) < 25 && abs($oG - $bgG) < 25 && abs($oB - $bgB) < 25) {
+                                                // Arka plan rengine yakın → kesinlikle değiştir
+                                                $doReplace = true;
+                                            } elseif ($brightness > 150) {
+                                                // Açık gri (placeholder fill #f0f0f0, border #cccccc) → değiştir
+                                                $doReplace = true;
+                                            } else {
+                                                // Koyu gri/siyah → üst nesne siyah metin olabilir → koru
+                                                $doReplace = false;
+                                            }
+                                        }
+                                    }
+
+                                    if ($doReplace) {
+                                        if ($tA == 0) {
+                                            // Tam opak Ã¼rÃ¼n pikseli â†’ doÄŸrudan yaz
+                                            imagesetpixel($image, $px, $py, $tPx & 0x00FFFFFF);
+                                        } else {
+                                            // YarÄ± saydam (shadow, anti-alias kenarlar) â†’ blend
+                                            $alpha = (127 - $tA) / 127.0;
+                                            $tR = ($tPx >> 16) & 0xFF;
+                                            $tG = ($tPx >> 8) & 0xFF;
+                                            $tB = $tPx & 0xFF;
+                                            $bR = (int)($tR * $alpha + $oR * (1 - $alpha));
+                                            $bG = (int)($tG * $alpha + $oG * (1 - $alpha));
+                                            $bB = (int)($tB * $alpha + $oB * (1 - $alpha));
+                                            $blended = (min(255, max(0, $bR)) << 16) | (min(255, max(0, $bG)) << 8) | min(255, max(0, $bB));
+                                            imagesetpixel($image, $px, $py, $blended);
+                                        }
+                                        $replacedPx++;
+                                    } else {
+                                        $keptPx++;
+                                    }
+                                }
+                            }
+
+                            $productImageAreas[] = $imgBounds;
+                            $log("  Z-ORDER COMPOSITE: {$replacedPx} piksel deÄŸiÅŸtirildi, {$keptPx} piksel korundu (Ã¼st nesne: " . count($upperObjBounds) . ")");
+                        }
+
+                        imagedestroy($tempProduct);
                         $renderedCount++;
                     } else {
-                        $log("  IMAGE-PLACEHOLDER: Dosya bulunamadı: " . ($resolvedPath ?? $targetUrl));
+                        $log("  IMAGE-PLACEHOLDER: Dosya bulunamadÄ±: " . ($resolvedPath ?? $targetUrl));
                     }
                 }
                 continue;
@@ -1837,18 +2031,17 @@ class PavoDisplayGateway
             }
 
             $dynamicCount++;
-            $type = strtolower($obj['type'] ?? 'unknown');
             $log("Object #{$index}: type={$type}, dynamicField=" . ($dynamicField ?? 'YOK'));
 
             $value = null;
             if ($dynamicField) {
-                // Field adını temizle ({{ }} kaldır)
+                // Field adÄ±nÄ± temizle ({{ }} kaldÄ±r)
                 $fieldName = trim($dynamicField, '{} ');
                 $log("  Cleaned fieldName: {$fieldName}");
 
-                // Değeri bul
+                // DeÄŸeri bul
                 if (!isset($fieldValues[$fieldName]) || $fieldValues[$fieldName] === '') {
-                    $log("  SKIP: fieldValues[{$fieldName}] yok veya boş");
+                    $log("  SKIP: fieldValues[{$fieldName}] yok veya boÅŸ");
                     continue;
                 }
 
@@ -1868,8 +2061,13 @@ class PavoDisplayGateway
             $priceFractionDigits = $this->normalizePriceFractionDigits($obj['priceFractionDigits'] ?? -1);
             $priceMidlineEnabled = !empty($obj['priceMidlineEnabled']);
             $priceMidlineThickness = $this->normalizePriceMidlineThickness($obj['priceMidlineThickness'] ?? 1);
+            $priceStyleMeta = $this->extractPriceStyleMeta($obj, (float)($obj['fontSize'] ?? 0));
+            if (!array_key_exists('priceFractionScale', $obj) && isset($priceStyleMeta['fractionScale'])) {
+                $priceFractionScale = $this->normalizePriceFractionScale($priceStyleMeta['fractionScale']);
+            }
+            $priceFractionDeltaY = (int)round((float)($priceStyleMeta['fractionDeltaY'] ?? 0.0) * $scaleY);
 
-            // Barkod/QR nesnelerini özel işle
+            // Barkod/QR nesnelerini Ã¶zel iÅŸle
             $customType = $obj['customType'] ?? '';
             if (in_array($customType, ['barcode', 'qrcode'])) {
                 $log("  BARCODE/QR obje bulundu: customType={$customType}");
@@ -1878,15 +2076,15 @@ class PavoDisplayGateway
                 continue;
             }
 
-            // Sadece metin tiplerini işle
+            // Sadece metin tiplerini iÅŸle
             // Fabric.js v5: 'text','i-text','textbox' | v7: 'Text','IText','Textbox'
-            // strtolower zaten uygulandı, v7 'IText' → 'itext' olur (tiresiz)
+            // strtolower zaten uygulandÄ±, v7 'IText' â†’ 'itext' olur (tiresiz)
             if (!in_array($type, ['text', 'i-text', 'itext', 'textbox'])) {
-                $log("  SKIP: Type '{$type}' metin değil, customType={$customType}");
+                $log("  SKIP: Type '{$type}' metin deÄŸil, customType={$customType}");
                 continue;
             }
 
-            // visible kontrolü
+            // visible kontrolÃ¼
             if (isset($obj['visible']) && $obj['visible'] === false) {
                 $log("  SKIP: visible=false");
                 continue;
@@ -1909,17 +2107,22 @@ class PavoDisplayGateway
             $textShadow = $obj['shadow'] ?? null;
             $textStroke = $obj['stroke'] ?? null;
             $textStrokeWidth = (float)($obj['strokeWidth'] ?? 0);
+            $textBackgroundColor = $obj['textBackgroundColor'] ?? null;
+            $underlineEnabled = !empty($obj['underline']);
+            $overlineEnabled = !empty($obj['overline']);
+            $linethroughEnabled = !empty($obj['linethrough']);
+            $textDecorationThickness = (float)($obj['textDecorationThickness'] ?? 1);
 
-            // Nesne kendi scale'i ile efektif boyutları hesapla
+            // Nesne kendi scale'i ile efektif boyutlarÄ± hesapla
             $effectiveWidth = $objWidth * $objScaleX;
             $effectiveHeight = $objHeight * $objScaleY;
             $effectiveFontSize = $fontSize * $objScaleY; // scaleY font boyutunu etkiler
 
-            // Şablon → cihaz ölçekleme
+            // Åablon â†’ cihaz Ã¶lÃ§ekleme
             $scaledFontSize = (int)max(8, $effectiveFontSize * min($scaleX, $scaleY));
             $scaledWidth = (int)($effectiveWidth * $scaleX);
 
-            // Origin'e göre pozisyon düzeltmesi (Fabric.js v7 center origin kullanır)
+            // Origin'e gÃ¶re pozisyon dÃ¼zeltmesi (Fabric.js v7 center origin kullanÄ±r)
             $adjLeft = $left;
             $adjTop = $top;
             if ($originX === 'center') {
@@ -1950,7 +2153,7 @@ class PavoDisplayGateway
             $log("  Font: orig={$fontSize} effective={$effectiveFontSize} -> scaled={$scaledFontSize}");
             $log("  Width: orig={$objWidth} effective={$effectiveWidth} -> scaled={$scaledWidth}");
 
-            // Renk (opacity desteği ile)
+            // Renk (opacity desteÄŸi ile)
             $fillColor = $obj['fill'] ?? '#000000';
             $rgb = $this->hexToRgb($fillColor);
             if ($textOpacity < 1 && $textOpacity > 0) {
@@ -1961,7 +2164,7 @@ class PavoDisplayGateway
             }
             $log("  Color: {$fillColor} -> RGB({$rgb['r']},{$rgb['g']},{$rgb['b']}) opacity={$textOpacity}");
 
-            // Gölge rengi hazırla
+            // GÃ¶lge rengi hazÄ±rla
             $shadowColorGd = null;
             $shadowOffsetX = 0;
             $shadowOffsetY = 0;
@@ -1986,7 +2189,7 @@ class PavoDisplayGateway
                 $log("  Text stroke: {$textStroke} width={$textStrokeWidth}");
             }
 
-            // Metin sarmalama (word-wrap) - genişlik varsa satırlara böl
+            // Metin sarmalama (word-wrap) - geniÅŸlik varsa satÄ±rlara bÃ¶l
             $lines = [];
             if ($scaledWidth > 0) {
                 if ($isPriceLikeField || !empty($obj['textAutoWidth'])) {
@@ -1996,21 +2199,21 @@ class PavoDisplayGateway
                     $lines = $this->wrapText($value, $scaledFontSize, $fontPath, $scaledWidth, $fontWeight);
                 }
             } else {
-                $lines = [$value]; // Genişlik yoksa tek satır
+                $lines = [$value]; // GeniÅŸlik yoksa tek satÄ±r
             }
-            $log("  Lines: " . count($lines) . " satır (wrap width={$scaledWidth})");
+            $log("  Lines: " . count($lines) . " satÄ±r (wrap width={$scaledWidth})");
             if ($isPriceLikeField) {
                 $log("  Price style: digits={$priceFractionDigits} fractionScale={$priceFractionScale} midline=" . ($priceMidlineEnabled ? '1' : '0'));
             }
 
-            // Satır yüksekliği hesapla
+            // SatÄ±r yÃ¼ksekliÄŸi hesapla
             $lineHeight = (float)($obj['lineHeight'] ?? 1.16);
             $lineSpacing = (int)($scaledFontSize * $lineHeight);
 
-            // Toplam metin yüksekliği
+            // Toplam metin yÃ¼ksekliÄŸi
             $totalTextHeight = count($lines) * $lineSpacing;
 
-            // Maskeleme dikdörtgeni çiz (eski metni kapat)
+            // Maskeleme dikdÃ¶rtgeni Ã§iz (eski metni kapat)
             $maskWidth = $scaledWidth > 0 ? $scaledWidth : 0;
             foreach ($lines as $line) {
                 $metrics = $this->measureTextLineMetrics(
@@ -2019,7 +2222,8 @@ class PavoDisplayGateway
                     $fontPath,
                     $isPriceLikeField,
                     $priceFractionDigits,
-                    $priceFractionScale
+                    $priceFractionScale,
+                    $priceFractionDeltaY
                 );
                 $lineWidth = $metrics['width'];
                 $maskWidth = max($maskWidth, $lineWidth);
@@ -2027,9 +2231,43 @@ class PavoDisplayGateway
             $maskRight = $scaledLeft + $maskWidth + 5;
             $maskBottom = $scaledTop + $totalTextHeight + 5;
             $log("  MASK: rectangle ({$scaledLeft},{$scaledTop}) to ({$maskRight},{$maskBottom})");
+
+            // AkÄ±llÄ± MASK: ÃœrÃ¼n gÃ¶rseli alanlarÄ±nÄ±n piksellerini koru
+            // Eski yaklaÅŸÄ±m: tÃ¼m MASK alanÄ±nÄ± beyazla doldur (Ã¼rÃ¼n gÃ¶rselini eziyordu)
+            // Yeni yaklaÅŸÄ±m: Ã¶nce Ã¼rÃ¼n gÃ¶rseli ile Ã§akÄ±ÅŸan alanÄ± kaydet, MASK uygula, sonra geri yÃ¼kle
+            $maskBounds = ['x1' => $scaledLeft, 'y1' => $scaledTop, 'x2' => $maskRight, 'y2' => $maskBottom];
+            $preserveSnapshots = [];
+            foreach ($productImageAreas as $pArea) {
+                $overlap = $this->intersectBounds($maskBounds, $pArea);
+                if ($overlap) {
+                    $ow = $overlap['x2'] - $overlap['x1'] + 1;
+                    $oh = $overlap['y2'] - $overlap['y1'] + 1;
+                    if ($ow > 0 && $oh > 0) {
+                        $snap = imagecreatetruecolor($ow, $oh);
+                        if ($snap) {
+                            imagecopy($snap, $image, 0, 0, $overlap['x1'], $overlap['y1'], $ow, $oh);
+                            $preserveSnapshots[] = ['overlap' => $overlap, 'snapshot' => $snap];
+                        }
+                    }
+                }
+            }
+
+            // MASK: eski metni sil (arka plan rengiyle doldur)
             imagefilledrectangle($image, $scaledLeft, $scaledTop, $maskRight, $maskBottom, $bgColor);
 
-            // Satır satır metin yaz
+            // ÃœrÃ¼n gÃ¶rseli piksellerini geri yÃ¼kle (beyaz dolguyla ezilmesini Ã¶nle)
+            foreach ($preserveSnapshots as $ps) {
+                $o = $ps['overlap'];
+                $ow = $o['x2'] - $o['x1'] + 1;
+                $oh = $o['y2'] - $o['y1'] + 1;
+                imagecopy($image, $ps['snapshot'], $o['x1'], $o['y1'], 0, 0, $ow, $oh);
+                imagedestroy($ps['snapshot']);
+            }
+            if (!empty($preserveSnapshots)) {
+                $log("  MASK: " . count($preserveSnapshots) . " Ã¼rÃ¼n gÃ¶rseli alanÄ± korundu");
+            }
+
+            // SatÄ±r satÄ±r metin yaz
             $currentY = $scaledTop;
             foreach ($lines as $lineIdx => $line) {
                 // Font metrikleri
@@ -2039,7 +2277,8 @@ class PavoDisplayGateway
                     $fontPath,
                     $isPriceLikeField,
                     $priceFractionDigits,
-                    $priceFractionScale
+                    $priceFractionScale,
+                    $priceFractionDeltaY
                 );
                 $lineWidth = $metrics['width'];
                 $lineAscent = $metrics['ascent'];
@@ -2057,6 +2296,21 @@ class PavoDisplayGateway
                 $log("  LINE #{$lineIdx}: '{$line}' at ({$lineX}, {$textY}) align={$textAlign} angle={$textAngle}");
                 $strokePx = $textStrokeWidth > 0 ? max(1, (int)round($textStrokeWidth * $scaleX)) : 0;
 
+                if (is_string($textBackgroundColor) && trim($textBackgroundColor) !== '' && strtolower(trim($textBackgroundColor)) !== 'transparent') {
+                    $bgRgb = $this->hexToRgb($textBackgroundColor);
+                    $bgAlpha = isset($bgRgb['a']) ? (int)(127 - (($bgRgb['a'] ?? 1.0) * 127)) : 0;
+                    $bgAlpha = max(0, min(127, $bgAlpha));
+                    $lineBgColor = imagecolorallocatealpha($image, $bgRgb['r'], $bgRgb['g'], $bgRgb['b'], $bgAlpha);
+                    imagefilledrectangle(
+                        $image,
+                        $lineX,
+                        $currentY,
+                        $lineX + max(1, $lineWidth),
+                        $currentY + max(1, $lineSpacing),
+                        $lineBgColor
+                    );
+                }
+
                 if ($priceSegments && (float)$textAngle === 0.0) {
                     $cursorX = $lineX;
                     foreach ($priceSegments as $segment) {
@@ -2065,13 +2319,14 @@ class PavoDisplayGateway
                             continue;
                         }
                         $segFontSize = (int)($segment['fontSize'] ?? $scaledFontSize);
+                        $segDeltaY = (int)($segment['deltaY'] ?? 0);
                         $this->drawTextSegmentWithEffects(
                             $image,
                             $segText,
                             $segFontSize,
                             $textAngle,
                             $cursorX,
-                            $textY,
+                            $textY + $segDeltaY,
                             $textColor,
                             $shadowColorGd,
                             $shadowOffsetX,
@@ -2100,6 +2355,22 @@ class PavoDisplayGateway
                     );
                 }
 
+                $decorationThickness = max(1, (int)round($textDecorationThickness * min($scaleX, $scaleY)));
+                if ($underlineEnabled || $overlineEnabled || $linethroughEnabled) {
+                    $this->drawTextDecorations(
+                        $image,
+                        $lineX,
+                        $lineWidth,
+                        $textY,
+                        $lineAscent,
+                        $textColor,
+                        $underlineEnabled,
+                        $overlineEnabled,
+                        $linethroughEnabled,
+                        $decorationThickness
+                    );
+                }
+
                 if ($priceMidlineEnabled && (float)$textAngle === 0.0) {
                     $lineY = (int)round($textY - ($lineAscent * 0.40));
                     $lineEndX = $lineX + max(1, $lineWidth - 1);
@@ -2115,7 +2386,7 @@ class PavoDisplayGateway
             $renderedCount++;
         }
 
-        $log("=== SONUÇ: {$dynamicCount} dinamik alan bulundu, {$renderedCount} tanesi render edildi ===");
+        $log("=== SONUÃ‡: {$dynamicCount} dinamik alan bulundu, {$renderedCount} tanesi render edildi ===");
         if ($baseSnapshot) {
             imagedestroy($baseSnapshot);
         }
@@ -2178,6 +2449,44 @@ class PavoDisplayGateway
         return min(8, $value);
     }
 
+    private function extractPriceStyleMeta(array $obj, float $baseFontSize): array
+    {
+        $meta = [
+            'fractionScale' => null,
+            'fractionDeltaY' => 0.0,
+        ];
+
+        if ($baseFontSize <= 0 || empty($obj['styles']) || !is_array($obj['styles'])) {
+            return $meta;
+        }
+
+        $lineStyles = $obj['styles'][0] ?? null;
+        if (!is_array($lineStyles)) {
+            return $meta;
+        }
+
+        $firstStyle = null;
+        foreach ($lineStyles as $styleEntry) {
+            if (is_array($styleEntry) && !empty($styleEntry['style']) && is_array($styleEntry['style'])) {
+                $firstStyle = $styleEntry['style'];
+                break;
+            }
+        }
+
+        if (!$firstStyle) {
+            return $meta;
+        }
+
+        if (isset($firstStyle['fontSize']) && is_numeric($firstStyle['fontSize'])) {
+            $meta['fractionScale'] = (float)$firstStyle['fontSize'] / $baseFontSize;
+        }
+        if (isset($firstStyle['deltaY']) && is_numeric($firstStyle['deltaY'])) {
+            $meta['fractionDeltaY'] = (float)$firstStyle['deltaY'];
+        }
+
+        return $meta;
+    }
+
     private function fitSingleLineFontSize(string $text, int $fontSize, string $fontPath, int $maxWidth): int
     {
         if ($maxWidth <= 0) {
@@ -2233,7 +2542,8 @@ class PavoDisplayGateway
         string $fontPath,
         bool $priceLike = false,
         int $priceFractionDigits = -1,
-        float $priceFractionScale = 1.0
+        float $priceFractionScale = 1.0,
+        int $priceFractionDeltaY = 0
     ): array {
         $bbox = imagettfbbox($fontSize, 0, $fontPath, $line);
         $fallbackWidth = abs($bbox[2] - $bbox[0]);
@@ -2258,9 +2568,9 @@ class PavoDisplayGateway
 
         $fractionFontSize = max(6, (int)round($fontSize * $priceFractionScale));
         $segments = [
-            ['text' => $parts['major'], 'fontSize' => $fontSize],
-            ['text' => $parts['fraction'], 'fontSize' => $fractionFontSize],
-            ['text' => $parts['suffix'], 'fontSize' => $fontSize],
+            ['text' => $parts['major'], 'fontSize' => $fontSize, 'deltaY' => 0],
+            ['text' => $parts['fraction'], 'fontSize' => $fractionFontSize, 'deltaY' => $priceFractionDeltaY],
+            ['text' => $parts['suffix'], 'fontSize' => $fontSize, 'deltaY' => 0],
         ];
 
         $totalWidth = 0;
@@ -2323,6 +2633,309 @@ class PavoDisplayGateway
         imagettftext($image, $fontSize, $angle, $x, $y, $textColor, $fontPath, $text);
     }
 
+    private function drawTextDecorations(
+        $image,
+        int $x,
+        int $lineWidth,
+        int $baselineY,
+        int $lineAscent,
+        $color,
+        bool $underline,
+        bool $overline,
+        bool $linethrough,
+        int $thickness = 1
+    ): void {
+        if ($lineWidth <= 0) {
+            return;
+        }
+
+        $x2 = $x + max(1, $lineWidth - 1);
+        imagesetthickness($image, max(1, $thickness));
+
+        if ($overline) {
+            $y = (int)round($baselineY - $lineAscent);
+            imageline($image, $x, $y, $x2, $y, $color);
+        }
+        if ($linethrough) {
+            $y = (int)round($baselineY - ($lineAscent * 0.40));
+            imageline($image, $x, $y, $x2, $y, $color);
+        }
+        if ($underline) {
+            $y = (int)round($baselineY + max(1, $thickness));
+            imageline($image, $x, $y, $x2, $y, $color);
+        }
+
+        imagesetthickness($image, 1);
+    }
+
+    private function renderStaticTextObject($image, array $obj, float $scaleX, float $scaleY, string $fontPath, callable $log): bool
+    {
+        $rawText = isset($obj['text']) ? (string)$obj['text'] : '';
+        if ($rawText === '' || trim($rawText) === '') {
+            return false;
+        }
+
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $fontSize = (float)($obj['fontSize'] ?? 20);
+        $objWidth = (float)($obj['width'] ?? 0);
+        $objHeight = (float)($obj['height'] ?? 0);
+        $objScaleX = (float)($obj['scaleX'] ?? 1.0);
+        $objScaleY = (float)($obj['scaleY'] ?? 1.0);
+        $originX = $obj['originX'] ?? 'center';
+        $originY = $obj['originY'] ?? 'center';
+        $textAlign = $obj['textAlign'] ?? 'left';
+        $fontWeight = (string)($obj['fontWeight'] ?? 'normal');
+        $textAngle = (float)($obj['angle'] ?? 0);
+
+        $effectiveWidth = $objWidth * $objScaleX;
+        $effectiveHeight = $objHeight * $objScaleY;
+        $effectiveFontSize = $fontSize * $objScaleY;
+
+        $scaledFontSize = (int)max(8, $effectiveFontSize * min($scaleX, $scaleY));
+        $scaledWidth = (int)round($effectiveWidth * $scaleX);
+
+        $adjLeft = $left;
+        $adjTop = $top;
+        if ($originX === 'center') {
+            $adjLeft = $left - ($effectiveWidth / 2);
+        } elseif ($originX === 'right') {
+            $adjLeft = $left - $effectiveWidth;
+        }
+        if ($originY === 'center') {
+            $adjTop = $top - ($effectiveHeight / 2);
+        } elseif ($originY === 'bottom') {
+            $adjTop = $top - $effectiveHeight;
+        }
+
+        $scaledLeft = (int)round($adjLeft * $scaleX);
+        $scaledTop = (int)round($adjTop * $scaleY);
+
+        $textColor = $this->allocateObjectColor(
+            $image,
+            (string)($obj['fill'] ?? '#000000'),
+            (float)($obj['opacity'] ?? 1.0)
+        );
+        if ($textColor === null) {
+            return false;
+        }
+
+        $shadowColor = null;
+        $shadowOffsetX = 0;
+        $shadowOffsetY = 0;
+        $shadowRaw = $obj['shadow'] ?? null;
+        if ($shadowRaw) {
+            $shadowObj = is_string($shadowRaw) ? json_decode($shadowRaw, true) : (is_array($shadowRaw) ? $shadowRaw : null);
+            if (is_array($shadowObj)) {
+                $shadowColor = $this->allocateObjectColor($image, (string)($shadowObj['color'] ?? 'rgba(0,0,0,0.4)'), 1.0);
+                $shadowOffsetX = (int)round(((float)($shadowObj['offsetX'] ?? 4)) * $scaleX);
+                $shadowOffsetY = (int)round(((float)($shadowObj['offsetY'] ?? 4)) * $scaleY);
+            }
+        }
+
+        $strokeColor = null;
+        $strokePx = 0;
+        $strokeRaw = (string)($obj['stroke'] ?? '');
+        $strokeWidth = (float)($obj['strokeWidth'] ?? 0);
+        if ($strokeRaw !== '' && strtolower($strokeRaw) !== 'transparent' && $strokeWidth > 0) {
+            $strokeColor = $this->allocateObjectColor($image, $strokeRaw, (float)($obj['opacity'] ?? 1.0));
+            $strokePx = max(1, (int)round($strokeWidth * min($scaleX, $scaleY)));
+        }
+
+        $rawLines = preg_split('/\r\n|\r|\n/u', $rawText) ?: [$rawText];
+        $lines = [];
+        foreach ($rawLines as $segment) {
+            $segment = (string)$segment;
+            if ($scaledWidth > 0 && strtolower((string)($obj['type'] ?? '')) === 'textbox') {
+                $wrapped = $this->wrapText($segment, $scaledFontSize, $fontPath, $scaledWidth, $fontWeight);
+                foreach ($wrapped as $wLine) {
+                    $lines[] = (string)$wLine;
+                }
+            } else {
+                $lines[] = $segment;
+            }
+        }
+        if (empty($lines)) {
+            $lines = [''];
+        }
+
+        $lineHeight = (float)($obj['lineHeight'] ?? 1.16);
+        $lineSpacing = max(1, (int)round($scaledFontSize * $lineHeight));
+        $currentY = $scaledTop;
+
+        foreach ($lines as $lineIdx => $line) {
+            $metrics = $this->measureTextLineMetrics($line, $scaledFontSize, $fontPath, false, -1, 1.0);
+            $lineWidth = (int)($metrics['width'] ?? 0);
+            $lineAscent = max(1, (int)($metrics['ascent'] ?? $scaledFontSize));
+
+            $lineX = $scaledLeft;
+            if ($textAlign === 'center' && $scaledWidth > 0) {
+                $lineX = $scaledLeft + (int)round(($scaledWidth - $lineWidth) / 2);
+            } elseif ($textAlign === 'right' && $scaledWidth > 0) {
+                $lineX = $scaledLeft + ($scaledWidth - $lineWidth);
+            }
+
+            $textY = $currentY + $lineAscent;
+            $this->drawTextSegmentWithEffects(
+                $image,
+                $line,
+                $scaledFontSize,
+                $textAngle,
+                $lineX,
+                $textY,
+                $textColor,
+                $shadowColor,
+                $shadowOffsetX,
+                $shadowOffsetY,
+                $strokeColor,
+                $strokePx,
+                $fontPath
+            );
+
+            $currentY += $lineSpacing;
+        }
+
+        $log("  STATIC redraw text at ({$scaledLeft},{$scaledTop}) lines=" . count($lines) . " font={$scaledFontSize}");
+        return true;
+    }
+
+    private function renderStaticRectObject($image, array $obj, float $scaleX, float $scaleY, callable $log): bool
+    {
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $objWidth = (float)($obj['width'] ?? 0);
+        $objHeight = (float)($obj['height'] ?? 0);
+        $objScaleX = (float)($obj['scaleX'] ?? 1.0);
+        $objScaleY = (float)($obj['scaleY'] ?? 1.0);
+        $originX = $obj['originX'] ?? 'center';
+        $originY = $obj['originY'] ?? 'center';
+        $angle = (float)($obj['angle'] ?? 0.0);
+
+        $effectiveWidth = $objWidth * $objScaleX;
+        $effectiveHeight = $objHeight * $objScaleY;
+        if ($effectiveWidth <= 0 || $effectiveHeight <= 0) {
+            return false;
+        }
+
+        $adjLeft = $left;
+        $adjTop = $top;
+        if ($originX === 'center') {
+            $adjLeft = $left - ($effectiveWidth / 2);
+        } elseif ($originX === 'right') {
+            $adjLeft = $left - $effectiveWidth;
+        }
+        if ($originY === 'center') {
+            $adjTop = $top - ($effectiveHeight / 2);
+        } elseif ($originY === 'bottom') {
+            $adjTop = $top - $effectiveHeight;
+        }
+
+        $scaledLeft = (int)round($adjLeft * $scaleX);
+        $scaledTop = (int)round($adjTop * $scaleY);
+        $scaledW = max(1, (int)round($effectiveWidth * $scaleX));
+        $scaledH = max(1, (int)round($effectiveHeight * $scaleY));
+        $objectOpacity = (float)($obj['opacity'] ?? 1.0);
+
+        $fillRaw = (string)($obj['fill'] ?? '');
+        $fillColor = $this->allocateObjectColor($image, $fillRaw, $objectOpacity);
+
+        $strokeRaw = (string)($obj['stroke'] ?? '');
+        $strokeWidth = (float)($obj['strokeWidth'] ?? 0);
+        $strokeColor = null;
+        $strokePx = 0;
+        if ($strokeRaw !== '' && strtolower($strokeRaw) !== 'transparent' && $strokeWidth > 0) {
+            $strokeColor = $this->allocateObjectColor($image, $strokeRaw, $objectOpacity);
+            $strokePx = max(1, (int)round($strokeWidth * min($scaleX, $scaleY)));
+        }
+
+        $didDraw = false;
+        if (abs($angle) < 0.01) {
+            if ($fillColor !== null) {
+                imagefilledrectangle(
+                    $image,
+                    $scaledLeft,
+                    $scaledTop,
+                    $scaledLeft + $scaledW - 1,
+                    $scaledTop + $scaledH - 1,
+                    $fillColor
+                );
+                $didDraw = true;
+            }
+
+            if ($strokeColor !== null && $strokePx > 0) {
+                for ($i = 0; $i < $strokePx; $i++) {
+                    imagerectangle(
+                        $image,
+                        $scaledLeft + $i,
+                        $scaledTop + $i,
+                        $scaledLeft + $scaledW - 1 - $i,
+                        $scaledTop + $scaledH - 1 - $i,
+                        $strokeColor
+                    );
+                }
+                $didDraw = true;
+            }
+        } else {
+            $cx = $scaledLeft + ($scaledW / 2.0);
+            $cy = $scaledTop + ($scaledH / 2.0);
+            $rad = deg2rad($angle);
+            $cosA = cos($rad);
+            $sinA = sin($rad);
+
+            $baseCorners = [
+                [$scaledLeft, $scaledTop],
+                [$scaledLeft + $scaledW - 1, $scaledTop],
+                [$scaledLeft + $scaledW - 1, $scaledTop + $scaledH - 1],
+                [$scaledLeft, $scaledTop + $scaledH - 1],
+            ];
+
+            $points = [];
+            foreach ($baseCorners as $corner) {
+                $dx = $corner[0] - $cx;
+                $dy = $corner[1] - $cy;
+                $rx = $cx + ($dx * $cosA) - ($dy * $sinA);
+                $ry = $cy + ($dx * $sinA) + ($dy * $cosA);
+                $points[] = (int)round($rx);
+                $points[] = (int)round($ry);
+            }
+
+            if ($fillColor !== null) {
+                imagefilledpolygon($image, $points, $fillColor);
+                $didDraw = true;
+            }
+
+            if ($strokeColor !== null && $strokePx > 0) {
+                imagesetthickness($image, $strokePx);
+                imagepolygon($image, $points, $strokeColor);
+                imagesetthickness($image, 1);
+                $didDraw = true;
+            }
+        }
+
+        if ($didDraw) {
+            $log("  STATIC redraw rect at ({$scaledLeft},{$scaledTop}) size={$scaledW}x{$scaledH} angle={$angle}");
+        }
+
+        return $didDraw;
+    }
+
+    private function allocateObjectColor($image, string $color, float $opacity = 1.0)
+    {
+        $normalized = strtolower(trim($color));
+        if ($normalized === '' || $normalized === 'transparent' || $normalized === 'none') {
+            return null;
+        }
+
+        $rgb = $this->hexToRgb($color);
+        $objectOpacity = max(0.0, min(1.0, $opacity));
+        $colorOpacity = max(0.0, min(1.0, (float)($rgb['a'] ?? 1.0)));
+        $effectiveOpacity = $objectOpacity * $colorOpacity;
+        $alpha = (int)round(127 - ($effectiveOpacity * 127));
+        $alpha = max(0, min(127, $alpha));
+
+        return imagecolorallocatealpha($image, (int)$rgb['r'], (int)$rgb['g'], (int)$rgb['b'], $alpha);
+    }
+
     private function restoreUpperLayerPixels(
         $image,
         $baseSnapshot,
@@ -2363,22 +2976,246 @@ class PavoDisplayGateway
                 continue;
             }
 
-            imagecopy(
-                $image,
-                $baseSnapshot,
-                $overlap['x1'],
-                $overlap['y1'],
-                $overlap['x1'],
-                $overlap['y1'],
-                $copyW,
-                $copyH
-            );
-            $restoreCount++;
+            // SEÃ‡Ä°CÄ° PÄ°KSEL GERÄ° YÃœKLEME
+            // Eski yÃ¶ntem: imagecopy ile TÃœM dikdÃ¶rtgeni kopyalÄ±yordu â†’ gri placeholder
+            // arka planÄ± da geliyordu â†’ Ã¼rÃ¼n gÃ¶rseli Ã¼zerinde gri yamalar oluÅŸuyordu.
+            // Yeni yÃ¶ntem: piksel piksel kontrol et, sadece Ã¼st nesne piksellerini kopyala,
+            // placeholder arka planÄ±nÄ± (aÃ§Ä±k gri/beyaz) atla.
+            $imageW = imagesx($image);
+            $imageH = imagesy($image);
+            $pixelCount = 0;
+
+            $yStart = max(0, $overlap['y1']);
+            $yEnd   = min($imageH - 1, $overlap['y2']);
+            $xStart = max(0, $overlap['x1']);
+            $xEnd   = min($imageW - 1, $overlap['x2']);
+
+            for ($py = $yStart; $py <= $yEnd; $py++) {
+                for ($px = $xStart; $px <= $xEnd; $px++) {
+                    $basePixel = imagecolorat($baseSnapshot, $px, $py);
+                    $r = ($basePixel >> 16) & 0xFF;
+                    $g = ($basePixel >> 8) & 0xFF;
+                    $b = $basePixel & 0xFF;
+
+                    // Placeholder arka plan rengi (aÃ§Ä±k gri/beyaz) â†’ atla
+                    // Ãœst nesne pikseli (renkli/koyu) â†’ kopyala
+                    // EÅŸik: R,G,B hepsi > 200 ise arka plan sayÄ±lÄ±r
+                    if ($r > 200 && $g > 200 && $b > 200) {
+                        continue;
+                    }
+
+                    imagesetpixel($image, $px, $py, $basePixel);
+                    $pixelCount++;
+                }
+            }
+
+            if ($pixelCount > 0) {
+                $restoreCount++;
+                $log("  restoreUpperLayerPixels: overlap ({$overlap['x1']},{$overlap['y1']})-({$overlap['x2']},{$overlap['y2']}): {$pixelCount} piksel geri yuklendi");
+            }
         }
 
         if ($restoreCount > 0) {
-            $log("  restoreUpperLayerPixels: {$restoreCount} ust katman bolgesi geri yuklendi");
+            $log("  restoreUpperLayerPixels: {$restoreCount} ust katman bolgesi (secici piksel) geri yuklendi");
         }
+    }
+
+    /**
+     * Dynamic-image alanÄ±nda gerÃ§ek foto iÃ§eriÄŸi zaten varsa yeniden Ã§izimi atla.
+     * Bu, pre-render gÃ¶rsel + dynamic_image_only modunda Ã§ift resim bindirmesini Ã¶nler.
+     */
+    /**
+     * Dinamik gorsel compositing asamasinda bir ust nesnenin korunup korunmayacagini belirler.
+     * Dinamik alan/placeholder nesneleri sonradan tekrar render edildigi icin burada korunmaz.
+     */
+    private function shouldSkipUpperLayerProtection(array $obj, bool $dynamicImageOnlyMode = false): bool
+    {
+        if (($obj['visible'] ?? true) === false) {
+            return true;
+        }
+
+        // dynamic_image_only modunda artik text/shape/barcode yeniden cizilmiyor.
+        // Bu nedenle image compositing sirasinda ust katman nesneleri korunmali.
+        // Sadece yeniden islenecek image-placeholder turevlerini burada korumadan gec.
+        if ($dynamicImageOnlyMode) {
+            $customType = strtolower((string)($obj['customType'] ?? ''));
+            $isDynamicImageType = in_array($customType, ['image-placeholder', 'dynamic-image', 'slot-image'], true);
+            return $isDynamicImageType;
+        }
+
+        if (!empty($obj['dynamicField']) || !empty($obj['dynamic_field']) || !empty($obj['isDataField'])) {
+            return true;
+        }
+
+        $customType = strtolower((string)($obj['customType'] ?? ''));
+        if (in_array($customType, ['image-placeholder', 'dynamic-image', 'slot-image', 'dynamic-text', 'slot-text', 'video-placeholder'], true)) {
+            return true;
+        }
+
+        $rawText = (string)($obj['text'] ?? '');
+        if ($rawText !== '' && strpos($rawText, '{{') !== false) {
+            return true;
+        }
+
+        if (in_array($customType, ['barcode', 'qrcode', 'slot-barcode', 'slot-qrcode'], true)) {
+            $rawValue = (string)($obj['barcodeValue'] ?? $obj['qrValue'] ?? '');
+            if ($rawValue !== '' && strpos($rawValue, '{{') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Dynamic image placeholder is considered back-layer only when it is the first visible
+     * object in stack order (order value + index tiebreak).
+     */
+    private function isBackLayerPlaceholder(array $objects, int $currentIndex, array $currentObj): bool
+    {
+        if (($currentObj['visible'] ?? true) === false) {
+            return false;
+        }
+
+        $currentOrder = $this->getObjectStackOrder($currentObj, $currentIndex);
+        $minOrder = null;
+        $minIndex = null;
+
+        foreach ($objects as $idx => $obj) {
+            if (!is_array($obj) || (($obj['visible'] ?? true) === false)) {
+                continue;
+            }
+
+            $order = $this->getObjectStackOrder($obj, (int)$idx);
+            if (
+                $minOrder === null
+                || $order < ($minOrder - 0.0001)
+                || (abs($order - $minOrder) < 0.0001 && ($minIndex === null || $idx < $minIndex))
+            ) {
+                $minOrder = $order;
+                $minIndex = (int)$idx;
+            }
+        }
+
+        if ($minOrder === null || $minIndex === null) {
+            return false;
+        }
+
+        if ($currentOrder > ($minOrder + 0.0001)) {
+            return false;
+        }
+
+        return $currentIndex === $minIndex;
+    }
+
+    /**
+     * Placeholder-like colors used for back-layer keyed replacement.
+     */
+    private function getPlaceholderKeyColors(array $obj): array
+    {
+        $keyColors = [];
+        $colorKeys = [];
+
+        $pushColor = function (array $rgb) use (&$keyColors, &$colorKeys): void {
+            $k = ((int)$rgb['r']) . ',' . ((int)$rgb['g']) . ',' . ((int)$rgb['b']);
+            if (!isset($colorKeys[$k])) {
+                $colorKeys[$k] = true;
+                $keyColors[] = [
+                    'r' => (int)$rgb['r'],
+                    'g' => (int)$rgb['g'],
+                    'b' => (int)$rgb['b'],
+                ];
+            }
+        };
+
+        foreach (['fill', 'stroke'] as $field) {
+            $val = $obj[$field] ?? null;
+            if (is_string($val) && $val !== '') {
+                $pushColor($this->hexToRgb($val));
+            }
+        }
+
+        // Common placeholder shades used by editor defaults.
+        foreach (['#ffffff', '#f5f5f5', '#f0f0f0', '#eeeeee', '#dddddd', '#cccccc'] as $hex) {
+            $pushColor($this->hexToRgb($hex));
+        }
+
+        return $keyColors;
+    }
+
+    /**
+     * Decide if a pixel should be replaced by product image in back-layer mode.
+     */
+    private function shouldReplaceBackLayerImagePixel(
+        int $r,
+        int $g,
+        int $b,
+        int $bgR,
+        int $bgG,
+        int $bgB,
+        array $placeholderKeyColors
+    ): bool {
+        if ($this->isPixelNearColor($r, $g, $b, $bgR, $bgG, $bgB, 24)) {
+            return true;
+        }
+
+        foreach ($placeholderKeyColors as $c) {
+            if ($this->isPixelNearColor($r, $g, $b, (int)$c['r'], (int)$c['g'], (int)$c['b'], 28)) {
+                return true;
+            }
+        }
+
+        $maxCh = max($r, $g, $b);
+        $minCh = min($r, $g, $b);
+        $chroma = $maxCh - $minCh;
+        $brightness = ($r + $g + $b) / 3;
+
+        // Light neutral pixels are usually placeholder/background, safe to replace.
+        return $chroma < 14 && $brightness > 180;
+    }
+
+    private function isPixelNearColor(int $r, int $g, int $b, int $tr, int $tg, int $tb, int $tolerance): bool
+    {
+        return abs($r - $tr) <= $tolerance
+            && abs($g - $tg) <= $tolerance
+            && abs($b - $tb) <= $tolerance;
+    }
+
+    private function getObjectStackOrder(array $obj, int $index): float
+    {
+        foreach (['layerOrder', 'zIndex', 'z_index', 'stackOrder'] as $key) {
+            if (isset($obj[$key]) && is_numeric($obj[$key])) {
+                return (float)$obj[$key];
+            }
+        }
+
+        return (float)$index;
+    }
+
+    private function formatObjectForZOrderLog(array $obj, int $index, array $bounds): string
+    {
+        $type = strtolower((string)($obj['type'] ?? 'unknown'));
+        $customType = strtolower((string)($obj['customType'] ?? ''));
+        $dyn = (string)($obj['dynamicField'] ?? $obj['dynamic_field'] ?? '');
+        $id = (string)($obj['objectId'] ?? $obj['id'] ?? '');
+        $order = $this->getObjectStackOrder($obj, $index);
+
+        $dynSafe = $dyn !== '' ? $dyn : '-';
+        $idSafe = $id !== '' ? $id : '-';
+
+        return sprintf(
+            '#%d order=%.2f type=%s custom=%s dyn=%s id=%s b=(%d,%d)-(%d,%d)',
+            $index,
+            $order,
+            $type,
+            $customType,
+            $dynSafe,
+            $idSafe,
+            (int)($bounds['x1'] ?? 0),
+            (int)($bounds['y1'] ?? 0),
+            (int)($bounds['x2'] ?? 0),
+            (int)($bounds['y2'] ?? 0)
+        );
     }
 
     private function getObjectPixelBounds(array $obj, float $scaleX, float $scaleY, ?string $fontPath, $image): ?array
@@ -2390,8 +3227,10 @@ class PavoDisplayGateway
         $height = (float)($obj['height'] ?? 0);
         $objScaleX = (float)($obj['scaleX'] ?? 1.0);
         $objScaleY = (float)($obj['scaleY'] ?? 1.0);
-        $originX = strtolower((string)($obj['originX'] ?? 'left'));
-        $originY = strtolower((string)($obj['originY'] ?? 'top'));
+        // Fabric.js v7 varsayÄ±lan origin: 'center'/'center'
+        // eraseObjectArea() ve renderImageOnPosition() ile tutarlÄ± olmalÄ±
+        $originX = strtolower((string)($obj['originX'] ?? 'center'));
+        $originY = strtolower((string)($obj['originY'] ?? 'center'));
         $angle = (float)($obj['angle'] ?? 0);
 
         $effectiveWidth = $width * $objScaleX;
@@ -2462,14 +3301,14 @@ class PavoDisplayGateway
     }
 
     /**
-     * Metni belirli genişliğe göre satırlara böl (word-wrap)
+     * Metni belirli geniÅŸliÄŸe gÃ¶re satÄ±rlara bÃ¶l (word-wrap)
      *
      * @param string $text Sarmalanacak metin
      * @param int $fontSize Font boyutu (px)
-     * @param string $fontPath Font dosyası yolu
-     * @param int $maxWidth Maksimum genişlik (px)
-     * @param string $fontWeight Font ağırlığı (normal, bold)
-     * @return string[] Satır dizisi
+     * @param string $fontPath Font dosyasÄ± yolu
+     * @param int $maxWidth Maksimum geniÅŸlik (px)
+     * @param string $fontWeight Font aÄŸÄ±rlÄ±ÄŸÄ± (normal, bold)
+     * @return string[] SatÄ±r dizisi
      */
     private function wrapText(string $text, int $fontSize, string $fontPath, int $maxWidth, string $fontWeight = 'normal'): array
     {
@@ -2477,7 +3316,7 @@ class PavoDisplayGateway
             return [$text];
         }
 
-        // Önce tüm metin tek satıra sığıyor mu kontrol et
+        // Ã–nce tÃ¼m metin tek satÄ±ra sÄ±ÄŸÄ±yor mu kontrol et
         $bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
         $textWidth = abs($bbox[2] - $bbox[0]);
         if ($textWidth <= $maxWidth) {
@@ -2497,17 +3336,17 @@ class PavoDisplayGateway
             if ($testWidth <= $maxWidth) {
                 $currentLine = $testLine;
             } else {
-                // Mevcut satır varsa kaydet
+                // Mevcut satÄ±r varsa kaydet
                 if ($currentLine !== '') {
                     $lines[] = $currentLine;
                 }
 
-                // Tek kelime genişlikten büyükse, karakter bazlı böl
+                // Tek kelime geniÅŸlikten bÃ¼yÃ¼kse, karakter bazlÄ± bÃ¶l
                 $bbox = imagettfbbox($fontSize, 0, $fontPath, $word);
                 $wordWidth = abs($bbox[2] - $bbox[0]);
 
                 if ($wordWidth > $maxWidth) {
-                    // Kelimeyi karakter bazlı böl
+                    // Kelimeyi karakter bazlÄ± bÃ¶l
                     $chars = mb_str_split($word);
                     $currentLine = '';
                     foreach ($chars as $char) {
@@ -2535,7 +3374,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Barkod/QR nesnesini GD image üzerine render et
+     * Barkod/QR nesnesini GD image Ã¼zerine render et
      */
     private function renderBarcodeOnImage($image, array $obj, string $value, float $scaleX, float $scaleY, callable $log, int $safeLeftPad = 0, float $safeLeftThreshold = 12.0): void
     {
@@ -2547,7 +3386,7 @@ class PavoDisplayGateway
         $lineHex = $obj['barcodeLineColor'] ?? '#000000';
         $barcodeHeight = (int)($obj['barcodeHeight'] ?? 80);
 
-        // Otomatik algılama
+        // Otomatik algÄ±lama
         if ($barcodeAutoDetect && $customType === 'barcode') {
             $barcodeFormat = $this->detectBarcodeFormat($value);
             $log("  AUTO-DETECT: value={$value} -> format={$barcodeFormat}");
@@ -2566,7 +3405,7 @@ class PavoDisplayGateway
         $effectiveWidth = $objWidth * $objScaleX;
         $effectiveHeight = $objHeight * $objScaleY;
 
-        // Origin düzeltmesi
+        // Origin dÃ¼zeltmesi
         $adjLeft = $left;
         $adjTop = $top;
         if ($originX === 'center') $adjLeft = $left - ($effectiveWidth / 2);
@@ -2595,16 +3434,16 @@ class PavoDisplayGateway
         $bgColor = imagecolorallocate($image, $bgRgb['r'], $bgRgb['g'], $bgRgb['b']);
         imagefilledrectangle($image, $scaledLeft, $scaledTop, $scaledLeft + $scaledWidth, $scaledTop + $scaledHeight, $bgColor);
 
-        // Barkod çizgilerini GD ile render et
+        // Barkod Ã§izgilerini GD ile render et
         $lineRgb = $this->hexToRgb($lineHex);
         $lineColor = imagecolorallocate($image, $lineRgb['r'], $lineRgb['g'], $lineRgb['b']);
 
         if ($customType === 'qrcode') {
-            // QR kod: Basit veri matrisi çiz (gerçek QR algoritması çok karmaşık, placeholder)
+            // QR kod: Basit veri matrisi Ã§iz (gerÃ§ek QR algoritmasÄ± Ã§ok karmaÅŸÄ±k, placeholder)
             $log("  QR kod render (placeholder pattern)");
             $this->renderQRPlaceholder($image, $scaledLeft, $scaledTop, $scaledWidth, $scaledHeight, $lineColor, $bgColor, $value);
         } else {
-            // Barkod: CODE128 çizgileri oluştur
+            // Barkod: CODE128 Ã§izgileri oluÅŸtur
             $log("  Barkod render: format={$barcodeFormat}, value={$value}");
             $this->renderBarcodeLines($image, $scaledLeft, $scaledTop, $scaledWidth, $scaledHeight, $lineColor, $bgColor, $value, $barcodeFormat, $displayValue);
         }
@@ -2639,7 +3478,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Barkod değerinden format algıla (BarcodeUtils.js PHP karşılığı)
+     * Barkod deÄŸerinden format algÄ±la (BarcodeUtils.js PHP karÅŸÄ±lÄ±ÄŸÄ±)
      */
     /**
      * LabelPicture seviyesinde guvenli sol inset hesapla.
@@ -2802,27 +3641,27 @@ class PavoDisplayGateway
             if ($len === 14) return 'ITF14';
         }
 
-        // Alfanumerik: CODE128 (en geniş uyumluluk)
+        // Alfanumerik: CODE128 (en geniÅŸ uyumluluk)
         return 'CODE128';
     }
 
     /**
-     * GD ile barkod çizgileri çiz (CODE128 benzeri basit encoding)
+     * GD ile barkod Ã§izgileri Ã§iz (CODE128 benzeri basit encoding)
      */
     private function renderBarcodeLines($image, int $x, int $y, int $w, int $h, $lineColor, $bgColor, string $value, string $format, bool $displayValue): void
     {
-        // Değer gösterimi için alan ayır
+        // DeÄŸer gÃ¶sterimi iÃ§in alan ayÄ±r
         $fontPath = $this->findSystemFont();
         $textAreaHeight = $displayValue && $fontPath ? (int)($h * 0.2) : 0;
         $barAreaHeight = $h - $textAreaHeight;
         $barAreaTop = $y;
 
-        // Basit barkod pattern oluştur (değerin her karakterinden çizgi genişlikleri türet)
+        // Basit barkod pattern oluÅŸtur (deÄŸerin her karakterinden Ã§izgi geniÅŸlikleri tÃ¼ret)
         $padding = max(2, (int)($w * 0.05));
         $barAreaWidth = $w - ($padding * 2);
         $barStartX = $x + $padding;
 
-        // Karakter bazlı barkod çizgileri
+        // Karakter bazlÄ± barkod Ã§izgileri
         $pattern = $this->generateBarcodePattern($value, $format);
         $totalUnits = array_sum($pattern);
 
@@ -2830,7 +3669,7 @@ class PavoDisplayGateway
 
         $unitWidth = $barAreaWidth / $totalUnits;
         $currentX = (float)$barStartX;
-        $isBar = true; // Çizgi ile başla
+        $isBar = true; // Ã‡izgi ile baÅŸla
 
         foreach ($pattern as $units) {
             $barWidth = max(1, (int)round($units * $unitWidth));
@@ -2841,7 +3680,7 @@ class PavoDisplayGateway
             $isBar = !$isBar;
         }
 
-        // Değer gösterimi
+        // DeÄŸer gÃ¶sterimi
         if ($displayValue && $fontPath && $textAreaHeight > 0) {
             $fontSize = max(8, (int)($textAreaHeight * 0.7));
             $bbox = imagettfbbox($fontSize, 0, $fontPath, $value);
@@ -2853,21 +3692,21 @@ class PavoDisplayGateway
     }
 
     /**
-     * Barkod pattern oluştur (bar/space genişlikleri)
+     * Barkod pattern oluÅŸtur (bar/space geniÅŸlikleri)
      */
     private function generateBarcodePattern(string $value, string $format): array
     {
         // CODE128 encoding tablosu (Start Code B + veri + check + stop)
-        // Basitleştirilmiş: her karakter için sabit pattern
+        // BasitleÅŸtirilmiÅŸ: her karakter iÃ§in sabit pattern
         $pattern = [];
 
         // Start pattern
         $pattern = array_merge($pattern, [2, 1, 1, 2, 3, 2]); // Start Code B
 
-        // Her karakter için pattern
+        // Her karakter iÃ§in pattern
         foreach (str_split($value) as $char) {
             $code = ord($char);
-            // Basit hash tabanlı pattern (gerçek CODE128 değil ama görsel olarak barkod görünümlü)
+            // Basit hash tabanlÄ± pattern (gerÃ§ek CODE128 deÄŸil ama gÃ¶rsel olarak barkod gÃ¶rÃ¼nÃ¼mlÃ¼)
             $seed = ($code * 7 + 3) % 17;
             $pattern[] = 1 + ($seed % 3);        // bar
             $pattern[] = 1 + (($seed >> 1) % 3); // space
@@ -2882,7 +3721,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * QR kod placeholder render (GD gerçek QR encoder yok)
+     * QR kod placeholder render (GD gerÃ§ek QR encoder yok)
      */
     private function renderQRPlaceholder($image, int $x, int $y, int $w, int $h, $lineColor, $bgColor, string $value): void
     {
@@ -2891,23 +3730,23 @@ class PavoDisplayGateway
         $offsetY = $y + (int)(($h - $size) / 2);
 
         // Basit QR benzeri pattern
-        $gridSize = min(21, max(11, (int)(strlen($value) / 2) + 11)); // 11-21 arası
+        $gridSize = min(21, max(11, (int)(strlen($value) / 2) + 11)); // 11-21 arasÄ±
         $cellSize = max(1, (int)($size / $gridSize));
 
-        // Position detection patterns (3 köşe)
+        // Position detection patterns (3 kÃ¶ÅŸe)
         $this->drawQRFinderPattern($image, $offsetX, $offsetY, $cellSize, $lineColor, $bgColor);
         $this->drawQRFinderPattern($image, $offsetX + ($gridSize - 7) * $cellSize, $offsetY, $cellSize, $lineColor, $bgColor);
         $this->drawQRFinderPattern($image, $offsetX, $offsetY + ($gridSize - 7) * $cellSize, $cellSize, $lineColor, $bgColor);
 
-        // Veri modülleri (hash tabanlı pseudo-random pattern)
+        // Veri modÃ¼lleri (hash tabanlÄ± pseudo-random pattern)
         for ($row = 0; $row < $gridSize; $row++) {
             for ($col = 0; $col < $gridSize; $col++) {
-                // Finder pattern bölgelerini atla
+                // Finder pattern bÃ¶lgelerini atla
                 if (($row < 8 && $col < 8) || ($row < 8 && $col >= $gridSize - 8) || ($row >= $gridSize - 8 && $col < 8)) {
                     continue;
                 }
 
-                // Hash tabanlı doldurma
+                // Hash tabanlÄ± doldurma
                 $hash = crc32($value . $row . $col);
                 if ($hash % 3 !== 0) {
                     $cx = $offsetX + $col * $cellSize;
@@ -2919,20 +3758,20 @@ class PavoDisplayGateway
     }
 
     /**
-     * QR finder pattern (7x7 köşe kareleri)
+     * QR finder pattern (7x7 kÃ¶ÅŸe kareleri)
      */
     private function drawQRFinderPattern($image, int $x, int $y, int $cellSize, $dark, $light): void
     {
-        // Dış kare (7x7)
+        // DÄ±ÅŸ kare (7x7)
         imagefilledrectangle($image, $x, $y, $x + 7 * $cellSize - 1, $y + 7 * $cellSize - 1, $dark);
-        // İç beyaz (5x5)
+        // Ä°Ã§ beyaz (5x5)
         imagefilledrectangle($image, $x + $cellSize, $y + $cellSize, $x + 6 * $cellSize - 1, $y + 6 * $cellSize - 1, $light);
         // Merkez kare (3x3)
         imagefilledrectangle($image, $x + 2 * $cellSize, $y + 2 * $cellSize, $x + 5 * $cellSize - 1, $y + 5 * $cellSize - 1, $dark);
     }
 
     /**
-     * Ürün bilgilerinden dinamik alan değerlerini oluştur
+     * ÃœrÃ¼n bilgilerinden dinamik alan deÄŸerlerini oluÅŸtur
      */
     private function buildFieldValues(array $product): array
     {
@@ -2940,11 +3779,11 @@ class PavoDisplayGateway
         $currentPrice = $product['current_price'] ?? $product['price'] ?? 0;
         $previousPrice = $product['previous_price'] ?? $product['old_price'] ?? null;
 
-        // Fiyatı formatla
+        // FiyatÄ± formatla
         $formattedPrice = number_format((float)$currentPrice, 2, ',', '.');
         $formattedPrevPrice = $previousPrice ? number_format((float)$previousPrice, 2, ',', '.') : '';
-        $formattedPriceWithCurrency = $formattedPrice . ' ₺';
-        $formattedPrevPriceWithCurrency = $formattedPrevPrice ? ($formattedPrevPrice . ' ₺') : '';
+        $formattedPriceWithCurrency = $formattedPrice . ' â‚º';
+        $formattedPrevPriceWithCurrency = $formattedPrevPrice ? ($formattedPrevPrice . ' â‚º') : '';
 
         return [
             // Temel bilgiler
@@ -2987,7 +3826,7 @@ class PavoDisplayGateway
             'shelf_location' => $product['shelf_location'] ?? '',
             'supplier_code' => $product['supplier_code'] ?? '',
 
-            // HAL Künye alanları
+            // HAL KÃ¼nye alanlarÄ±
             'kunye_no' => $product['kunye_no'] ?? '',
             'uretici_adi' => $product['uretici_adi'] ?? '',
             'malin_adi' => $product['malin_adi'] ?? '',
@@ -3001,7 +3840,7 @@ class PavoDisplayGateway
             'gumruk_kapisi' => $product['gumruk_kapisi'] ?? '',
             'uretim_ithal_tarihi' => $product['uretim_ithal_tarihi'] ?? '',
             'miktar' => $product['miktar'] ?? '',
-            'alis_fiyati' => isset($product['alis_fiyati']) && $product['alis_fiyati'] !== '' ? number_format((float)$product['alis_fiyati'], 2, ',', '.') . ' ₺' : '',
+            'alis_fiyati' => isset($product['alis_fiyati']) && $product['alis_fiyati'] !== '' ? number_format((float)$product['alis_fiyati'], 2, ',', '.') . ' â‚º' : '',
             'isletme_adi' => $product['isletme_adi'] ?? '',
             'uretim_sekli' => $product['uretim_sekli'] ?? $product['production_type'] ?? '',
             'sertifikasyon_kurulusu' => $product['sertifikasyon_kurulusu'] ?? '',
@@ -3021,21 +3860,21 @@ class PavoDisplayGateway
     }
 
     /**
-     * Sistemde kullanılabilir font dosyası bul
+     * Sistemde kullanÄ±labilir font dosyasÄ± bul
      */
     private function findSystemFont(): ?string
     {
         $possibleFonts = [
-            // Windows fontları
+            // Windows fontlarÄ±
             'C:/Windows/Fonts/arial.ttf',
             'C:/Windows/Fonts/arialbd.ttf',
             'C:/Windows/Fonts/segoeui.ttf',
             'C:/Windows/Fonts/tahoma.ttf',
-            // Linux fontları
+            // Linux fontlarÄ±
             '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
             '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
             '/usr/share/fonts/TTF/DejaVuSans.ttf',
-            // MacOS fontları
+            // MacOS fontlarÄ±
             '/Library/Fonts/Arial.ttf',
             '/System/Library/Fonts/Helvetica.ttc',
         ];
@@ -3050,11 +3889,11 @@ class PavoDisplayGateway
     }
 
     /**
-     * Hex renk kodunu RGB'ye dönüştür
+     * Hex renk kodunu RGB'ye dÃ¶nÃ¼ÅŸtÃ¼r
      */
     /**
-     * Görsel URL'sinden dosya yolunu resolve et
-     * @param string $url Görsel URL veya dosya yolu
+     * GÃ¶rsel URL'sinden dosya yolunu resolve et
+     * @param string $url GÃ¶rsel URL veya dosya yolu
      * @param string|null $companyId Firma ID
      * @return string|null Dosya yolu veya null
      */
@@ -3078,17 +3917,17 @@ class PavoDisplayGateway
             $basePaths[] = BASE_PATH;
         }
 
-        // URL'den relative path çıkar
+        // URL'den relative path Ã§Ä±kar
         $relativePath = $url;
-        // /storage/ prefix'i varsa kaldır
+        // /storage/ prefix'i varsa kaldÄ±r
         $relativePath = preg_replace('#^/?(storage/)#', '', $relativePath);
-        // /api/media/serve.php?path= prefix'i varsa kaldır
+        // /api/media/serve.php?path= prefix'i varsa kaldÄ±r
         if (strpos($relativePath, 'api/media/serve.php') !== false) {
             parse_str(parse_url($relativePath, PHP_URL_QUERY) ?? '', $params);
             $relativePath = $params['path'] ?? $relativePath;
         }
 
-        // Firma bazlı yolları dene
+        // Firma bazlÄ± yollarÄ± dene
         foreach ($basePaths as $base) {
             $candidates = [
                 $base . '/' . $relativePath,
@@ -3111,18 +3950,18 @@ class PavoDisplayGateway
     }
 
     /**
-     * Base image üzerindeki placeholder alanını arka plan rengiyle sil.
+     * Base image Ã¼zerindeki placeholder alanÄ±nÄ± arka plan rengiyle sil.
      *
      * Base image (render_image/preview_image), Fabric.js canvas export'undan gelir ve
-     * tüm nesneleri (placeholder Rect dahil) zaten içerir. Product image oval maskeleme
-     * ile çizildiğinde, saydam köşeler eski placeholder'ı (gri dolgu + mavi çizgili kenar)
-     * gösterir. Bu metod, product image çizilmeden ÖNCE placeholder alanını temizler.
+     * tÃ¼m nesneleri (placeholder Rect dahil) zaten iÃ§erir. Product image oval maskeleme
+     * ile Ã§izildiÄŸinde, saydam kÃ¶ÅŸeler eski placeholder'Ä± (gri dolgu + mavi Ã§izgili kenar)
+     * gÃ¶sterir. Bu metod, product image Ã§izilmeden Ã–NCE placeholder alanÄ±nÄ± temizler.
      *
-     * @param resource|\GdImage $image Hedef GD görsel (base image)
+     * @param resource|\GdImage $image Hedef GD gÃ¶rsel (base image)
      * @param array $obj Fabric.js nesne verileri (pozisyon, boyut, origin bilgileri)
-     * @param float $scaleX Yatay ölçekleme oranı
-     * @param float $scaleY Dikey ölçekleme oranı
-     * @param int $bgColor GD renk kaynağı (template arka plan rengi)
+     * @param float $scaleX Yatay Ã¶lÃ§ekleme oranÄ±
+     * @param float $scaleY Dikey Ã¶lÃ§ekleme oranÄ±
+     * @param int $bgColor GD renk kaynaÄŸÄ± (template arka plan rengi)
      * @param callable $log Log fonksiyonu
      */
     private function eraseObjectArea($image, array $obj, float $scaleX, float $scaleY, $bgColor, callable $log): void
@@ -3141,14 +3980,14 @@ class PavoDisplayGateway
         $dstX = (int)round($left * $scaleX);
         $dstY = (int)round($top * $scaleY);
 
-        // Origin ayarı (renderImageOnPosition ile aynı mantık)
+        // Origin ayarÄ± (renderImageOnPosition ile aynÄ± mantÄ±k)
         if ($originX === 'center') $dstX -= (int)($dstW / 2);
         elseif ($originX === 'right') $dstX -= $dstW;
 
         if ($originY === 'center') $dstY -= (int)($dstH / 2);
         elseif ($originY === 'bottom') $dstY -= $dstH;
 
-        // Stroke width kadar marj ekle — placeholder'ın kenarlık çizgileri de silinsin
+        // Stroke width kadar marj ekle â€” placeholder'Ä±n kenarlÄ±k Ã§izgileri de silinsin
         $sw = (int)round(($obj['strokeWidth'] ?? 2) * max($scaleX, $scaleY));
         $margin = max($sw + 1, 3);
 
@@ -3167,23 +4006,23 @@ class PavoDisplayGateway
     }
 
     /**
-     * Dinamik görsel placeholder'ını GD ile render et
-     * @param resource|\GdImage $dstImage Hedef GD görsel
-     * @param string $imagePath Kaynak görsel dosya yolu
+     * Dinamik gÃ¶rsel placeholder'Ä±nÄ± GD ile render et
+     * @param resource|\GdImage $dstImage Hedef GD gÃ¶rsel
+     * @param string $imagePath Kaynak gÃ¶rsel dosya yolu
      * @param array $obj Fabric.js nesne verileri
-     * @param float $scaleX Yatay ölçekleme oranı
-     * @param float $scaleY Dikey ölçekleme oranı
+     * @param float $scaleX Yatay Ã¶lÃ§ekleme oranÄ±
+     * @param float $scaleY Dikey Ã¶lÃ§ekleme oranÄ±
      * @param callable $log Log fonksiyonu
      */
     private function renderImageOnPosition($dstImage, string $imagePath, array $obj, float $scaleX, float $scaleY, callable $log): void
     {
-        // visible kontrolü
+        // visible kontrolÃ¼
         if (isset($obj['visible']) && $obj['visible'] === false) {
-            $log("  renderImageOnPosition: visible=false, atlanıyor");
+            $log("  renderImageOnPosition: visible=false, atlanÄ±yor");
             return;
         }
 
-        // Kaynak görseli yükle
+        // Kaynak gÃ¶rseli yÃ¼kle
         $srcImg = null;
         $ext = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
 
@@ -3205,7 +4044,7 @@ class PavoDisplayGateway
         }
 
         if (!$srcImg) {
-            $log("  renderImageOnPosition: Görsel yüklenemedi: $imagePath (ext: $ext)");
+            $log("  renderImageOnPosition: GÃ¶rsel yÃ¼klenemedi: $imagePath (ext: $ext)");
             return;
         }
 
@@ -3219,7 +4058,7 @@ class PavoDisplayGateway
         $originX = $obj['originX'] ?? 'center';
         $originY = $obj['originY'] ?? 'center';
 
-        // Görsel özellikler
+        // GÃ¶rsel Ã¶zellikler
         $opacity = (float)($obj['opacity'] ?? 1);
         $stroke = $obj['stroke'] ?? null;
         $strokeWidth = (float)($obj['strokeWidth'] ?? 0);
@@ -3228,26 +4067,26 @@ class PavoDisplayGateway
         $angle = (float)($obj['angle'] ?? 0);
         $shadow = $obj['shadow'] ?? null;
 
-        // Efektif boyutları hesapla
+        // Efektif boyutlarÄ± hesapla
         $dstW = (int)round($width * $objScaleX * $scaleX);
         $dstH = (int)round($height * $objScaleY * $scaleY);
 
-        // Ölçeklenmiş pozisyonu hesapla
+        // Ã–lÃ§eklenmiÅŸ pozisyonu hesapla
         $dstX = (int)round($left * $scaleX);
         $dstY = (int)round($top * $scaleY);
 
-        // Origin ayarı
+        // Origin ayarÄ±
         if ($originX === 'center') $dstX -= (int)($dstW / 2);
         elseif ($originX === 'right') $dstX -= $dstW;
 
         if ($originY === 'center') $dstY -= (int)($dstH / 2);
         elseif ($originY === 'bottom') $dstY -= $dstH;
 
-        // Kaynak boyutları
+        // Kaynak boyutlarÄ±
         $srcW = imagesx($srcImg);
         $srcH = imagesy($srcImg);
 
-        // imageFit moduna göre render
+        // imageFit moduna gÃ¶re render
         $fit = $obj['imageFit'] ?? 'cover';
         $cropSrcX = 0;
         $cropSrcY = 0;
@@ -3255,7 +4094,7 @@ class PavoDisplayGateway
         $cropSrcH = $srcH;
 
         if ($fit === 'cover') {
-            // Cover: Kaynak görseli kırp, hedef alanı tamamen doldursun
+            // Cover: Kaynak gÃ¶rseli kÄ±rp, hedef alanÄ± tamamen doldursun
             $srcAspect = $srcW / max(1, $srcH);
             $dstAspect = $dstW / max(1, $dstH);
 
@@ -3267,7 +4106,7 @@ class PavoDisplayGateway
                 $cropSrcY = (int)round(($srcH - $cropSrcH) / 2);
             }
         } elseif ($fit === 'contain') {
-            // Contain: Kaynak görseli küçült, hedef alanı içine sığsın
+            // Contain: Kaynak gÃ¶rseli kÃ¼Ã§Ã¼lt, hedef alanÄ± iÃ§ine sÄ±ÄŸsÄ±n
             $srcAspect = $srcW / max(1, $srcH);
             $dstAspect = $dstW / max(1, $dstH);
 
@@ -3282,21 +4121,21 @@ class PavoDisplayGateway
             }
         }
 
-        // Geçersiz boyut kontrolü
+        // GeÃ§ersiz boyut kontrolÃ¼
         if ($dstW < 1 || $dstH < 1 || $cropSrcW < 1 || $cropSrcH < 1) {
-            $log("  renderImageOnPosition: Geçersiz boyut: dst={$dstW}x{$dstH}, src={$cropSrcW}x{$cropSrcH}");
+            $log("  renderImageOnPosition: GeÃ§ersiz boyut: dst={$dstW}x{$dstH}, src={$cropSrcW}x{$cropSrcH}");
             imagedestroy($srcImg);
             return;
         }
 
-        // Ara görüntü oluştur (border radius, opacity, rotation için)
+        // Ara gÃ¶rÃ¼ntÃ¼ oluÅŸtur (border radius, opacity, rotation iÃ§in)
         $tempImg = imagecreatetruecolor($dstW, $dstH);
         imagealphablending($tempImg, true);
         imagesavealpha($tempImg, true);
         $transparent = imagecolorallocatealpha($tempImg, 0, 0, 0, 127);
         imagefill($tempImg, 0, 0, $transparent);
 
-        // Görseli ara görüntüye kopyala
+        // GÃ¶rseli ara gÃ¶rÃ¼ntÃ¼ye kopyala
         imagecopyresampled(
             $tempImg, $srcImg,
             0, 0,
@@ -3306,7 +4145,7 @@ class PavoDisplayGateway
         );
         imagedestroy($srcImg);
 
-        // --- Köşe yuvarlaklığı (rx/ry) ---
+        // --- KÃ¶ÅŸe yuvarlaklÄ±ÄŸÄ± (rx/ry) ---
         $scaledRx = (int)round($rx * $scaleX);
         $scaledRy = (int)round($ry * $scaleY);
         $hasRoundedCorners = ($scaledRx > 0 || $scaledRy > 0);
@@ -3317,10 +4156,10 @@ class PavoDisplayGateway
             $effRx = min($scaledRx > 0 ? $scaledRx : $scaledRy, (int)floor($dstW / 2));
             $effRy = min($scaledRy > 0 ? $scaledRy : $scaledRx, (int)floor($dstH / 2));
             $isFullEllipse = ($effRx >= (int)floor($dstW / 2)) && ($effRy >= (int)floor($dstH / 2));
-            $log("  renderImageOnPosition: rx={$scaledRx} ry={$scaledRy} köşe yuvarlaklığı uygulandı (fullEllipse=" . ($isFullEllipse ? 'true' : 'false') . ")");
+            $log("  renderImageOnPosition: rx={$scaledRx} ry={$scaledRy} kÃ¶ÅŸe yuvarlaklÄ±ÄŸÄ± uygulandÄ± (fullEllipse=" . ($isFullEllipse ? 'true' : 'false') . ")");
         }
 
-        // --- Kenarlık (stroke) — tempImg üzerine, yuvarlatılmış şekli takip eder ---
+        // --- KenarlÄ±k (stroke) â€” tempImg Ã¼zerine, yuvarlatÄ±lmÄ±ÅŸ ÅŸekli takip eder ---
         if ($stroke && $strokeWidth > 0) {
             $scaledStrokeW = max(1, (int)round($strokeWidth * $scaleX));
             $stRgb = $this->hexToRgb($stroke);
@@ -3328,35 +4167,35 @@ class PavoDisplayGateway
             $strokeColor = imagecolorallocatealpha($tempImg, $stRgb['r'], $stRgb['g'], $stRgb['b'], $strokeAlpha);
 
             if ($isFullEllipse) {
-                // Eliptik kenarlık
+                // Eliptik kenarlÄ±k
                 for ($i = 0; $i < $scaledStrokeW; $i++) {
                     imageellipse($tempImg, (int)floor($dstW / 2), (int)floor($dstH / 2), $dstW - 1 - 2 * $i, $dstH - 1 - 2 * $i, $strokeColor);
                 }
             } elseif ($hasRoundedCorners) {
-                // Yuvarlatılmış dikdörtgen kenarlık (arc + line)
+                // YuvarlatÄ±lmÄ±ÅŸ dikdÃ¶rtgen kenarlÄ±k (arc + line)
                 $erx = min($scaledRx > 0 ? $scaledRx : $scaledRy, (int)floor($dstW / 2));
                 $ery = min($scaledRy > 0 ? $scaledRy : $scaledRx, (int)floor($dstH / 2));
                 for ($i = 0; $i < $scaledStrokeW; $i++) {
                     $arcW = max(1, 2 * $erx - 2 * $i);
                     $arcH = max(1, 2 * $ery - 2 * $i);
-                    // 4 köşe yayı
+                    // 4 kÃ¶ÅŸe yayÄ±
                     imagearc($tempImg, $erx, $ery, $arcW, $arcH, 180, 270, $strokeColor);
                     imagearc($tempImg, $dstW - $erx - 1, $ery, $arcW, $arcH, 270, 360, $strokeColor);
                     imagearc($tempImg, $erx, $dstH - $ery - 1, $arcW, $arcH, 90, 180, $strokeColor);
                     imagearc($tempImg, $dstW - $erx - 1, $dstH - $ery - 1, $arcW, $arcH, 0, 90, $strokeColor);
-                    // 4 kenar çizgisi
+                    // 4 kenar Ã§izgisi
                     imageline($tempImg, $erx, $i, $dstW - $erx - 1, $i, $strokeColor);
                     imageline($tempImg, $erx, $dstH - 1 - $i, $dstW - $erx - 1, $dstH - 1 - $i, $strokeColor);
                     imageline($tempImg, $i, $ery, $i, $dstH - $ery - 1, $strokeColor);
                     imageline($tempImg, $dstW - 1 - $i, $ery, $dstW - 1 - $i, $dstH - $ery - 1, $strokeColor);
                 }
             } else {
-                // Düz dikdörtgen kenarlık
+                // DÃ¼z dikdÃ¶rtgen kenarlÄ±k
                 imagesetthickness($tempImg, $scaledStrokeW);
                 imagerectangle($tempImg, 0, 0, $dstW - 1, $dstH - 1, $strokeColor);
                 imagesetthickness($tempImg, 1);
             }
-            $log("  renderImageOnPosition: stroke={$stroke} width={$scaledStrokeW} kenarlık uygulandı");
+            $log("  renderImageOnPosition: stroke={$stroke} width={$scaledStrokeW} kenarlÄ±k uygulandÄ±");
         }
 
         // --- Rotasyon (angle) ---
@@ -3372,11 +4211,11 @@ class PavoDisplayGateway
                 $tempImg = $rotated;
                 $dstW = $newW;
                 $dstH = $newH;
-                $log("  renderImageOnPosition: angle={$angle} rotasyon uygulandı");
+                $log("  renderImageOnPosition: angle={$angle} rotasyon uygulandÄ±");
             }
         }
 
-        // --- Gölge (shadow) — şekle uyumlu ---
+        // --- GÃ¶lge (shadow) â€” ÅŸekle uyumlu ---
         if ($shadow) {
             $shadowObj = is_string($shadow) ? json_decode($shadow, true) : (is_array($shadow) ? $shadow : null);
             if ($shadowObj) {
@@ -3389,7 +4228,7 @@ class PavoDisplayGateway
                 $shadowColor = imagecolorallocatealpha($dstImage, $sRgb['r'], $sRgb['g'], $sRgb['b'], max(0, min(127, $sAlpha)));
 
                 if ($isFullEllipse && $angle == 0) {
-                    // Elips gölge
+                    // Elips gÃ¶lge
                     imagefilledellipse(
                         $dstImage,
                         $dstX + (int)($dstW / 2) + $sOffsetX,
@@ -3398,7 +4237,7 @@ class PavoDisplayGateway
                         $shadowColor
                     );
                 } else {
-                    // Dikdörtgen gölge
+                    // DikdÃ¶rtgen gÃ¶lge
                     imagefilledrectangle(
                         $dstImage,
                         $dstX + $sOffsetX,
@@ -3408,18 +4247,18 @@ class PavoDisplayGateway
                         $shadowColor
                     );
                 }
-                $log("  renderImageOnPosition: shadow offset=({$sOffsetX},{$sOffsetY}) uygulandı");
+                $log("  renderImageOnPosition: shadow offset=({$sOffsetX},{$sOffsetY}) uygulandÄ±");
             }
         }
 
-        // --- Hedef görüntüye kopyala (opacity + alpha uyumlu) ---
+        // --- Hedef gÃ¶rÃ¼ntÃ¼ye kopyala (opacity + alpha uyumlu) ---
         if ($opacity < 1 && $opacity > 0) {
             if ($hasRoundedCorners) {
-                // Alpha + opacity birlikte: önce alpha blend, sonra opacity merge
+                // Alpha + opacity birlikte: Ã¶nce alpha blend, sonra opacity merge
                 $temp2 = imagecreatetruecolor($dstW, $dstH);
                 imagealphablending($temp2, false);
                 imagesavealpha($temp2, true);
-                // Hedef bölgeyi kopyala
+                // Hedef bÃ¶lgeyi kopyala
                 $copyX = max(0, $dstX);
                 $copyY = max(0, $dstY);
                 $availW = min($dstW, imagesx($dstImage) - $copyX);
@@ -3427,18 +4266,18 @@ class PavoDisplayGateway
                 if ($availW > 0 && $availH > 0) {
                     imagecopy($temp2, $dstImage, 0, 0, $copyX, $copyY, $availW, $availH);
                 }
-                // tempImg'i alpha ile üstüne koy (şeffaf köşeler korunur)
+                // tempImg'i alpha ile Ã¼stÃ¼ne koy (ÅŸeffaf kÃ¶ÅŸeler korunur)
                 imagealphablending($temp2, true);
                 imagecopy($temp2, $tempImg, 0, 0, 0, 0, $dstW, $dstH);
-                // Opacity ile birleştir
+                // Opacity ile birleÅŸtir
                 imagecopymerge($dstImage, $temp2, $dstX, $dstY, 0, 0, $dstW, $dstH, (int)round($opacity * 100));
                 imagedestroy($temp2);
             } else {
                 imagecopymerge($dstImage, $tempImg, $dstX, $dstY, 0, 0, $dstW, $dstH, (int)round($opacity * 100));
             }
-            $log("  renderImageOnPosition: opacity={$opacity} uygulandı");
+            $log("  renderImageOnPosition: opacity={$opacity} uygulandÄ±");
         } elseif ($opacity > 0) {
-            // Tam opaklık — alpha kanalını koru
+            // Tam opaklÄ±k â€” alpha kanalÄ±nÄ± koru
             imagealphablending($dstImage, true);
             imagecopy($dstImage, $tempImg, $dstX, $dstY, 0, 0, $dstW, $dstH);
         }
@@ -3448,53 +4287,53 @@ class PavoDisplayGateway
     }
 
     /**
-     * GD görüntüsüne köşe yuvarlaklığı uygula (alpha mask)
+     * GD gÃ¶rÃ¼ntÃ¼sÃ¼ne kÃ¶ÅŸe yuvarlaklÄ±ÄŸÄ± uygula (alpha mask)
      */
     private function applyRoundedCorners($img, int $w, int $h, int $rx, int $ry): void
     {
-        // rx veya ry 0 ise diğerini kullan (Fabric.js davranışı: tek değer her iki eksene uygulanır)
+        // rx veya ry 0 ise diÄŸerini kullan (Fabric.js davranÄ±ÅŸÄ±: tek deÄŸer her iki eksene uygulanÄ±r)
         $effRx = $rx > 0 ? $rx : $ry;
         $effRy = $ry > 0 ? $ry : $rx;
 
         if ($effRx < 1 || $effRy < 1 || $w < 2 || $h < 2) return;
 
-        // Yarıçapları görüntü boyutunun yarısıyla sınırla (boyut sınırlaması YAPMA)
+        // YarÄ±Ã§aplarÄ± gÃ¶rÃ¼ntÃ¼ boyutunun yarÄ±sÄ±yla sÄ±nÄ±rla (boyut sÄ±nÄ±rlamasÄ± YAPMA)
         $halfW = (int)floor($w / 2);
         $halfH = (int)floor($h / 2);
         $effRx = min($effRx, $halfW);
         $effRy = min($effRy, $halfH);
 
-        imagealphablending($img, false); // Doğrudan piksel yazımı için
+        imagealphablending($img, false); // DoÄŸrudan piksel yazÄ±mÄ± iÃ§in
         $transparent = imagecolorallocatealpha($img, 0, 0, 0, 127);
 
         $isFullEllipse = ($effRx >= $halfW) && ($effRy >= $halfH);
 
         if ($isFullEllipse) {
-            // ========== TAM ELİPS MODU ==========
-            // Tüm görüntüyü elips olarak maskele (scanline yaklaşımı — performanslı)
+            // ========== TAM ELÄ°PS MODU ==========
+            // TÃ¼m gÃ¶rÃ¼ntÃ¼yÃ¼ elips olarak maskele (scanline yaklaÅŸÄ±mÄ± â€” performanslÄ±)
             $cx = ($w - 1) / 2.0;
             $cy = ($h - 1) / 2.0;
-            $a  = $w / 2.0;   // yarı eksen x
-            $b  = $h / 2.0;   // yarı eksen y
+            $a  = $w / 2.0;   // yarÄ± eksen x
+            $b  = $h / 2.0;   // yarÄ± eksen y
 
             for ($y = 0; $y < $h; $y++) {
-                $ny   = ($y - $cy) / $b;   // normalleştirilmiş y (-1..1)
+                $ny   = ($y - $cy) / $b;   // normalleÅŸtirilmiÅŸ y (-1..1)
                 $nySq = $ny * $ny;
 
                 if ($nySq >= 1.0) {
-                    // Bu satır tamamen elips dışında — tüm pikseller şeffaf
+                    // Bu satÄ±r tamamen elips dÄ±ÅŸÄ±nda â€” tÃ¼m pikseller ÅŸeffaf
                     for ($x = 0; $x < $w; $x++) {
                         imagesetpixel($img, $x, $y, $transparent);
                     }
                     continue;
                 }
 
-                // Bu satırdaki elips x sınırlarını hesapla
+                // Bu satÄ±rdaki elips x sÄ±nÄ±rlarÄ±nÄ± hesapla
                 $xSpan = $a * sqrt(1.0 - $nySq);
                 $xLeftBound  = $cx - $xSpan;
                 $xRightBound = $cx + $xSpan;
 
-                // Sol dış bölge — elips sol sınırına kadar
+                // Sol dÄ±ÅŸ bÃ¶lge â€” elips sol sÄ±nÄ±rÄ±na kadar
                 $leftEnd = min($w, (int)ceil($xLeftBound));
                 for ($x = 0; $x < $leftEnd; $x++) {
                     $nx = ($x - $cx) / $a;
@@ -3503,7 +4342,7 @@ class PavoDisplayGateway
                     }
                 }
 
-                // Sağ dış bölge — elips sağ sınırından itibaren
+                // SaÄŸ dÄ±ÅŸ bÃ¶lge â€” elips saÄŸ sÄ±nÄ±rÄ±ndan itibaren
                 $rightStart = max(0, (int)floor($xRightBound));
                 for ($x = $rightStart; $x < $w; $x++) {
                     $nx = ($x - $cx) / $a;
@@ -3513,20 +4352,20 @@ class PavoDisplayGateway
                 }
             }
         } else {
-            // ========== KÖŞE YUVARLAMA MODU ==========
-            // 4 köşede eliptik yay uygula (ayrı rx/ry ile gerçek elips desteği)
-            // Merkez noktası köşe eğrisinin iç tarafında — elips denklemiyle maskeleme
+            // ========== KÃ–ÅE YUVARLAMA MODU ==========
+            // 4 kÃ¶ÅŸede eliptik yay uygula (ayrÄ± rx/ry ile gerÃ§ek elips desteÄŸi)
+            // Merkez noktasÄ± kÃ¶ÅŸe eÄŸrisinin iÃ§ tarafÄ±nda â€” elips denklemiyle maskeleme
 
             $corners = [
                 // [centerX, centerY, regionX1, regionY1, regionX2, regionY2]
-                [$effRx,             $effRy,             0,             0,             $effRx - 1,       $effRy - 1      ], // Sol üst
-                [$w - 1 - $effRx,    $effRy,             $w - $effRx,   0,             $w - 1,           $effRy - 1      ], // Sağ üst
+                [$effRx,             $effRy,             0,             0,             $effRx - 1,       $effRy - 1      ], // Sol Ã¼st
+                [$w - 1 - $effRx,    $effRy,             $w - $effRx,   0,             $w - 1,           $effRy - 1      ], // SaÄŸ Ã¼st
                 [$effRx,             $h - 1 - $effRy,    0,             $h - $effRy,   $effRx - 1,       $h - 1          ], // Sol alt
-                [$w - 1 - $effRx,    $h - 1 - $effRy,    $w - $effRx,   $h - $effRy,   $w - 1,           $h - 1          ], // Sağ alt
+                [$w - 1 - $effRx,    $h - 1 - $effRy,    $w - $effRx,   $h - $effRy,   $w - 1,           $h - 1          ], // SaÄŸ alt
             ];
 
-            $aF = (float)$effRx;  // elips yarı eksen x
-            $bF = (float)$effRy;  // elips yarı eksen y
+            $aF = (float)$effRx;  // elips yarÄ± eksen x
+            $bF = (float)$effRy;  // elips yarÄ± eksen y
 
             foreach ($corners as $c) {
                 $cxF = (float)$c[0];
@@ -3536,7 +4375,7 @@ class PavoDisplayGateway
                     $ny = ($y - $cyF) / $bF;
                     $nySq = $ny * $ny;
 
-                    // Satır tamamen dışarıdaysa hızla atla
+                    // SatÄ±r tamamen dÄ±ÅŸarÄ±daysa hÄ±zla atla
                     if ($nySq >= 1.0) {
                         for ($x = $c[2]; $x <= $c[4]; $x++) {
                             imagesetpixel($img, $x, $y, $transparent);
@@ -3545,7 +4384,7 @@ class PavoDisplayGateway
                     }
 
                     for ($x = $c[2]; $x <= $c[4]; $x++) {
-                        // Elips denklemi: (dx/a)² + (dy/b)² > 1 → dışarıda → şeffaf yap
+                        // Elips denklemi: (dx/a)Â² + (dy/b)Â² > 1 â†’ dÄ±ÅŸarÄ±da â†’ ÅŸeffaf yap
                         $nx = ($x - $cxF) / $aF;
                         if ($nx * $nx + $nySq > 1.0) {
                             imagesetpixel($img, $x, $y, $transparent);
@@ -3555,12 +4394,12 @@ class PavoDisplayGateway
             }
         }
 
-        imagealphablending($img, true); // Alpha blending'i geri aç
+        imagealphablending($img, true); // Alpha blending'i geri aÃ§
     }
 
     private function hexToRgb(string $color): array
     {
-        // rgba(255,255,255,0.8) veya rgb(255,255,255) formatı
+        // rgba(255,255,255,0.8) veya rgb(255,255,255) formatÄ±
         if (preg_match('/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/', $color, $matches)) {
             return [
                 'r' => (int)$matches[1],
@@ -3573,7 +4412,7 @@ class PavoDisplayGateway
         // Hex format
         $hex = ltrim($color, '#');
 
-        // Kısa format (#RGB veya #RGBA)
+        // KÄ±sa format (#RGB veya #RGBA)
         if (strlen($hex) === 3) {
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
         } elseif (strlen($hex) === 4) {
@@ -3590,7 +4429,7 @@ class PavoDisplayGateway
             ];
         }
 
-        // Geçersiz format için varsayılan siyah
+        // GeÃ§ersiz format iÃ§in varsayÄ±lan siyah
         if (strlen($hex) !== 6) {
             return ['r' => 0, 'g' => 0, 'b' => 0, 'a' => 1.0];
         }
@@ -3604,13 +4443,13 @@ class PavoDisplayGateway
     }
 
     /**
-     * Ürün etiketini GD ile render edip cihaza gönder
+     * ÃœrÃ¼n etiketini GD ile render edip cihaza gÃ¶nder
      *
      * @param string $ip Cihaz IP adresi
      * @param string $clientId Cihaz Client ID
-     * @param array $product Ürün bilgileri
-     * @param array $template Şablon ayarları
-     * @return array Sonuç
+     * @param array $product ÃœrÃ¼n bilgileri
+     * @param array $template Åablon ayarlarÄ±
+     * @return array SonuÃ§
      */
     public function sendProductLabel(string $ip, string $clientId, array $product, array $template = []): array
     {
@@ -3630,7 +4469,7 @@ class PavoDisplayGateway
         $gray = imagecolorallocate($image, 128, 128, 128);
         $darkBlue = imagecolorallocate($image, 30, 41, 59);
 
-        // Font (varsayılan)
+        // Font (varsayÄ±lan)
         $fontPath = null;
         $possibleFonts = [
             'C:/Windows/Fonts/arial.ttf',
@@ -3644,8 +4483,8 @@ class PavoDisplayGateway
             }
         }
 
-        // Ürün görseli varsa üst yarıya yerleştir
-        $imageAreaHeight = (int)($height * 0.45); // %45 görsel alanı
+        // ÃœrÃ¼n gÃ¶rseli varsa Ã¼st yarÄ±ya yerleÅŸtir
+        $imageAreaHeight = (int)($height * 0.45); // %45 gÃ¶rsel alanÄ±
         if (!empty($product['image_url']) || !empty($product['image_path'])) {
             $imageSrc = $product['image_path'] ?? $product['image_url'];
             if (file_exists($imageSrc)) {
@@ -3661,7 +4500,7 @@ class PavoDisplayGateway
                     $pWidth = imagesx($productImage);
                     $pHeight = imagesy($productImage);
 
-                    // Oranı koru
+                    // OranÄ± koru
                     $ratio = min($width / $pWidth, $imageAreaHeight / $pHeight);
                     $newWidth = (int)($pWidth * $ratio);
                     $newHeight = (int)($pHeight * $ratio);
@@ -3674,7 +4513,7 @@ class PavoDisplayGateway
             }
         }
 
-        // Metin alanı başlangıcı
+        // Metin alanÄ± baÅŸlangÄ±cÄ±
         $textStartY = $imageAreaHeight + 40;
 
         if ($fontPath) {
@@ -3686,14 +4525,14 @@ class PavoDisplayGateway
                 $textStartY += 40;
             }
 
-            // Ürün adı
-            $name = $product['name'] ?? 'Ürün Adı';
+            // ÃœrÃ¼n adÄ±
+            $name = $product['name'] ?? 'ÃœrÃ¼n AdÄ±';
             imagettftext($image, 28, 0, 50, $textStartY, $darkBlue, $fontPath, $name);
             $textStartY += 80;
 
             // Fiyat
             $price = number_format((float)($product['current_price'] ?? 0), 2, ',', '.');
-            $currency = $product['currency'] ?? '₺';
+            $currency = $product['currency'] ?? 'â‚º';
             imagettftext($image, 48, 0, $width - 250, $textStartY, $darkBlue, $fontPath, $currency);
             imagettftext($image, 72, 0, $width - 200, $textStartY, $darkBlue, $fontPath, explode(',', $price)[0]);
             imagettftext($image, 36, 0, $width - 80, $textStartY - 30, $darkBlue, $fontPath, ',' . explode(',', $price)[1]);
@@ -3702,8 +4541,8 @@ class PavoDisplayGateway
 
             // Detaylar
             $details = [
-                'Menşei' => $product['origin'] ?? '',
-                'Ağırlık' => $product['weight'] ?? $product['unit'] ?? '',
+                'MenÅŸei' => $product['origin'] ?? '',
+                'AÄŸÄ±rlÄ±k' => $product['weight'] ?? $product['unit'] ?? '',
                 'Saklama' => $product['storage_info'] ?? ''
             ];
 
@@ -3716,35 +4555,35 @@ class PavoDisplayGateway
             }
 
         } else {
-            // Yerleşik font ile basit render
+            // YerleÅŸik font ile basit render
             imagestring($image, 5, 50, $textStartY, $product['name'] ?? 'Product', $black);
             imagestring($image, 5, 50, $textStartY + 50, 'Price: ' . ($product['current_price'] ?? '0.00'), $red);
         }
 
-        // Görseli cihaza gönder
+        // GÃ¶rseli cihaza gÃ¶nder
         return $this->sendLabel($ip, $clientId, $image, $product, $width, $height);
     }
 
     /**
-     * Video Grid destekli etiket gönder
+     * Video Grid destekli etiket gÃ¶nder
      *
-     * Desteklenen düzenler:
-     * - fullscreen_image: Tam ekran görsel
+     * Desteklenen dÃ¼zenler:
+     * - fullscreen_image: Tam ekran gÃ¶rsel
      * - fullscreen_video: Tam ekran video
-     * - split_vertical: Üst video, alt görsel (varsayılan)
-     * - split_horizontal: Sol görsel, sağ video
+     * - split_vertical: Ãœst video, alt gÃ¶rsel (varsayÄ±lan)
+     * - split_horizontal: Sol gÃ¶rsel, saÄŸ video
      *
      * @param string $ip Cihaz IP adresi
      * @param string $clientId Cihaz Client ID (MAC adresi)
-     * @param array $config Grid yapılandırması
+     * @param array $config Grid yapÄ±landÄ±rmasÄ±
      *   - layout: string (fullscreen_image|fullscreen_video|split_vertical|split_horizontal)
-     *   - width: int (ekran genişliği, varsayılan 800)
-     *   - height: int (ekran yüksekliği, varsayılan 1280)
-     *   - image: string|null (görsel dosya yolu)
+     *   - width: int (ekran geniÅŸliÄŸi, varsayÄ±lan 800)
+     *   - height: int (ekran yÃ¼ksekliÄŸi, varsayÄ±lan 1280)
+     *   - image: string|null (gÃ¶rsel dosya yolu)
      *   - video: string|null (video dosya yolu)
-     *   - videos: array|null (çoklu video listesi)
-     *   - product: array (ürün bilgileri)
-     * @return array Sonuç
+     *   - videos: array|null (Ã§oklu video listesi)
+     *   - product: array (Ã¼rÃ¼n bilgileri)
+     * @return array SonuÃ§
      */
     public function sendGridLabel(string $ip, string $clientId, array $config): array
     {
@@ -3755,7 +4594,7 @@ class PavoDisplayGateway
             'files_uploaded' => 0
         ];
 
-        // Varsayılan değerler
+        // VarsayÄ±lan deÄŸerler
         $layout = $config['layout'] ?? 'split_vertical';
         $width = $config['width'] ?? 800;
         $height = $config['height'] ?? 1280;
@@ -3770,18 +4609,18 @@ class PavoDisplayGateway
             $videos = [$videoPath];
         }
 
-        // NOT: Storage temizleme kaldırıldı!
-        // Delta check ile dosya zaten mevcutsa yükleme atlanır.
-        // Storage dolu ise clearSpace ayrı çağrılmalıdır.
+        // NOT: Storage temizleme kaldÄ±rÄ±ldÄ±!
+        // Delta check ile dosya zaten mevcutsa yÃ¼kleme atlanÄ±r.
+        // Storage dolu ise clearSpace ayrÄ± Ã§aÄŸrÄ±lmalÄ±dÄ±r.
         $result['steps']['clear'] = ['skipped' => true, 'reason' => 'Delta check enabled'];
 
-        // Grid bölgelerini hesapla
-        // Custom layout ise config'den al, değilse hesapla
-        // NOT: array_key_exists kullanıyoruz çünkü image_region: null olabilir (sadece video gönderilecek)
+        // Grid bÃ¶lgelerini hesapla
+        // Custom layout ise config'den al, deÄŸilse hesapla
+        // NOT: array_key_exists kullanÄ±yoruz Ã§Ã¼nkÃ¼ image_region: null olabilir (sadece video gÃ¶nderilecek)
         if ($layout === 'custom' && array_key_exists('video_region', $config) && $config['video_region']) {
             $regions = [];
 
-            // Image region varsa ekle (null değilse)
+            // Image region varsa ekle (null deÄŸilse)
             if (array_key_exists('image_region', $config) && $config['image_region']) {
                 $regions['image'] = $config['image_region'];
             }
@@ -3793,30 +4632,30 @@ class PavoDisplayGateway
         }
         $result['regions'] = $regions;
 
-        // Task config hazırla
+        // Task config hazÄ±rla
         $taskConfig = [
             'Id' => $clientId,
             'ItemCode' => $product['sku'] ?? $product['id'] ?? 'ITEM-001',
             'ItemName' => $product['name'] ?? 'Product'
         ];
 
-        // 2. Görsel varsa işle
-        // NOT: PavoDisplay'de LabelPicture ve LabelVideo üst üste binebilir (overlay)
-        // Video görselin üstünde görünür, bu yüzden her ikisini de gönderebiliriz
+        // 2. GÃ¶rsel varsa iÅŸle
+        // NOT: PavoDisplay'de LabelPicture ve LabelVideo Ã¼st Ã¼ste binebilir (overlay)
+        // Video gÃ¶rselin Ã¼stÃ¼nde gÃ¶rÃ¼nÃ¼r, bu yÃ¼zden her ikisini de gÃ¶nderebiliriz
         $shouldAddImage = true;
 
         if (!empty($videos) && isset($regions['video']) && isset($regions['image'])) {
             $vr = $regions['video'];
 
-            // Video bölge koordinatları
+            // Video bÃ¶lge koordinatlarÄ±
             $videoY = (int)($vr['y'] ?? 0);
             $videoH = (int)($vr['height'] ?? 0);
             $videoBottom = $videoY + $videoH;
 
-            // Video üstte mi altta mı kontrol et
+            // Video Ã¼stte mi altta mÄ± kontrol et
             if ($videoY > 0) {
-                // Video ALTTA - görsel üstte olacak
-                $remainingHeight = $videoY; // Video'nun üstündeki alan
+                // Video ALTTA - gÃ¶rsel Ã¼stte olacak
+                $remainingHeight = $videoY; // Video'nun Ã¼stÃ¼ndeki alan
                 if ($remainingHeight < 100) {
                     $shouldAddImage = false;
                 } else {
@@ -3829,8 +4668,8 @@ class PavoDisplayGateway
                     ];
                 }
             } else {
-                // Video ÜSTTE - görsel altta olacak
-                $remainingHeight = $height - $videoBottom; // Video'nun altındaki alan
+                // Video ÃœSTTE - gÃ¶rsel altta olacak
+                $remainingHeight = $height - $videoBottom; // Video'nun altÄ±ndaki alan
                 if ($remainingHeight < 100) {
                     $shouldAddImage = false;
                 } else {
@@ -3844,7 +4683,7 @@ class PavoDisplayGateway
                 }
             }
 
-            // Video tüm ekranı kaplıyorsa görsel ekleme
+            // Video tÃ¼m ekranÄ± kaplÄ±yorsa gÃ¶rsel ekleme
             $totalArea = $width * $height;
             $videoArea = (int)($vr['width'] ?? 0) * $videoH;
             if ($videoArea >= $totalArea * 0.95) {
@@ -3852,7 +4691,7 @@ class PavoDisplayGateway
             }
         }
 
-        // fullscreen_video layout'ta görsel ekleme
+        // fullscreen_video layout'ta gÃ¶rsel ekleme
         if ($layout === 'fullscreen_video') {
             $shouldAddImage = false;
         }
@@ -3860,8 +4699,8 @@ class PavoDisplayGateway
         if ($imagePath && isset($regions['image']) && $shouldAddImage) {
             $imageRegion = $regions['image'];
 
-            // Kırpma bölgesi: Görsel bölgesini kaynak görseldan kırp
-            // (video'nun altındaki alanı çıkar)
+            // KÄ±rpma bÃ¶lgesi: GÃ¶rsel bÃ¶lgesini kaynak gÃ¶rseldan kÄ±rp
+            // (video'nun altÄ±ndaki alanÄ± Ã§Ä±kar)
             $cropRegion = [
                 'x' => $imageRegion['x'],
                 'y' => $imageRegion['y'],
@@ -3871,7 +4710,7 @@ class PavoDisplayGateway
                 'device_height' => $height
             ];
 
-            // Görseli hazırla (kırpma ile + dinamik alanlar)
+            // GÃ¶rseli hazÄ±rla (kÄ±rpma ile + dinamik alanlar)
             $imageResult = $this->prepareAndUploadImage(
                 $ip,
                 $clientId,
@@ -3905,7 +4744,7 @@ class PavoDisplayGateway
             $result['steps']['image'] = ['skipped' => true, 'reason' => 'Video region overlaps or fullscreen_video layout'];
         }
 
-        // 3. Video(lar) varsa işle
+        // 3. Video(lar) varsa iÅŸle
         if (!empty($videos) && isset($regions['video'])) {
             $videoRegion = $regions['video'];
             $videoList = [];
@@ -3920,13 +4759,13 @@ class PavoDisplayGateway
                 $videoFilepath = "files/task/{$videoFilename}";
                 $videoMd5 = strtoupper(md5($videoContent));
 
-                // DELTA CHECK: Cihazda aynı video var mı kontrol et
+                // DELTA CHECK: Cihazda aynÄ± video var mÄ± kontrol et
                 $checkResult = $this->checkFile($ip, $videoFilepath);
                 $videoSkipped = false;
 
                 if ($checkResult['exists'] && !empty($checkResult['md5'])) {
                     if (strcasecmp($checkResult['md5'], $videoMd5) === 0) {
-                        // Video zaten mevcut ve aynı, yükleme atla
+                        // Video zaten mevcut ve aynÄ±, yÃ¼kleme atla
                         $videoSkipped = true;
                         $result['steps']['video_' . ($index + 1)] = [
                             'success' => true,
@@ -3937,7 +4776,7 @@ class PavoDisplayGateway
                 }
 
                 if (!$videoSkipped) {
-                    // Video yükle
+                    // Video yÃ¼kle
                     $uploadResult = $this->uploadFile($ip, $videoFilepath, $videoContent);
                     $result['steps']['video_' . ($index + 1)] = $uploadResult;
 
@@ -3967,7 +4806,7 @@ class PavoDisplayGateway
             }
         }
 
-        // 4. Task config yükle
+        // 4. Task config yÃ¼kle
         $taskJson = json_encode($taskConfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $taskFilePath = "files/task/{$clientId}.js";
 
@@ -4000,7 +4839,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Grid bölgelerini hesapla
+     * Grid bÃ¶lgelerini hesapla
      */
     private function calculateGridRegions(string $layout, int $width, int $height): array
     {
@@ -4022,7 +4861,7 @@ class PavoDisplayGateway
                 break;
 
             case 'split_horizontal':
-                // Sol görsel, sağ video
+                // Sol gÃ¶rsel, saÄŸ video
                 $halfWidth = (int)($width / 2);
                 $regions['image'] = [
                     'x' => 0, 'y' => 0,
@@ -4035,7 +4874,7 @@ class PavoDisplayGateway
                 break;
 
             case 'split_vertical':
-                // Üst video, alt görsel (50/50)
+                // Ãœst video, alt gÃ¶rsel (50/50)
                 $halfHeight = (int)($height / 2);
                 $regions['video'] = [
                     'x' => 0, 'y' => 0,
@@ -4048,7 +4887,7 @@ class PavoDisplayGateway
                 break;
 
             case 'split_vertical_60_40':
-                // Üst video %60, alt görsel %40
+                // Ãœst video %60, alt gÃ¶rsel %40
                 $topHeight = (int)($height * 0.6);
                 $bottomHeight = $height - $topHeight;
                 $regions['video'] = [
@@ -4062,7 +4901,7 @@ class PavoDisplayGateway
                 break;
 
             case 'split_vertical_40_60':
-                // Üst video %40, alt görsel %60
+                // Ãœst video %40, alt gÃ¶rsel %60
                 $topHeight = (int)($height * 0.4);
                 $bottomHeight = $height - $topHeight;
                 $regions['video'] = [
@@ -4076,7 +4915,7 @@ class PavoDisplayGateway
                 break;
 
             case 'grid_1x3':
-                // 3 satır - üst video, orta görsel, alt görsel (veya video)
+                // 3 satÄ±r - Ã¼st video, orta gÃ¶rsel, alt gÃ¶rsel (veya video)
                 $thirdHeight = (int)($height / 3);
                 $regions['video'] = [
                     'x' => 0, 'y' => 0,
@@ -4089,7 +4928,7 @@ class PavoDisplayGateway
                 break;
 
             case 'grid_3x1':
-                // 3 sütun - sol görsel, orta video, sağ görsel
+                // 3 sÃ¼tun - sol gÃ¶rsel, orta video, saÄŸ gÃ¶rsel
                 $thirdWidth = (int)($width / 3);
                 $regions['image'] = [
                     'x' => 0, 'y' => 0,
@@ -4103,7 +4942,7 @@ class PavoDisplayGateway
 
             case 'header_content':
             case 'top_one_bottom_two':
-                // Üst header (küçük), alt içerik (büyük)
+                // Ãœst header (kÃ¼Ã§Ã¼k), alt iÃ§erik (bÃ¼yÃ¼k)
                 $headerHeight = (int)($height * 0.2);
                 $contentHeight = $height - $headerHeight;
                 $regions['video'] = [
@@ -4117,14 +4956,14 @@ class PavoDisplayGateway
                 break;
 
             case 'single':
-                // Tek grid - tüm ekranı kaplar
-                // Video varsa video, yoksa görsel tam ekran gösterilir
-                // Karışık içerik için özel bölgeleme gerekir
+                // Tek grid - tÃ¼m ekranÄ± kaplar
+                // Video varsa video, yoksa gÃ¶rsel tam ekran gÃ¶sterilir
+                // KarÄ±ÅŸÄ±k iÃ§erik iÃ§in Ã¶zel bÃ¶lgeleme gerekir
                 $regions['image'] = [
                     'x' => 0, 'y' => 0,
                     'width' => $width, 'height' => $height
                 ];
-                // Video için de tam ekran alan tanımla - hangisi kullanılacağını sendGridLabel belirler
+                // Video iÃ§in de tam ekran alan tanÄ±mla - hangisi kullanÄ±lacaÄŸÄ±nÄ± sendGridLabel belirler
                 $regions['video'] = [
                     'x' => 0, 'y' => 0,
                     'width' => $width, 'height' => $height
@@ -4132,7 +4971,7 @@ class PavoDisplayGateway
                 break;
 
             default:
-                // Bilinmeyen layout - varsayılan olarak tam ekran görsel
+                // Bilinmeyen layout - varsayÄ±lan olarak tam ekran gÃ¶rsel
                 $regions['image'] = [
                     'x' => 0, 'y' => 0,
                     'width' => $width, 'height' => $height
@@ -4144,7 +4983,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Görseli hazırla ve yükle
+     * GÃ¶rseli hazÄ±rla ve yÃ¼kle
      */
     private function prepareAndUploadImage(string $ip, string $clientId, string $imagePath, int $width, int $height, ?array $cropRegion = null, array $designData = [], array $product = []): array
     {
@@ -4155,7 +4994,7 @@ class PavoDisplayGateway
             return $result;
         }
 
-        // Görseli yükle
+        // GÃ¶rseli yÃ¼kle
         $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
         if ($extension === 'png') {
             $srcImage = imagecreatefrompng($imagePath);
@@ -4174,15 +5013,15 @@ class PavoDisplayGateway
         $srcWidth = imagesx($srcImage);
         $srcHeight = imagesy($srcImage);
 
-        // Kırpma bölgesi belirtilmişse önce kırp
+        // KÄ±rpma bÃ¶lgesi belirtilmiÅŸse Ã¶nce kÄ±rp
         if ($cropRegion) {
             $cropX = $cropRegion['x'] ?? 0;
             $cropY = $cropRegion['y'] ?? 0;
             $cropW = $cropRegion['width'] ?? $srcWidth;
             $cropH = $cropRegion['height'] ?? $srcHeight;
 
-            // Kırpma koordinatlarını kaynak görsel boyutuna ölçekle
-            // (cropRegion cihaz koordinatlarında, srcImage farklı boyutta olabilir)
+            // KÄ±rpma koordinatlarÄ±nÄ± kaynak gÃ¶rsel boyutuna Ã¶lÃ§ekle
+            // (cropRegion cihaz koordinatlarÄ±nda, srcImage farklÄ± boyutta olabilir)
             $scaleX = $srcWidth / ($cropRegion['device_width'] ?? $srcWidth);
             $scaleY = $srcHeight / ($cropRegion['device_height'] ?? $srcHeight);
 
@@ -4191,7 +5030,7 @@ class PavoDisplayGateway
             $scaledCropW = (int)($cropW * $scaleX);
             $scaledCropH = (int)($cropH * $scaleY);
 
-            // Sınır kontrolü
+            // SÄ±nÄ±r kontrolÃ¼
             $scaledCropX = max(0, min($scaledCropX, $srcWidth - 1));
             $scaledCropY = max(0, min($scaledCropY, $srcHeight - 1));
             $scaledCropW = min($scaledCropW, $srcWidth - $scaledCropX);
@@ -4213,25 +5052,25 @@ class PavoDisplayGateway
         imagefill($dstImage, 0, 0, $white);
         imagecopyresampled($dstImage, $srcImage, 0, 0, 0, 0, $width, $height, $srcWidth, $srcHeight);
 
-        // DİNAMİK ALANLARI RENDER ET (GD ile)
+        // DÄ°NAMÄ°K ALANLARI RENDER ET (GD ile)
         if (!empty($designData) && !empty($product)) {
             // DEBUG LOG
             $logFile = defined('STORAGE_PATH') ? STORAGE_PATH . '/logs/prepareUpload.log' : '/tmp/prepareUpload.log';
-            file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] prepareAndUploadImage: DİNAMİK RENDER BAŞLIYOR\n", FILE_APPEND);
+            file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] prepareAndUploadImage: DÄ°NAMÄ°K RENDER BAÅLIYOR\n", FILE_APPEND);
             file_put_contents($logFile, "  Product name: " . ($product['name'] ?? 'YOK') . "\n", FILE_APPEND);
             file_put_contents($logFile, "  designData objects: " . (isset($designData['objects']) ? count($designData['objects']) : 'YOK') . "\n", FILE_APPEND);
 
-            // Şablon boyutlarını al (ölçekleme için)
-            // NOT: Kırpma sonrası $srcWidth/$srcHeight kırpılmış boyuttur.
-            // Dinamik alanlar orijinal şablon boyutuna göre pozisyonlandığı için
-            // _templateWidth/_templateHeight kullanılmalı. Kırpma bölgesi offset'i
-            // de hesaba katılmalı.
+            // Åablon boyutlarÄ±nÄ± al (Ã¶lÃ§ekleme iÃ§in)
+            // NOT: KÄ±rpma sonrasÄ± $srcWidth/$srcHeight kÄ±rpÄ±lmÄ±ÅŸ boyuttur.
+            // Dinamik alanlar orijinal ÅŸablon boyutuna gÃ¶re pozisyonlandÄ±ÄŸÄ± iÃ§in
+            // _templateWidth/_templateHeight kullanÄ±lmalÄ±. KÄ±rpma bÃ¶lgesi offset'i
+            // de hesaba katÄ±lmalÄ±.
             $templateWidth = $designData['_templateWidth'] ?? ($cropRegion ? ($cropRegion['device_width'] ?? $srcWidth) : $srcWidth);
             $templateHeight = $designData['_templateHeight'] ?? ($cropRegion ? ($cropRegion['device_height'] ?? $srcHeight) : $srcHeight);
 
-            // Kırpma yapıldıysa, dinamik alan verilerini kırpma bölgesine göre ayarla
+            // KÄ±rpma yapÄ±ldÄ±ysa, dinamik alan verilerini kÄ±rpma bÃ¶lgesine gÃ¶re ayarla
             if ($cropRegion && ($cropRegion['y'] > 0 || $cropRegion['x'] > 0)) {
-                // Kırpılmış bölgeye göre offset'li designData oluştur
+                // KÄ±rpÄ±lmÄ±ÅŸ bÃ¶lgeye gÃ¶re offset'li designData oluÅŸtur
                 $adjustedDesignData = $designData;
                 $cropOffsetX = (int)($cropRegion['x'] ?? 0);
                 $cropOffsetY = (int)($cropRegion['y'] ?? 0);
@@ -4247,7 +5086,7 @@ class PavoDisplayGateway
                         $objW = (float)(($obj['width'] ?? 0) * ($obj['scaleX'] ?? 1));
                         $objH = (float)(($obj['height'] ?? 0) * ($obj['scaleY'] ?? 1));
 
-                        // Obje kırpma bölgesi içinde mi kontrol et
+                        // Obje kÄ±rpma bÃ¶lgesi iÃ§inde mi kontrol et
                         $objRight = $objLeft + $objW;
                         $objBottom = $objTop + $objH;
                         $cropRight = $cropOffsetX + $cropW;
@@ -4255,29 +5094,29 @@ class PavoDisplayGateway
 
                         if ($objRight < $cropOffsetX || $objLeft > $cropRight ||
                             $objBottom < $cropOffsetY || $objTop > $cropBottom) {
-                            // Obje kırpma alanı dışında - gizle
+                            // Obje kÄ±rpma alanÄ± dÄ±ÅŸÄ±nda - gizle
                             $obj['visible'] = false;
                             continue;
                         }
 
-                        // Pozisyonu kırpma offset'ine göre kaydır
+                        // Pozisyonu kÄ±rpma offset'ine gÃ¶re kaydÄ±r
                         $obj['left'] = $objLeft - $cropOffsetX;
                         $obj['top'] = $objTop - $cropOffsetY;
                     }
                     unset($obj);
                 }
 
-                // Kırpılmış bölge boyutlarını şablon boyutu olarak kullan
+                // KÄ±rpÄ±lmÄ±ÅŸ bÃ¶lge boyutlarÄ±nÄ± ÅŸablon boyutu olarak kullan
                 $this->renderDynamicFields($dstImage, $adjustedDesignData, $product, $cropW, $cropH, $width, $height);
             } else {
                 $this->renderDynamicFields($dstImage, $designData, $product, $templateWidth, $templateHeight, $width, $height);
             }
 
-            file_put_contents($logFile, "  DİNAMİK RENDER TAMAMLANDI\n", FILE_APPEND);
+            file_put_contents($logFile, "  DÄ°NAMÄ°K RENDER TAMAMLANDI\n", FILE_APPEND);
         } else {
             // DEBUG LOG
             $logFile = defined('STORAGE_PATH') ? STORAGE_PATH . '/logs/prepareUpload.log' : '/tmp/prepareUpload.log';
-            file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] prepareAndUploadImage: designData veya product BOŞ\n", FILE_APPEND);
+            file_put_contents($logFile, "[" . date('Y-m-d H:i:s') . "] prepareAndUploadImage: designData veya product BOÅ\n", FILE_APPEND);
             file_put_contents($logFile, "  designData empty: " . (empty($designData) ? 'YES' : 'NO') . "\n", FILE_APPEND);
             file_put_contents($logFile, "  product empty: " . (empty($product) ? 'YES' : 'NO') . "\n", FILE_APPEND);
         }
@@ -4294,19 +5133,19 @@ class PavoDisplayGateway
         $filename = $clientId . '.jpg';
         $filepath = "files/task/{$filename}";
 
-        // DELTA CHECK: Cihazda aynı dosya var mı kontrol et
+        // DELTA CHECK: Cihazda aynÄ± dosya var mÄ± kontrol et
         $checkResult = $this->checkFile($ip, $filepath);
         $skipped = false;
 
         if ($checkResult['exists'] && !empty($checkResult['md5'])) {
             if (strcasecmp($checkResult['md5'], $imageMd5) === 0) {
-                // Dosya zaten mevcut ve aynı, yükleme atla
+                // Dosya zaten mevcut ve aynÄ±, yÃ¼kleme atla
                 $skipped = true;
             }
         }
 
         if (!$skipped) {
-            // Cihaza yükle
+            // Cihaza yÃ¼kle
             $uploadResult = $this->uploadFile($ip, $filepath, $imageContent);
 
             if (!$uploadResult['success']) {
@@ -4328,14 +5167,14 @@ class PavoDisplayGateway
     }
 
     /**
-     * Media listesi ile etiket gönder (v3.26+ firmware)
-     * Görsel ve video karışık oynatma destekler
+     * Media listesi ile etiket gÃ¶nder (v3.26+ firmware)
+     * GÃ¶rsel ve video karÄ±ÅŸÄ±k oynatma destekler
      *
      * @param string $ip Cihaz IP adresi
      * @param string $clientId Cihaz Client ID
      * @param array $mediaList Medya listesi [{path, duration, type}, ...]
-     * @param array $config Yapılandırma
-     * @return array Sonuç
+     * @param array $config YapÄ±landÄ±rma
+     * @return array SonuÃ§
      */
     public function sendMediaLabel(string $ip, string $clientId, array $mediaList, array $config = []): array
     {
@@ -4357,7 +5196,7 @@ class PavoDisplayGateway
             return $result;
         }
 
-        // 2. Medya dosyalarını yükle
+        // 2. Medya dosyalarÄ±nÄ± yÃ¼kle
         $mediaItems = [];
         foreach ($mediaList as $index => $media) {
             $path = $media['path'] ?? $media;
@@ -4374,7 +5213,7 @@ class PavoDisplayGateway
             $filepath = "files/task/{$filename}";
             $md5 = strtoupper(md5($content));
 
-            // Yükle
+            // YÃ¼kle
             $uploadResult = $this->uploadFile($ip, $filepath, $content);
             $result['steps']['media_' . ($index + 1)] = $uploadResult;
 
@@ -4396,7 +5235,7 @@ class PavoDisplayGateway
             return $result;
         }
 
-        // 3. Task config oluştur
+        // 3. Task config oluÅŸtur
         $taskConfig = [
             'Id' => $clientId,
             'ItemCode' => $product['sku'] ?? 'MEDIA-001',
@@ -4413,7 +5252,7 @@ class PavoDisplayGateway
         $taskJson = json_encode($taskConfig, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $taskFilePath = "files/task/{$clientId}.js";
 
-        // 4. Task yükle
+        // 4. Task yÃ¼kle
         $taskUploadResult = $this->uploadFile($ip, $taskFilePath, $taskJson);
         $result['steps']['task'] = $taskUploadResult;
         $result['task_config'] = $taskConfig;
@@ -4440,7 +5279,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Dosya uzantısından medya tipini belirle
+     * Dosya uzantÄ±sÄ±ndan medya tipini belirle
      */
     private function detectMediaType(string $path): string
     {
@@ -4454,24 +5293,24 @@ class PavoDisplayGateway
     }
 
     // ========================================================================
-    // PARALEL GÖNDERİM SİSTEMİ (Phase 1)
+    // PARALEL GÃ–NDERÄ°M SÄ°STEMÄ° (Phase 1)
     // ========================================================================
 
     /**
-     * Device tipi bazlı eşzamanlılık limitleri
+     * Device tipi bazlÄ± eÅŸzamanlÄ±lÄ±k limitleri
      */
     private const CONCURRENCY_LIMITS = [
-        'esl' => 2,           // ESL cihazları: düşük bant genişliği
+        'esl' => 2,           // ESL cihazlarÄ±: dÃ¼ÅŸÃ¼k bant geniÅŸliÄŸi
         'esl_android' => 2,   // PavoDisplay ESL
         'tablet' => 5,        // Tablet cihazlar
         'android_tv' => 10,   // TV/Signage
-        'web_display' => 10,  // Web tabanlı ekranlar
+        'web_display' => 10,  // Web tabanlÄ± ekranlar
         'pwa_player' => 10,   // PWA Player
         'default' => 3        // Bilinmeyen tipler
     ];
 
     /**
-     * Device tipi için eşzamanlılık limitini al
+     * Device tipi iÃ§in eÅŸzamanlÄ±lÄ±k limitini al
      */
     public function getConcurrencyLimit(string $deviceType): int
     {
@@ -4479,13 +5318,13 @@ class PavoDisplayGateway
     }
 
     /**
-     * Paralel çoklu cihaz gönderimi (curl_multi_exec ile)
+     * Paralel Ã§oklu cihaz gÃ¶nderimi (curl_multi_exec ile)
      *
      * @param array $devices Cihaz listesi [['ip' => '...', 'client_id' => '...', 'type' => '...'], ...]
-     * @param string $imagePath Gönderilecek görsel dosya yolu (disk üzerinde)
-     * @param array $taskConfig Task konfigürasyonu
-     * @param callable|null $progressCallback İlerleme callback'i function(int $completed, int $total, array $result)
-     * @return array Sonuç ['total' => N, 'success' => M, 'failed' => K, 'details' => [...]]
+     * @param string $imagePath GÃ¶nderilecek gÃ¶rsel dosya yolu (disk Ã¼zerinde)
+     * @param array $taskConfig Task konfigÃ¼rasyonu
+     * @param callable|null $progressCallback Ä°lerleme callback'i function(int $completed, int $total, array $result)
+     * @return array SonuÃ§ ['total' => N, 'success' => M, 'failed' => K, 'details' => [...]]
      */
     public function sendToMultipleDevicesParallel(
         array $devices,
@@ -4506,7 +5345,7 @@ class PavoDisplayGateway
             return $results;
         }
 
-        // Görsel dosyayı oku
+        // GÃ¶rsel dosyayÄ± oku
         if (!file_exists($imagePath)) {
             $results['error'] = 'Image file not found: ' . $imagePath;
             return $results;
@@ -4516,14 +5355,14 @@ class PavoDisplayGateway
         $imageMd5 = strtoupper(md5($imageContent));
         $imageSize = strlen($imageContent);
 
-        // Cihazları tipe göre grupla (farklı eşzamanlılık limitleri için)
+        // CihazlarÄ± tipe gÃ¶re grupla (farklÄ± eÅŸzamanlÄ±lÄ±k limitleri iÃ§in)
         $devicesByType = [];
         foreach ($devices as $device) {
             $type = $device['type'] ?? $device['model'] ?? 'default';
             $devicesByType[$type][] = $device;
         }
 
-        // Her tip için paralel gönderim yap
+        // Her tip iÃ§in paralel gÃ¶nderim yap
         foreach ($devicesByType as $type => $typeDevices) {
             $concurrencyLimit = $this->getConcurrencyLimit($type);
             $chunks = array_chunk($typeDevices, $concurrencyLimit);
@@ -4538,7 +5377,7 @@ class PavoDisplayGateway
                     $results['success'] + $results['failed'] + $results['skipped']
                 );
 
-                // Sonuçları birleştir
+                // SonuÃ§larÄ± birleÅŸtir
                 $results['success'] += $chunkResults['success'];
                 $results['failed'] += $chunkResults['failed'];
                 $results['skipped'] += $chunkResults['skipped'];
@@ -4555,8 +5394,8 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihaz grubuna paralel gönderim (curl_multi_exec ile)
-     * Delta update: Önce dosya kontrolü yapar, aynı dosya varsa atlar
+     * Cihaz grubuna paralel gÃ¶nderim (curl_multi_exec ile)
+     * Delta update: Ã–nce dosya kontrolÃ¼ yapar, aynÄ± dosya varsa atlar
      */
     private function sendToDeviceChunkParallel(
         array $devices,
@@ -4573,7 +5412,7 @@ class PavoDisplayGateway
             'details' => []
         ];
 
-        // Adım 1: Delta kontrol - hangi cihazlarda dosya zaten mevcut?
+        // AdÄ±m 1: Delta kontrol - hangi cihazlarda dosya zaten mevcut?
         $devicesToUpdate = [];
         $checkHandles = [];
         $mh = curl_multi_init();
@@ -4612,14 +5451,14 @@ class PavoDisplayGateway
             ];
         }
 
-        // Paralel dosya kontrolü çalıştır
+        // Paralel dosya kontrolÃ¼ Ã§alÄ±ÅŸtÄ±r
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh, 0.1);
         } while ($running > 0);
 
-        // Sonuçları değerlendir - delta update
+        // SonuÃ§larÄ± deÄŸerlendir - delta update
         foreach ($checkHandles as $clientId => $handleInfo) {
             $ch = $handleInfo['handle'];
             $response = curl_multi_getcontent($ch);
@@ -4631,9 +5470,9 @@ class PavoDisplayGateway
             $data = json_decode($response, true);
             $existingMd5 = $data['md5'] ?? null;
 
-            // Delta check: Dosya zaten aynı mı?
+            // Delta check: Dosya zaten aynÄ± mÄ±?
             if ($httpCode === 200 && $existingMd5 && strtoupper($existingMd5) === $imageMd5) {
-                // Dosya aynı, atla
+                // Dosya aynÄ±, atla
                 $results['details'][$clientId] = [
                     'success' => true,
                     'skipped' => true,
@@ -4650,14 +5489,14 @@ class PavoDisplayGateway
                     );
                 }
             } else {
-                // Güncelleme gerekiyor
+                // GÃ¼ncelleme gerekiyor
                 $devicesToUpdate[$clientId] = $handleInfo;
             }
         }
 
         curl_multi_close($mh);
 
-        // Adım 2: Güncellenmesi gereken cihazlara paralel gönderim
+        // AdÄ±m 2: GÃ¼ncellenmesi gereken cihazlara paralel gÃ¶nderim
         if (!empty($devicesToUpdate)) {
             $uploadResults = $this->parallelUploadToDevices(
                 $devicesToUpdate,
@@ -4677,7 +5516,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Cihazlara paralel dosya yükleme
+     * Cihazlara paralel dosya yÃ¼kleme
      */
     private function parallelUploadToDevices(
         array $devicesToUpdate,
@@ -4693,7 +5532,7 @@ class PavoDisplayGateway
             'details' => []
         ];
 
-        // Adım 1: Tüm cihazlara paralel görsel yükle
+        // AdÄ±m 1: TÃ¼m cihazlara paralel gÃ¶rsel yÃ¼kle
         $uploadHandles = [];
         $mh = curl_multi_init();
 
@@ -4725,14 +5564,14 @@ class PavoDisplayGateway
             ];
         }
 
-        // Paralel yükleme
+        // Paralel yÃ¼kleme
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh, 0.1);
         } while ($running > 0);
 
-        // Yükleme sonuçlarını değerlendir
+        // YÃ¼kleme sonuÃ§larÄ±nÄ± deÄŸerlendir
         $successfulUploads = [];
         foreach ($uploadHandles as $clientId => $handleInfo) {
             $ch = $handleInfo['handle'];
@@ -4767,7 +5606,7 @@ class PavoDisplayGateway
 
         curl_multi_close($mh);
 
-        // Adım 2: Başarılı yüklemelere task config yükle ve replay tetikle
+        // AdÄ±m 2: BaÅŸarÄ±lÄ± yÃ¼klemelere task config yÃ¼kle ve replay tetikle
         if (!empty($successfulUploads)) {
             $taskResults = $this->parallelTaskAndReplay(
                 $successfulUploads,
@@ -4786,7 +5625,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Task config yükleme ve replay tetikleme (paralel)
+     * Task config yÃ¼kleme ve replay tetikleme (paralel)
      */
     private function parallelTaskAndReplay(
         array $devices,
@@ -4801,7 +5640,7 @@ class PavoDisplayGateway
             'details' => []
         ];
 
-        // Adım 1: Task config yükle
+        // AdÄ±m 1: Task config yÃ¼kle
         $taskHandles = [];
         $mh = curl_multi_init();
 
@@ -4809,7 +5648,7 @@ class PavoDisplayGateway
             $ip = $deviceInfo['ip'];
             $device = $deviceInfo['device'];
 
-            // Task config oluştur
+            // Task config oluÅŸtur
             $config = array_merge([
                 'Id' => $clientId,
                 'ItemCode' => $device['sku'] ?? $clientId,
@@ -4852,14 +5691,14 @@ class PavoDisplayGateway
             ];
         }
 
-        // Paralel task yükleme
+        // Paralel task yÃ¼kleme
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh, 0.1);
         } while ($running > 0);
 
-        // Task sonuçlarını değerlendir
+        // Task sonuÃ§larÄ±nÄ± deÄŸerlendir
         $successfulTasks = [];
         foreach ($taskHandles as $clientId => $handleInfo) {
             $ch = $handleInfo['handle'];
@@ -4886,7 +5725,7 @@ class PavoDisplayGateway
 
         curl_multi_close($mh);
 
-        // Adım 2: Replay tetikle
+        // AdÄ±m 2: Replay tetikle
         if (!empty($successfulTasks)) {
             $replayHandles = [];
             $mh = curl_multi_init();
@@ -4916,7 +5755,7 @@ class PavoDisplayGateway
                 curl_multi_select($mh, 0.1);
             } while ($running > 0);
 
-            // Replay sonuçlarını değerlendir
+            // Replay sonuÃ§larÄ±nÄ± deÄŸerlendir
             foreach ($replayHandles as $clientId => $handleInfo) {
                 $ch = $handleInfo['handle'];
                 $response = curl_multi_getcontent($ch);
@@ -4964,13 +5803,13 @@ class PavoDisplayGateway
     }
 
     /**
-     * Render edilmiş görseli diske kaydet (cache için)
+     * Render edilmiÅŸ gÃ¶rseli diske kaydet (cache iÃ§in)
      *
-     * @param string $imageContent Görsel binary içeriği
-     * @param string $companyId Şirket ID
+     * @param string $imageContent GÃ¶rsel binary iÃ§eriÄŸi
+     * @param string $companyId Åirket ID
      * @param string $deviceType Cihaz tipi
      * @param string $locale Dil kodu
-     * @param string $templateId Şablon ID
+     * @param string $templateId Åablon ID
      * @param string $cacheKey Cache hash
      * @return string|false Kaydedilen dosya yolu veya false
      */
@@ -4982,11 +5821,11 @@ class PavoDisplayGateway
         string $templateId,
         string $cacheKey
     ): string|false {
-        // Hiyerarşik dizin yapısı
+        // HiyerarÅŸik dizin yapÄ±sÄ±
         $basePath = rtrim(STORAGE_PATH ?? dirname(__DIR__) . '/storage', '/');
         $cachePath = "{$basePath}/renders/{$companyId}/{$deviceType}/{$locale}/{$templateId}";
 
-        // Dizin oluştur
+        // Dizin oluÅŸtur
         if (!is_dir($cachePath)) {
             if (!mkdir($cachePath, 0755, true)) {
                 return false;
@@ -5005,10 +5844,10 @@ class PavoDisplayGateway
     /**
      * Cache'den render al
      *
-     * @param string $companyId Şirket ID
+     * @param string $companyId Åirket ID
      * @param string $deviceType Cihaz tipi
      * @param string $locale Dil kodu
-     * @param string $templateId Şablon ID
+     * @param string $templateId Åablon ID
      * @param string $cacheKey Cache hash
      * @return string|false Dosya yolu veya false (yoksa)
      */
@@ -5030,16 +5869,16 @@ class PavoDisplayGateway
     }
 
     /**
-     * Render cache key oluştur
+     * Render cache key oluÅŸtur
      *
-     * @param string $templateId Şablon ID
-     * @param string $templateVersion Şablon versiyonu
-     * @param string $productId Ürün ID
-     * @param string $productVersion Ürün versiyonu (updated_at)
+     * @param string $templateId Åablon ID
+     * @param string $templateVersion Åablon versiyonu
+     * @param string $productId ÃœrÃ¼n ID
+     * @param string $productVersion ÃœrÃ¼n versiyonu (updated_at)
      * @param string $locale Dil kodu
-     * @param string $resolution Çözünürlük (WxH)
+     * @param string $resolution Ã‡Ã¶zÃ¼nÃ¼rlÃ¼k (WxH)
      * @param string $deviceType Cihaz tipi
-     * @param string $priceRuleVersion Fiyat kuralı versiyonu
+     * @param string $priceRuleVersion Fiyat kuralÄ± versiyonu
      * @param string $brandingVersion Branding versiyonu
      * @return string MD5 hash
      */
@@ -5072,13 +5911,13 @@ class PavoDisplayGateway
     /**
      * Bluetooth ile sabit IP ayarla
      *
-     * NOT: Bu işlem için Web Bluetooth API kullanılması gerekiyor.
-     * Backend'den bu komutu göndermek mümkün değil, frontend'den Bluetooth bağlantısı gerekli.
+     * NOT: Bu iÅŸlem iÃ§in Web Bluetooth API kullanÄ±lmasÄ± gerekiyor.
+     * Backend'den bu komutu gÃ¶ndermek mÃ¼mkÃ¼n deÄŸil, frontend'den Bluetooth baÄŸlantÄ±sÄ± gerekli.
      *
      * @param string $ip Atanacak IP adresi
      * @param string $gateway Gateway adresi
-     * @param string $netmask Subnet mask (varsayılan: 255.255.255.0)
-     * @param string $token Admin şifresi (varsa)
+     * @param string $netmask Subnet mask (varsayÄ±lan: 255.255.255.0)
+     * @param string $token Admin ÅŸifresi (varsa)
      * @return array Bluetooth komutu ve talimatlar
      */
     public function prepareStaticIpCommand(
@@ -5087,7 +5926,7 @@ class PavoDisplayGateway
         string $netmask = '255.255.255.0',
         string $token = ''
     ): array {
-        // Bluetooth komutu formatı
+        // Bluetooth komutu formatÄ±
         $command = sprintf(
             '+SET-DEVICE:{"network":{"static-ip":"%s","gateway":"%s","Netmask":"%s"}, "Token":"%s"}',
             $ip,
@@ -5100,23 +5939,23 @@ class PavoDisplayGateway
             'success' => true,
             'bluetooth_command' => $command,
             'instructions' => [
-                '1. Cihaza Web Bluetooth ile bağlanın (Tarayıcıda Bluetooth özelliği gerekli)',
-                '2. Aşağıdaki komutu gönderin:',
+                '1. Cihaza Web Bluetooth ile baÄŸlanÄ±n (TarayÄ±cÄ±da Bluetooth Ã¶zelliÄŸi gerekli)',
+                '2. AÅŸaÄŸÄ±daki komutu gÃ¶nderin:',
                 '   ' . $command,
-                '3. Cihaz yeniden başlatılacak ve yeni IP atanacak',
-                '4. Yeni IP ile cihaza erişimi test edin'
+                '3. Cihaz yeniden baÅŸlatÄ±lacak ve yeni IP atanacak',
+                '4. Yeni IP ile cihaza eriÅŸimi test edin'
             ],
             'new_ip' => $ip,
             'gateway' => $gateway,
             'netmask' => $netmask,
-            'note' => 'Bu işlem Web Bluetooth API gerektirir, backend\'den doğrudan gönderilemez'
+            'note' => 'Bu iÅŸlem Web Bluetooth API gerektirir, backend\'den doÄŸrudan gÃ¶nderilemez'
         ];
     }
 
     /**
-     * Bluetooth ile DHCP moduna geç
+     * Bluetooth ile DHCP moduna geÃ§
      *
-     * @param string $token Admin şifresi (varsa)
+     * @param string $token Admin ÅŸifresi (varsa)
      * @return array Bluetooth komutu
      */
     public function prepareDhcpCommand(string $token = ''): array
@@ -5130,22 +5969,22 @@ class PavoDisplayGateway
             'success' => true,
             'bluetooth_command' => $command,
             'instructions' => [
-                '1. Cihaza Web Bluetooth ile bağlanın',
-                '2. Aşağıdaki komutu gönderin:',
+                '1. Cihaza Web Bluetooth ile baÄŸlanÄ±n',
+                '2. AÅŸaÄŸÄ±daki komutu gÃ¶nderin:',
                 '   ' . $command,
-                '3. Cihaz DHCP moduna geçecek ve otomatik IP alacak'
+                '3. Cihaz DHCP moduna geÃ§ecek ve otomatik IP alacak'
             ],
             'mode' => 'dhcp',
-            'note' => 'Bu işlem Web Bluetooth API gerektirir'
+            'note' => 'Bu iÅŸlem Web Bluetooth API gerektirir'
         ];
     }
 
     /**
      * Bluetooth ile WiFi ayarla
      *
-     * @param string $ssid WiFi ağ adı
-     * @param string $password WiFi şifresi
-     * @param string $token Admin şifresi (varsa)
+     * @param string $ssid WiFi aÄŸ adÄ±
+     * @param string $password WiFi ÅŸifresi
+     * @param string $token Admin ÅŸifresi (varsa)
      * @return array Bluetooth komutu
      */
     public function prepareWifiCommand(
@@ -5164,24 +6003,24 @@ class PavoDisplayGateway
             'success' => true,
             'bluetooth_command' => $command,
             'instructions' => [
-                '1. Cihaza Web Bluetooth ile bağlanın',
-                '2. Aşağıdaki komutu gönderin:',
+                '1. Cihaza Web Bluetooth ile baÄŸlanÄ±n',
+                '2. AÅŸaÄŸÄ±daki komutu gÃ¶nderin:',
                 '   ' . $command,
-                '3. Cihaz belirtilen WiFi ağına bağlanacak'
+                '3. Cihaz belirtilen WiFi aÄŸÄ±na baÄŸlanacak'
             ],
             'ssid' => $ssid,
-            'note' => 'Şifre bu yanıtta gösterilmez (güvenlik nedeniyle)',
-            'warning' => 'WiFi şifresini kaydetmeden önce doğru olduğundan emin olun!'
+            'note' => 'Åifre bu yanÄ±tta gÃ¶sterilmez (gÃ¼venlik nedeniyle)',
+            'warning' => 'WiFi ÅŸifresini kaydetmeden Ã¶nce doÄŸru olduÄŸundan emin olun!'
         ];
     }
 
     // ==========================================
-    // GELIŞMIŞ AĞ TARAMA SİSTEMİ
+    // GELIÅMIÅ AÄ TARAMA SÄ°STEMÄ°
     // Multi-Subnet + Generic HTTP + Profil + Ping Sweep
     // ==========================================
 
     /**
-     * Cihaz keşif profilleri - farklı marka cihazlar için endpoint tanımları
+     * Cihaz keÅŸif profilleri - farklÄ± marka cihazlar iÃ§in endpoint tanÄ±mlarÄ±
      */
     public static function getDiscoveryProfiles(): array
     {
@@ -5236,7 +6075,7 @@ class PavoDisplayGateway
                 'manufacturer' => 'Generic',
             ],
             'generic_http' => [
-                'name' => 'HTTP Cihaz (Tümü)',
+                'name' => 'HTTP Cihaz (TÃ¼mÃ¼)',
                 'icon' => 'ti-world',
                 'color' => '#868e96',
                 'ports' => [80, 8080],
@@ -5253,12 +6092,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Multi-Subnet tarama: Birden fazla subnet bloğunu paralel tara
+     * Multi-Subnet tarama: Birden fazla subnet bloÄŸunu paralel tara
      *
-     * @param array $subnets Subnet listesi (örn: ['192.168.1', '192.168.2', '192.168.3'])
-     * @param int $startIp Başlangıç IP
-     * @param int $endIp Bitiş IP
-     * @param array $profiles Kullanılacak profil isimleri (boş = pavodisplay)
+     * @param array $subnets Subnet listesi (Ã¶rn: ['192.168.1', '192.168.2', '192.168.3'])
+     * @param int $startIp BaÅŸlangÄ±Ã§ IP
+     * @param int $endIp BitiÅŸ IP
+     * @param array $profiles KullanÄ±lacak profil isimleri (boÅŸ = pavodisplay)
      * @return array Bulunan cihazlar
      */
     public function scanMultipleSubnets(array $subnets, int $startIp = 1, int $endIp = 254, array $profiles = ['pavodisplay']): array
@@ -5284,12 +6123,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Gelişmiş tarama: Profil bazlı cihaz keşfi
-     * Önce ping sweep, sonra HTTP endpoint kontrolü
+     * GeliÅŸmiÅŸ tarama: Profil bazlÄ± cihaz keÅŸfi
+     * Ã–nce ping sweep, sonra HTTP endpoint kontrolÃ¼
      *
-     * @param string $subnet Alt ağ
-     * @param int $startIp Başlangıç IP
-     * @param int $endIp Bitiş IP
+     * @param string $subnet Alt aÄŸ
+     * @param int $startIp BaÅŸlangÄ±Ã§ IP
+     * @param int $endIp BitiÅŸ IP
      * @param array $profileNames Profil isimleri
      * @return array Bulunan cihazlar
      */
@@ -5307,34 +6146,34 @@ class PavoDisplayGateway
             $activeProfiles = ['pavodisplay' => $allProfiles['pavodisplay']];
         }
 
-        // Adım 1: Ping Sweep - Tüm IP'leri TCP ile hızlı tara
+        // AdÄ±m 1: Ping Sweep - TÃ¼m IP'leri TCP ile hÄ±zlÄ± tara
         $aliveIps = $this->pingSweep($subnet, $startIp, $endIp);
 
         if (empty($aliveIps)) {
             return [];
         }
 
-        // Adım 2: Canlı IP'lerde profil bazlı HTTP keşfi
+        // AdÄ±m 2: CanlÄ± IP'lerde profil bazlÄ± HTTP keÅŸfi
         $devices = [];
         foreach ($activeProfiles as $profileName => $profile) {
             $profileDevices = $this->probeDevicesWithProfile($aliveIps, $profile, $profileName);
             $devices = array_merge($devices, $profileDevices);
         }
 
-        // Aynı IP birden fazla profille eşleşmişse en spesifik olanı tut
+        // AynÄ± IP birden fazla profille eÅŸleÅŸmiÅŸse en spesifik olanÄ± tut
         $devices = $this->deduplicateDevices($devices);
 
         return $devices;
     }
 
     /**
-     * Ping Sweep: TCP bağlantı kontrolü ile canlı IP'leri bul
+     * Ping Sweep: TCP baÄŸlantÄ± kontrolÃ¼ ile canlÄ± IP'leri bul
      * Port 80 ve 8080'i kontrol eder
      *
-     * @param string $subnet Alt ağ
-     * @param int $startIp Başlangıç
-     * @param int $endIp Bitiş
-     * @return array Canlı IP ve port bilgileri [['ip' => '...', 'port' => 80, 'time' => 12.5], ...]
+     * @param string $subnet Alt aÄŸ
+     * @param int $startIp BaÅŸlangÄ±Ã§
+     * @param int $endIp BitiÅŸ
+     * @return array CanlÄ± IP ve port bilgileri [['ip' => '...', 'port' => 80, 'time' => 12.5], ...]
      */
     public function pingSweep(string $subnet, int $startIp = 1, int $endIp = 254): array
     {
@@ -5355,7 +6194,7 @@ class PavoDisplayGateway
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_TIMEOUT => 2,
                     CURLOPT_CONNECTTIMEOUT => 1,
-                    CURLOPT_NOBODY => true,       // HEAD request - daha hızlı
+                    CURLOPT_NOBODY => true,       // HEAD request - daha hÄ±zlÄ±
                     CURLOPT_FOLLOWLOCATION => false,
                 ]);
 
@@ -5364,14 +6203,14 @@ class PavoDisplayGateway
             }
         }
 
-        // Paralel çalıştır
+        // Paralel Ã§alÄ±ÅŸtÄ±r
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh, 0.5);
         } while ($running > 0);
 
-        // Sonuçları topla
+        // SonuÃ§larÄ± topla
         $seenIps = [];
         foreach ($handles as $key => $info) {
             $ch = $info['ch'];
@@ -5379,7 +6218,7 @@ class PavoDisplayGateway
             $totalTime = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
             $connectTime = curl_getinfo($ch, CURLINFO_CONNECT_TIME);
 
-            // HTTP yanıtı aldıysak (herhangi bir status code) cihaz canlıdır
+            // HTTP yanÄ±tÄ± aldÄ±ysak (herhangi bir status code) cihaz canlÄ±dÄ±r
             if ($httpCode > 0 && $connectTime > 0 && $connectTime < 2) {
                 $ipKey = $info['ip'];
                 if (!isset($seenIps[$ipKey])) {
@@ -5403,12 +6242,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Profil bazlı HTTP endpoint keşfi
+     * Profil bazlÄ± HTTP endpoint keÅŸfi
      *
-     * @param array $aliveHosts Canlı IP'ler (pingSweep sonucu)
-     * @param array $profile Keşif profili
-     * @param string $profileName Profil adı
-     * @return array Eşleşen cihazlar
+     * @param array $aliveHosts CanlÄ± IP'ler (pingSweep sonucu)
+     * @param array $profile KeÅŸif profili
+     * @param string $profileName Profil adÄ±
+     * @return array EÅŸleÅŸen cihazlar
      */
     public function probeDevicesWithProfile(array $aliveHosts, array $profile, string $profileName): array
     {
@@ -5448,14 +6287,14 @@ class PavoDisplayGateway
             }
         }
 
-        // Paralel çalıştır
+        // Paralel Ã§alÄ±ÅŸtÄ±r
         $running = null;
         do {
             curl_multi_exec($mh, $running);
             curl_multi_select($mh, 0.5);
         } while ($running > 0);
 
-        // Sonuçları topla
+        // SonuÃ§larÄ± topla
         $matchedIps = [];
         foreach ($handles as $key => $info) {
             $ch = $info['ch'];
@@ -5500,7 +6339,7 @@ class PavoDisplayGateway
 
         curl_multi_close($mh);
 
-        // Bulunan cihazların detaylı bilgilerini al (info endpoint'lerinden)
+        // Bulunan cihazlarÄ±n detaylÄ± bilgilerini al (info endpoint'lerinden)
         foreach ($devices as &$device) {
             if (!empty($profile['info_endpoints'])) {
                 $detailedInfo = $this->probeInfoEndpoints($device['ip'], $device['port'], $profile['info_endpoints']);
@@ -5514,7 +6353,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * HTTP yanıtından cihaz bilgisi çıkar
+     * HTTP yanÄ±tÄ±ndan cihaz bilgisi Ã§Ä±kar
      */
     private function extractDeviceInfoFromResponse(?string $response, string $ip, array $profile): array
     {
@@ -5570,7 +6409,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Info endpoint'lerinden detaylı bilgi al
+     * Info endpoint'lerinden detaylÄ± bilgi al
      */
     private function probeInfoEndpoints(string $ip, int $port, array $endpoints): array
     {
@@ -5586,7 +6425,7 @@ class PavoDisplayGateway
                 $extracted = $this->extractDeviceInfoFromResponse(json_encode($data), $ip, []);
                 if (!empty($extracted)) {
                     $info = array_merge($info, $extracted);
-                    break; // İlk başarılı yanıt yeterli
+                    break; // Ä°lk baÅŸarÄ±lÄ± yanÄ±t yeterli
                 }
             }
         }
@@ -5595,12 +6434,12 @@ class PavoDisplayGateway
     }
 
     /**
-     * Aynı IP'ye birden fazla profil eşleşmişse en spesifik olanı tut
+     * AynÄ± IP'ye birden fazla profil eÅŸleÅŸmiÅŸse en spesifik olanÄ± tut
      */
     private function deduplicateDevices(array $devices): array
     {
         $byIp = [];
-        // Profil önceliği: PavoDisplay > generic_android_esl > generic_signage > generic_http
+        // Profil Ã¶nceliÄŸi: PavoDisplay > generic_android_esl > generic_signage > generic_http
         $priority = ['pavodisplay' => 4, 'generic_android_esl' => 3, 'generic_signage' => 2, 'generic_http' => 1];
 
         foreach ($devices as $device) {
@@ -5617,7 +6456,7 @@ class PavoDisplayGateway
     }
 
     /**
-     * Subnet formatı doğrulama
+     * Subnet formatÄ± doÄŸrulama
      */
     private function isValidSubnetFormat(string $subnet): bool
     {
@@ -5629,4 +6468,3 @@ class PavoDisplayGateway
         return true;
     }
 }
-

@@ -170,6 +170,11 @@ export class PropertyPanel extends PanelBase {
         // Gölge (tüm nesneler)
         sections.push(this._renderShadowSection());
 
+        // Çerçeve (frame overlay) - frame-overlay tipi hariç tüm nesneler
+        if (customType !== CUSTOM_TYPES.FRAME_OVERLAY) {
+            sections.push(this._renderFrameSection());
+        }
+
         // Genel özellikler (tüm nesneler)
         sections.push(this._renderGeneralSection());
 
@@ -290,6 +295,7 @@ export class PropertyPanel extends PanelBase {
             'group': 'ti ti-stack',
             'multi-product-frame': 'ti ti-layout-grid',
             'video-placeholder': 'ti ti-video',
+            'shape': 'ti ti-shape',
             'Rect': 'ti ti-square',
             'Circle': 'ti ti-circle',
             'Image': 'ti ti-photo',
@@ -324,7 +330,8 @@ export class PropertyPanel extends PanelBase {
             'qrcode': this.__('editor.elements.qrcode'),
             'group': this.__('editor.elements.group'),
             'multi-product-frame': this.__('editor.elements.multiProductFrame'),
-            'video-placeholder': 'Video'
+            'video-placeholder': 'Video',
+            'shape': this.__('editor.elements.shape')
         };
         return names[type] || type;
     }
@@ -794,6 +801,92 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
+     * Çerçeve (Frame Overlay) bölümü
+     * @private
+     * @returns {string}
+     */
+    _renderFrameSection() {
+        const obj = this._selectedObject;
+        if (!obj) return '';
+
+        const frameId = obj[CUSTOM_PROPS.FRAME_ID];
+
+        if (frameId) {
+            // Frame applied - show preview + change/remove buttons
+            let thumbHtml = '<div class="frame-preview-thumb"><i class="ti ti-frame" style="font-size:24px;opacity:0.4"></i></div>';
+            let frameName = frameId;
+
+            // Try to get frame details (will be populated after async load)
+            return `
+                <div class="frame-section">
+                    <div class="frame-section-header">
+                        <i class="ti ti-frame"></i>
+                        <span>${this.__('editor.frame.title')}</span>
+                    </div>
+                    <div class="frame-preview-row" id="frame-preview-row" data-frame-id="${frameId}">
+                        ${thumbHtml}
+                        <div class="frame-preview-info">
+                            <div class="frame-preview-name">${frameName}</div>
+                            <div class="frame-preview-type"></div>
+                        </div>
+                    </div>
+                    <div class="frame-actions">
+                        <button class="btn btn-sm btn-outline" data-action="pick-frame">
+                            <i class="ti ti-refresh"></i> ${this.__('editor.frame.change')}
+                        </button>
+                        <button class="btn btn-sm btn-outline text-red-500" data-action="remove-frame">
+                            <i class="ti ti-trash"></i> ${this.__('editor.frame.remove')}
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // No frame - show add button
+            return `
+                <div class="frame-section">
+                    <div class="frame-section-header">
+                        <i class="ti ti-frame"></i>
+                        <span>${this.__('editor.frame.title')}</span>
+                    </div>
+                    <button class="btn-add-frame" data-action="pick-frame">
+                        <i class="ti ti-plus"></i>
+                        ${this.__('editor.frame.add')}
+                    </button>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Populate frame preview with actual data (async, called after render)
+     * @private
+     */
+    async _populateFramePreview() {
+        const row = this._container?.querySelector('#frame-preview-row');
+        if (!row) return;
+
+        const frameId = row.dataset.frameId;
+        if (!frameId) return;
+
+        try {
+            const { getFrameById, getFrameThumbPath } = await import('../data/FrameAssetsData.js');
+            const frameDef = getFrameById(frameId);
+            if (!frameDef) return;
+
+            const thumb = row.querySelector('.frame-preview-thumb');
+            if (thumb) {
+                thumb.innerHTML = `<img src="${getFrameThumbPath(frameDef)}" alt="${frameDef.title}">`;
+            }
+            const nameEl = row.querySelector('.frame-preview-name');
+            if (nameEl) nameEl.textContent = frameDef.title;
+            const typeEl = row.querySelector('.frame-preview-type');
+            if (typeEl) typeEl.textContent = frameDef.frameType;
+        } catch (e) {
+            // Silently ignore - preview is a nice-to-have
+        }
+    }
+
+    /**
      * Color input + hex text input ortak renderer
      * @private
      * @param {string} property
@@ -963,6 +1056,57 @@ export class PropertyPanel extends PanelBase {
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
+    }
+
+    /**
+     * Open frame picker and apply selected frame
+     * @private
+     */
+    async _pickFrame() {
+        if (!this._selectedObject || !this.canvas) return;
+
+        const { FramePicker } = await import('../components/FramePicker.js');
+
+        FramePicker.open({
+            __: (key) => this.__(`editor.${key}`),
+            onSelect: async (frameDef) => {
+                if (!this._selectedObject || !this.canvas) return;
+
+                // Use frameService from editor if available
+                const frameService = this._frameService || this.editor?.frameService;
+                if (!frameService) {
+                    console.warn('[PropertyPanel] No frameService available');
+                    return;
+                }
+
+                await frameService.applyFrame(this._selectedObject, frameDef, this.canvas);
+                this.refresh();
+                this._emitModified();
+            }
+        });
+    }
+
+    /**
+     * Remove frame from selected object
+     * @private
+     */
+    _removeFrame() {
+        if (!this._selectedObject || !this.canvas) return;
+
+        const frameService = this._frameService || this.editor?.frameService;
+        if (!frameService) return;
+
+        frameService.removeFrame(this._selectedObject, this.canvas);
+        this.refresh();
+        this._emitModified();
+    }
+
+    /**
+     * Set frame service reference
+     * @param {FrameService} service
+     */
+    setFrameService(service) {
+        this._frameService = service;
     }
 
     /**
@@ -1266,6 +1410,19 @@ export class PropertyPanel extends PanelBase {
                 });
             });
         });
+
+        // Frame: Pick frame (add or change)
+        this.$$('[data-action="pick-frame"]').forEach(btn => {
+            this._addEventListener(btn, 'click', () => this._pickFrame());
+        });
+
+        // Frame: Remove frame
+        this.$$('[data-action="remove-frame"]').forEach(btn => {
+            this._addEventListener(btn, 'click', () => this._removeFrame());
+        });
+
+        // Frame: Populate preview thumbnail (async)
+        this._populateFramePreview();
     }
 
     /**
@@ -1979,11 +2136,16 @@ export class PropertyPanel extends PanelBase {
      */
     _isShapeObject() {
         if (!this._selectedObject) return false;
-        const type = this._selectedObject.type;
+        const obj = this._selectedObject;
+        const type = obj.type;
+        const customType = obj.customType || obj.get?.('customType');
+        if (customType === 'shape') return true;
         return type === 'rect' || type === 'circle' || type === 'ellipse' ||
                type === 'triangle' || type === 'polygon' || type === 'line' ||
+               type === 'path' || type === 'group' ||
                type === 'Rect' || type === 'Circle' || type === 'Ellipse' ||
-               type === 'Triangle' || type === 'Polygon' || type === 'Line';
+               type === 'Triangle' || type === 'Polygon' || type === 'Line' ||
+               type === 'Path' || type === 'Group';
     }
 
     /**

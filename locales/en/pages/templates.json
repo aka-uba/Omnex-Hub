@@ -197,7 +197,11 @@
             "textFitShrink": "Shrink",
             "textFitEllipsis": "Ellipsis (...)",
             "minFontSize": "Min Font",
-            "maxLines": "Max Lines"
+            "maxLines": "Max Lines",
+            "dynamicImage": "Dynamic Image",
+            "imageIndex": "Image Index",
+            "imageFit": "Image Fit",
+            "coverImage": "Cover Image"
         },
         "canvas": {
             "title": "Design Area",
@@ -239,7 +243,49 @@
             "barcode": "Barcode",
             "qrcode": "QR Code",
             "group": "Group",
+            "shape": "Shape",
             "multiProductFrame": "Multi Product Frame"
+        },
+        "shapePicker": {
+            "title": "Add Shape",
+            "search": "Search...",
+            "fill": "Fill",
+            "stroke": "Stroke",
+            "solid": "Solid",
+            "outline": "Outline",
+            "double": "Double",
+            "radius": "Radius",
+            "all": "All",
+            "noResults": "No results found",
+            "cat_banner": "Banner",
+            "cat_badge": "Badge",
+            "cat_ribbon": "Ribbon",
+            "cat_sticker": "Sticker",
+            "cat_frame": "Frame",
+            "cat_tag": "Tag",
+            "cat_bubble": "Bubble"
+        },
+        "framePicker": {
+            "title": "Select Frame",
+            "search": "Search frames...",
+            "all": "All",
+            "noResults": "No results found",
+            "classic": "Classic",
+            "colorful": "Colorful",
+            "dotted": "Dotted",
+            "minimal": "Minimal",
+            "other": "Other",
+            "rounded": "Rounded",
+            "shadow": "Shadow",
+            "simple": "Simple",
+            "themed": "Themed"
+        },
+        "frame": {
+            "title": "Frame",
+            "add": "Add Frame",
+            "change": "Change",
+            "remove": "Remove",
+            "noFrame": "No frame"
         },
         "dynamicFields": {
             "title": "Dynamic Fields",

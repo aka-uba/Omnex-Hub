@@ -29,9 +29,7 @@ import { eventBus, EVENTS } from '../core/EventBus.js';
 const DEFAULT_ITEMS = {
     elements: [
         { id: 'add-text', icon: 'ti-typography', label: 'editor.elements.text', action: 'addText' },
-        { id: 'add-rect', icon: 'ti-square', label: 'editor.elements.rectangle', action: 'addRect' },
-        { id: 'add-circle', icon: 'ti-circle', label: 'editor.elements.circle', action: 'addCircle' },
-        { id: 'add-line', icon: 'ti-line', label: 'editor.elements.line', action: 'addLine' },
+        { id: 'add-shape', icon: 'ti-shape', label: 'editor.elements.shape', action: 'addShape' },
         { id: 'add-image', icon: 'ti-photo', label: 'editor.elements.image', action: 'addImage' }
     ],
     zoom: [

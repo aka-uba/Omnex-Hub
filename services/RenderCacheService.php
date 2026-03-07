@@ -544,8 +544,8 @@ class RenderCacheService
         }
 
         // Version korumasi: stale işaretlenememiş olsa bile eski cache'i kullanma.
-        $product = $this->db->fetch("SELECT version FROM products WHERE id = ?", [$productId]);
-        $template = $this->db->fetch("SELECT version FROM templates WHERE id = ?", [$templateId]);
+        $product = $this->db->fetch("SELECT version, updated_at FROM products WHERE id = ?", [$productId]);
+        $template = $this->db->fetch("SELECT version, updated_at FROM templates WHERE id = ?", [$templateId]);
 
         $currentProductVersion = (int)($product['version'] ?? 1);
         $currentTemplateVersion = (int)($template['version'] ?? 1);
@@ -557,9 +557,25 @@ class RenderCacheService
             return null;
         }
 
+        // Zaman korumasi: version artmamis olsa bile cache, urun/sablon guncellemesinden eskiyse kullanma.
+        $cacheRenderedAt = (string)($cache['rendered_at'] ?? $cache['updated_at'] ?? '');
+        $cacheRenderedTs = strtotime($cacheRenderedAt);
+        $productUpdatedTs = strtotime((string)($product['updated_at'] ?? ''));
+        $templateUpdatedTs = strtotime((string)($template['updated_at'] ?? ''));
+
+        if (
+            $cacheRenderedTs !== false
+            && (
+                ($productUpdatedTs !== false && $cacheRenderedTs < $productUpdatedTs)
+                || ($templateUpdatedTs !== false && $cacheRenderedTs < $templateUpdatedTs)
+            )
+        ) {
+            $this->markCacheStale($productId, $templateId, $companyId);
+            return null;
+        }
+
         // Cache olustuktan sonra ayni urun/sablon icin yeni bir render job'u acildiysa
         // eski gorseli kullanma; once yeni job tamamlansin.
-        $cacheRenderedAt = (string)($cache['rendered_at'] ?? $cache['updated_at'] ?? '');
         $activeJob = $this->db->fetch(
             "SELECT id, created_at
              FROM render_jobs

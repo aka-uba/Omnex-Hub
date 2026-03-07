@@ -14,6 +14,13 @@
       "runtimeArgs": ["-S", "0.0.0.0:8092", "-t", "tasarımlar/fiyatgor-decompiled/assets/www"],
       "port": 8092,
       "url": "http://localhost:8092/index.html"
+    },
+    {
+      "name": "shape-library",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["-S", "0.0.0.0:8093", "-t", "kutuphane"],
+      "port": 8093,
+      "url": "http://localhost:8093/shape_library_v2.html"
     }
   ]
 }

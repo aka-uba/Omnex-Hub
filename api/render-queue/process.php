@@ -973,9 +973,21 @@ function processForPavoDisplay(
         // 2a. PRE-RENDERED IMAGE (Frontend canvas render - EN KALİTELİ)
         // Eğer frontend'den pre-rendered görsel geldiyse, bunu kullan
         if ($preRenderedImagePath && file_exists($preRenderedImagePath)) {
-            $imageSource = $preRenderedImagePath;
-            $isPreRendered = true; // Frontend canvas ile zaten render edilmiş
-            $log("ÖNCELIK 1: Pre-rendered image kullanılıyor: $preRenderedImagePath (isPreRendered=TRUE)");
+            $templateUpdatedTs = strtotime((string)($template['updated_at'] ?? ''));
+            $preRenderedTs = @filemtime($preRenderedImagePath) ?: false;
+            $isOutdatedPreRendered = (
+                $templateUpdatedTs !== false
+                && $preRenderedTs !== false
+                && $preRenderedTs < $templateUpdatedTs
+            );
+
+            if ($isOutdatedPreRendered) {
+                $log("ÖNCELIK 1: Pre-rendered image ESKI, atlandi: $preRenderedImagePath");
+            } else {
+                $imageSource = $preRenderedImagePath;
+                $isPreRendered = true; // Frontend canvas ile zaten render edilmiş
+                $log("ÖNCELIK 1: Pre-rendered image kullanılıyor: $preRenderedImagePath (isPreRendered=TRUE)");
+            }
         }
 
         // 2a-bis. RENDER_CACHE KONTROLÜ (RenderWorker.js tarafından oluşturulan cache)
@@ -1363,8 +1375,13 @@ function processForPavoDisplay(
         // 4. CİHAZA GÖNDER (Video varsa sendGridLabel, yoksa sendLabel)
         // ============================================
         $log("useGateway: " . ($useGateway ? 'EVET' : 'HAYIR') . ", gatewayId: " . ($gatewayId ?? 'YOK'));
-        // Pre-rendered görsellerde designData'yı temizle â€” dinamik alanlar zaten frontend'de render edilmiş
-        $effectiveDesignData = $isPreRendered ? [] : $designData;
+        // Pre-rendered görseller zaten flatten edilmiş olduğundan cihaz gönderiminde
+        // ek dynamic compositing uygulanmasın.
+        $effectiveDesignData = $designData;
+        if ($isPreRendered) {
+            $effectiveDesignData = [];
+            $log("Pre-rendered source: design_data devre disi birakildi");
+        }
         if (($isMqttMode || $isHttpPullMode) && empty($companyId)) {
             return [
                 'success' => false,

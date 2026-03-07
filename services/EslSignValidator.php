@@ -588,8 +588,10 @@ class EslSignValidator
             $templateHeight = (int)($designData['_templateHeight'] ?? $deviceHeight);
 
             // Region kırpma varsa nesne koordinatlarını ayarla
-            if ($needsRegionProcessing && ($x > 0 || $y > 0)) {
+            if ($needsRegionProcessing) {
                 $adjustedDesignData = $designData;
+                $adjustedDesignData['_templateWidth'] = $regionWidth;
+                $adjustedDesignData['_templateHeight'] = $regionHeight;
                 if (isset($adjustedDesignData['objects']) && is_array($adjustedDesignData['objects'])) {
                     $cropOffsetX = $x;
                     $cropOffsetY = $y;

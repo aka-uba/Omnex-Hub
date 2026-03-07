@@ -1796,6 +1796,9 @@ export class EditorWrapper {
                 case 'add-text':
                     await this.editor.addText();
                     break;
+                case 'add-shape':
+                    await this.editor.addShape();
+                    break;
                 case 'add-rect':
                     await this.editor.addRect();
                     break;
@@ -1935,6 +1938,9 @@ export class EditorWrapper {
                     break;
                 case 'video':
                     this._openMediaPicker('video');
+                    break;
+                case 'shape':
+                    await this.editor.addShape();
                     break;
                 case 'rect':
                     await this.editor.addRect();
@@ -3528,14 +3534,8 @@ export class EditorWrapper {
                                 <button class="toolbar-btn" data-action="add-text" title="${this.__('editor.tools.text') || 'Metin Ekle'}">
                                     <i class="ti ti-text-size"></i>
                                 </button>
-                                <button class="toolbar-btn" data-action="add-rect" title="${this.__('editor.tools.rectangle')}">
-                                    <i class="ti ti-square"></i>
-                                </button>
-                                <button class="toolbar-btn" data-action="add-circle" title="${this.__('editor.tools.circle') || 'Daire'}">
-                                    <i class="ti ti-circle"></i>
-                                </button>
-                                <button class="toolbar-btn" data-action="add-line" title="${this.__('editor.tools.line')}">
-                                    <i class="ti ti-line"></i>
+                                <button class="toolbar-btn" data-action="add-shape" title="${this.__('editor.tools.shape') || 'Şekil'}">
+                                    <i class="ti ti-shape"></i>
                                 </button>
                                 <button class="toolbar-btn" data-action="add-image" title="${this.__('editor.tools.image')}">
                                     <i class="ti ti-photo"></i>
@@ -3637,17 +3637,9 @@ export class EditorWrapper {
                                         <i class="ti ti-photo-video"></i>
                                         <span>${this.__('editor.tools.media') || 'Medya'}</span>
                                     </button>
-                                    <button class="element-btn" data-element="rect">
-                                        <i class="ti ti-rectangle"></i>
-                                        <span>${this.__('editor.tools.shape')}</span>
-                                    </button>
-                                    <button class="element-btn" data-element="circle">
-                                        <i class="ti ti-circle"></i>
-                                        <span>${this.__('editor.tools.circle') || 'Daire'}</span>
-                                    </button>
-                                    <button class="element-btn" data-element="line">
-                                        <i class="ti ti-line"></i>
-                                        <span>${this.__('editor.tools.line')}</span>
+                                    <button class="element-btn" data-element="shape">
+                                        <i class="ti ti-shape"></i>
+                                        <span>${this.__('editor.tools.shape') || 'Şekil'}</span>
                                     </button>
                                     <button class="element-btn" data-element="barcode">
                                         <i class="ti ti-barcode"></i>

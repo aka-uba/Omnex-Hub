@@ -246,8 +246,8 @@ export class LayersPanel extends PanelBase {
             // Grid ve guide çizgilerini hariç tut
             if (shouldExcludeFromHistory(obj)) return false;
 
-            const customType = obj.get(CUSTOM_PROPS.TYPE);
-            if (customType === 'grid-line' || customType === 'grid-group' || customType === 'smart-guide') {
+            const customType = obj.get(CUSTOM_PROPS.TYPE) || obj[CUSTOM_PROPS.CUSTOM_TYPE];
+            if (customType === 'grid-line' || customType === 'grid-group' || customType === 'smart-guide' || customType === 'frame-overlay') {
                 return false;
             }
 

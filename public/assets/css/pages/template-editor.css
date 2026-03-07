@@ -4723,3 +4723,498 @@
     opacity: 0 !important;
     pointer-events: none !important;
 }
+
+/* ─── Shape Picker Modal ─── */
+.shape-picker {
+    display: flex;
+    gap: 16px;
+    height: 520px;
+    overflow: hidden;
+}
+
+.shape-picker-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+.shape-picker-search {
+    position: relative;
+}
+
+.shape-picker-search i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.shape-picker-search input {
+    width: 100%;
+    padding-left: 32px;
+    height: 34px;
+    font-size: var(--text-sm);
+}
+
+.shape-picker-colors {
+    display: flex;
+    gap: 8px;
+}
+
+.shape-picker-colors .color-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.shape-picker-colors .color-label span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.shape-picker-colors input[type="color"] {
+    width: 100%;
+    height: 28px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+.shape-picker-variant {
+    display: flex;
+    gap: 4px;
+}
+
+.shape-picker-variant .sp-variant {
+    flex: 1;
+    font-size: 11px;
+    padding: 4px 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.shape-picker-variant .sp-variant:hover {
+    background: var(--bg-tertiary);
+}
+
+.shape-picker-variant .sp-variant.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+.shape-picker-radius label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.shape-picker-radius input[type="range"] {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border-color);
+    border-radius: 2px;
+    outline: none;
+}
+
+.shape-picker-radius input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.shape-picker-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.shape-picker-categories .sp-cat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+}
+
+.shape-picker-categories .sp-cat:hover {
+    background: var(--bg-secondary);
+}
+
+.shape-picker-categories .sp-cat.active {
+    background: var(--color-primary-light, rgba(34, 139, 230, 0.1));
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.shape-picker-categories .sp-cat i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.shape-picker-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    overflow-y: auto;
+    padding: 4px;
+    align-content: start;
+}
+
+.shape-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg-primary);
+}
+
+.shape-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(34, 139, 230, 0.12);
+    transform: translateY(-1px);
+}
+
+.shape-card-preview {
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shape-card-preview svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.shape-card-name {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.2;
+    max-height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.shape-picker-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.shape-picker-empty i {
+    font-size: 36px;
+    opacity: 0.5;
+}
+
+.shape-picker-empty p {
+    font-size: var(--text-sm);
+}
+
+/* ===========================================
+   Frame Picker Modal
+   =========================================== */
+.frame-picker {
+    display: flex;
+    height: 520px;
+    gap: 0;
+    overflow: hidden;
+}
+
+.frame-picker-sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.frame-picker-search {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.frame-picker-search .input-icon-wrapper {
+    position: relative;
+}
+
+.frame-picker-search .input-icon-wrapper i {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.frame-picker-search input {
+    padding-left: 28px;
+    font-size: var(--text-sm);
+}
+
+.frame-picker-categories {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.fp-cat-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: none;
+    background: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    text-align: left;
+}
+
+.fp-cat-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.fp-cat-btn.active {
+    background: var(--color-primary-light, rgba(34,139,230,0.1));
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.fp-cat-btn i {
+    font-size: 16px;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.fp-cat-btn span:last-child {
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+.frame-picker-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    min-width: 0;
+}
+
+.frame-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.frame-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg-primary);
+}
+
+.frame-card:hover {
+    border-color: var(--color-primary);
+    background: var(--bg-hover);
+}
+
+.frame-card-preview {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-secondary);
+}
+
+.frame-card-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.frame-card-name {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.frame-picker-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.frame-picker-empty i {
+    font-size: 36px;
+    opacity: 0.5;
+}
+
+.frame-picker-empty p {
+    font-size: var(--text-sm);
+}
+
+/* ===========================================
+   Frame Section in Property Panel
+   =========================================== */
+.frame-section {
+    padding: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.frame-section-header {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.frame-section-header i {
+    font-size: 16px;
+}
+
+.frame-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.frame-preview-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.frame-preview-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.frame-preview-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.frame-preview-name {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.frame-preview-type {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.frame-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.frame-actions .btn {
+    padding: 4px 10px;
+    font-size: var(--text-xs);
+}
+
+.btn-add-frame {
+    width: 100%;
+    padding: 8px;
+    border: 2px dashed var(--border-color);
+    background: none;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s;
+}
+
+.btn-add-frame:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light, rgba(34,139,230,0.05));
+}

@@ -197,7 +197,11 @@
             "textFitShrink": "Küçült",
             "textFitEllipsis": "Üç Nokta (...)",
             "minFontSize": "Min Font",
-            "maxLines": "Max Satır"
+            "maxLines": "Max Satır",
+            "dynamicImage": "Dinamik Görsel",
+            "imageIndex": "Görsel Sırası",
+            "imageFit": "Görsel Uyumu",
+            "coverImage": "Kapak Görseli"
         },
         "canvas": {
             "title": "Tasarım Alanı",
@@ -239,7 +243,49 @@
             "barcode": "Barkod",
             "qrcode": "QR Kod",
             "group": "Grup",
+            "shape": "Sekil",
             "multiProductFrame": "Çoklu Ürün Çerçevesi"
+        },
+        "shapePicker": {
+            "title": "Sekil Ekle",
+            "search": "Ara...",
+            "fill": "Dolgu",
+            "stroke": "Kenar",
+            "solid": "Dolu",
+            "outline": "Kenar",
+            "double": "Cift",
+            "radius": "Yaricap",
+            "all": "Tumu",
+            "noResults": "Sonuc bulunamadi",
+            "cat_banner": "Banner",
+            "cat_badge": "Rozet",
+            "cat_ribbon": "Serit",
+            "cat_sticker": "Sticker",
+            "cat_frame": "Cerceve",
+            "cat_tag": "Etiket",
+            "cat_bubble": "Balon"
+        },
+        "framePicker": {
+            "title": "Cerceve Sec",
+            "search": "Cerceve ara...",
+            "all": "Tumu",
+            "noResults": "Sonuc bulunamadi",
+            "classic": "Klasik",
+            "colorful": "Renkli",
+            "dotted": "Noktali",
+            "minimal": "Minimal",
+            "other": "Diger",
+            "rounded": "Yuvarlak",
+            "shadow": "Golgeli",
+            "simple": "Basit",
+            "themed": "Temali"
+        },
+        "frame": {
+            "title": "Cerceve",
+            "add": "Cerceve Ekle",
+            "change": "Degistir",
+            "remove": "Kaldir",
+            "noFrame": "Cerceve yok"
         },
         "dynamicFields": {
             "title": "Dinamik Alanlar",

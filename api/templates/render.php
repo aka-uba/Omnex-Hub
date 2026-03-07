@@ -387,6 +387,7 @@ if ($deviceId) {
     try {
         // Görsel kaynağını belirle
         $imageSource = null;
+        $isPreRendered = false;
         $tempDir = STORAGE_PATH . '/renders';
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
@@ -402,6 +403,7 @@ if ($deviceId) {
                 $tempFile = $tempDir . '/' . $device['device_id'] . '_rendered_' . time() . '.png';
                 if (file_put_contents($tempFile, $imageData)) {
                     $imageSource = $tempFile;
+                    $isPreRendered = true;
                 }
             }
         }
@@ -511,6 +513,13 @@ if ($deviceId) {
         // Şablon boyutlarını design_data'ya ekle
         $templateDesignData['_templateWidth'] = (int)($template['width'] ?? 800);
         $templateDesignData['_templateHeight'] = (int)($template['height'] ?? 1280);
+
+        // Pre-rendered görseller zaten flatten edilmiş olduğundan cihaz gönderiminde
+        // ek dynamic compositing uygulanmasın.
+        $effectiveDesignData = $templateDesignData;
+        if ($isPreRendered) {
+            $effectiveDesignData = [];
+        }
 
         // Video var mı kontrol et (ürün veya şablon)
         $videoPath = null;
@@ -1420,7 +1429,7 @@ if ($deviceId) {
                 'image' => $showImage ? $imageSource : null, // TAM EKRAN görsel (kırpılmamış)
                 'videos' => $videos,
                 'product' => $productInfo,
-                'design_data' => $templateDesignData, // Dinamik alan render için
+                'design_data' => $effectiveDesignData, // Dinamik alan render için
                 'image_region' => $showImage ? [
                     'x' => $actualImageX,
                     'y' => $actualImageY,
@@ -1533,7 +1542,7 @@ if ($deviceId) {
                         'image' => $croppedForSingle,
                         'videos' => $videos,
                         'product' => $productInfo,
-                        'design_data' => $templateDesignData, // Dinamik alan render için
+                        'design_data' => $effectiveDesignData, // Dinamik alan render için
                         'image_region' => $autoImageRegion,
                         'video_region' => $videoPlaceholderFromDesign
                     ];
@@ -1546,7 +1555,7 @@ if ($deviceId) {
                         'height' => $deviceHeight,
                         'videos' => $videos,
                         'product' => $productInfo,
-                        'design_data' => $templateDesignData // Dinamik alan render için
+                        'design_data' => $effectiveDesignData // Dinamik alan render için
                     ];
                     $sendResult = $dispatchSend($sendParams, 'grid');
                 }
@@ -1559,7 +1568,7 @@ if ($deviceId) {
                     'image' => $imageSource,
                     'videos' => $videos,
                     'product' => $productInfo,
-                    'design_data' => $templateDesignData // Dinamik alan render için
+                    'design_data' => $effectiveDesignData // Dinamik alan render için
                 ];
                 $sendResult = $dispatchSend($sendParams, 'grid');
             }
@@ -1572,7 +1581,7 @@ if ($deviceId) {
                 'height' => $deviceHeight,
                 'image' => $imageSource,
                 'product' => $productInfo,
-                'design_data' => $templateDesignData // Dinamik alan render için
+                'design_data' => $effectiveDesignData // Dinamik alan render için
             ];
             $sendResult = $dispatchSend($sendParams, 'label');
         }

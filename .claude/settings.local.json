@@ -403,7 +403,14 @@
       "Bash(keytool -printcert -jarfile \"C:/xampp/htdocs/market-etiket-sistemi/downloads/omnex-player-standalone-v2.6.0.apk\")",
       "Bash(keytool -printcert -jarfile \"C:/xampp/htdocs/market-etiket-sistemi/downloads/omnex-player - Kopya.apk\")",
       "Bash(# Verify signature is now from release keystore keytool -printcert -jarfile \"\"C:/xampp/htdocs/market-etiket-sistemi/android-player-build/omnex-player-app/app/build/outputs/apk/standalone/debug/app-standalone-debug.apk\"\")",
-      "Bash(./gradlew assembleStandaloneDebug)"
+      "Bash(./gradlew assembleStandaloneDebug)",
+      "Bash(for lang in tr en de fr ru)",
+      "Bash(do cp \"backup/market-etiket-sistemi-04032026birdenfazlaresimoncesi/locales/$lang/pages/settings.json\" \"locales/$lang/pages/settings.json\")",
+      "Bash(while read f)",
+      "Bash(do cat \"$f\")",
+      "Bash(sed 's/[0-9]*\\\\.psi$//')",
+      "Bash(sed 's/.*\\\\.//')",
+      "Bash(git add .claude/launch.json .claude/settings.local.json api/playlists/assign-devices.php api/render-queue/analytics.php api/render-queue/process.php api/templates/render.php database/seeders/data/az/label_sizes.json database/seeders/data/de/label_sizes.json database/seeders/data/en/label_sizes.json database/seeders/data/fr/label_sizes.json database/seeders/data/nl/label_sizes.json database/seeders/data/ru/label_sizes.json database/seeders/data/shared/label_sizes.json database/seeders/data/tr/label_sizes.json locales/de/pages/settings.json locales/en/pages/templates.json locales/tr/pages/templates.json public/assets/css/pages/template-editor.css public/assets/js/editor/TemplateEditorV7.js public/assets/js/editor/components/Toolbar.js public/assets/js/editor/core/CustomProperties.js public/assets/js/editor/factory/ObjectFactory.js public/assets/js/editor/panels/LayersPanel.js public/assets/js/editor/panels/PropertyPanel.js public/assets/js/pages/templates/EditorWrapper.js services/EslSignValidator.php services/MqttBrokerService.php services/PavoDisplayGateway.php services/RenderCacheService.php workers/RenderQueueWorker.php)"
     ]
   }
 }

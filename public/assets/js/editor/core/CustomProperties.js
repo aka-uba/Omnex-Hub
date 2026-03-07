@@ -425,7 +425,40 @@ export const CUSTOM_PROPS = {
      * Orijinal v5 origin değerleri (migration için)
      */
     LEGACY_ORIGIN_X: 'legacyOriginX',
-    LEGACY_ORIGIN_Y: 'legacyOriginY'
+    LEGACY_ORIGIN_Y: 'legacyOriginY',
+
+    // ==========================================
+    // SHAPE LIBRARY
+    // ==========================================
+
+    /**
+     * Shape Library'den gelen shape ID
+     */
+    SHAPE_LIBRARY_ID: 'shapeLibraryId',
+
+    /**
+     * Shape variant (solid, outline, double)
+     */
+    SHAPE_VARIANT: 'shapeVariant',
+
+    // ==========================================
+    // FRAME OVERLAY (9-slice dekoratif çerçeve)
+    // ==========================================
+
+    /**
+     * Uygulanan frame ID'si (FrameAssetsData'daki id)
+     */
+    FRAME_ID: 'frameId',
+
+    /**
+     * Frame overlay nesnesinin objectId'si (frame silme/güncelleme için)
+     */
+    FRAME_OVERLAY_ID: 'frameOverlayId',
+
+    /**
+     * Frame overlay'in hedef nesnesinin objectId'si
+     */
+    FRAME_TARGET_ID: 'frameTargetId'
 };
 
 /**
@@ -459,6 +492,12 @@ export const CUSTOM_TYPES = {
     // Arkaplan tipler
     REGION_BACKGROUND: 'region-background',
     VIDEO_PLACEHOLDER: 'video-placeholder',
+
+    // Shape Library
+    SHAPE: 'shape',
+
+    // Frame Overlay (9-slice dekoratif çerçeve)
+    FRAME_OVERLAY: 'frame-overlay',
 
     // Helper tipler
     GRID_LINE: 'grid-line',
@@ -619,7 +658,16 @@ export const SERIALIZABLE_PROPS = [
     // Legacy
     CUSTOM_PROPS.LEGACY_CONVERTED,
     CUSTOM_PROPS.LEGACY_ORIGIN_X,
-    CUSTOM_PROPS.LEGACY_ORIGIN_Y
+    CUSTOM_PROPS.LEGACY_ORIGIN_Y,
+
+    // Shape Library
+    CUSTOM_PROPS.SHAPE_LIBRARY_ID,
+    CUSTOM_PROPS.SHAPE_VARIANT,
+
+    // Frame Overlay
+    CUSTOM_PROPS.FRAME_ID,
+    CUSTOM_PROPS.FRAME_OVERLAY_ID,
+    CUSTOM_PROPS.FRAME_TARGET_ID
 ];
 
 /**

@@ -333,8 +333,26 @@ class RenderQueueWorker
         if ($jobImagePath !== '') {
             $resolvedJobImagePath = $this->resolveQueuedImagePath($jobImagePath);
             if ($resolvedJobImagePath !== null && file_exists($resolvedJobImagePath)) {
-                $this->log("  Queue image path kullaniliyor: " . basename($resolvedJobImagePath));
-                return $resolvedJobImagePath;
+                $template = $renderParams['template'] ?? null;
+                $product = $renderParams['product'] ?? null;
+                $templateUpdatedTs = strtotime((string)($template['updated_at'] ?? ''));
+                $productUpdatedTs = strtotime((string)($product['updated_at'] ?? ''));
+                $imageFileTs = @filemtime($resolvedJobImagePath) ?: false;
+
+                $isStaleQueuedImage = (
+                    $imageFileTs !== false
+                    && (
+                        ($templateUpdatedTs !== false && $imageFileTs < $templateUpdatedTs)
+                        || ($productUpdatedTs !== false && $imageFileTs < $productUpdatedTs)
+                    )
+                );
+
+                if ($isStaleQueuedImage) {
+                    $this->log("  Queue image path ESKI, atlandi: " . basename($resolvedJobImagePath), 'warn');
+                } else {
+                    $this->log("  Queue image path kullaniliyor: " . basename($resolvedJobImagePath));
+                    return $resolvedJobImagePath;
+                }
             }
             $this->log("  Queue image path bulunamadi, yeniden render denenecek: {$jobImagePath}", 'warn');
         }
@@ -771,18 +789,6 @@ class RenderQueueWorker
             }
         }
 
-        $designData = [];
-        if ($templateId !== '') {
-            $template = $this->db->fetch("SELECT design_data FROM templates WHERE id = ?", [$templateId]);
-            $rawDesign = is_array($template) ? ($template['design_data'] ?? null) : null;
-            if (is_string($rawDesign) && $rawDesign !== '') {
-                $decodedDesign = json_decode($rawDesign, true);
-                if (is_array($decodedDesign)) {
-                    $designData = $decodedDesign;
-                }
-            }
-        }
-
         foreach ($items as $item) {
             $deviceId = (string)($item['device_id'] ?? '');
             if ($deviceId === '') {
@@ -806,9 +812,6 @@ class RenderQueueWorker
                 'priority' => $taskConfig['priority'] ?? 'normal',
                 'product' => $product
             ];
-            if (!empty($designData)) {
-                $sendParams['design_data'] = $designData;
-            }
 
             $mqttResult = $this->mqttService->queueContentUpdate(
                 $deviceRow,
@@ -864,18 +867,6 @@ class RenderQueueWorker
             }
         }
 
-        $designData = [];
-        if ($templateId !== '') {
-            $template = $this->db->fetch("SELECT design_data FROM templates WHERE id = ?", [$templateId]);
-            $rawDesign = is_array($template) ? ($template['design_data'] ?? null) : null;
-            if (is_string($rawDesign) && $rawDesign !== '') {
-                $decodedDesign = json_decode($rawDesign, true);
-                if (is_array($decodedDesign)) {
-                    $designData = $decodedDesign;
-                }
-            }
-        }
-
         require_once BASE_PATH . '/services/EslSignValidator.php';
         $eslValidator = new EslSignValidator();
 
@@ -904,9 +895,6 @@ class RenderQueueWorker
                 'priority' => $taskConfig['priority'] ?? 'normal',
                 'product' => $product
             ];
-            if (!empty($designData)) {
-                $sendParams['design_data'] = $designData;
-            }
 
             $httpResult = $eslValidator->queueContentForHttpDevice(
                 $deviceRow,

@@ -877,8 +877,10 @@ class MqttBrokerService
             $templateWidth = (int)($designData['_templateWidth'] ?? ($cropRegion['device_width'] ?? $srcWidth));
             $templateHeight = (int)($designData['_templateHeight'] ?? ($cropRegion['device_height'] ?? $srcHeight));
 
-            if ($cropRegion['x'] > 0 || $cropRegion['y'] > 0) {
+            if (!empty($cropRegion)) {
                 $adjustedDesignData = $designData;
+                $adjustedDesignData['_templateWidth'] = (int)$cropRegion['width'];
+                $adjustedDesignData['_templateHeight'] = (int)$cropRegion['height'];
                 if (isset($adjustedDesignData['objects']) && is_array($adjustedDesignData['objects'])) {
                     $cropOffsetX = (int)$cropRegion['x'];
                     $cropOffsetY = (int)$cropRegion['y'];
