@@ -365,11 +365,88 @@ export class TenantBackupPage {
 
     // ==================== Actions ====================
 
+    /**
+     * Show backup selection modal with group checkboxes.
+     * User can choose which data categories to include.
+     */
     async startBackup(companyId) {
         try {
+            // Load table groups with row counts for this company
+            const groupsRes = await this.app.api.get(`/tenant-backup/table-groups?company_id=${companyId}`);
+            const groups = groupsRes.success ? (groupsRes.data || []) : [];
+
+            const groupCheckboxes = groups.map(g => `
+                <label class="backup-group-item" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;cursor:pointer;transition:background 0.15s;">
+                    <input type="checkbox" class="backup-group-cb" value="${g.id}" checked style="margin:0;">
+                    <i class="ti ${g.icon}" style="font-size:18px;color:var(--color-primary);width:24px;text-align:center;"></i>
+                    <span style="flex:1;font-weight:500;">${escapeHTML(g.label)}</span>
+                    <span class="badge badge-gray" style="font-size:11px;">${g.row_count !== undefined ? g.row_count.toLocaleString() + ' kayıt' : g.tables_count + ' tablo'}</span>
+                </label>
+            `).join('');
+
+            Modal.show({
+                title: this.__('export.select_title') || 'Yedekleme Seçenekleri',
+                icon: 'ti-database-export',
+                size: 'lg',
+                content: `
+                    <p class="text-muted mb-3">${this.__('export.select_desc') || 'Yedeklemek istediğiniz veri kategorilerini seçin.'}</p>
+                    <div class="mb-3" style="display:flex;gap:8px;">
+                        <button type="button" id="backup-select-all" class="btn btn-sm btn-outline">${this.__('actions.select_all') || 'Tümünü Seç'}</button>
+                        <button type="button" id="backup-deselect-all" class="btn btn-sm btn-outline">${this.__('actions.deselect_all') || 'Seçimi Kaldır'}</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:360px;overflow-y:auto;">
+                        ${groupCheckboxes}
+                    </div>
+                    <div class="form-group mt-3">
+                        <label class="form-label">${this.__('import_modal.include_media') || 'Medya Dosyaları'}</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="backup-include-media">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                `,
+                confirmText: this.__('export.start') || 'Yedeklemeyi Başlat',
+                onConfirm: async () => {
+                    const checkboxes = document.querySelectorAll('.backup-group-cb');
+                    const allChecked = [...checkboxes].every(cb => cb.checked);
+                    const selectedGroups = allChecked ? null : [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
+
+                    if (!allChecked && selectedGroups.length === 0) {
+                        Toast.error(this.__('export.no_selection') || 'En az bir kategori seçin');
+                        return;
+                    }
+
+                    const includeMedia = document.getElementById('backup-include-media')?.checked || false;
+
+                    await this._doExport(companyId, selectedGroups, includeMedia);
+                },
+            });
+
+            // Bind select all / deselect all
+            requestAnimationFrame(() => {
+                document.getElementById('backup-select-all')?.addEventListener('click', () => {
+                    document.querySelectorAll('.backup-group-cb').forEach(cb => cb.checked = true);
+                });
+                document.getElementById('backup-deselect-all')?.addEventListener('click', () => {
+                    document.querySelectorAll('.backup-group-cb').forEach(cb => cb.checked = false);
+                });
+            });
+
+        } catch (e) {
+            Toast.error(e.message || this.__('export.failed'));
+        }
+    }
+
+    /**
+     * Execute backup with selected groups
+     */
+    async _doExport(companyId, groups, includeMedia) {
+        try {
+            Toast.info(this.__('export.started') || 'Yedekleme başlatılıyor...');
             const res = await this.app.api.post('/tenant-backup/export', {
                 company_id: companyId,
-                include_media: false,
+                include_media: includeMedia,
+                groups: groups, // null = all
             });
 
             if (res.success) {
@@ -497,25 +574,95 @@ export class TenantBackupPage {
      * FIX: Previously only supported overwrite to source company. Now shows
      * mode selection and supports restoring to a different company or as new company.
      */
+    /**
+     * Restore a backup — Step 1: Download archive and peek manifest to show available groups.
+     * Then show restore modal with group selection.
+     */
     async restoreBackup(backupId, sourceCompanyId, sourceCompanyName) {
-        // Build company options for overwrite target (exclude source)
+        Toast.info(this.__('restore_confirm.loading') || 'Yedek bilgileri okunuyor...');
+
+        try {
+            // Download the archive first to peek its manifest
+            const basePath = window.OmnexConfig?.basePath || '';
+            const token = localStorage.getItem('omnex_token');
+            const downloadRes = await fetch(`${basePath}/api/tenant-backup/download/${backupId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!downloadRes.ok) throw new Error('Download failed');
+            const archiveBlob = await downloadRes.blob();
+
+            // Peek manifest to discover available groups
+            const peekForm = new FormData();
+            peekForm.append('file', archiveBlob, 'restore.tar.gz');
+            const peekRes = await this.app.api.upload('/tenant-backup/peek-manifest', peekForm);
+
+            const manifest = peekRes.success ? peekRes.data : null;
+            const availableGroups = manifest?.available_groups || {};
+
+            this._showRestoreModal(backupId, sourceCompanyId, sourceCompanyName, archiveBlob, availableGroups, manifest);
+
+        } catch (e) {
+            Toast.error(e.message || this.__('restore_confirm.peek_failed') || 'Yedek okunamadı');
+        }
+    }
+
+    /**
+     * Show restore modal with available group selection
+     */
+    _showRestoreModal(backupId, sourceCompanyId, sourceCompanyName, archiveBlob, availableGroups, manifest) {
         const otherCompanyOptions = this.companies
             .map(c => `<option value="${c.company_id}" ${c.company_id === sourceCompanyId ? 'selected' : ''}>${escapeHTML(c.company_name)}</option>`)
             .join('');
 
+        const groupKeys = Object.keys(availableGroups);
+        const groupCheckboxes = groupKeys.length > 0 ? groupKeys.map(key => {
+            const g = availableGroups[key];
+            return `
+                <label class="backup-group-item" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border-color);border-radius:8px;cursor:pointer;transition:background 0.15s;">
+                    <input type="checkbox" class="restore-group-cb" value="${g.id}" checked style="margin:0;">
+                    <i class="ti ${g.icon}" style="font-size:18px;color:var(--color-primary);width:24px;text-align:center;"></i>
+                    <span style="flex:1;font-weight:500;">${escapeHTML(g.label)}</span>
+                    <span class="badge badge-gray" style="font-size:11px;">${g.rows.toLocaleString()} kayıt</span>
+                </label>
+            `;
+        }).join('') : '';
+
+        const manifestInfo = manifest ? `
+            <div class="alert alert-info mb-3" style="display:flex;align-items:center;gap:12px;">
+                <i class="ti ti-info-circle" style="font-size:20px;"></i>
+                <div>
+                    <strong>${escapeHTML(manifest.company?.name || sourceCompanyName)}</strong>
+                    <span class="text-muted" style="margin-left:8px;">${manifest.created_at ? new Date(manifest.created_at).toLocaleString() : ''}</span>
+                    <span class="badge badge-blue" style="margin-left:8px;">${(manifest.total_rows || 0).toLocaleString()} kayıt</span>
+                    ${manifest.media_included ? '<span class="badge badge-purple" style="margin-left:4px;">+ Medya</span>' : ''}
+                </div>
+            </div>
+        ` : '';
+
         Modal.show({
             title: this.__('restore_confirm.title') || 'Geri Yükleme',
             icon: 'ti-restore',
-            size: 'md',
+            size: 'lg',
             content: `
+                ${manifestInfo}
                 <div class="alert alert-warning mb-3">
                     <i class="ti ti-alert-triangle"></i>
-                    <span>${this.__('restore_confirm.warning') || 'Bu işlem hedef firmanın TÜM verilerini silerek yedeğin verileriyle değiştirecektir!'}</span>
+                    <span>${this.__('restore_confirm.warning') || 'Bu işlem hedef firmanın seçilen kategorilerdeki verilerini silerek yedeğin verileriyle değiştirecektir!'}</span>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">${this.__('restore_confirm.source') || 'Kaynak Yedek'}</label>
-                    <div class="form-static-text"><strong>${escapeHTML(sourceCompanyName)}</strong></div>
+
+                ${groupCheckboxes ? `
+                <div class="mb-3">
+                    <label class="form-label">${this.__('restore_confirm.select_groups') || 'Geri Yüklenecek Veriler'}</label>
+                    <div style="display:flex;gap:8px;margin-bottom:8px;">
+                        <button type="button" id="restore-select-all" class="btn btn-sm btn-outline">${this.__('actions.select_all') || 'Tümünü Seç'}</button>
+                        <button type="button" id="restore-deselect-all" class="btn btn-sm btn-outline">${this.__('actions.deselect_all') || 'Seçimi Kaldır'}</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:280px;overflow-y:auto;">
+                        ${groupCheckboxes}
+                    </div>
                 </div>
+                ` : ''}
+
                 <div class="form-group">
                     <label class="form-label">${this.__('restore_confirm.mode') || 'Geri Yükleme Modu'}</label>
                     <select id="restore-mode" class="form-input">
@@ -544,9 +691,10 @@ export class TenantBackupPage {
                 <div class="form-group">
                     <label class="form-label">${this.__('import_modal.include_media') || 'Medya Dosyaları'}</label>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="restore-media" checked>
+                        <input type="checkbox" id="restore-media" ${manifest?.media_included ? 'checked' : ''} ${!manifest?.media_included ? 'disabled' : ''}>
                         <span class="toggle-slider"></span>
                     </label>
+                    ${!manifest?.media_included ? '<small class="form-hint text-muted">' + (this.__('restore_confirm.no_media_in_backup') || 'Bu yedekte medya dosyası yok') + '</small>' : ''}
                 </div>
             `,
             confirmText: this.__('restore_confirm.confirm') || 'Geri Yükle',
@@ -555,6 +703,18 @@ export class TenantBackupPage {
             onConfirm: async () => {
                 const mode = document.getElementById('restore-mode')?.value || 'overwrite';
                 const includeMedia = document.getElementById('restore-media')?.checked ? '1' : '0';
+
+                // Collect selected groups — ALWAYS pass groups to prevent
+                // deleting tables that don't exist in the backup archive
+                const checkboxes = document.querySelectorAll('.restore-group-cb');
+                let selectedGroups = null;
+                if (checkboxes.length > 0) {
+                    selectedGroups = [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
+                    if (selectedGroups.length === 0) {
+                        Toast.error(this.__('restore_confirm.no_selection') || 'En az bir kategori seçin');
+                        return;
+                    }
+                }
 
                 if (mode === 'overwrite') {
                     const targetCompanyId = document.getElementById('restore-target-company')?.value;
@@ -566,7 +726,7 @@ export class TenantBackupPage {
                         return;
                     }
 
-                    await this._executeRestore(backupId, 'overwrite', targetCompanyId, null, includeMedia);
+                    await this._executeRestore(archiveBlob, 'overwrite', targetCompanyId, null, includeMedia, selectedGroups);
                 } else {
                     const newName = document.getElementById('restore-new-company-name')?.value?.trim();
                     if (!newName) {
@@ -574,12 +734,12 @@ export class TenantBackupPage {
                         return;
                     }
 
-                    await this._executeRestore(backupId, 'new_company', null, newName, includeMedia);
+                    await this._executeRestore(archiveBlob, 'new_company', null, newName, includeMedia, selectedGroups);
                 }
             },
         });
 
-        // Bind mode change and target company change events after Modal renders
+        // Bind events after Modal renders
         requestAnimationFrame(() => {
             const modeSelect = document.getElementById('restore-mode');
             const targetSelect = document.getElementById('restore-target-company');
@@ -595,39 +755,40 @@ export class TenantBackupPage {
                 });
             }
 
-            // Update confirm placeholder when target company changes
             if (targetSelect && confirmInput) {
                 const updatePlaceholder = () => {
                     const selectedOpt = targetSelect.options[targetSelect.selectedIndex];
                     confirmInput.placeholder = selectedOpt?.textContent || '';
-                    confirmInput.value = ''; // Reset when target changes
+                    confirmInput.value = '';
                 };
                 updatePlaceholder();
                 targetSelect.addEventListener('change', updatePlaceholder);
             }
+
+            // Select all / deselect all
+            document.getElementById('restore-select-all')?.addEventListener('click', () => {
+                document.querySelectorAll('.restore-group-cb').forEach(cb => cb.checked = true);
+            });
+            document.getElementById('restore-deselect-all')?.addEventListener('click', () => {
+                document.querySelectorAll('.restore-group-cb').forEach(cb => cb.checked = false);
+            });
         });
     }
 
     /**
-     * Execute restore: download backup file, then upload as import
+     * Execute restore: upload pre-downloaded archive blob as import
      */
-    async _executeRestore(backupId, mode, targetCompanyId, newCompanyName, includeMedia) {
+    async _executeRestore(archiveBlob, mode, targetCompanyId, newCompanyName, includeMedia, selectedGroups) {
         Toast.info(this.__('restore_confirm.started') || 'Geri yükleme başlatılıyor...');
         try {
-            const basePath = window.OmnexConfig?.basePath || '';
-            const downloadUrl = `${basePath}/api/tenant-backup/download/${backupId}`;
-            const token = localStorage.getItem('omnex_token');
-
-            const downloadRes = await fetch(downloadUrl, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!downloadRes.ok) throw new Error('Download failed');
-
-            const blob = await downloadRes.blob();
             const formData = new FormData();
-            formData.append('file', blob, 'restore.tar.gz');
+            formData.append('file', archiveBlob, 'restore.tar.gz');
             formData.append('mode', mode);
             formData.append('include_media', includeMedia);
+
+            if (selectedGroups) {
+                formData.append('groups', JSON.stringify(selectedGroups));
+            }
 
             if (mode === 'new_company') {
                 formData.append('company_name', newCompanyName);

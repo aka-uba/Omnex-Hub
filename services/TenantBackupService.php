@@ -27,6 +27,116 @@ class TenantBackupService
     const SETTINGS_KEY = 'tenant_backup_config';
 
     /**
+     * Logical table groups for selective backup/restore.
+     * Each group maps to a set of tier1 + tier2 tables.
+     * 'always' group tables are always included (cannot be deselected).
+     */
+    const TABLE_GROUPS = [
+        'products' => [
+            'label' => 'Ürünler',
+            'icon'  => 'ti-package',
+            'tier1' => ['categories', 'production_types', 'products', 'bundles'],
+            'tier2' => ['bundle_items', 'price_history', 'bundle_price_history'],
+        ],
+        'templates' => [
+            'label' => 'Şablonlar',
+            'icon'  => 'ti-layout',
+            'tier1' => ['templates', 'label_sizes', 'render_queue', 'product_renders', 'render_cache', 'render_jobs'],
+            'tier2' => ['render_queue_items'],
+        ],
+        'devices' => [
+            'label' => 'Cihazlar',
+            'icon'  => 'ti-device-desktop',
+            'tier1' => ['device_groups', 'devices', 'device_sync_requests', 'gateways',
+                        'hanshow_settings', 'hanshow_aps', 'hanshow_esls', 'hanshow_queue',
+                        'mqtt_settings', 'firmware_updates'],
+            'tier2' => ['device_tokens', 'device_heartbeats', 'device_commands', 'device_logs',
+                        'device_alerts', 'device_group_members', 'device_content_assignments',
+                        'gateway_devices', 'gateway_commands'],
+        ],
+        'media' => [
+            'label' => 'Medya',
+            'icon'  => 'ti-photo',
+            'tier1' => ['media_folders', 'media', 'company_storage_usage'],
+            'tier2' => [],
+        ],
+        'signage' => [
+            'label' => 'Dijital Tabela',
+            'icon'  => 'ti-player-play',
+            'tier1' => ['playlists', 'schedules', 'web_templates', 'web_template_widgets',
+                        'web_template_assignments', 'transcode_queue', 'transcode_variants'],
+            'tier2' => ['playlist_items', 'schedule_devices', 'web_template_versions'],
+        ],
+        'branches' => [
+            'label' => 'Şubeler',
+            'icon'  => 'ti-building-store',
+            'tier1' => ['branches', 'branch_import_logs'],
+            'tier2' => ['product_branch_overrides', 'bundle_branch_overrides',
+                        'branch_price_history', 'bundle_branch_price_history', 'user_branch_access'],
+        ],
+        'integrations' => [
+            'label' => 'Entegrasyonlar',
+            'icon'  => 'ti-plug',
+            'tier1' => ['integrations', 'integration_settings', 'import_mappings',
+                        'tamsoft_settings', 'tamsoft_tokens', 'tamsoft_sync_logs', 'tamsoft_depo_mapping',
+                        'product_hal_data', 'hal_distribution_logs'],
+            'tier2' => ['product_branch_hal_overrides', 'integration_settings_audit'],
+        ],
+        'users' => [
+            'label' => 'Kullanıcılar',
+            'icon'  => 'ti-users',
+            'tier1' => ['users'],
+            'tier2' => ['user_notification_preferences'],
+        ],
+        'settings' => [
+            'label' => 'Ayarlar',
+            'icon'  => 'ti-settings',
+            'tier1' => ['settings', 'menu_items'],
+            'tier2' => [],
+        ],
+        'audit' => [
+            'label' => 'Bildirimler & Loglar',
+            'icon'  => 'ti-bell',
+            'tier1' => ['audit_logs', 'notifications'],
+            'tier2' => ['notification_recipients'],
+        ],
+        'license' => [
+            'label' => 'Lisanslar & Ödemeler',
+            'icon'  => 'ti-license',
+            'tier1' => ['licenses', 'payment_settings', 'payment_transactions'],
+            'tier2' => ['license_device_pricing'],
+        ],
+    ];
+
+    /**
+     * Resolve selected groups into tier1/tier2 table lists.
+     * If $groups is null or empty, return ALL tables (backward compatible).
+     */
+    public function resolveGroupTables(?array $groups = null): array
+    {
+        if (empty($groups)) {
+            return [
+                'tier1' => array_keys($this->tier1Tables),
+                'tier2' => array_keys($this->tier2Tables),
+            ];
+        }
+
+        $tier1 = [];
+        $tier2 = [];
+        foreach ($groups as $group) {
+            $def = self::TABLE_GROUPS[$group] ?? null;
+            if (!$def) continue;
+            $tier1 = array_merge($tier1, $def['tier1']);
+            $tier2 = array_merge($tier2, $def['tier2']);
+        }
+
+        return [
+            'tier1' => array_unique($tier1),
+            'tier2' => array_unique($tier2),
+        ];
+    }
+
+    /**
      * Tier 1 — Tables with direct company_id column.
      * Order matters for INSERT (parents first) and DELETE (reverse).
      *
@@ -261,9 +371,13 @@ class TenantBackupService
      */
     public function exportCompany(string $companyId, array $options = []): array
     {
-        $includeMedia = !empty($options['include_media']);
-        $backupType   = $options['backup_type'] ?? 'manual';
-        $createdBy    = $options['created_by'] ?? null;
+        $includeMedia  = !empty($options['include_media']);
+        $backupType    = $options['backup_type'] ?? 'manual';
+        $createdBy     = $options['created_by'] ?? null;
+        $selectedGroups = $options['groups'] ?? null; // null = all
+
+        // Resolve which tables to include based on selected groups
+        $allowedTables = $this->resolveGroupTables($selectedGroups);
 
         // Fetch company info
         $company = $this->db->fetch("SELECT id, name, slug, code FROM companies WHERE id = ?", [$companyId]);
@@ -314,6 +428,11 @@ class TenantBackupService
                 $processed++;
                 $this->updateProgress($backupId, (int)(($processed / $totalTables) * 80));
 
+                // Skip if table not in selected groups
+                if (!in_array($table, $allowedTables['tier1'])) {
+                    continue;
+                }
+
                 if (!$this->db->tableExists($table)) {
                     continue;
                 }
@@ -335,6 +454,11 @@ class TenantBackupService
             foreach ($this->tier2Tables as $table => $config) {
                 $processed++;
                 $this->updateProgress($backupId, (int)(($processed / $totalTables) * 80));
+
+                // Skip if table not in selected groups
+                if (!in_array($table, $allowedTables['tier2'])) {
+                    continue;
+                }
 
                 if (!$this->db->tableExists($table)) {
                     continue;
@@ -385,6 +509,7 @@ class TenantBackupService
                     'slug' => $company['slug'],
                     'code' => $company['code'],
                 ],
+                'selected_groups'   => $selectedGroups, // null = all groups
                 'tables_exported'   => $tablesExported,
                 'total_rows'        => array_sum($tablesExported),
                 'media_included'    => $includeMedia,
@@ -475,7 +600,8 @@ class TenantBackupService
      */
     public function importOverwrite(string $archivePath, string $companyId, array $options = []): array
     {
-        $includeMedia = $options['include_media'] ?? true;
+        $includeMedia   = $options['include_media'] ?? true;
+        $selectedGroups = $options['groups'] ?? null; // null = all
 
         // Verify company exists
         $company = $this->db->fetch("SELECT id, name FROM companies WHERE id = ?", [$companyId]);
@@ -502,15 +628,49 @@ class TenantBackupService
                 throw new Exception('Archive integrity check failed');
             }
 
+            // Resolve which tables to restore based on selected groups
+            $allowedTables = $this->resolveGroupTables($selectedGroups);
+            $isSelectiveRestore = !empty($selectedGroups);
+
+            // SAFETY: Only delete tables that actually have data in the backup archive.
+            // This prevents deleting tables that were NOT exported (e.g. backup only has
+            // products but restore with groups=null would delete ALL tables).
+            $dataDir = $tempDir . '/data';
+            $tablesInArchive = [];
+            if (is_dir($dataDir)) {
+                foreach (glob($dataDir . '/*.json') as $jsonFile) {
+                    $tablesInArchive[] = basename($jsonFile, '.json');
+                }
+            }
+
+            // Filter allowed tables to only those present in the archive
+            $allowedTables['tier1'] = array_values(array_intersect($allowedTables['tier1'], $tablesInArchive));
+            $allowedTables['tier2'] = array_values(array_intersect($allowedTables['tier2'], $tablesInArchive));
+
+            // If filtering reduces to subset, treat as selective restore for FK safety
+            $allTier1 = array_keys($this->tier1Tables);
+            $allTier2 = array_keys($this->tier2Tables);
+            if (count($allowedTables['tier1']) < count($allTier1) || count($allowedTables['tier2']) < count($allTier2)) {
+                $isSelectiveRestore = true;
+            }
+
             // Set SuperAdmin context for RLS bypass
             $this->db->setAppContext(null, null, 'SuperAdmin');
 
             // Begin transaction
             $this->db->beginTransaction();
 
+            // For selective restore: disable FK cascade triggers to prevent
+            // cross-group data loss (e.g. deleting products should NOT cascade
+            // to product_branch_overrides, product_hal_data, etc.)
+            if ($isSelectiveRestore) {
+                $this->db->query("SET session_replication_role = 'replica'");
+            }
+
             // DELETE Tier 2 first (children), reverse order
             $tier2Reversed = array_reverse(array_keys($this->tier2Tables));
             foreach ($tier2Reversed as $table) {
+                if (!in_array($table, $allowedTables['tier2'])) continue;
                 if (!$this->db->tableExists($table)) continue;
                 $config = $this->tier2Tables[$table];
                 $parentTable = $config['parent_table'];
@@ -531,6 +691,7 @@ class TenantBackupService
             // DELETE Tier 1 in reverse order
             $tier1Reversed = array_reverse(array_keys($this->tier1Tables));
             foreach ($tier1Reversed as $table) {
+                if (!in_array($table, $allowedTables['tier1'])) continue;
                 if (!$this->db->tableExists($table)) continue;
                 $config = $this->tier1Tables[$table];
                 $cidType = $config['company_id_type'];
@@ -610,6 +771,8 @@ class TenantBackupService
             $tablesImported = [];
             $importErrors = [];
             foreach ($this->tier1Tables as $table => $config) {
+                if (!in_array($table, $allowedTables['tier1'])) continue;
+
                 $jsonFile = $tempDir . "/data/{$table}.json";
                 if (!file_exists($jsonFile)) continue;
 
@@ -659,6 +822,8 @@ class TenantBackupService
 
             // INSERT Tier 2 in forward order
             foreach ($this->tier2Tables as $table => $config) {
+                if (!in_array($table, $allowedTables['tier2'])) continue;
+
                 $jsonFile = $tempDir . "/data/{$table}.json";
                 if (!file_exists($jsonFile)) continue;
 
@@ -686,6 +851,11 @@ class TenantBackupService
                 if (!empty($insertResult['errors'])) {
                     $importErrors[$table] = $insertResult['errors'];
                 }
+            }
+
+            // Re-enable FK triggers before commit
+            if ($isSelectiveRestore) {
+                $this->db->query("SET session_replication_role = 'origin'");
             }
 
             $this->db->commit();
@@ -725,6 +895,8 @@ class TenantBackupService
             ];
 
         } catch (Exception $e) {
+            // Re-enable FK triggers on error
+            try { $this->db->query("SET session_replication_role = 'origin'"); } catch (Exception $_) {}
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
@@ -754,7 +926,8 @@ class TenantBackupService
      */
     public function importAsNewCompany(string $archivePath, string $newCompanyName, array $options = []): array
     {
-        $includeMedia = $options['include_media'] ?? true;
+        $includeMedia   = $options['include_media'] ?? true;
+        $selectedGroups = $options['groups'] ?? null; // null = all
 
         $storageBase = defined('STORAGE_PATH') ? STORAGE_PATH : (dirname(__DIR__) . '/storage');
         $tempDir = $storageBase . '/backups/import_' . uniqid();
@@ -777,6 +950,20 @@ class TenantBackupService
             if (!$oldCompanyId) {
                 throw new Exception('Archive does not contain company ID');
             }
+
+            // Resolve which tables to import based on selected groups
+            $allowedTables = $this->resolveGroupTables($selectedGroups);
+
+            // SAFETY: Filter to only tables present in the archive
+            $dataDir = $tempDir . '/data';
+            $tablesInArchive = [];
+            if (is_dir($dataDir)) {
+                foreach (glob($dataDir . '/*.json') as $jsonFile) {
+                    $tablesInArchive[] = basename($jsonFile, '.json');
+                }
+            }
+            $allowedTables['tier1'] = array_values(array_intersect($allowedTables['tier1'], $tablesInArchive));
+            $allowedTables['tier2'] = array_values(array_intersect($allowedTables['tier2'], $tablesInArchive));
 
             // Set SuperAdmin context
             $this->db->setAppContext(null, null, 'SuperAdmin');
@@ -853,13 +1040,27 @@ class TenantBackupService
                 }
             }
 
+            // Check if this is a partial/selective import (not all tables)
+            $allTier1 = array_keys($this->tier1Tables);
+            $allTier2 = array_keys($this->tier2Tables);
+            $isSelectiveRestore = !empty($selectedGroups)
+                || count($allowedTables['tier1']) < count($allTier1)
+                || count($allowedTables['tier2']) < count($allTier2);
+
             $this->db->beginTransaction();
+
+            // For selective restore: disable FK triggers to avoid FK violations
+            // when inserting data that references tables not in the selected groups
+            if ($isSelectiveRestore) {
+                $this->db->query("SET session_replication_role = 'replica'");
+            }
 
             // INSERT Tier 1 (skip_on_new tables excluded)
             $tablesImported = [];
             $importErrors = [];
             foreach ($this->tier1Tables as $table => $config) {
                 if (!empty($config['skip_on_new'])) continue;
+                if (!in_array($table, $allowedTables['tier1'])) continue;
 
                 $jsonFile = $tempDir . "/data/{$table}.json";
                 if (!file_exists($jsonFile)) continue;
@@ -901,6 +1102,7 @@ class TenantBackupService
             // INSERT Tier 2
             foreach ($this->tier2Tables as $table => $config) {
                 if (!empty($config['skip_on_new'])) continue;
+                if (!in_array($table, $allowedTables['tier2'])) continue;
 
                 $jsonFile = $tempDir . "/data/{$table}.json";
                 if (!file_exists($jsonFile)) continue;
@@ -926,6 +1128,11 @@ class TenantBackupService
                 if (!empty($insertResult['errors'])) {
                     $importErrors[$table] = $insertResult['errors'];
                 }
+            }
+
+            // Re-enable FK triggers before commit
+            if ($isSelectiveRestore) {
+                $this->db->query("SET session_replication_role = 'origin'");
             }
 
             $this->db->commit();
@@ -971,6 +1178,8 @@ class TenantBackupService
             return $result;
 
         } catch (Exception $e) {
+            // Re-enable FK triggers on error
+            try { $this->db->query("SET session_replication_role = 'origin'"); } catch (Exception $_) {}
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
@@ -981,6 +1190,101 @@ class TenantBackupService
             ]);
 
             return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    // =========================================================================
+    //  TABLE GROUPS API
+    // =========================================================================
+
+    /**
+     * Return TABLE_GROUPS definitions for frontend (backup/restore modal).
+     * Optionally count rows per group for a specific company.
+     */
+    public function getTableGroupsInfo(?string $companyId = null): array
+    {
+        $groups = [];
+        foreach (self::TABLE_GROUPS as $key => $def) {
+            $group = [
+                'id'    => $key,
+                'label' => $def['label'],
+                'icon'  => $def['icon'],
+                'tables_count' => count($def['tier1']) + count($def['tier2']),
+            ];
+
+            // Optionally count rows
+            if ($companyId) {
+                $totalRows = 0;
+                foreach ($def['tier1'] as $table) {
+                    if (!$this->db->tableExists($table)) continue;
+                    $config = $this->tier1Tables[$table] ?? null;
+                    if (!$config) continue;
+                    $cidType = $config['company_id_type'];
+                    $companyParam = ($cidType === 'uuid') ? $companyId : (string)$companyId;
+                    $count = $this->db->fetch("SELECT COUNT(*) as cnt FROM {$table} WHERE company_id = ?", [$companyParam]);
+                    $totalRows += (int)($count['cnt'] ?? 0);
+                }
+                $group['row_count'] = $totalRows;
+            }
+
+            $groups[] = $group;
+        }
+        return $groups;
+    }
+
+    /**
+     * Read manifest from an archive without fully extracting.
+     * Returns manifest data including available groups.
+     */
+    public function readArchiveManifest(string $archivePath): ?array
+    {
+        $storageBase = defined('STORAGE_PATH') ? STORAGE_PATH : (dirname(__DIR__) . '/storage');
+        $tempDir = $storageBase . '/backups/peek_' . uniqid();
+
+        try {
+            if (!$this->extractTarGz($archivePath, $tempDir)) {
+                return null;
+            }
+
+            $manifest = $this->readManifest($tempDir);
+            if (!$manifest) {
+                $this->removeDirectory($tempDir);
+                return null;
+            }
+
+            // Determine which groups have data in the archive
+            $availableGroups = [];
+            $tablesExported = $manifest['tables_exported'] ?? [];
+
+            foreach (self::TABLE_GROUPS as $key => $def) {
+                $allGroupTables = array_merge($def['tier1'], $def['tier2']);
+                $groupRows = 0;
+                $groupTables = [];
+                foreach ($allGroupTables as $table) {
+                    if (isset($tablesExported[$table]) && $tablesExported[$table] > 0) {
+                        $groupRows += $tablesExported[$table];
+                        $groupTables[] = $table;
+                    }
+                }
+                if ($groupRows > 0) {
+                    $availableGroups[$key] = [
+                        'id'       => $key,
+                        'label'    => $def['label'],
+                        'icon'     => $def['icon'],
+                        'rows'     => $groupRows,
+                        'tables'   => $groupTables,
+                    ];
+                }
+            }
+
+            $manifest['available_groups'] = $availableGroups;
+
+            $this->removeDirectory($tempDir);
+            return $manifest;
+
+        } catch (Exception $e) {
+            $this->removeDirectory($tempDir);
+            return null;
         }
     }
 

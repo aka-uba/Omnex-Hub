@@ -39,7 +39,9 @@
         "import": "İçe Aktar",
         "delete": "Sil",
         "download": "İndir",
-        "restore": "Geri Yükle"
+        "restore": "Geri Yükle",
+        "select_all": "Tümünü Seç",
+        "deselect_all": "Seçimi Kaldır"
     },
 
     "history": {
@@ -72,7 +74,10 @@
         "started": "Yedekleme başlatıldı",
         "completed": "Yedek başarıyla oluşturuldu",
         "failed": "Yedekleme başarısız",
-        "already_running": "Bu firma için zaten devam eden bir yedekleme var"
+        "already_running": "Bu firma için zaten devam eden bir yedekleme var",
+        "select_title": "Yedekleme Seçenekleri",
+        "select_desc": "Yedeklemek istediğiniz veri kategorilerini seçin.",
+        "no_selection": "En az bir kategori seçin"
     },
 
     "import_modal": {
@@ -93,7 +98,7 @@
 
     "restore_confirm": {
         "title": "Geri Yükleme",
-        "warning": "Bu işlem hedef firmanın TÜM verilerini silerek yedeğin verileriyle değiştirecektir!",
+        "warning": "Bu işlem hedef firmanın seçilen kategorilerdeki verilerini silerek yedeğin verileriyle değiştirecektir!",
         "source": "Kaynak Yedek",
         "mode": "Geri Yükleme Modu",
         "mode_overwrite": "Mevcut Firmaya Geri Yükle",
@@ -104,7 +109,12 @@
         "name_required": "Firma adı gerekli",
         "started": "Geri yükleme başlatılıyor...",
         "confirm": "Geri Yükle",
-        "cancel": "İptal"
+        "cancel": "İptal",
+        "loading": "Yedek bilgileri okunuyor...",
+        "peek_failed": "Yedek okunamadı",
+        "select_groups": "Geri Yüklenecek Veriler",
+        "no_selection": "En az bir kategori seçin",
+        "no_media_in_backup": "Bu yedekte medya dosyası yok"
     },
 
     "delete_confirm": {

@@ -43,6 +43,8 @@ export class BluetoothWizard {
         this._pendingWifiConfig = null;
         this._isReadingInfo = false;
         this._deviceToken = ''; // BT protection password (set during protocol step)
+        this._currentStep = 1;
+        this._highestReachedStep = 1;
     }
 
     /**
@@ -98,6 +100,8 @@ export class BluetoothWizard {
         this._mqttProtocolSelected = false;
         this._isKexinDevice = false;
         this._pendingWifiConfig = null;
+        this._currentStep = 1;
+        this._highestReachedStep = 1;
         this._deviceToken = '';
     }
 
@@ -271,26 +275,26 @@ export class BluetoothWizard {
     _renderModalContent() {
         return `
             <div id="bluetooth-container">
-                <!-- Steps indicator -->
-                <div class="bluetooth-steps" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <!-- Steps indicator (clickable for back navigation) -->
+                <div class="bluetooth-steps">
                     <div class="bt-step active" data-step="1">
-                        <span class="bt-step-num">1</span>
+                        <span class="bt-step-num"><span>1</span></span>
                         <span class="bt-step-label">${this.__('bluetooth.steps.scan')}</span>
                     </div>
                     <div class="bt-step" data-step="2">
-                        <span class="bt-step-num">2</span>
+                        <span class="bt-step-num"><span>2</span></span>
                         <span class="bt-step-label">${this.__('bluetooth.steps.connect')}</span>
                     </div>
                     <div class="bt-step" data-step="3">
-                        <span class="bt-step-num">3</span>
+                        <span class="bt-step-num"><span>3</span></span>
                         <span class="bt-step-label">${this.__('bluetooth.steps.wifi')}</span>
                     </div>
                     <div class="bt-step" data-step="4">
-                        <span class="bt-step-num">4</span>
+                        <span class="bt-step-num"><span>4</span></span>
                         <span class="bt-step-label">${this.__('bluetooth.steps.protocol')}</span>
                     </div>
                     <div class="bt-step" data-step="5">
-                        <span class="bt-step-num">5</span>
+                        <span class="bt-step-num"><span>5</span></span>
                         <span class="bt-step-label">${this.__('bluetooth.steps.verify')}</span>
                     </div>
                 </div>
@@ -569,6 +573,8 @@ export class BluetoothWizard {
                 .bluetooth-steps {
                     display: flex;
                     gap: 0.25rem;
+                    margin-bottom: 1.5rem;
+                    flex-wrap: wrap;
                 }
                 .bt-step {
                     display: flex;
@@ -580,6 +586,7 @@ export class BluetoothWizard {
                     font-size: 0.75rem;
                     opacity: 0.5;
                     transition: all 0.2s;
+                    user-select: none;
                 }
                 .bt-step.active {
                     background: var(--color-primary);
@@ -590,6 +597,19 @@ export class BluetoothWizard {
                     background: var(--color-success);
                     color: white;
                     opacity: 1;
+                    cursor: pointer;
+                }
+                .bt-step.completed:hover {
+                    filter: brightness(1.1);
+                    transform: translateY(-1px);
+                }
+                .bt-step.reachable {
+                    cursor: pointer;
+                    opacity: 0.7;
+                }
+                .bt-step.reachable:hover {
+                    opacity: 0.9;
+                    transform: translateY(-1px);
                 }
                 .bt-step-num {
                     width: 18px;
@@ -600,6 +620,13 @@ export class BluetoothWizard {
                     background: rgba(255,255,255,0.2);
                     border-radius: 50%;
                     font-weight: 600;
+                }
+                .bt-step.completed .bt-step-num::after {
+                    content: '✓';
+                    font-size: 10px;
+                }
+                .bt-step.completed .bt-step-num span {
+                    display: none;
                 }
                 .bt-step-label {
                     display: none;
@@ -634,6 +661,16 @@ export class BluetoothWizard {
      * @private
      */
     _bindEvents() {
+        // Step tab click navigation (back to completed/reachable steps)
+        document.querySelectorAll('.bt-step[data-step]').forEach(el => {
+            el.addEventListener('click', () => {
+                const targetStep = parseInt(el.dataset.step, 10);
+                if (!isNaN(targetStep)) {
+                    this._navigateToStep(targetStep);
+                }
+            });
+        });
+
         // Scan button (filtered)
         document.getElementById('bt-scan-btn')?.addEventListener('click', () => this._scanDevice(false));
 
@@ -1357,14 +1394,25 @@ export class BluetoothWizard {
      * @private
      */
     _setStep(step) {
+        this._currentStep = step;
+        if (step > this._highestReachedStep) {
+            this._highestReachedStep = step;
+        }
+
+        const isConnected = this.workflowState.connected;
+
         // Update step indicators
         document.querySelectorAll('.bt-step').forEach((el, idx) => {
             const stepNum = idx + 1;
-            el.classList.remove('active', 'completed');
+            el.classList.remove('active', 'completed', 'reachable');
             if (stepNum < step) {
                 el.classList.add('completed');
             } else if (stepNum === step) {
                 el.classList.add('active');
+            } else if (isConnected || stepNum <= this._highestReachedStep) {
+                // After BLE connection: all tabs clickable
+                // Before connection: only previously visited steps
+                el.classList.add('reachable');
             }
         });
 
@@ -1390,6 +1438,31 @@ export class BluetoothWizard {
         if (activeContent) {
             activeContent.style.display = 'block';
         }
+    }
+
+    /**
+     * Navigate to a step by clicking on its tab
+     * After BLE connection, all steps become accessible (user may need factory reset, reboot etc.)
+     * Before connection, only reached steps are clickable
+     * @param {number} targetStep - Step number to navigate to
+     * @private
+     */
+    _navigateToStep(targetStep) {
+        // Can't navigate to current step
+        if (targetStep === this._currentStep) return;
+
+        // After BLE connection, all steps are accessible (non-sequential workflow)
+        if (this.workflowState.connected) {
+            this._setStep(targetStep);
+            this._updateAddDeviceButtonState();
+            return;
+        }
+
+        // Before connection, only reached steps are clickable
+        if (targetStep > this._highestReachedStep) return;
+
+        this._setStep(targetStep);
+        this._updateAddDeviceButtonState();
     }
 
     /**
@@ -1421,6 +1494,8 @@ export class BluetoothWizard {
             this.workflowState.wifiConfigured = false;
             this.workflowState.protocolConfigured = false;
             this.workflowState.verified = false;
+            // Reset step navigation for new device — user must go through all steps again
+            this._highestReachedStep = 1;
             this._log(this.__('bluetooth.wizard.deviceFound', { name: device.name }), 'success');
 
             // Cihaz markası tespiti

@@ -821,6 +821,14 @@ $router->group(['prefix' => '/api/tenant-backup', 'middleware' => ['auth', 'admi
         require API_PATH . '/tenant-backup/import.php';
     });
 
+    $router->get('/table-groups', function($request) {
+        require API_PATH . '/tenant-backup/table-groups.php';
+    });
+
+    $router->post('/peek-manifest', function($request) {
+        require API_PATH . '/tenant-backup/peek-manifest.php';
+    });
+
     $router->get('/download/{id}', function($request) {
         require API_PATH . '/tenant-backup/download.php';
     });

@@ -39,7 +39,9 @@
         "import": "Import",
         "delete": "Delete",
         "download": "Download",
-        "restore": "Restore"
+        "restore": "Restore",
+        "select_all": "Select All",
+        "deselect_all": "Deselect All"
     },
 
     "history": {
@@ -72,7 +74,10 @@
         "started": "Backup started",
         "completed": "Backup created successfully",
         "failed": "Backup failed",
-        "already_running": "A backup is already in progress for this company"
+        "already_running": "A backup is already in progress for this company",
+        "select_title": "Backup Options",
+        "select_desc": "Select the data categories you want to back up.",
+        "no_selection": "Select at least one category"
     },
 
     "import_modal": {
@@ -93,7 +98,7 @@
 
     "restore_confirm": {
         "title": "Restore Backup",
-        "warning": "This operation will DELETE ALL data for the target company and replace it with backup data!",
+        "warning": "This operation will DELETE selected category data for the target company and replace it with backup data!",
         "source": "Source Backup",
         "mode": "Restore Mode",
         "mode_overwrite": "Restore to Existing Company",
@@ -104,7 +109,12 @@
         "name_required": "Company name is required",
         "started": "Restore starting...",
         "confirm": "Restore",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "loading": "Reading backup information...",
+        "peek_failed": "Failed to read backup",
+        "select_groups": "Data to Restore",
+        "no_selection": "Select at least one category",
+        "no_media_in_backup": "No media files in this backup"
     },
 
     "delete_confirm": {

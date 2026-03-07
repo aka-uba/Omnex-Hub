@@ -17,6 +17,7 @@ require_once __DIR__ . '/../../services/NotificationTriggers.php';
 $data = json_decode(file_get_contents('php://input'), true);
 $companyId = $data['company_id'] ?? null;
 $includeMedia = $data['include_media'] ?? false;
+$groups = $data['groups'] ?? null; // null = all, array of group keys
 
 // Non-superadmin: force own company
 if ($user['role'] !== 'SuperAdmin') {
@@ -41,6 +42,7 @@ $result = $service->exportCompany($companyId, [
     'include_media' => $includeMedia,
     'backup_type'   => 'manual',
     'created_by'    => $user['id'],
+    'groups'        => $groups,
 ]);
 
 // Send notification

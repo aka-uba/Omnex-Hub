@@ -27,6 +27,7 @@ if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
 $uploadedFile = $_FILES['file']['tmp_name'];
 $mode = $_POST['mode'] ?? 'overwrite';
 $includeMedia = ($_POST['include_media'] ?? '1') === '1';
+$groups = !empty($_POST['groups']) ? json_decode($_POST['groups'], true) : null;
 
 // Save to a persistent temp location
 $storageBase = defined('STORAGE_PATH') ? STORAGE_PATH : (dirname(__DIR__, 2) . '/storage');
@@ -48,6 +49,7 @@ if ($mode === 'new_company') {
 
     $result = $service->importAsNewCompany($archivePath, $newName, [
         'include_media' => $includeMedia,
+        'groups'        => $groups,
     ]);
 } else {
     // overwrite mode
@@ -59,6 +61,7 @@ if ($mode === 'new_company') {
 
     $result = $service->importOverwrite($archivePath, $targetCompanyId, [
         'include_media' => $includeMedia,
+        'groups'        => $groups,
     ]);
 }
 
