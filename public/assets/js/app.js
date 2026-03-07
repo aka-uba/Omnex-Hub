@@ -275,6 +275,7 @@ class App {
         this.router.addRoute('/admin/setup-wizard', () => this.loadAdminPage('admin/SetupWizard'));
         this.router.addRoute('/admin/queue', () => this.loadAdminPage('queue/QueueDashboard'));
         this.router.addRoute('/admin/branches', () => this.loadAdminPage('admin/BranchManagement'));
+        this.router.addRoute('/admin/backups', () => this.loadAdminPage('admin/TenantBackupPage'));
 
         // About page (all users)
         this.router.addRoute('/about', () => this.loadProtectedPage('About'));

@@ -3221,6 +3221,7 @@ class PavoDisplayGateway
     private function getObjectPixelBounds(array $obj, float $scaleX, float $scaleY, ?string $fontPath, $image): ?array
     {
         $type = strtolower((string)($obj['type'] ?? ''));
+        $customType = strtolower((string)($obj['customType'] ?? ''));
         $left = (float)($obj['left'] ?? 0);
         $top = (float)($obj['top'] ?? 0);
         $width = (float)($obj['width'] ?? 0);
@@ -3233,6 +3234,32 @@ class PavoDisplayGateway
         $originY = strtolower((string)($obj['originY'] ?? 'center'));
         $angle = (float)($obj['angle'] ?? 0);
 
+        // Dynamic image placeholder bounds must match renderImageOnPosition() exactly.
+        // floor/ceil-based bounds can become 1px wider than actual draw area and leave
+        // thin inner gaps from old placeholder pixels.
+        if (in_array($customType, ['dynamic-image', 'image-placeholder', 'slot-image'], true)) {
+            $dstW = max(1, (int)round($width * $objScaleX * $scaleX));
+            $dstH = max(1, (int)round($height * $objScaleY * $scaleY));
+            $dstX = (int)round($left * $scaleX);
+            $dstY = (int)round($top * $scaleY);
+
+            if ($originX === 'center') {
+                $dstX -= (int)($dstW / 2);
+            } elseif ($originX === 'right') {
+                $dstX -= $dstW;
+            }
+
+            if ($originY === 'center') {
+                $dstY -= (int)($dstH / 2);
+            } elseif ($originY === 'bottom') {
+                $dstY -= $dstH;
+            }
+
+            $x1 = $dstX;
+            $y1 = $dstY;
+            $x2 = $dstX + $dstW - 1;
+            $y2 = $dstY + $dstH - 1;
+        } else {
         $effectiveWidth = $width * $objScaleX;
         $effectiveHeight = $height * $objScaleY;
         $adjLeft = $left;
@@ -3253,6 +3280,7 @@ class PavoDisplayGateway
         $y1 = (int)floor($adjTop * $scaleY);
         $x2 = (int)ceil(($adjLeft + $effectiveWidth) * $scaleX);
         $y2 = (int)ceil(($adjTop + $effectiveHeight) * $scaleY);
+        }
 
         if (in_array($type, ['text', 'i-text', 'itext', 'textbox'], true) && $fontPath) {
             $fontSize = (float)($obj['fontSize'] ?? 20);

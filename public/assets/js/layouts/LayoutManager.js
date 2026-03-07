@@ -1461,6 +1461,7 @@ export class LayoutManager {
                     { label: this.__('layout.menu.branches'), href: '/admin/branches', icon: 'building-store', roles: ['SuperAdmin', 'Admin'] },
                     { label: this.__('layout.menu.licenses'), href: '/admin/licenses', icon: 'license', roles: ['SuperAdmin'] },
                     { label: this.__('layout.menu.auditLog'), href: '/admin/audit-log', icon: 'history', roles: ['SuperAdmin'] },
+                    { label: this.__('layout.menu.tenantBackups'), href: '/admin/backups', icon: 'database-export', roles: ['SuperAdmin'] },
                     { label: this.__('layout.menu.logManagement'), href: '/admin/logs', icon: 'file-text', roles: ['SuperAdmin'] },
                     { label: this.__('layout.menu.setupWizard'), href: '/admin/setup-wizard', icon: 'wand', roles: ['SuperAdmin'] }
                 );

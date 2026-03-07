@@ -439,6 +439,7 @@
         "licenses": "Lisanslar",
         "integrations": "Entegrasyonlar",
         "auditLog": "İşlem Geçmişi",
+        "tenantBackups": "Firma Yedekleri",
         "logManagement": "Log Yönetimi"
     },
     "languages": {
@@ -913,6 +914,7 @@
             "branches": "Şubeler",
             "licenses": "Lisanslar",
             "auditLog": "İşlem Geçmişi",
+            "tenantBackups": "Firma Yedekleri",
             "logManagement": "Log Yönetimi",
             "setupWizard": "Kurulum Sihirbazı"
         },
