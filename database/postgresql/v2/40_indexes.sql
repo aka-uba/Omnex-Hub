@@ -253,6 +253,7 @@ CREATE INDEX IF NOT EXISTS "idx_templates_scope" ON "labels"."templates" ("scope
 CREATE INDEX IF NOT EXISTS "idx_templates_status" ON "labels"."templates" ("status");
 CREATE INDEX IF NOT EXISTS "idx_templates_target_device" ON "labels"."templates" ("target_device_type");
 CREATE INDEX IF NOT EXISTS "idx_templates_type" ON "labels"."templates" ("type");
+CREATE UNIQUE INDEX IF NOT EXISTS "uq_templates_company_name" ON "labels"."templates" ("company_id", "name");
 CREATE INDEX IF NOT EXISTS "idx_transcode_queue_company" ON "signage"."transcode_queue" ("company_id");
 CREATE INDEX IF NOT EXISTS "idx_transcode_queue_media" ON "signage"."transcode_queue" ("media_id");
 CREATE INDEX IF NOT EXISTS "idx_transcode_queue_priority" ON "signage"."transcode_queue" ("priority", "created_at");

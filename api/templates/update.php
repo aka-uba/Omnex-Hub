@@ -49,7 +49,20 @@ $typeMap = ['esl' => 'label', 'signage' => 'signage', 'tv' => 'tv', 'label_print
 $data = [];
 
 // Map frontend fields to database fields
-if ($request->has('name')) $data['name'] = $request->input('name');
+if ($request->has('name')) {
+    $newName = trim($request->input('name'));
+    // Duplicate name check (only if name is changing)
+    if ($newName !== $template['name']) {
+        $ownerCompanyId = $template['company_id'];
+        $duplicateCheck = $ownerCompanyId
+            ? $db->fetch("SELECT id FROM templates WHERE company_id = ? AND name = ? AND id != ?", [$ownerCompanyId, $newName, $id])
+            : $db->fetch("SELECT id FROM templates WHERE company_id IS NULL AND name = ? AND id != ?", [$newName, $id]);
+        if ($duplicateCheck) {
+            Response::error('Bu isimde bir şablon zaten mevcut', 409);
+        }
+    }
+    $data['name'] = $newName;
+}
 if ($request->has('description')) $data['description'] = $request->input('description');
 if ($request->has('width')) $data['width'] = $request->input('width');
 if ($request->has('height')) $data['height'] = $request->input('height');

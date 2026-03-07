@@ -28,6 +28,15 @@ $dbType = $typeMap[$frontendType] ?? $frontendType;
 // Shared (system) template handling - only SuperAdmin
 $isShared = $isSuperAdmin && (bool)$request->input('is_shared', false);
 $templateCompanyId = $isShared ? null : $companyId;
+
+// Duplicate name check
+$templateName = trim($request->input('name'));
+$duplicateCheck = $templateCompanyId
+    ? $db->fetch("SELECT id FROM templates WHERE company_id = ? AND name = ?", [$templateCompanyId, $templateName])
+    : $db->fetch("SELECT id FROM templates WHERE company_id IS NULL AND name = ?", [$templateName]);
+if ($duplicateCheck) {
+    Response::error('Bu isimde bir şablon zaten mevcut', 409);
+}
 $templateScope = $isShared ? 'system' : 'company';
 
 // label_printer türü için category'yi otomatik ayarla

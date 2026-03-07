@@ -1574,7 +1574,28 @@ class MqttBrokerService
             $data['mqtt_topic'] = $mqttTopic;
         }
 
-        return $this->db->update('devices', $data, 'id = ?', [$deviceId]) !== false;
+        // Fetch old mode before updating
+        $device = $this->db->fetch("SELECT communication_mode FROM devices WHERE id = ?", [$deviceId]);
+        $oldMode = $device['communication_mode'] ?? 'http-server';
+
+        $result = $this->db->update('devices', $data, 'id = ?', [$deviceId]) !== false;
+
+        // Sync active assignment content_type when communication_mode changes
+        if ($result && $mode !== $oldMode) {
+            $newContentType = ($mode === 'mqtt') ? 'mqtt_payload' : 'http_payload';
+            $staleType = ($mode === 'mqtt') ? 'http_payload' : 'mqtt_payload';
+
+            $this->db->query(
+                "UPDATE device_content_assignments
+                    SET content_type = ?, created_at = now()
+                  WHERE device_id = ?
+                    AND status = 'active'
+                    AND content_type = ?",
+                [$newContentType, $deviceId, $staleType]
+            );
+        }
+
+        return $result;
     }
 
     /**

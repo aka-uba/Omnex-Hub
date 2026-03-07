@@ -62,6 +62,22 @@ if ($request->has('communication_mode')) {
         Response::error('Iletisim modu gecersiz', 422);
     }
     $data['communication_mode'] = $communicationMode;
+
+    // Sync active assignment content_type when communication_mode changes
+    $oldMode = $device['communication_mode'] ?? 'http-server';
+    if ($communicationMode !== $oldMode) {
+        $newContentType = ($communicationMode === 'mqtt') ? 'mqtt_payload' : 'http_payload';
+        $staleType = ($communicationMode === 'mqtt') ? 'http_payload' : 'mqtt_payload';
+
+        $db->query(
+            "UPDATE device_content_assignments
+                SET content_type = ?, created_at = now()
+              WHERE device_id = ?
+                AND status = 'active'
+                AND content_type = ?",
+            [$newContentType, $id, $staleType]
+        );
+    }
 }
 
 // Map serial_number to device_id
