@@ -70,6 +70,7 @@
             "barcode": "Barcode",
             "qrcode": "QR Code",
             "shape": "Shape",
+            "borderFrame": "Border Frame",
             "line": "Line",
             "rectangle": "Rectangle",
             "circle": "Circle",
@@ -84,7 +85,8 @@
             "multiFrame2x3": "2x3 Frame",
             "grid": "Grid",
             "snap": "Snap",
-            "frame": "Frame"
+            "frame": "Frame",
+            "background": "Background"
         },
         "inspector": {
             "title": "Inspector"
@@ -95,6 +97,7 @@
             "selectElement": "Select an element to edit",
             "noSelection": "No element selected",
             "text": "Text",
+            "content": "Text Content",
             "image": "Image",
             "replaceImage": "Replace Image",
             "editBarcode": "Edit Barcode",
@@ -142,6 +145,7 @@
             "shadowOffsetY": "Shadow Y",
             "shadowBlur": "Blur",
             "noStroke": "No Border",
+            "noFill": "No Fill",
             "padding": "Padding",
             "bold": "Bold",
             "italic": "Italic",
@@ -256,6 +260,7 @@
             "double": "Double",
             "radius": "Radius",
             "all": "All",
+            "new": "New",
             "noResults": "No results found",
             "cat_banner": "Banner",
             "cat_badge": "Badge",
@@ -285,7 +290,8 @@
             "add": "Add Frame",
             "change": "Change",
             "remove": "Remove",
-            "noFrame": "No frame"
+            "noFrame": "No frame",
+            "color": "Frame Color"
         },
         "dynamicFields": {
             "title": "Dynamic Fields",
@@ -465,7 +471,9 @@
             "alignCenterV": "Center Vertical",
             "alignBottom": "Align Bottom",
             "distributeH": "Distribute Horizontal",
-            "distributeV": "Distribute Vertical"
+            "distributeV": "Distribute Vertical",
+            "groupObjects": "Group",
+            "ungroupObjects": "Ungroup"
         },
         "subToolbar": {
             "toggle": "Toggle Element Toolbar",

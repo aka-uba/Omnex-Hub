@@ -117,7 +117,11 @@
             "language": "Dil",
             "currency": "Valyuta",
             "dateFormat": "Tarix Format",
-            "theme": "Mövzu"
+            "theme": "Mövzu",
+            "sessionTimeoutMinutes": "Sessiyanın Açıq Qalma Müddəti (dəqiqə)"
+        },
+        "hints": {
+            "sessionTimeoutMinutes": "5 - 43200 dəqiqə (standart: 43200 = 30 gün)"
         },
         "placeholders": {
             "companyName": "Şirkət adı",

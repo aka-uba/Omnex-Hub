@@ -117,7 +117,11 @@
             "language": "لغة",
             "currency": "عملة",
             "dateFormat": "تنسيق التاريخ",
-            "theme": "سمة"
+            "theme": "سمة",
+            "sessionTimeoutMinutes": "مدة بقاء الجلسة نشطة (بالدقائق)"
+        },
+        "hints": {
+            "sessionTimeoutMinutes": "5 - 43200 دقيقة (الافتراضي: 43200 = 30 يومًا)"
         },
         "placeholders": {
             "companyName": "اسم الشركة",

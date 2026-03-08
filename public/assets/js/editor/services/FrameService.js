@@ -40,6 +40,9 @@ export class FrameService {
 
         /** @type {number} Debounce delay ms */
         this._debounceMs = 100;
+
+        /** @type {Map<string, boolean>} Opaque frame center fill policy cache */
+        this._centerFillPolicyCache = new Map();
     }
 
     /**
@@ -67,8 +70,8 @@ export class FrameService {
     /**
      * Generate render cache key
      */
-    _cacheKey(frameId, w, h) {
-        return `${frameId}_${Math.round(w)}_${Math.round(h)}`;
+    _cacheKey(frameId, w, h, frameColor = '') {
+        return `${frameId}_${Math.round(w)}_${Math.round(h)}_${String(frameColor || '').toLowerCase()}`;
     }
 
     /**
@@ -89,8 +92,9 @@ export class FrameService {
      * @param {number} targetH - Target height
      * @returns {Promise<string>} dataURL (PNG)
      */
-    async renderFrame(frameDef, targetW, targetH) {
-        const key = this._cacheKey(frameDef.id, targetW, targetH);
+    async renderFrame(frameDef, targetW, targetH, options = {}) {
+        const tintColor = String(options?.tintColor || '').trim();
+        const key = this._cacheKey(frameDef.id, targetW, targetH, tintColor);
 
         if (this._renderCache.has(key)) {
             return this._renderCache.get(key);
@@ -104,12 +108,12 @@ export class FrameService {
 
         // For transparent_resize type: scale entire image to target
         if (frameDef.frameType === 'transparent_resize') {
-            return this._renderResizeFrame(img, targetW, targetH, key);
+            return this._renderResizeFrame(img, targetW, targetH, key, tintColor, frameDef);
         }
 
         // For transparent_tile: tile entire image
         if (frameDef.frameType === 'transparent_tile') {
-            return this._renderTileFrame(img, targetW, targetH, key);
+            return this._renderTileFrame(img, targetW, targetH, key, tintColor, frameDef);
         }
 
         // Standard 9-slice rendering
@@ -183,7 +187,7 @@ export class FrameService {
 
         // 3. Center
         if (centerW > 0 && centerH > 0 && srcCenterW > 0 && srcCenterH > 0) {
-            if (frameDef.frameType === 'opaque') {
+            if (frameDef.frameType === 'opaque' && this._shouldFillOpaqueCenter(frameDef, img, cL, cT, cR, cB)) {
                 // Opaque: fill center
                 if (isTile) {
                     this._tileRegion(ctx, img, cL, cT, srcCenterW, srcCenterH, sL, sT, centerW, centerH);
@@ -194,6 +198,7 @@ export class FrameService {
             // transparent: leave center empty (content shows through)
         }
 
+        this._applyTintOnCanvas(canvas, tintColor, frameDef);
         const dataURL = canvas.toDataURL('image/png');
 
         this._evictCache();
@@ -238,13 +243,14 @@ export class FrameService {
     /**
      * Render transparent_resize type (scale entire image)
      */
-    _renderResizeFrame(img, targetW, targetH, cacheKey) {
+    _renderResizeFrame(img, targetW, targetH, cacheKey, tintColor = '', frameDef = null) {
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(targetW);
         canvas.height = Math.round(targetH);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, targetW, targetH);
 
+        this._applyTintOnCanvas(canvas, tintColor, frameDef);
         const dataURL = canvas.toDataURL('image/png');
         this._evictCache();
         this._renderCache.set(cacheKey, dataURL);
@@ -254,7 +260,7 @@ export class FrameService {
     /**
      * Render transparent_tile type (tile entire image)
      */
-    _renderTileFrame(img, targetW, targetH, cacheKey) {
+    _renderTileFrame(img, targetW, targetH, cacheKey, tintColor = '', frameDef = null) {
         const canvas = document.createElement('canvas');
         canvas.width = Math.round(targetW);
         canvas.height = Math.round(targetH);
@@ -270,27 +276,151 @@ export class FrameService {
             }
         }
 
+        this._applyTintOnCanvas(canvas, tintColor, frameDef);
         const dataURL = canvas.toDataURL('image/png');
         this._evictCache();
         this._renderCache.set(cacheKey, dataURL);
         return dataURL;
     }
 
+    _isHexColor(value) {
+        return /^#[0-9a-f]{6}$/i.test(String(value || '').trim());
+    }
+
+    _shouldFillOpaqueCenter(frameDef, img, cL = 0, cT = 0, cR = 0, cB = 0) {
+        const id = String(frameDef?.id || '').toLowerCase();
+        if (this._centerFillPolicyCache.has(id)) {
+            return this._centerFillPolicyCache.get(id);
+        }
+
+        const noCenterFillIds = new Set([
+            'dot01',
+            'dot02',
+            'film01',
+            'ilm01',
+            'christmas_stick01',
+            'christmas_stick02',
+            'christmas_stick03',
+            'christmas_stick04'
+        ]);
+        if (noCenterFillIds.has(id)) {
+            this._centerFillPolicyCache.set(id, false);
+            return false;
+        }
+
+        try {
+            const srcW = Math.max(1, Number(img?.naturalWidth || 0));
+            const srcH = Math.max(1, Number(img?.naturalHeight || 0));
+            const centerW = Math.max(0, srcW - Math.max(0, cL) - Math.max(0, cR));
+            const centerH = Math.max(0, srcH - Math.max(0, cT) - Math.max(0, cB));
+            if (centerW < 2 || centerH < 2) {
+                this._centerFillPolicyCache.set(id, false);
+                return false;
+            }
+
+            const sampleSize = 48;
+            const probe = document.createElement('canvas');
+            probe.width = sampleSize;
+            probe.height = sampleSize;
+            const ctx = probe.getContext('2d', { willReadFrequently: true });
+            if (!ctx) {
+                this._centerFillPolicyCache.set(id, true);
+                return true;
+            }
+
+            ctx.clearRect(0, 0, sampleSize, sampleSize);
+            ctx.drawImage(img, cL, cT, centerW, centerH, 0, 0, sampleSize, sampleSize);
+            const data = ctx.getImageData(0, 0, sampleSize, sampleSize).data;
+
+            let transparent = 0;
+            let total = 0;
+            for (let i = 3; i < data.length; i += 4) {
+                total += 1;
+                if (data[i] < 20) transparent += 1;
+            }
+            const transparentRatio = total > 0 ? (transparent / total) : 0;
+            const shouldFill = transparentRatio < 0.015;
+            this._centerFillPolicyCache.set(id, shouldFill);
+            return shouldFill;
+        } catch (err) {
+            this._centerFillPolicyCache.set(id, true);
+            return true;
+        }
+    }
+
+    _applyTintOnCanvas(canvas, tintColor, frameDef = null) {
+        const color = String(tintColor || '').trim();
+        if (!this._isHexColor(color)) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const blanks = Array.isArray(frameDef?.frameBlank) ? frameDef.frameBlank : [0, 0, 0, 0];
+        const [bLRaw, bTRaw, bRRaw, bBRaw] = blanks.map((v) => Math.max(0, Number(v) || 0));
+        const hasInnerArea = bLRaw > 0 || bTRaw > 0 || bRRaw > 0 || bBRaw > 0;
+
+        // Preserve alpha and texture while tinting visible pixels.
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.globalAlpha = 0.92;
+        ctx.fillStyle = color;
+
+        if (hasInnerArea) {
+            const w = Math.max(1, canvas.width);
+            const h = Math.max(1, canvas.height);
+            const bL = Math.min(w, bLRaw);
+            const bT = Math.min(h, bTRaw);
+            const bR = Math.min(w, bRRaw);
+            const bB = Math.min(h, bBRaw);
+
+            // Tint only border strips so frame color does not flood inner content.
+            if (bT > 0) ctx.fillRect(0, 0, w, bT);
+            if (bB > 0) ctx.fillRect(0, h - bB, w, bB);
+            if (bL > 0 && h - bT - bB > 0) ctx.fillRect(0, bT, bL, h - bT - bB);
+            if (bR > 0 && h - bT - bB > 0) ctx.fillRect(w - bR, bT, bR, h - bT - bB);
+        } else {
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        ctx.restore();
+    }
+
     /**
      * Calculate the outer frame dimensions for a target object.
-     * Frame sits flush on the object edges (zero gap).
-     * frameBlank values add extra border only if explicitly set.
+     * Frame sits on the object's own bounds so border is visible on/inside object.
+     * Do not expand by frameBlank; expanding pushes border outside and makes
+     * interior border look missing for filled objects.
      */
     _getFrameDimensions(targetObj, frameDef) {
         const [bL, bT, bR, bB] = frameDef.frameBlank;
         const objW = (targetObj.width || 100) * (targetObj.scaleX || 1);
         const objH = (targetObj.height || 100) * (targetObj.scaleY || 1);
+        // Keep frame exactly on object box to ensure inner border remains visible.
+        const frameW = Math.max(1, objW);
+        const frameH = Math.max(1, objH);
 
-        // Frame size = object size + blank on each side (zero gap when blank=0)
-        const frameW = objW + bL + bR;
-        const frameH = objH + bT + bB;
+        // Keep blank values for metadata compatibility, but do not use as offset.
+        return { frameW, frameH, objW, objH, bL: 0, bT: 0, bR: 0, bB: 0 };
+    }
 
-        return { frameW, frameH, objW, objH, bL, bT, bR, bB };
+    /**
+     * Resolve object's center in canvas coordinates.
+     */
+    _getObjectCanvasCenter(targetObj) {
+        if (!targetObj) return { x: 0, y: 0 };
+
+        if (typeof targetObj.getCenterPoint === 'function') {
+            const center = targetObj.getCenterPoint();
+            const x = Number(center?.x);
+            const y = Number(center?.y);
+            if (Number.isFinite(x) && Number.isFinite(y)) {
+                return { x, y };
+            }
+        }
+
+        return {
+            x: Number(targetObj.left) || 0,
+            y: Number(targetObj.top) || 0
+        };
     }
 
     /**
@@ -308,9 +438,15 @@ export class FrameService {
         this.removeFrame(targetObj, canvas);
 
         const { frameW, frameH, bL, bT, bR, bB } = this._getFrameDimensions(targetObj, frameDef);
+        // Apply frame's default tint on first add/change when defined.
+        // If no defaultColor exists, keep original frame design (no tint).
+        const defaultColorRaw = String(frameDef.defaultColor || '').trim();
+        const frameColor = /^#[0-9a-fA-F]{6}$/.test(defaultColorRaw) ? defaultColorRaw : '#000000';
 
         // Render the 9-slice frame
-        const dataURL = await this.renderFrame(frameDef, frameW, frameH);
+        const dataURL = await this.renderFrame(frameDef, frameW, frameH, {
+            tintColor: frameColor
+        });
 
         // Create fabric.Image from dataURL
         const frameObj = await new Promise((resolve) => {
@@ -331,8 +467,7 @@ export class FrameService {
         const frameObjId = this._generateId();
 
         // Position frame: center content area on target center
-        const targetLeft = targetObj.left;
-        const targetTop = targetObj.top;
+        const targetCenter = this._getObjectCanvasCenter(targetObj);
 
         // With center origin: frame center must be offset so that the
         // content area (inside blanks) is centered on the target.
@@ -340,8 +475,8 @@ export class FrameService {
         // So: frameCenterX + (bL - bR)/2 = targetCenterX
         //     frameCenterX = targetCenterX - (bL - bR)/2
         frameObj.set({
-            left: targetLeft - (bL - bR) / 2,
-            top: targetTop - (bT - bB) / 2,
+            left: targetCenter.x - (bL - bR) / 2,
+            top: targetCenter.y - (bT - bB) / 2,
             originX: 'center',
             originY: 'center',
             selectable: false,
@@ -353,10 +488,12 @@ export class FrameService {
             excludeFromExport: false,
             // Custom properties
             [CUSTOM_PROPS.CUSTOM_TYPE]: CUSTOM_TYPES.FRAME_OVERLAY,
+            custom_type: CUSTOM_TYPES.FRAME_OVERLAY,
             [CUSTOM_PROPS.OBJECT_ID]: frameObjId,
             [CUSTOM_PROPS.FRAME_ID]: frameDef.id,
             [CUSTOM_PROPS.FRAME_TARGET_ID]: targetId,
             [CUSTOM_PROPS.FRAME_OVERLAY_ID]: frameObjId,
+            [CUSTOM_PROPS.FRAME_COLOR]: frameColor || '',
             [CUSTOM_PROPS.OBJECT_NAME]: `Frame: ${frameDef.title}`
         });
 
@@ -367,13 +504,11 @@ export class FrameService {
         // Set frame reference on target object
         targetObj[CUSTOM_PROPS.FRAME_ID] = frameDef.id;
         targetObj[CUSTOM_PROPS.FRAME_OVERLAY_ID] = frameObjId;
+        targetObj[CUSTOM_PROPS.FRAME_COLOR] = frameColor || '';
 
-        // Add frame behind target
+        // Add frame overlay and keep it just above target
         canvas.add(frameObj);
-        const targetIndex = canvas.getObjects().indexOf(targetObj);
-        if (targetIndex > 0) {
-            canvas.moveObjectTo(frameObj, targetIndex);
-        }
+        this.syncZOrder(targetObj, canvas);
 
         canvas.requestRenderAll();
         return frameObj;
@@ -396,7 +531,7 @@ export class FrameService {
         for (let i = objects.length - 1; i >= 0; i--) {
             const obj = objects[i];
             if (obj[CUSTOM_PROPS.OBJECT_ID] === frameOverlayId &&
-                obj[CUSTOM_PROPS.CUSTOM_TYPE] === CUSTOM_TYPES.FRAME_OVERLAY) {
+                this._isOverlayObject(obj)) {
                 canvas.remove(obj);
                 break;
             }
@@ -446,14 +581,17 @@ export class FrameService {
             if (!frameDef) return;
 
             const { frameW, frameH, bL, bT, bR, bB } = this._getFrameDimensions(targetObj, frameDef);
+            const frameColor = targetObj[CUSTOM_PROPS.FRAME_COLOR] || '';
 
             // Render at new size
-            const dataURL = await this.renderFrame(frameDef, frameW, frameH);
+            const dataURL = await this.renderFrame(frameDef, frameW, frameH, {
+                tintColor: frameColor
+            });
 
             // Find existing frame overlay
             const frameObj = canvas.getObjects().find(
                 obj => obj[CUSTOM_PROPS.OBJECT_ID] === frameOverlayId &&
-                       obj[CUSTOM_PROPS.CUSTOM_TYPE] === CUSTOM_TYPES.FRAME_OVERLAY
+                       this._isOverlayObject(obj)
             );
 
             if (!frameObj) return;
@@ -463,11 +601,13 @@ export class FrameService {
             const newImg = await fabric.FabricImage.fromURL(dataURL, { crossOrigin: 'anonymous' });
 
             // Update position (center origin formula)
+            const targetCenter = this._getObjectCanvasCenter(targetObj);
             frameObj.set({
-                left: targetObj.left - (bL - bR) / 2,
-                top: targetObj.top - (bT - bB) / 2,
+                left: targetCenter.x - (bL - bR) / 2,
+                top: targetCenter.y - (bT - bB) / 2,
                 scaleX: 1,
-                scaleY: 1
+                scaleY: 1,
+                [CUSTOM_PROPS.FRAME_COLOR]: frameColor || ''
             });
 
             // Update offset for move sync
@@ -478,13 +618,8 @@ export class FrameService {
             frameObj.setElement(newImg.getElement());
             frameObj.set({ width: newImg.width, height: newImg.height });
 
-            // Ensure frame stays behind target
-            const objects = canvas.getObjects();
-            const targetIndex = objects.indexOf(targetObj);
-            const frameIndex = objects.indexOf(frameObj);
-            if (targetIndex >= 0 && frameIndex >= 0 && frameIndex > targetIndex) {
-                canvas.moveObjectTo(frameObj, targetIndex);
-            }
+            // Keep frame overlay just above target
+            this.syncZOrder(targetObj, canvas);
 
             canvas.requestRenderAll();
         } catch (err) {
@@ -504,12 +639,11 @@ export class FrameService {
      * Check if an object is a frame overlay
      */
     isFrameOverlay(obj) {
-        if (!obj) return false;
-        return obj[CUSTOM_PROPS.CUSTOM_TYPE] === CUSTOM_TYPES.FRAME_OVERLAY;
+        return this._isOverlayObject(obj);
     }
 
     /**
-     * Ensure the frame overlay stays immediately behind its target.
+     * Ensure the frame overlay stays immediately above its target.
      * Call after any z-order change (bring forward, send backward, etc.)
      */
     syncZOrder(targetObj, canvas) {
@@ -521,7 +655,7 @@ export class FrameService {
         const objects = canvas.getObjects();
         const frameObj = objects.find(
             o => o[CUSTOM_PROPS.OBJECT_ID] === overlayId &&
-                 o[CUSTOM_PROPS.CUSTOM_TYPE] === CUSTOM_TYPES.FRAME_OVERLAY
+                 this._isOverlayObject(o)
         );
         if (!frameObj) return;
 
@@ -529,19 +663,19 @@ export class FrameService {
         const frameIndex = objects.indexOf(frameObj);
         if (targetIndex < 0 || frameIndex < 0) return;
 
-        // Already correct: frame is just below target
-        if (frameIndex === targetIndex - 1) return;
+        // Already correct: frame is just above target
+        if (frameIndex === targetIndex + 1) return;
 
-        // moveObjectTo removes the object first, then inserts at the index.
-        // This shifts indices, so we must compensate:
-        // - If frame is below target: removal shifts target down by 1,
-        //   so insert at (targetIndex - 1) to land just below target.
-        // - If frame is above target: removal doesn't shift target,
-        //   so insert at targetIndex to push target up by 1.
+        // moveObjectTo removes first, then inserts.
+        // We need frame right above target after the move:
+        // - If frame is below target: removing frame shifts target index down by 1
+        //   -> insert at original targetIndex.
+        // - If frame is above target: removing frame does not change target index
+        //   -> insert at targetIndex + 1.
         if (frameIndex < targetIndex) {
-            canvas.moveObjectTo(frameObj, targetIndex - 1);
-        } else {
             canvas.moveObjectTo(frameObj, targetIndex);
+        } else {
+            canvas.moveObjectTo(frameObj, targetIndex + 1);
         }
     }
 
@@ -568,7 +702,7 @@ export class FrameService {
         if (!canvas) return;
 
         const objects = canvas.getObjects();
-        const overlays = objects.filter(o => o[CUSTOM_PROPS.CUSTOM_TYPE] === CUSTOM_TYPES.FRAME_OVERLAY);
+        const overlays = objects.filter(o => this._isOverlayObject(o));
 
         for (const overlay of overlays) {
             const targetId = overlay[CUSTOM_PROPS.FRAME_TARGET_ID];
@@ -581,19 +715,19 @@ export class FrameService {
                 continue;
             }
 
-            // Ensure frame is behind target
-            const targetIndex = objects.indexOf(target);
-            const overlayIndex = objects.indexOf(overlay);
-            if (overlayIndex > targetIndex) {
-                canvas.moveObjectTo(overlay, targetIndex);
-            }
+            // Ensure frame overlay is above target
+            this.syncZOrder(target, canvas);
 
             // Make frame non-interactive
             overlay.set({
+                [CUSTOM_PROPS.CUSTOM_TYPE]: CUSTOM_TYPES.FRAME_OVERLAY,
+                custom_type: CUSTOM_TYPES.FRAME_OVERLAY,
                 selectable: false,
                 evented: false,
                 hasControls: false,
-                hasBorders: false
+                hasBorders: false,
+                lockMovementX: true,
+                lockMovementY: true
             });
         }
 
@@ -608,6 +742,22 @@ export class FrameService {
             const r = Math.random() * 16 | 0;
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
+    }
+
+    _readCustomType(obj) {
+        return String(
+            obj?.[CUSTOM_PROPS.CUSTOM_TYPE] ||
+            obj?.customType ||
+            obj?.custom_type ||
+            obj?.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+            ''
+        ).toLowerCase();
+    }
+
+    _isOverlayObject(obj) {
+        if (!obj) return false;
+        if (this._readCustomType(obj) === CUSTOM_TYPES.FRAME_OVERLAY) return true;
+        return !!(obj[CUSTOM_PROPS.FRAME_TARGET_ID] && obj[CUSTOM_PROPS.FRAME_ID]);
     }
 
     /**

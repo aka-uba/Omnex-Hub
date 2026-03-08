@@ -210,6 +210,20 @@ export class TemplateEditorV7 {
          * @type {Array}
          */
         this._subscriptions = [];
+
+        /**
+         * ActiveSelection sürükleme sırasında frame senkron state
+         * @type {{selection:Object,lastCenter:{x:number,y:number}}|null}
+         */
+        this._activeSelectionMoveState = null;
+
+        /**
+         * Save işlemi devam ediyor mu (tekrarlı Ctrl+S çağrılarını önler)
+         * @type {boolean}
+         */
+        this._isSaving = false;
+        this._lastObjectDblClickAt = 0;
+        this._lastObjectDblClickTarget = null;
     }
 
     // ==========================================
@@ -266,6 +280,10 @@ export class TemplateEditorV7 {
         // İlk history kaydı
         if (this.options.historyEnabled && this.historyManager) {
             this.historyManager.saveState();
+            this._updateUndoRedoButtons({
+                canUndo: this.historyManager.canUndo(),
+                canRedo: this.historyManager.canRedo()
+            });
         }
 
         this._initialized = true;
@@ -463,6 +481,7 @@ export class TemplateEditorV7 {
             this.layersPanel = new LayersPanel({
                 container: layersContainer,
                 canvas: this.canvas,
+                selectionManager: this.selectionManager,
                 i18n: i18nFn,
                 collapsible: false
             });
@@ -523,6 +542,7 @@ export class TemplateEditorV7 {
                 panelId: 'inspector-layers-panel',
                 container: inspLayersContainer,
                 canvas: this.canvas,
+                selectionManager: this.selectionManager,
                 i18n: i18nFn,
                 collapsible: false
             });
@@ -553,6 +573,7 @@ export class TemplateEditorV7 {
         this._subscriptions.push(selectionCreatedSub);
 
         const selectionClearedSub = eventBus.on(EVENTS.SELECTION_CLEARED, () => {
+            this._activeSelectionMoveState = null;
             if (this.options.onSelectionChange) {
                 this.options.onSelectionChange(null);
             }
@@ -560,28 +581,67 @@ export class TemplateEditorV7 {
         this._subscriptions.push(selectionClearedSub);
 
         const objectModifiedSub = eventBus.on(EVENTS.OBJECT_MODIFIED, (data) => {
+            this._activeSelectionMoveState = null;
             if (this.options.onObjectModified) {
                 this.options.onObjectModified(data.target);
             }
-            // Update frame overlay when framed object is modified
-            if (data.target && this.frameService?.hasFrame(data.target)) {
-                this.frameService.updateFrame(data.target, this.canvas);
-            }
+            const syncTargets = this._collectFrameSyncTargets(data?.target);
+            syncTargets.forEach((obj) => {
+                this.frameService?.updateFrame(obj, this.canvas);
+            });
         });
         this._subscriptions.push(objectModifiedSub);
 
         // Frame: sync position during move (lightweight, no re-render)
         const objectMovingSub = eventBus.on(EVENTS.OBJECT_MOVING, (data) => {
-            if (data.target && this.frameService?.hasFrame(data.target)) {
-                this._syncFramePosition(data.target);
+            if (this._isActiveSelection(data?.target)) {
+                this._syncFramesByActiveSelectionDelta(data.target);
+                return;
             }
+
+            this._activeSelectionMoveState = null;
+            const syncTargets = this._collectFrameSyncTargets(data?.target);
+            syncTargets.forEach((obj) => this._syncFramePosition(obj));
         });
         this._subscriptions.push(objectMovingSub);
 
+        // Frame: sync transform during scaling (live preview)
+        const objectScalingSub = eventBus.on(EVENTS.OBJECT_SCALING, (data) => {
+            this._activeSelectionMoveState = null;
+            const syncTargets = this._collectFrameSyncTargets(data?.target);
+            syncTargets.forEach((obj) => {
+                this._syncFramePosition(obj);
+                this.frameService?.updateFrame(obj, this.canvas);
+            });
+        });
+        this._subscriptions.push(objectScalingSub);
+
         // Frame z-order sync: when layers are reordered, keep frames behind their targets
         const canvasModifiedSub = eventBus.on(EVENTS.CANVAS_MODIFIED, (data) => {
-            if (data?.source === 'layers-order' || data?.source === 'layers-reorder') {
+            const source = data?.source;
+            if (
+                source === 'layers-order' ||
+                source === 'layers-reorder' ||
+                source === 'align' ||
+                source === 'distribute' ||
+                source === 'group' ||
+                source === 'ungroup' ||
+                source === 'history-load'
+            ) {
                 this.frameService?.syncAllZOrders(this.canvas);
+            }
+
+            if (source === 'align' || source === 'distribute' || source === 'group' || source === 'ungroup') {
+                this._syncFramesForActiveSelection();
+            }
+
+            if (source === 'history-load' && this.gridManager) {
+                if (typeof this.gridManager.refreshGridVisibility === 'function') {
+                    this.gridManager.refreshGridVisibility();
+                } else if (this.gridManager.isGridVisible?.()) {
+                    this.gridManager._removeGrid?.();
+                    this.gridManager._createGrid?.();
+                }
             }
         });
         this._subscriptions.push(canvasModifiedSub);
@@ -616,40 +676,6 @@ export class TemplateEditorV7 {
 
             if (isCtrl) {
                 switch (e.key.toLowerCase()) {
-                    case 'z':
-                        e.preventDefault();
-                        if (e.shiftKey) {
-                            this.redo();
-                        } else {
-                            this.undo();
-                        }
-                        break;
-
-                    case 'y':
-                        e.preventDefault();
-                        this.redo();
-                        break;
-
-                    case 'c':
-                        e.preventDefault();
-                        this.copy();
-                        break;
-
-                    case 'x':
-                        e.preventDefault();
-                        this.cut();
-                        break;
-
-                    case 'v':
-                        e.preventDefault();
-                        this.paste();
-                        break;
-
-                    case 'd':
-                        e.preventDefault();
-                        this.duplicate();
-                        break;
-
                     case 'a':
                         e.preventDefault();
                         this.selectAll();
@@ -774,6 +800,98 @@ export class TemplateEditorV7 {
      * Sync frame overlay position with target object (lightweight, during drag)
      * @private
      */
+    _collectFrameSyncTargets(targetObj) {
+        if (!targetObj || !this.frameService) return [];
+
+        const type = String(targetObj.type || '').toLowerCase();
+        if (type === 'activeselection') {
+            const objects = typeof targetObj.getObjects === 'function' ? targetObj.getObjects() : [];
+            return objects.filter(obj => this.frameService.hasFrame(obj));
+        }
+
+        if (this.frameService.hasFrame(targetObj)) {
+            return [targetObj];
+        }
+
+        return [];
+    }
+
+    /**
+     * ActiveSelection kontrolü
+     * @private
+     * @param {Object} obj
+     * @returns {boolean}
+     */
+    _isActiveSelection(obj) {
+        const type = String(obj?.type || '').toLowerCase();
+        return type === 'activeselection';
+    }
+
+    /**
+     * Grup sürükleme sırasında frame'leri selection delta kadar taşı.
+     * @private
+     * @param {Object} selectionObj
+     */
+    _syncFramesByActiveSelectionDelta(selectionObj) {
+        if (!selectionObj || !this.canvas || !this.frameService) return;
+
+        const center = selectionObj.getCenterPoint?.();
+        if (!center) return;
+
+        if (!this._activeSelectionMoveState || this._activeSelectionMoveState.selection !== selectionObj) {
+            this._activeSelectionMoveState = {
+                selection: selectionObj,
+                lastCenter: { x: center.x, y: center.y }
+            };
+            return;
+        }
+
+        const last = this._activeSelectionMoveState.lastCenter;
+        const dx = center.x - last.x;
+        const dy = center.y - last.y;
+        this._activeSelectionMoveState.lastCenter = { x: center.x, y: center.y };
+
+        if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return;
+
+        const objects = typeof selectionObj.getObjects === 'function' ? selectionObj.getObjects() : [];
+        objects.forEach((obj) => {
+            const overlayId = obj?.[CUSTOM_PROPS.FRAME_OVERLAY_ID];
+            if (!overlayId) return;
+
+            const frameObj = this.canvas.getObjects().find(
+                o => o?.[CUSTOM_PROPS.OBJECT_ID] === overlayId
+            );
+            if (!frameObj) return;
+
+            frameObj.set({
+                left: (Number(frameObj.left) || 0) + dx,
+                top: (Number(frameObj.top) || 0) + dy
+            });
+            frameObj.setCoords();
+        });
+    }
+
+    /**
+     * Sync framed objects currently inside active selection.
+     * @private
+     */
+    _syncFramesForActiveSelection() {
+        if (!this.canvas || !this.frameService) return;
+
+        const activeObj = this.canvas.getActiveObject();
+        const targets = this._collectFrameSyncTargets(activeObj);
+        if (!targets.length) return;
+
+        targets.forEach((obj) => {
+            this._syncFramePosition(obj);
+            this.frameService.updateFrame(obj, this.canvas);
+        });
+    }
+
+    /**
+     * Sync frame overlay position with target object (lightweight, during drag)
+     * @private
+     */
     _syncFramePosition(targetObj) {
         if (!targetObj || !this.canvas) return;
 
@@ -794,9 +912,13 @@ export class TemplateEditorV7 {
         const dL = frameObj._frameOffsetLeft ?? 0;
         const dT = frameObj._frameOffsetTop ?? 0;
 
+        const center = typeof targetObj.getCenterPoint === 'function'
+            ? targetObj.getCenterPoint()
+            : { x: Number(targetObj.left) || 0, y: Number(targetObj.top) || 0 };
+
         frameObj.set({
-            left: targetObj.left + dL,
-            top: targetObj.top + dT
+            left: (Number(center?.x) || 0) + dL,
+            top: (Number(center?.y) || 0) + dT
         });
         frameObj.setCoords();
     }
@@ -813,6 +935,33 @@ export class TemplateEditorV7 {
             ...options
         });
         // ObjectFactory zaten canvas'a ekliyor
+        if (obj && this.canvas) {
+            this.canvas.setActiveObject(obj);
+            this.canvas.requestRenderAll();
+        }
+        this._saveHistory();
+        return obj;
+    }
+
+    /**
+     * Bağımsız kenarlık çerçevesi ekle
+     * İç alan varsayılan olarak şeffaftır; denetçiden dolgu rengi verilebilir.
+     * @param {Object} [options={}]
+     * @returns {Promise<fabric.Rect>}
+     */
+    async addBorderFrame(options = {}) {
+        const obj = await this.objectFactory.createRect({
+            width: 220,
+            height: 140,
+            fill: 'rgba(0,0,0,0)',
+            stroke: '#111827',
+            strokeWidth: 0,
+            rx: 0,
+            ry: 0,
+            [CUSTOM_PROPS.OBJECT_NAME]: this.__('editor.tools.borderFrame') || 'Çerçeve',
+            ...options
+        });
+
         if (obj && this.canvas) {
             this.canvas.setActiveObject(obj);
             this.canvas.requestRenderAll();
@@ -856,6 +1005,59 @@ export class TemplateEditorV7 {
         }
         this._saveHistory();
         return obj;
+    }
+
+    /**
+     * Preset tabanli dekoratif cizgi ekle (divider stili)
+     * @param {Object} style
+     * @returns {Promise<Object>}
+     */
+    async addLinePreset(style = {}) {
+        const renderType = String(style.renderType || 'simple');
+        if (renderType === 'simple') {
+            return this.addLine({
+                x1: 60,
+                y1: 60,
+                x2: 300,
+                y2: 60,
+                stroke: style.stroke || '#111827',
+                strokeWidth: Number(style.strokeWidth || 4),
+                strokeDashArray: style.strokeDashArray || null,
+                strokeLineCap: style.strokeLineCap || 'round',
+                strokeLineJoin: style.strokeLineJoin || 'round',
+                fill: null
+            });
+        }
+
+        const color = style.stroke || '#111827';
+        const width = Math.max(1, Number(style.strokeWidth || 4));
+        const pathByType = {
+            wave: 'M 20 40 Q 40 16 60 40 T 100 40 T 140 40 T 180 40 T 220 40 T 260 40',
+            zigzag: 'M 20 40 L 36 24 L 52 40 L 68 24 L 84 40 L 100 24 L 116 40 L 132 24 L 148 40 L 164 24 L 180 40 L 196 24 L 212 40 L 228 24 L 244 40 L 260 24 L 276 40',
+            step: 'M 20 46 L 44 46 L 44 30 L 68 30 L 68 46 L 92 46 L 92 30 L 116 30 L 116 46 L 140 46 L 140 30 L 164 30 L 164 46 L 188 46 L 188 30 L 212 30 L 212 46 L 236 46 L 236 30 L 260 30 L 260 46',
+            bracket: 'M 20 52 Q 20 36 34 36 L 246 36 Q 260 36 260 52 M 34 36 L 34 20 M 246 36 L 246 20'
+        };
+        const pathData = pathByType[renderType] || pathByType.wave;
+        const pathObj = new Path(pathData, {
+            ...V7_ORIGIN,
+            left: 220,
+            top: 220,
+            fill: '',
+            stroke: color,
+            strokeWidth: width,
+            strokeLineCap: style.strokeLineCap || 'round',
+            strokeLineJoin: style.strokeLineJoin || 'round',
+            strokeUniform: true
+        });
+
+        pathObj.set(CUSTOM_PROPS.CUSTOM_TYPE, CUSTOM_TYPES.LINE);
+        pathObj.set(CUSTOM_PROPS.OBJECT_NAME, this.__('editor.tools.line') || 'Cizgi');
+
+        this.canvas.add(pathObj);
+        this.canvas.setActiveObject(pathObj);
+        this.canvas.requestRenderAll();
+        this._saveHistory();
+        return pathObj;
     }
 
     /**
@@ -1433,7 +1635,7 @@ export class TemplateEditorV7 {
                 flipX: !!obj.flipX,
                 flipY: !!obj.flipY,
                 width: desiredWidth,
-                splitByGrapheme: jsonObj?.splitByGrapheme ?? obj.splitByGrapheme ?? true,
+                splitByGrapheme: jsonObj?.splitByGrapheme ?? obj.splitByGrapheme ?? false,
                 fontFamily: obj.fontFamily || 'Arial',
                 fontSize: obj.fontSize || 20,
                 fontWeight: obj.fontWeight || 'normal',
@@ -2076,7 +2278,12 @@ export class TemplateEditorV7 {
         if (!this.canvas) {
             throw new Error('Canvas not initialized');
         }
+        if (this._isSaving) {
+            return null;
+        }
+        this._isSaving = true;
 
+        try {
         // ==================== FIX: Fabric.js v7 Group.toObject() workaround ====================
         // Fabric.js v7 Group.toObject() sub-objects'lerde excludeFromExport: true olanları
         // otomatik olarak JSON'dan SİLİYOR. Bu multi-product-frame slot background'larını
@@ -2121,6 +2328,10 @@ export class TemplateEditorV7 {
         const originalObjectCount = canvasJson.objects?.length || 0;
         if (canvasJson.objects) {
             canvasJson.objects = canvasJson.objects.filter(obj => {
+                // Frame overlay objeleri render/export için her zaman korunmalı
+                if (obj.customType === 'frame-overlay' || obj.custom_type === 'frame-overlay') {
+                    return true;
+                }
                 // Multi-product-frame objeleri her zaman koru (Group veya Rect)
                 if (obj.customType === 'multi-product-frame' || (obj.frameCols && obj.frameRows)) {
                     return true;
@@ -2168,6 +2379,7 @@ export class TemplateEditorV7 {
                     } else {
                         // Diğer Group'lar için eski davranış
                         obj.objects = obj.objects.filter(subObj =>
+                            (subObj.customType === 'frame-overlay' || subObj.custom_type === 'frame-overlay') ||
                             subObj.excludeFromExport !== true &&
                             subObj.isSlotBackground !== true &&
                             subObj.isTransient !== true
@@ -2201,8 +2413,17 @@ export class TemplateEditorV7 {
         // Canvas'ta okunabilir label gösteriliyor (ör: "Ürün Adı"), kayıtta {{product_name}} olmalı
         if (canvasJson.objects) {
             canvasJson.objects.forEach(obj => {
-                if (obj[CUSTOM_PROPS.IS_DATA_FIELD] && obj[CUSTOM_PROPS.DYNAMIC_FIELD] && obj[CUSTOM_PROPS.PLACEHOLDER]) {
-                    obj.text = obj[CUSTOM_PROPS.PLACEHOLDER]; // Label → {{fieldKey}}
+                if (!(obj[CUSTOM_PROPS.IS_DATA_FIELD] && obj[CUSTOM_PROPS.DYNAMIC_FIELD] && obj[CUSTOM_PROPS.PLACEHOLDER])) {
+                    return;
+                }
+                const fieldKey = String(obj[CUSTOM_PROPS.DYNAMIC_FIELD] || '').trim();
+                const placeholderText = String(obj[CUSTOM_PROPS.PLACEHOLDER] || '').trim();
+                const currentText = String(obj.text || '').trim();
+                const autoLabel = fieldKey ? String(this._getFieldLabel(fieldKey) || '').trim() : '';
+                const isPlaceholderText = /^\{\{\s*[^}]+\s*\}\}$/.test(currentText);
+                const isAutoGeneratedLabel = !!autoLabel && currentText === autoLabel;
+                if (isPlaceholderText || isAutoGeneratedLabel || !currentText) {
+                    obj.text = placeholderText;
                 }
             });
         }
@@ -2220,6 +2441,9 @@ export class TemplateEditorV7 {
         }
 
         return saveData;
+        } finally {
+            this._isSaving = false;
+        }
     }
 
     /**
@@ -2844,8 +3068,17 @@ export class TemplateEditorV7 {
         // Dinamik alan label'larını placeholder'a çevir (kayıtta {{fieldKey}} olmalı)
         if (json.objects) {
             json.objects.forEach(obj => {
-                if (obj[CUSTOM_PROPS.IS_DATA_FIELD] && obj[CUSTOM_PROPS.DYNAMIC_FIELD] && obj[CUSTOM_PROPS.PLACEHOLDER]) {
-                    obj.text = obj[CUSTOM_PROPS.PLACEHOLDER];
+                if (!(obj[CUSTOM_PROPS.IS_DATA_FIELD] && obj[CUSTOM_PROPS.DYNAMIC_FIELD] && obj[CUSTOM_PROPS.PLACEHOLDER])) {
+                    return;
+                }
+                const fieldKey = String(obj[CUSTOM_PROPS.DYNAMIC_FIELD] || '').trim();
+                const placeholderText = String(obj[CUSTOM_PROPS.PLACEHOLDER] || '').trim();
+                const currentText = String(obj.text || '').trim();
+                const autoLabel = fieldKey ? String(this._getFieldLabel(fieldKey) || '').trim() : '';
+                const isPlaceholderText = /^\{\{\s*[^}]+\s*\}\}$/.test(currentText);
+                const isAutoGeneratedLabel = !!autoLabel && currentText === autoLabel;
+                if (isPlaceholderText || isAutoGeneratedLabel || !currentText) {
+                    obj.text = placeholderText;
                 }
             });
         }
@@ -3009,6 +3242,8 @@ export class TemplateEditorV7 {
      * Editor'ü dispose et
      */
     dispose() {
+        this._closeEditorModals();
+
         // Event subscriptions temizle
         this._subscriptions.forEach(unsub => {
             if (typeof unsub === 'function') unsub();
@@ -3066,6 +3301,13 @@ export class TemplateEditorV7 {
         this._initialized = false;
 
         eventBus.emit(EVENTS.EDITOR_DISPOSE);
+    }
+
+    /**
+     * Wrapper/legacy uyumluluğu için destroy alias
+     */
+    destroy() {
+        this.dispose();
     }
 
     /**
@@ -3216,6 +3458,18 @@ export class TemplateEditorV7 {
     // DOUBLE-CLICK EDIT MODALS
     // ==========================================
 
+    _isEditorModalOpen() {
+        if (typeof document === 'undefined') return false;
+        return !!document.querySelector('.editor-modal-overlay[data-editor-owner="template-editor-v7"]');
+    }
+
+    _closeEditorModals() {
+        if (typeof document === 'undefined') return;
+        document
+            .querySelectorAll('.editor-modal-overlay[data-editor-owner="template-editor-v7"]')
+            .forEach((node) => node.remove());
+    }
+
     /**
      * Objeye çift tıklandığında uygun düzenleme modalını aç
      * @private
@@ -3223,6 +3477,13 @@ export class TemplateEditorV7 {
      */
     _handleObjectDblClick(target) {
         if (!target) return;
+        const now = Date.now();
+        if (this._lastObjectDblClickTarget === target && (now - this._lastObjectDblClickAt) < 280) {
+            return;
+        }
+        this._lastObjectDblClickTarget = target;
+        this._lastObjectDblClickAt = now;
+        if (this._isEditorModalOpen()) return;
 
         const customType = target[CUSTOM_PROPS.CUSTOM_TYPE] || target.customType || '';
 
@@ -3269,6 +3530,7 @@ export class TemplateEditorV7 {
      * @param {Object} obj - Fabric.js barkod objesi
      */
     _showBarcodeEditModal(obj) {
+        if (this._isEditorModalOpen()) return;
         const currentValue = obj[CUSTOM_PROPS.BARCODE_VALUE] || obj.barcodeValue || '8690000000001';
         const currentFormat = obj[CUSTOM_PROPS.BARCODE_FORMAT] || obj.barcodeFormat || 'EAN13';
         const isAutoDetect = currentFormat === 'AUTO' || !!(obj[CUSTOM_PROPS.BARCODE_AUTO_DETECT] || obj.barcodeAutoDetect);
@@ -3282,6 +3544,8 @@ export class TemplateEditorV7 {
         // Modal overlay oluştur
         const overlay = document.createElement('div');
         overlay.className = 'editor-modal-overlay';
+        overlay.setAttribute('data-editor-owner', 'template-editor-v7');
+        overlay.setAttribute('data-editor-modal', 'barcode');
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
         const previewFormat = isAutoDetect ? 'CODE128' : currentFormat;
@@ -3512,11 +3776,14 @@ export class TemplateEditorV7 {
      * @param {Object} obj - Fabric.js QR kod objesi
      */
     _showQRCodeEditModal(obj) {
+        if (this._isEditorModalOpen()) return;
         const currentValue = obj[CUSTOM_PROPS.QR_VALUE] || obj.qrValue || 'https://example.com';
         const dynamicField = obj[CUSTOM_PROPS.DYNAMIC_FIELD] || '';
 
         const overlay = document.createElement('div');
         overlay.className = 'editor-modal-overlay';
+        overlay.setAttribute('data-editor-owner', 'template-editor-v7');
+        overlay.setAttribute('data-editor-modal', 'qrcode');
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
         overlay.innerHTML = `
@@ -3580,6 +3847,12 @@ export class TemplateEditorV7 {
             const oldScaleX = obj.scaleX;
             const oldScaleY = obj.scaleY;
             const oldAngle = obj.angle;
+            const oldFrameId = obj[CUSTOM_PROPS.FRAME_ID] || null;
+            const frameService = this.frameService;
+
+            if (frameService?.hasFrame(obj)) {
+                frameService.removeFrame(obj, this.canvas);
+            }
 
             this.canvas.remove(obj);
 
@@ -3597,6 +3870,17 @@ export class TemplateEditorV7 {
                 if (newObj) {
                     newObj.set({ angle: oldAngle });
                     this.canvas.setActiveObject(newObj);
+                    if (oldFrameId && frameService) {
+                        try {
+                            const { getFrameById } = await import('./data/FrameAssetsData.js');
+                            const frameDef = getFrameById(oldFrameId);
+                            if (frameDef) {
+                                await frameService.applyFrame(newObj, frameDef, this.canvas);
+                            }
+                        } catch (frameErr) {
+                            console.warn('[TemplateEditorV7] Image replace frame reapply failed:', frameErr);
+                        }
+                    }
                     this.canvas.requestRenderAll();
                     this._saveHistory();
                 }
@@ -3613,11 +3897,14 @@ export class TemplateEditorV7 {
      * @param {Object} obj - Fabric.js image objesi
      */
     _showImageReplaceDialog(obj) {
+        if (this._isEditorModalOpen()) return;
         const dynamicField = obj[CUSTOM_PROPS.DYNAMIC_FIELD] || '';
         const isPlaceholder = obj[CUSTOM_PROPS.CUSTOM_TYPE] === 'image-placeholder';
 
         const overlay = document.createElement('div');
         overlay.className = 'editor-modal-overlay';
+        overlay.setAttribute('data-editor-owner', 'template-editor-v7');
+        overlay.setAttribute('data-editor-modal', 'image');
         overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
 
         overlay.innerHTML = `

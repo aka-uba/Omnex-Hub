@@ -39,6 +39,8 @@ export class EditorWrapper {
         this._replaceSelectedImage = null;
         this._slotMediaInsertContext = null;
         this._eventUnsubs = [];
+        this._toolbarHandlers = null;
+        this._isSavingTemplate = false;
     }
 
     /**
@@ -46,6 +48,12 @@ export class EditorWrapper {
      */
     __(key, params = {}) {
         return this.app.i18n.t(key, params);
+    }
+
+    _t(key, fallback) {
+        const value = this.__(key);
+        if (!value || value === key) return fallback;
+        return value;
     }
 
     /**
@@ -362,10 +370,18 @@ export class EditorWrapper {
      * Tüm event'leri bağla
      */
     _bindToolbarEvents() {
+        if (this._toolbarHandlers) {
+            const { toolbar, onToolbarActionClick, onToolbarDropdownClick, onDocumentClick } = this._toolbarHandlers;
+            if (toolbar && onToolbarActionClick) toolbar.removeEventListener('click', onToolbarActionClick);
+            if (toolbar && onToolbarDropdownClick) toolbar.removeEventListener('click', onToolbarDropdownClick);
+            if (onDocumentClick) document.removeEventListener('click', onDocumentClick);
+            this._toolbarHandlers = null;
+        }
+
         // Toolbar buton event'leri
         const toolbar = document.getElementById('canvas-toolbar');
         if (toolbar) {
-            toolbar.addEventListener('click', async (e) => {
+            const onToolbarActionClick = async (e) => {
                 const btn = e.target.closest('[data-action]');
                 if (!btn) return;
                 try {
@@ -378,10 +394,11 @@ export class EditorWrapper {
                 } catch (error) {
                     Logger.error('[EditorWrapper] Toolbar aksiyon hatası:', btn.dataset.action, error);
                 }
-            });
+            };
+            toolbar.addEventListener('click', onToolbarActionClick);
 
             // Toolbar dropdown toggle
-            toolbar.addEventListener('click', (e) => {
+            const onToolbarDropdownClick = (e) => {
                 const toggle = e.target.closest('.toolbar-dropdown-toggle');
                 if (toggle) {
                     e.stopPropagation();
@@ -394,17 +411,34 @@ export class EditorWrapper {
                         dropdown.classList.toggle('open');
                     }
                 }
-            });
+            };
+            toolbar.addEventListener('click', onToolbarDropdownClick);
 
             // Sayfa tıklamalarında dropdown'ları kapat
-            document.addEventListener('click', (e) => {
+            const onDocumentClick = (e) => {
                 if (!e.target.closest('.toolbar-dropdown')) {
                     toolbar.querySelectorAll('.toolbar-dropdown.open').forEach(d => {
                         d.classList.remove('open');
                     });
                 }
-            });
+            };
+            document.addEventListener('click', onDocumentClick);
+
+            this._toolbarHandlers = {
+                toolbar,
+                onToolbarActionClick,
+                onToolbarDropdownClick,
+                onDocumentClick
+            };
         }
+
+        const unsubHistory = eventBus.on(EVENTS.HISTORY_CHANGE, (data) => {
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+            if (undoBtn) undoBtn.disabled = !data?.canUndo;
+            if (redoBtn) redoBtn.disabled = !data?.canRedo;
+        });
+        this._eventUnsubs.push(unsubHistory);
 
         // Kaydet butonu (header'daki)
         document.getElementById('save-btn')?.addEventListener('click', () => this._saveTemplate());
@@ -1806,7 +1840,7 @@ export class EditorWrapper {
                     await this.editor.addCircle();
                     break;
                 case 'add-line':
-                    await this.editor.addLine();
+                    await this._openLinePicker();
                     break;
                 case 'add-image':
                     this._openMediaPicker('image');
@@ -1942,14 +1976,20 @@ export class EditorWrapper {
                 case 'shape':
                     await this.editor.addShape();
                     break;
+                case 'line':
+                    await this._openLinePicker();
+                    break;
+                case 'border-frame':
+                    await this.editor.addBorderFrame();
+                    break;
+                case 'background':
+                    await this._openCanvasBackgroundPicker();
+                    break;
                 case 'rect':
                     await this.editor.addRect();
                     break;
                 case 'circle':
                     await this.editor.addCircle();
-                    break;
-                case 'line':
-                    await this.editor.addLine();
                     break;
                 case 'barcode':
                     await this._addBarcode();
@@ -1966,6 +2006,94 @@ export class EditorWrapper {
         } catch (error) {
             Logger.error('[EditorWrapper] Element add error:', elementType, error);
         }
+    }
+
+    async _openLinePicker() {
+        if (!this.editor) return;
+        const { LinePicker } = await import('../../editor/components/LinePicker.js');
+
+        LinePicker.open({
+            __: (key) => this.__(key),
+            onSelect: async (style) => {
+                if (typeof this.editor.addLinePreset === 'function') {
+                    await this.editor.addLinePreset(style);
+                } else {
+                    await this.editor.addLine({
+                        x1: 60,
+                        y1: 60,
+                        x2: 300,
+                        y2: 60,
+                        stroke: style.stroke,
+                        strokeWidth: style.strokeWidth,
+                        strokeDashArray: style.strokeDashArray || null,
+                        strokeLineCap: style.strokeLineCap || 'round',
+                        strokeLineJoin: style.strokeLineJoin || 'round',
+                        fill: null
+                    });
+                }
+            }
+        });
+    }
+
+    async _openCanvasBackgroundPicker() {
+        if (!this.editor?.canvas) return;
+        const currentRaw = String(this.editor.canvas.backgroundColor || '#ffffff');
+        const current = /^#[0-9a-f]{6}$/i.test(currentRaw) ? currentRaw.toUpperCase() : '#FFFFFF';
+
+        const content = `
+            <div class="property-section-body">
+                <div class="property-item">
+                    <label>${this._t('editor.tools.background', 'Arkaplan')}</label>
+                    <div class="property-color-input">
+                        <input type="color" id="canvas-bg-color" class="form-color" value="${current}">
+                        <input type="text" id="canvas-bg-hex" class="form-input form-color-hex" value="${current}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const syncInputs = () => {
+            const colorInput = document.getElementById('canvas-bg-color');
+            const hexInput = document.getElementById('canvas-bg-hex');
+            if (!colorInput || !hexInput) return;
+
+            colorInput.addEventListener('input', () => {
+                hexInput.value = String(colorInput.value || '#000000').toUpperCase();
+            });
+
+            hexInput.addEventListener('input', () => {
+                let next = String(hexInput.value || '').trim().toUpperCase();
+                if (next && !next.startsWith('#')) next = `#${next}`;
+                if (!/^#[0-9A-F]{0,6}$/.test(next)) return;
+                hexInput.value = next;
+                if (/^#[0-9A-F]{6}$/.test(next)) {
+                    colorInput.value = next;
+                }
+            });
+        };
+
+        Modal.show({
+            title: this._t('editor.tools.background', 'Arkaplan'),
+            icon: 'ti-palette',
+            content,
+            size: 'sm',
+            showFooter: true,
+            confirmText: this.__('common.apply') || 'Uygula',
+            cancelText: this.__('common.cancel') || 'Iptal',
+            onConfirm: async () => {
+                const colorInput = document.getElementById('canvas-bg-color');
+                const hexInput = document.getElementById('canvas-bg-hex');
+                const hex = String(hexInput?.value || '').trim().toUpperCase();
+                const color = /^#[0-9A-F]{6}$/.test(hex)
+                    ? hex
+                    : (colorInput?.value || '#FFFFFF').toUpperCase();
+                this.editor.canvas.backgroundColor = color;
+                this.editor.canvas.requestRenderAll();
+                this.editor._saveHistory?.();
+            }
+        });
+
+        setTimeout(syncInputs, 0);
     }
 
     /**
@@ -3129,6 +3257,8 @@ export class EditorWrapper {
      */
     async _saveTemplate() {
         if (!this.editor) return;
+        if (this._isSavingTemplate) return;
+        this._isSavingTemplate = true;
 
         try {
             // Form verilerini al
@@ -3240,6 +3370,8 @@ export class EditorWrapper {
         } catch (error) {
             Logger.error('[EditorWrapper] Kaydetme hatası:', error);
             Toast.error(this.__('toast.saveError'));
+        } finally {
+            this._isSavingTemplate = false;
         }
     }
 
@@ -3641,6 +3773,14 @@ export class EditorWrapper {
                                         <i class="ti ti-shape"></i>
                                         <span>${this.__('editor.tools.shape') || 'Şekil'}</span>
                                     </button>
+                                    <button class="element-btn" data-element="line">
+                                        <i class="ti ti-line-dashed"></i>
+                                        <span>${this.__('editor.tools.line') || 'Cizgi'}</span>
+                                    </button>
+                                    <button class="element-btn" data-element="border-frame">
+                                        <i class="ti ti-border-all"></i>
+                                        <span>${this.__('editor.tools.borderFrame') || 'Cerceve'}</span>
+                                    </button>
                                     <button class="element-btn" data-element="barcode">
                                         <i class="ti ti-barcode"></i>
                                         <span>${this.__('editor.tools.barcode') || 'Barkod'}</span>
@@ -3652,6 +3792,10 @@ export class EditorWrapper {
                                     <button class="element-btn" data-element="price">
                                         <i class="ti ti-currency-lira"></i>
                                         <span>${this.__('editor.tools.priceBox') || 'Fiyat Kutusu'}</span>
+                                    </button>
+                                    <button class="element-btn" data-element="background">
+                                        <i class="ti ti-palette"></i>
+                                        <span>${this._t('editor.tools.background', 'Arkaplan')}</span>
                                     </button>
                                 </div>
 
@@ -4313,6 +4457,14 @@ export class EditorWrapper {
         this._slotMediaInsertContext = null;
         this._replaceSelectedImage = null;
 
+        if (this._toolbarHandlers) {
+            const { toolbar, onToolbarActionClick, onToolbarDropdownClick, onDocumentClick } = this._toolbarHandlers;
+            if (toolbar && onToolbarActionClick) toolbar.removeEventListener('click', onToolbarActionClick);
+            if (toolbar && onToolbarDropdownClick) toolbar.removeEventListener('click', onToolbarDropdownClick);
+            if (onDocumentClick) document.removeEventListener('click', onDocumentClick);
+            this._toolbarHandlers = null;
+        }
+
         if (Array.isArray(this._eventUnsubs)) {
             this._eventUnsubs.forEach((unsub) => {
                 try {
@@ -4324,7 +4476,9 @@ export class EditorWrapper {
             this._eventUnsubs = [];
         }
 
-        if (this.editor && typeof this.editor.destroy === 'function') {
+        if (this.editor && typeof this.editor.dispose === 'function') {
+            this.editor.dispose();
+        } else if (this.editor && typeof this.editor.destroy === 'function') {
             this.editor.destroy();
         }
         this.editor = null;
@@ -4359,6 +4513,3 @@ export class EditorWrapper {
 // ==========================================
 
 export default EditorWrapper;
-
-
-

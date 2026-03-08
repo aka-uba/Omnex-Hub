@@ -458,7 +458,12 @@ export const CUSTOM_PROPS = {
     /**
      * Frame overlay'in hedef nesnesinin objectId'si
      */
-    FRAME_TARGET_ID: 'frameTargetId'
+    FRAME_TARGET_ID: 'frameTargetId',
+
+    /**
+     * Frame tint rengi (opsiyonel, #RRGGBB)
+     */
+    FRAME_COLOR: 'frameColor'
 };
 
 /**
@@ -667,7 +672,8 @@ export const SERIALIZABLE_PROPS = [
     // Frame Overlay
     CUSTOM_PROPS.FRAME_ID,
     CUSTOM_PROPS.FRAME_OVERLAY_ID,
-    CUSTOM_PROPS.FRAME_TARGET_ID
+    CUSTOM_PROPS.FRAME_TARGET_ID,
+    CUSTOM_PROPS.FRAME_COLOR
 ];
 
 /**

@@ -1836,6 +1836,9 @@ class PavoDisplayGateway
 
                         // 2) ÃœrÃ¼n gÃ¶rselini temp canvas'a render et (shadow, stroke, clip dahil)
                         $this->renderImageOnPosition($tempProduct, $resolvedPath, $obj, $scaleX, $scaleY, $log);
+                        // Fallback: eski kayitlarda frame-overlay nesnesi olmayabilir.
+                        // Bu durumda dynamic image objesindeki frameId ile frame tekrar uygulanir.
+                        $this->renderFrameOverlayOnPosition($tempProduct, $obj, $scaleX, $scaleY, $log);
 
                         // 3) Ust katman nesne sinirlarini topla (z-index > image)
                         // Not: Dinamik alan nesneleri (dynamicField/{{...}}) sonradan tekrar ciziliyor.
@@ -3351,7 +3354,10 @@ class PavoDisplayGateway
             return [$text];
         }
 
-        $words = explode(' ', $text);
+        // Word-based wrapping: never split a word in the middle.
+        // If a single word is longer than max width, keep it on one line.
+        // Overflow is clipped by the render bounds.
+        $words = preg_split('/\s+/u', trim($text)) ?: [$text];
         $lines = [];
         $currentLine = '';
 
@@ -3369,25 +3375,13 @@ class PavoDisplayGateway
                     $lines[] = $currentLine;
                 }
 
-                // Tek kelime geniÅŸlikten bÃ¼yÃ¼kse, karakter bazlÄ± bÃ¶l
+                // If a single word exceeds max width, do not split by characters.
+                // Keep the full word on a single line.
                 $bbox = imagettfbbox($fontSize, 0, $fontPath, $word);
                 $wordWidth = abs($bbox[2] - $bbox[0]);
 
                 if ($wordWidth > $maxWidth) {
-                    // Kelimeyi karakter bazlÄ± bÃ¶l
-                    $chars = mb_str_split($word);
-                    $currentLine = '';
-                    foreach ($chars as $char) {
-                        $testChar = $currentLine . $char;
-                        $bbox = imagettfbbox($fontSize, 0, $fontPath, $testChar);
-                        $charWidth = abs($bbox[2] - $bbox[0]);
-                        if ($charWidth <= $maxWidth) {
-                            $currentLine = $testChar;
-                        } else {
-                            if ($currentLine !== '') $lines[] = $currentLine;
-                            $currentLine = $char;
-                        }
-                    }
+                    $currentLine = $word;
                 } else {
                     $currentLine = $word;
                 }
@@ -4312,6 +4306,175 @@ class PavoDisplayGateway
         imagedestroy($tempImg);
 
         $log("  renderImageOnPosition: OK {$dstW}x{$dstH} at ({$dstX},{$dstY}) fit={$fit} opacity={$opacity}");
+    }
+
+    private function renderFrameOverlayOnPosition($dstImage, array $obj, float $scaleX, float $scaleY, callable $log): void
+    {
+        $frameId = (string)($obj['frameId'] ?? $obj['frame_id'] ?? '');
+        if ($frameId === '') return;
+
+        $framePath = $this->resolveFrameAssetPath($frameId);
+        if (!$framePath || !file_exists($framePath)) {
+            $log("  renderFrameOverlayOnPosition: frame asset missing ({$frameId})");
+            return;
+        }
+
+        $frameSrc = @imagecreatefrompng($framePath);
+        if (!$frameSrc) {
+            $log("  renderFrameOverlayOnPosition: png load failed ({$framePath})");
+            return;
+        }
+
+        $left = (float)($obj['left'] ?? 0);
+        $top = (float)($obj['top'] ?? 0);
+        $width = (float)($obj['width'] ?? 150);
+        $height = (float)($obj['height'] ?? 150);
+        $objScaleX = (float)($obj['scaleX'] ?? 1);
+        $objScaleY = (float)($obj['scaleY'] ?? 1);
+        $originX = strtolower((string)($obj['originX'] ?? 'center'));
+        $originY = strtolower((string)($obj['originY'] ?? 'center'));
+
+        $dstW = max(1, (int)round($width * $objScaleX * $scaleX));
+        $dstH = max(1, (int)round($height * $objScaleY * $scaleY));
+        $dstX = (int)round($left * $scaleX);
+        $dstY = (int)round($top * $scaleY);
+        if ($originX === 'center') $dstX -= (int)($dstW / 2);
+        elseif ($originX === 'right') $dstX -= $dstW;
+        if ($originY === 'center') $dstY -= (int)($dstH / 2);
+        elseif ($originY === 'bottom') $dstY -= $dstH;
+
+        $frameCanvas = imagecreatetruecolor($dstW, $dstH);
+        imagealphablending($frameCanvas, false);
+        imagesavealpha($frameCanvas, true);
+        $transparent = imagecolorallocatealpha($frameCanvas, 0, 0, 0, 127);
+        imagefill($frameCanvas, 0, 0, $transparent);
+        imagealphablending($frameCanvas, true);
+
+        $meta = $this->getFrameMeta($frameId);
+        $frameType = strtolower((string)($meta['frameType'] ?? 'transparent_resize'));
+        $frameBorder = strtolower((string)($meta['frameBorder'] ?? 'stretch'));
+        $corners = $meta['frameCorner'] ?? [0, 0, 0, 0];
+
+        if ($frameType === 'transparent_tile') {
+            $this->tileFrameRegion($frameCanvas, $frameSrc, 0, 0, imagesx($frameSrc), imagesy($frameSrc), 0, 0, $dstW, $dstH);
+        } elseif ($frameType === 'transparent_resize' || !$this->hasMeaningfulCorners($corners)) {
+            imagecopyresampled($frameCanvas, $frameSrc, 0, 0, 0, 0, $dstW, $dstH, imagesx($frameSrc), imagesy($frameSrc));
+        } else {
+            $this->drawNineSliceFrame($frameCanvas, $frameSrc, $dstW, $dstH, $corners, $frameType, $frameBorder);
+        }
+
+        imagealphablending($dstImage, true);
+        imagecopy($dstImage, $frameCanvas, $dstX, $dstY, 0, 0, $dstW, $dstH);
+
+        imagedestroy($frameCanvas);
+        imagedestroy($frameSrc);
+        $log("  renderFrameOverlayOnPosition: frame={$frameId} size={$dstW}x{$dstH}");
+    }
+
+    private function resolveFrameAssetPath(string $frameId): ?string
+    {
+        $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '', $frameId);
+        if ($safeId === '') return null;
+
+        $meta = $this->getFrameMeta($safeId);
+        $file = isset($meta['frameFile']) ? basename((string)$meta['frameFile']) : ($safeId . '.png');
+        $path = BASE_PATH . '/public/assets/frames/' . $file;
+        if (file_exists($path)) return $path;
+
+        $fallback = BASE_PATH . '/public/assets/frames/' . $safeId . '.png';
+        return file_exists($fallback) ? $fallback : null;
+    }
+
+    private function getFrameMeta(string $frameId): array
+    {
+        static $frameMap = null;
+        if ($frameMap === null) {
+            $frameMap = [];
+            $jsonPath = BASE_PATH . '/tmp_frames.json';
+            if (file_exists($jsonPath)) {
+                $raw = @file_get_contents($jsonPath);
+                $rows = $raw ? json_decode($raw, true) : null;
+                if (is_array($rows)) {
+                    foreach ($rows as $row) {
+                        if (!is_array($row) || empty($row['id'])) continue;
+                        $frameMap[(string)$row['id']] = $row;
+                    }
+                }
+            }
+        }
+        return $frameMap[$frameId] ?? [];
+    }
+
+    private function hasMeaningfulCorners($corners): bool
+    {
+        if (!is_array($corners) || count($corners) < 4) return false;
+        return ((int)$corners[0] > 0) || ((int)$corners[1] > 0) || ((int)$corners[2] > 0) || ((int)$corners[3] > 0);
+    }
+
+    private function drawNineSliceFrame($dst, $src, int $targetW, int $targetH, array $corners, string $frameType, string $frameBorder): void
+    {
+        $srcW = imagesx($src);
+        $srcH = imagesy($src);
+        $cL = max(0, min($srcW, (int)($corners[0] ?? 0)));
+        $cT = max(0, min($srcH, (int)($corners[1] ?? 0)));
+        $cR = max(0, min(max(0, $srcW - $cL), (int)($corners[2] ?? 0)));
+        $cB = max(0, min(max(0, $srcH - $cT), (int)($corners[3] ?? 0)));
+
+        $sL = $cL; $sT = $cT; $sR = $cR; $sB = $cB;
+        $minW = $sL + $sR;
+        $minH = $sT + $sB;
+        if ($targetW < $minW && $minW > 0) {
+            $ratio = $targetW / $minW;
+            $sL = (int)floor($sL * $ratio);
+            $sR = (int)floor($sR * $ratio);
+        }
+        if ($targetH < $minH && $minH > 0) {
+            $ratio = $targetH / $minH;
+            $sT = (int)floor($sT * $ratio);
+            $sB = (int)floor($sB * $ratio);
+        }
+
+        $centerW = max(0, $targetW - $sL - $sR);
+        $centerH = max(0, $targetH - $sT - $sB);
+        $srcCenterW = max(0, $srcW - $cL - $cR);
+        $srcCenterH = max(0, $srcH - $cT - $cB);
+        $isTile = ($frameBorder === 'tile');
+
+        if ($sL > 0 && $sT > 0) imagecopyresampled($dst, $src, 0, 0, 0, 0, $sL, $sT, $cL, $cT);
+        if ($sR > 0 && $sT > 0) imagecopyresampled($dst, $src, $targetW - $sR, 0, $srcW - $cR, 0, $sR, $sT, $cR, $cT);
+        if ($sL > 0 && $sB > 0) imagecopyresampled($dst, $src, 0, $targetH - $sB, 0, $srcH - $cB, $sL, $sB, $cL, $cB);
+        if ($sR > 0 && $sB > 0) imagecopyresampled($dst, $src, $targetW - $sR, $targetH - $sB, $srcW - $cR, $srcH - $cB, $sR, $sB, $cR, $cB);
+
+        if ($centerW > 0 && $sT > 0 && $srcCenterW > 0) $this->drawFrameEdge($dst, $src, $cL, 0, $srcCenterW, $cT, $sL, 0, $centerW, $sT, $isTile);
+        if ($centerW > 0 && $sB > 0 && $srcCenterW > 0) $this->drawFrameEdge($dst, $src, $cL, $srcH - $cB, $srcCenterW, $cB, $sL, $targetH - $sB, $centerW, $sB, $isTile);
+        if ($centerH > 0 && $sL > 0 && $srcCenterH > 0) $this->drawFrameEdge($dst, $src, 0, $cT, $cL, $srcCenterH, 0, $sT, $sL, $centerH, $isTile);
+        if ($centerH > 0 && $sR > 0 && $srcCenterH > 0) $this->drawFrameEdge($dst, $src, $srcW - $cR, $cT, $cR, $srcCenterH, $targetW - $sR, $sT, $sR, $centerH, $isTile);
+
+        if ($centerW > 0 && $centerH > 0 && $srcCenterW > 0 && $srcCenterH > 0 && $frameType === 'opaque') {
+            if ($isTile) $this->tileFrameRegion($dst, $src, $cL, $cT, $srcCenterW, $srcCenterH, $sL, $sT, $centerW, $centerH);
+            else imagecopyresampled($dst, $src, $sL, $sT, $cL, $cT, $centerW, $centerH, $srcCenterW, $srcCenterH);
+        }
+    }
+
+    private function drawFrameEdge($dst, $src, int $sx, int $sy, int $sw, int $sh, int $dx, int $dy, int $dw, int $dh, bool $isTile): void
+    {
+        if ($isTile) {
+            $this->tileFrameRegion($dst, $src, $sx, $sy, $sw, $sh, $dx, $dy, $dw, $dh);
+            return;
+        }
+        imagecopyresampled($dst, $src, $dx, $dy, $sx, $sy, $dw, $dh, $sw, $sh);
+    }
+
+    private function tileFrameRegion($dst, $src, int $sx, int $sy, int $sw, int $sh, int $dx, int $dy, int $dw, int $dh): void
+    {
+        if ($sw <= 0 || $sh <= 0 || $dw <= 0 || $dh <= 0) return;
+        for ($y = 0; $y < $dh; $y += $sh) {
+            for ($x = 0; $x < $dw; $x += $sw) {
+                $copyW = min($sw, $dw - $x);
+                $copyH = min($sh, $dh - $y);
+                imagecopy($dst, $src, $dx + $x, $dy + $y, $sx, $sy, $copyW, $copyH);
+            }
+        }
     }
 
     /**

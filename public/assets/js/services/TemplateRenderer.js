@@ -591,7 +591,9 @@ export class TemplateRenderer {
             return {
                 text,
                 styles: null,
-                linethrough: null
+                linethrough: null,
+                textDecorationThickness: null,
+                offsets: null
             };
         }
 
@@ -641,12 +643,20 @@ export class TemplateRenderer {
             text,
             styles,
             linethrough: midlineEnabled,
-            textDecorationThickness: midlineThickness
+            // Editor ile aynı ölçek: çizgi konumu görsel merkezde daha dengeli
+            textDecorationThickness: midlineThickness * 6,
+            offsets: {
+                ...((obj?.offsets && typeof obj.offsets === 'object') ? obj.offsets : {}),
+                linethrough: -0.40
+            }
         };
     }
 
     _setObjectTextWithFormatting(obj, rawText, fieldKey = '') {
         const result = this._applyPriceTextOptions(obj, fieldKey, rawText);
+        // Dynamic render output must wrap by words, not graphemes.
+        // Keep editor config intact; enforce only in runtime render object.
+        this._setObjectProperty(obj, 'splitByGrapheme', false);
         this._setObjectProperty(obj, 'text', result.text);
 
         if (result.styles !== null) {
@@ -659,6 +669,9 @@ export class TemplateRenderer {
         if (result.textDecorationThickness !== null && result.textDecorationThickness !== undefined) {
             this._setObjectProperty(obj, 'textDecorationThickness', result.textDecorationThickness);
         }
+        if (result.offsets && typeof result.offsets === 'object') {
+            this._setObjectProperty(obj, 'offsets', result.offsets);
+        }
 
         if (typeof obj?.initDimensions === 'function') {
             obj.initDimensions();
@@ -666,6 +679,27 @@ export class TemplateRenderer {
         if (typeof obj?.setCoords === 'function') {
             obj.setCoords();
         }
+    }
+
+    _normalizeTextWrappingInDesignData(objects) {
+        if (!Array.isArray(objects)) return;
+
+        const walk = (list) => {
+            list.forEach((obj) => {
+                if (!obj || typeof obj !== 'object') return;
+
+                const type = String(obj.type || '').toLowerCase();
+                if (type === 'textbox' || type === 'itext' || type === 'i-text' || type === 'text') {
+                    obj.splitByGrapheme = false;
+                }
+
+                if (Array.isArray(obj.objects) && obj.objects.length > 0) {
+                    walk(obj.objects);
+                }
+            });
+        };
+
+        walk(objects);
     }
 
     _computeObjectTopCenter(obj) {
@@ -971,6 +1005,7 @@ export class TemplateRenderer {
 
                 // Orijinal template verisini mutate etmemek için kopya üzerinde çalış
                 designData = JSON.parse(JSON.stringify(designData));
+                this._normalizeTextWrappingInDesignData(designData.objects);
 
                 // Normalize image sources (file:// and basePath fixes)
                 this._normalizeDesignDataSources(designData);
@@ -2047,12 +2082,18 @@ export class TemplateRenderer {
 
                 if (obj.objects) {
                     obj.objects.forEach(childObj => {
+                        const childIsFrameOverlay =
+                            childObj.customType === 'frame-overlay' ||
+                            childObj.custom_type === 'frame-overlay';
                         if (
-                            childObj.isSlotBackground ||
-                            childObj.isSlotLabel ||
-                            childObj.isSlotPlaceholder ||
-                            childObj.excludeFromExport === true ||
-                            childObj.isTransient === true
+                            !childIsFrameOverlay &&
+                            (
+                                childObj.isSlotBackground ||
+                                childObj.isSlotLabel ||
+                                childObj.isSlotPlaceholder ||
+                                childObj.excludeFromExport === true ||
+                                childObj.isTransient === true
+                            )
                         ) {
                             childObj.visible = false;
                             childObj.opacity = 0;
@@ -2070,14 +2111,20 @@ export class TemplateRenderer {
                 obj.opacity = 0;
             }
 
+            const isFrameOverlay =
+                obj.customType === 'frame-overlay' ||
+                obj.custom_type === 'frame-overlay';
             if (
-                obj.isSlotBackground ||
-                obj.isSlotLabel ||
-                obj.isSlotPlaceholder ||
-                obj.excludeFromExport === true ||
-                obj.isTransient === true ||
-                obj.customType === 'slot-label' ||
-                obj.custom_type === 'slot-label'
+                !isFrameOverlay &&
+                (
+                    obj.isSlotBackground ||
+                    obj.isSlotLabel ||
+                    obj.isSlotPlaceholder ||
+                    obj.excludeFromExport === true ||
+                    obj.isTransient === true ||
+                    obj.customType === 'slot-label' ||
+                    obj.custom_type === 'slot-label'
+                )
             ) {
                 obj.visible = false;
                 obj.opacity = 0;
@@ -2306,6 +2353,9 @@ export class TemplateRenderer {
                 if (Array.isArray(obj.objects)) {
                     for (const child of obj.objects) {
                         if (!child || typeof child !== 'object') continue;
+                        const childIsFrameOverlay =
+                            child.customType === 'frame-overlay' ||
+                            child.custom_type === 'frame-overlay';
                         const childDynamicField = String(child.dynamicField || '').toLowerCase();
                         const childIsVideoHelper =
                             child.isVideoPlaceholder === true ||
@@ -2314,12 +2364,15 @@ export class TemplateRenderer {
                             childDynamicField.includes('video_url') ||
                             childDynamicField.includes('videos');
                         const hideChild =
-                            child.isSlotBackground ||
-                            child.isSlotLabel ||
-                            child.isSlotPlaceholder ||
-                            child.excludeFromExport === true ||
-                            child.isTransient === true ||
-                            childIsVideoHelper;
+                            !childIsFrameOverlay &&
+                            (
+                                child.isSlotBackground ||
+                                child.isSlotLabel ||
+                                child.isSlotPlaceholder ||
+                                child.excludeFromExport === true ||
+                                child.isTransient === true ||
+                                childIsVideoHelper
+                            );
 
                         if (hideChild) {
                             child.visible = false;
@@ -2337,7 +2390,12 @@ export class TemplateRenderer {
                 obj.opacity = 0;
             }
 
+            const isFrameOverlay =
+                obj.customType === 'frame-overlay' ||
+                obj.custom_type === 'frame-overlay';
             const shouldHide =
+                !isFrameOverlay &&
+                (
                 obj.isSlotBackground ||
                 obj.isSlotLabel ||
                 obj.isSlotPlaceholder ||
@@ -2350,7 +2408,8 @@ export class TemplateRenderer {
                 obj.isMultipleVideos === true ||
                 obj.customType === 'video-placeholder' ||
                 String(obj.dynamicField || '').toLowerCase().includes('video_url') ||
-                String(obj.dynamicField || '').toLowerCase().includes('videos');
+                String(obj.dynamicField || '').toLowerCase().includes('videos')
+                );
 
             if (shouldHide) {
                 obj.visible = false;

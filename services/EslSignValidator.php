@@ -20,6 +20,7 @@
 class EslSignValidator
 {
     private $db;
+    private const HEARTBEAT_LOG_INTERVAL_SECONDS = 30;
 
     public function __construct()
     {
@@ -235,28 +236,47 @@ class EslSignValidator
 
         $this->db->update('devices', $updateData, 'id = ?', [$deviceId]);
 
-        // Heartbeat kaydı
+        // Heartbeat kaydi: HTTP poll cihazlari cok sik gelebilir, yazimi throttle et.
         if (!empty($info)) {
-            try {
-                $this->db->insert('device_heartbeats', [
-                    'id' => $this->db->generateUuid(),
-                    'device_id' => $deviceId,
-                    'battery_level' => $info['battery'] ?? null,
-                    'signal_strength' => $info['wifi_signal'] ?? $info['signal_strength'] ?? null,
-                    'uptime' => $info['uptime'] ?? null,
-                    'storage_free' => isset($info['free_storage']) && $info['free_storage'] !== null && $info['free_storage'] !== ''
-                        ? (int)$info['free_storage']
-                        : null,
-                    'ip_address' => $info['ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null),
-                    'metadata' => json_encode([
-                        'firmware_version' => $info['version'] ?? null,
-                        'source' => 'esl_sign_validator'
-                    ]),
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-            } catch (Exception $e) {
-                // Heartbeat kaydı başarısız olsa bile devam et
-                error_log("[EslSignValidator] heartbeat insert error: " . $e->getMessage());
+            $shouldInsertHeartbeat = true;
+            $lastHeartbeatAt = $this->db->fetchColumn(
+                "SELECT created_at
+                 FROM device_heartbeats
+                 WHERE device_id = ?
+                 ORDER BY created_at DESC
+                 LIMIT 1",
+                [$deviceId]
+            );
+
+            if (!empty($lastHeartbeatAt)) {
+                $lastTs = strtotime((string)$lastHeartbeatAt);
+                if ($lastTs !== false && (time() - $lastTs) < self::HEARTBEAT_LOG_INTERVAL_SECONDS) {
+                    $shouldInsertHeartbeat = false;
+                }
+            }
+
+            if ($shouldInsertHeartbeat) {
+                try {
+                    $this->db->insert('device_heartbeats', [
+                        'id' => $this->db->generateUuid(),
+                        'device_id' => $deviceId,
+                        'battery_level' => $info['battery'] ?? null,
+                        'signal_strength' => $info['wifi_signal'] ?? $info['signal_strength'] ?? null,
+                        'uptime' => $info['uptime'] ?? null,
+                        'storage_free' => isset($info['free_storage']) && $info['free_storage'] !== null && $info['free_storage'] !== ''
+                            ? (int)$info['free_storage']
+                            : null,
+                        'ip_address' => $info['ip'] ?? ($_SERVER['REMOTE_ADDR'] ?? null),
+                        'metadata' => json_encode([
+                            'firmware_version' => $info['version'] ?? null,
+                            'source' => 'esl_sign_validator'
+                        ]),
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                } catch (Exception $e) {
+                    // Heartbeat kaydi basarisiz olsa bile devam et
+                    error_log("[EslSignValidator] heartbeat insert error: " . $e->getMessage());
+                }
             }
         }
     }
@@ -346,7 +366,13 @@ class EslSignValidator
                 ];
             }
 
-            $contentVersion = sprintf('%u', crc32(json_encode($task, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
+            $versionPayload = $task;
+            $dispatchSeed = $this->resolveDispatchSeed($sendParams);
+            if ($dispatchSeed !== '') {
+                $versionPayload['_dispatch_seed'] = $dispatchSeed;
+            }
+
+            $contentVersion = sprintf('%u', crc32(json_encode($versionPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
             $task['Nlast'] = (int)$contentVersion;
 
             $payloadWrapper = [
@@ -391,7 +417,8 @@ class EslSignValidator
             if ($existingAssignment) {
                 $this->db->update('device_content_assignments', [
                     'content_type' => 'http_payload',
-                    'content_id' => $httpPayloadRelative
+                    'content_id' => $httpPayloadRelative,
+                    'created_at' => date('Y-m-d H:i:s')
                 ], 'id = ?', [$existingAssignment['id']]);
             } else {
                 $this->db->insert('device_content_assignments', [
@@ -422,7 +449,27 @@ class EslSignValidator
     }
 
     /**
-     * Görsel payload oluştur (disk dosyası → URL + MD5)
+     * Build a stable dispatch seed for this queue write.
+     * When a seed exists, Nlast changes per dispatch even if media is unchanged.
+     */
+    private function resolveDispatchSeed(array $sendParams): string
+    {
+        foreach (['dispatch_seed', 'dispatch_id', 'force_refresh_nonce', 'queue_item_id', 'queue_id'] as $key) {
+            if (!isset($sendParams[$key])) {
+                continue;
+            }
+
+            $value = trim((string)$sendParams[$key]);
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Build picture payload (disk file -> URL + MD5)
      */
     private function buildPicturePayload(string $companyId, array $sendParams, int $width, int $height, string $deviceId, string $clientId): ?array
     {
@@ -481,7 +528,12 @@ class EslSignValidator
             $relativePath = $prepared['relative_path'] ?? $relativePath;
         }
 
-        $md5 = strtoupper((string)md5_file($fullPath));
+        if (!$this->isValidImageFile($fullPath)) {
+            error_log("[EslSignValidator] Invalid picture asset for HTTP payload: {$fullPath}");
+            return null;
+        }
+
+        $md5 = strtoupper((string)@md5_file($fullPath));
         $fileName = basename($fullPath);
 
         $pictureUrl = $this->toPublicMediaUrl($companyId, $relativePath ?: $fullPath);
@@ -499,6 +551,25 @@ class EslSignValidator
             'PictureName' => $fileName,
             'PicturePath' => $pictureUrl
         ];
+    }
+
+    private function isValidImageFile(?string $path): bool
+    {
+        if (!is_string($path) || $path === '' || !is_file($path)) {
+            return false;
+        }
+
+        $size = @filesize($path);
+        if (!is_int($size) || $size <= 0) {
+            return false;
+        }
+
+        $imgInfo = @getimagesize($path);
+        if (!is_array($imgInfo)) {
+            return false;
+        }
+
+        return !empty($imgInfo[0]) && !empty($imgInfo[1]);
     }
 
     private function preparePictureAssetForHttp(

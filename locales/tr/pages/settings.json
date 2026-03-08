@@ -125,7 +125,11 @@
             "language": "Dil",
             "currency": "Para Birimi",
             "dateFormat": "Tarih Formatı",
-            "theme": "Tema"
+            "theme": "Tema",
+            "sessionTimeoutMinutes": "Oturum Açık Kalma Süresi (dakika)"
+        },
+        "hints": {
+            "sessionTimeoutMinutes": "5 - 43200 dakika (varsayılan: 43200 = 30 gün)"
         },
         "placeholders": {
             "companyName": "Şirket adı",

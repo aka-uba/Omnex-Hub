@@ -117,7 +117,11 @@
             "language": "Sprache",
             "currency": "Währung",
             "dateFormat": "Datumsformat",
-            "theme": "Design"
+            "theme": "Design",
+            "sessionTimeoutMinutes": "Sitzungsdauer (Minuten)"
+        },
+        "hints": {
+            "sessionTimeoutMinutes": "5 - 43200 Minuten (Standard: 43200 = 30 Tage)"
         },
         "placeholders": {
             "companyName": "Firmenname",

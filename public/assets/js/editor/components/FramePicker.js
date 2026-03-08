@@ -129,6 +129,10 @@ export class FramePicker {
                         <img src="${getFrameThumbPath(f)}" alt="${f.title}" loading="lazy">
                     </div>
                     <div class="frame-card-name">${f.title}</div>
+                    <div class="frame-card-meta">
+                        <span class="frame-card-id">${f.id}</span>
+                        <span class="frame-card-type">${f.frameType}</span>
+                    </div>
                 </div>
             `).join('');
         };

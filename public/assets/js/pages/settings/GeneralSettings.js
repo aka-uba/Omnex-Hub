@@ -149,6 +149,11 @@ export class GeneralSettingsPage {
                                             <option value="AZN">${this.__('general.currencies.AZN')}</option>
                                         </select>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="form-label">${this.__('general.fields.sessionTimeoutMinutes')}</label>
+                                        <input type="number" id="session_timeout_minutes" class="form-input" min="5" max="43200" step="5" placeholder="43200">
+                                        <small class="form-hint">${this.__('general.hints.sessionTimeoutMinutes')}</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -509,6 +514,7 @@ export class GeneralSettingsPage {
         const fields = [
             'company_name', 'company_phone', 'company_address',
             'language', 'timezone', 'date_format', 'currency',
+            'session_timeout_minutes',
             'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
             'smtp_encryption', 'smtp_from_name', 'smtp_from_email',
             'weighing_flag_code', 'weighing_barcode_format'
@@ -529,6 +535,11 @@ export class GeneralSettingsPage {
         if (!this.settings.weighing_barcode_format) {
             const formatEl = document.getElementById('weighing_barcode_format');
             if (formatEl) formatEl.value = 'CODE128';
+        }
+
+        if (!this.settings.session_timeout_minutes) {
+            const sessionTimeoutEl = document.getElementById('session_timeout_minutes');
+            if (sessionTimeoutEl) sessionTimeoutEl.value = '43200';
         }
 
         // Update barcode preview
@@ -621,6 +632,11 @@ export class GeneralSettingsPage {
     }
 
     async saveSettings() {
+        const rawSessionTimeout = parseInt(document.getElementById('session_timeout_minutes')?.value || '43200', 10);
+        const sessionTimeoutMinutes = Number.isFinite(rawSessionTimeout)
+            ? Math.min(43200, Math.max(5, rawSessionTimeout))
+            : 43200;
+
         const data = {
             company_name: document.getElementById('company_name')?.value,
             company_phone: document.getElementById('company_phone')?.value,
@@ -629,6 +645,7 @@ export class GeneralSettingsPage {
             timezone: document.getElementById('timezone')?.value,
             date_format: document.getElementById('date_format')?.value,
             currency: document.getElementById('currency')?.value,
+            session_timeout_minutes: sessionTimeoutMinutes,
             smtp_host: document.getElementById('smtp_host')?.value,
             smtp_port: document.getElementById('smtp_port')?.value,
             smtp_username: document.getElementById('smtp_username')?.value,

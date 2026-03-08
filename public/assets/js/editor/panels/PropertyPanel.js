@@ -68,6 +68,24 @@ export class PropertyPanel extends PanelBase {
          * @type {Object}
          */
         this._canvasHandlers = {};
+        this._fontCatalog = [
+            { family: 'Arial', source: 'system' },
+            { family: 'Inter', source: 'google' },
+            { family: 'Roboto', source: 'google' },
+            { family: 'Montserrat', source: 'google' },
+            { family: 'Poppins', source: 'google' },
+            { family: 'Noto Sans', source: 'google' },
+            { family: 'Open Sans', source: 'google' },
+            { family: 'Lato', source: 'google' },
+            { family: 'Oswald', source: 'google' },
+            { family: 'Raleway', source: 'google' },
+            { family: 'Segoe UI', source: 'system' }
+        ];
+        this._fontLoadPromises = new Map();
+        this._fontStylesheetInjected = false;
+        this._fontStylesheetReadyPromise = this._ensureEditorFontStylesheet();
+        this._preloadEditorFonts();
+        this._framePreviewPopupEl = null;
 
         // Canvas event'lerini bağla
         this._bindCanvasEvents();
@@ -109,6 +127,7 @@ export class PropertyPanel extends PanelBase {
      * @param {Object|null} object - Fabric.js nesnesi
      */
     setSelectedObject(object) {
+        this._hideFramePreviewPopup();
         this._selectedObject = object;
         this._applyPriceFormattingToTargets(this._getTextTargets());
         this.refresh();
@@ -170,10 +189,8 @@ export class PropertyPanel extends PanelBase {
         // Gölge (tüm nesneler)
         sections.push(this._renderShadowSection());
 
-        // Çerçeve (frame overlay) - frame-overlay tipi hariç tüm nesneler
-        if (customType !== CUSTOM_TYPES.FRAME_OVERLAY) {
-            sections.push(this._renderFrameSection());
-        }
+        // Çerçeve (frame overlay) - overlay seçili olsa da hedef nesneye yönlenerek göster
+        sections.push(this._renderFrameSection());
 
         // Genel özellikler (tüm nesneler)
         sections.push(this._renderGeneralSection());
@@ -225,11 +242,11 @@ export class PropertyPanel extends PanelBase {
         let typeBadge = '';
 
         if (dynamicField) {
-            // Dinamik alan: placeholder metnini göster (ör. "{Eski Fiyat}")
-            displayName = placeholder || `{${dynamicField}}`;
-            // Süslü parantezleri temizle
-            displayName = displayName.replace(/^\{|\}$/g, '');
-            typeBadge = this.__('editor.elements.dynamicText');
+            // Dinamik alanlarda üst satır: tasarım adı (objectName) öncelikli
+            // Alt satır: alan etiketi (örn. description -> Açıklama/Ürün Açıklama)
+            const dynamicLabel = this._getDynamicFieldDisplayName(dynamicField, placeholder);
+            displayName = objectName || dynamicLabel || `{${dynamicField}}`;
+            typeBadge = dynamicLabel || this.__('editor.elements.dynamicText');
         } else if (customType === CUSTOM_TYPES.BARCODE) {
             const barcodeValue = obj[CUSTOM_PROPS.BARCODE_VALUE] || obj.get(CUSTOM_PROPS.BARCODE_VALUE) || '';
             displayName = objectName || barcodeValue || (this.__('editor.elements.barcode'));
@@ -268,6 +285,27 @@ export class PropertyPanel extends PanelBase {
                 </div>
             </div>
         `;
+    }
+
+    _getDynamicFieldDisplayName(dynamicField, placeholder = '') {
+        const fieldKey = String(dynamicField || '').trim().replace(/^\{\{|\}\}$/g, '');
+        if (!fieldKey) return '';
+
+        const placeholderText = String(placeholder || '').trim().replace(/^\{+|\}+$/g, '');
+        if (placeholderText && !/\{\{[^}]+\}\}/.test(placeholderText)) {
+            return placeholderText;
+        }
+
+        const camelKey = fieldKey.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+        const i18nKey = `editor.dynamicFields.${camelKey}`;
+        const translated = this.__(i18nKey);
+        if (translated && translated !== i18nKey) {
+            return translated;
+        }
+
+        return fieldKey
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (c) => c.toUpperCase());
     }
 
     /**
@@ -409,19 +447,7 @@ export class PropertyPanel extends PanelBase {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
-        const fonts = [
-            'Arial',
-            'Inter',
-            'Roboto',
-            'SF Pro Display',
-            'Montserrat',
-            'Poppins',
-            'Noto Sans',
-            'Open Sans',
-            'Lato',
-            'Oswald',
-            'Raleway'
-        ];
+        const fonts = this._getFontOptions(fontFamily);
 
         return `
             <div class="property-section">
@@ -437,7 +463,7 @@ export class PropertyPanel extends PanelBase {
                     <div class="property-item">
                         <label>${this.__('editor.properties.fontFamily')}</label>
                         <select class="form-select" data-property="fontFamily">
-                            ${fonts.map(f => `<option value="${f}" ${fontFamily === f ? 'selected' : ''}>${f}</option>`).join('')}
+                            ${fonts.map(f => `<option value="${f}" ${this._isSameFontFamily(fontFamily, f) ? 'selected' : ''}>${f}</option>`).join('')}
                         </select>
                     </div>
                     <div class="property-grid-2">
@@ -516,7 +542,10 @@ export class PropertyPanel extends PanelBase {
      */
     _renderShapeSection() {
         const obj = this._selectedObject;
-        const fill = obj.fill || '#ffffff';
+        const { fill, stroke, strokeWidth } = this._getShapeStyleSnapshot(obj);
+        const isLine = this._isLinePrimitive(obj);
+        const lineStyle = this._linePresetFromDashArray(obj?.strokeDashArray);
+        const lineCap = String(obj?.strokeLineCap || 'round').toLowerCase();
 
         return `
             <div class="property-section">
@@ -525,13 +554,207 @@ export class PropertyPanel extends PanelBase {
                     <span>${this.__('editor.properties.shape')}</span>
                 </div>
                 <div class="property-section-body">
+                    ${!isLine ? `
                     <div class="property-item">
                         <label>${this.__('editor.properties.fill')}</label>
-                        ${this._renderColorInput('fill', fill)}
+                        <div class="property-color-row property-color-input with-action">
+                            <input type="color" class="form-color" data-property="fill" value="${this._normalizeColorHex(fill)}">
+                            <input type="text" class="form-input form-color-hex" data-color-hex-for="fill" value="${this._normalizeColorHex(fill)}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
+                            <button type="button" class="btn-icon btn-clear-fill" data-action="clear-fill" title="${this.__('editor.properties.noFill') || 'İç Dolgu Yok'}">
+                                <i class="ti ti-ban"></i>
+                            </button>
+                        </div>
                     </div>
+                    ` : ''}
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.stroke')}</label>
+                        ${this._renderColorInput('stroke', stroke)}
+                    </div>
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.strokeWidth')}</label>
+                        <input type="number" class="form-input" data-property="strokeWidth" value="${strokeWidth}" min="0" max="50" step="1">
+                    </div>
+                    ${isLine ? `
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.lineStyle') || 'Cizgi Stili'}</label>
+                        <select class="form-input form-input-sm" data-property="lineDashPreset">
+                            <option value="solid" ${lineStyle === 'solid' ? 'selected' : ''}>${this.__('editor.properties.solid') || 'Duz'}</option>
+                            <option value="dashed" ${lineStyle === 'dashed' ? 'selected' : ''}>${this.__('editor.properties.dashed') || 'Kesik'}</option>
+                            <option value="longDashed" ${lineStyle === 'longDashed' ? 'selected' : ''}>${this.__('editor.properties.longDashed') || 'Uzun Kesik'}</option>
+                            <option value="dotted" ${lineStyle === 'dotted' ? 'selected' : ''}>${this.__('editor.properties.dotted') || 'Nokta'}</option>
+                            <option value="dashDot" ${lineStyle === 'dashDot' ? 'selected' : ''}>${this.__('editor.properties.dashDot') || 'Kesik-Nokta'}</option>
+                            <option value="dashDotDot" ${lineStyle === 'dashDotDot' ? 'selected' : ''}>Dash Dot Dot</option>
+                            <option value="denseDash" ${lineStyle === 'denseDash' ? 'selected' : ''}>Dense Dash</option>
+                            <option value="sparseDot" ${lineStyle === 'sparseDot' ? 'selected' : ''}>Sparse Dot</option>
+                        </select>
+                    </div>
+                    <div class="property-item">
+                        <label>Line Cap</label>
+                        <select class="form-input form-input-sm" data-property="strokeLineCap">
+                            <option value="butt" ${lineCap === 'butt' ? 'selected' : ''}>Butt</option>
+                            <option value="round" ${lineCap === 'round' ? 'selected' : ''}>Round</option>
+                            <option value="square" ${lineCap === 'square' ? 'selected' : ''}>Square</option>
+                        </select>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
+    }
+
+    _isLinePrimitive(obj) {
+        return this._isLineLikeObject(obj);
+    }
+
+    _isLineLikeObject(obj) {
+        const type = String(obj?.type || '').toLowerCase();
+        const customType = String(
+            obj?.[CUSTOM_PROPS.CUSTOM_TYPE] ||
+            obj?.customType ||
+            obj?.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+            ''
+        ).toLowerCase();
+        return type === 'line' || type === 'path' || type === 'polyline' || customType === CUSTOM_TYPES.LINE;
+    }
+
+    _linePresetFromDashArray(dashArray) {
+        if (!Array.isArray(dashArray) || dashArray.length === 0) return 'solid';
+        const key = dashArray.join(',');
+        if (key === '14,6' || key === '10,6') return 'dashed';
+        if (key === '26,12' || key === '20,10') return 'longDashed';
+        if (key === '1,11' || key === '2,10') return 'dotted';
+        if (key === '20,8,2,8' || key === '16,6,2,6') return 'dashDot';
+        if (key === '20,8,2,8,2,8' || key === '16,6,2,6,2,6') return 'dashDotDot';
+        if (key === '8,4' || key === '6,4') return 'denseDash';
+        if (key === '1,17' || key === '2,14') return 'sparseDot';
+        if (key === '30,6,4,6') return 'rail';
+        if (key === '4,4,12,4,4,10') return 'pulse';
+        return 'dashed';
+    }
+
+    _dashArrayFromLinePreset(style) {
+        switch (String(style || 'solid')) {
+            case 'dashed':
+                return [14, 6];
+            case 'longDashed':
+                return [26, 12];
+            case 'dotted':
+                return [1, 11];
+            case 'dashDot':
+                return [20, 8, 2, 8];
+            case 'dashDotDot':
+                return [20, 8, 2, 8, 2, 8];
+            case 'denseDash':
+                return [8, 4];
+            case 'sparseDot':
+                return [1, 17];
+            case 'rail':
+                return [30, 6, 4, 6];
+            case 'pulse':
+                return [4, 4, 12, 4, 4, 10];
+            default:
+                return null;
+        }
+    }
+
+    _isLibraryShapeObject(obj) {
+        if (!obj) return false;
+        const customType = String(
+            obj[CUSTOM_PROPS.CUSTOM_TYPE] ||
+            obj.customType ||
+            obj.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+            obj.get?.('customType') ||
+            ''
+        ).toLowerCase();
+        if (customType === CUSTOM_TYPES.SHAPE || customType === 'shape') return true;
+        return !!(obj[CUSTOM_PROPS.SHAPE_LIBRARY_ID] || obj.get?.(CUSTOM_PROPS.SHAPE_LIBRARY_ID));
+    }
+
+    _getShapeDrawableTargets(obj) {
+        if (!obj) return [];
+        const targets = [];
+        const stack = [obj];
+        const drawableTypes = new Set(['path', 'rect', 'circle', 'ellipse', 'polygon', 'line', 'polyline']);
+
+        while (stack.length > 0) {
+            const current = stack.pop();
+            if (!current) continue;
+
+            const children = this._getObjectChildren(current);
+            if (children.length > 0) {
+                children.forEach(child => stack.push(child));
+                continue;
+            }
+
+            const type = String(current.type || '').toLowerCase();
+            if (drawableTypes.has(type)) {
+                targets.push(current);
+            }
+        }
+
+        return targets;
+    }
+
+    _getShapeStyleSnapshot(obj) {
+        const fallback = { fill: '#ffffff', stroke: '#1f2937', strokeWidth: 1 };
+        if (!obj) return fallback;
+
+        const target = this._isLibraryShapeObject(obj)
+            ? (this._getShapeDrawableTargets(obj)[0] || obj)
+            : obj;
+
+        const fill = target.fill || fallback.fill;
+        const strokeRaw = target.stroke;
+        const stroke = (typeof strokeRaw === 'string' && strokeRaw !== '' && strokeRaw !== 'transparent')
+            ? strokeRaw
+            : fallback.stroke;
+        const strokeWidth = Math.max(0, Number(target.strokeWidth || 0));
+
+        return { fill, stroke, strokeWidth };
+    }
+
+    _applyShapeProperty(property, value) {
+        if (!this._selectedObject) return false;
+        if (!this._isLibraryShapeObject(this._selectedObject)) return false;
+
+        const targets = this._getShapeDrawableTargets(this._selectedObject);
+        if (!targets.length) return false;
+
+        const normalizedColor = (fallback = '#000000') => this._normalizeColorHex(String(value), fallback);
+
+        switch (property) {
+            case 'fill': {
+                const nextFill = normalizedColor('#000000');
+                targets.forEach(target => target.set('fill', nextFill));
+                return true;
+            }
+            case 'stroke': {
+                const nextStroke = normalizedColor('#000000');
+                targets.forEach(target => {
+                    target.set('stroke', nextStroke);
+                    if ((target.strokeWidth || 0) <= 0) {
+                        target.set('strokeWidth', 1);
+                    }
+                });
+                return true;
+            }
+            case 'strokeWidth': {
+                const safeWidth = Math.max(0, Number(value) || 0);
+                targets.forEach(target => {
+                    target.set('strokeWidth', safeWidth);
+                    if (safeWidth > 0) {
+                        const currentStroke = target.stroke;
+                        const hasVisibleStroke = typeof currentStroke === 'string' && currentStroke !== '' && currentStroke !== 'transparent';
+                        if (!hasVisibleStroke) {
+                            target.set('stroke', '#000000');
+                        }
+                    }
+                });
+                return true;
+            }
+            default:
+                return false;
+        }
     }
 
     /**
@@ -659,6 +882,9 @@ export class PropertyPanel extends PanelBase {
         const strokeWidth = obj.strokeWidth || 0;
         const rx = obj.rx || obj.clipPath?.rx || 0;
         const type = obj.type;
+        const isLine = this._isLineLikeObject(obj);
+        const lineStyle = this._linePresetFromDashArray(obj?.strokeDashArray);
+        const lineCap = String(obj?.strokeLineCap || 'round').toLowerCase();
 
         // Stroke rengi - boş veya null ise transparan göster
         const strokeColor = stroke && stroke !== 'transparent' ? stroke : '#000000';
@@ -684,7 +910,7 @@ export class PropertyPanel extends PanelBase {
                                 <input type="color" class="form-color" data-property="stroke" value="${this._normalizeColorHex(strokeColor)}">
                                 <input type="text" class="form-input form-color-hex" data-color-hex-for="stroke" value="${this._normalizeColorHex(strokeColor)}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
                                 <button type="button" class="btn-icon btn-clear-stroke ${!hasStroke ? 'active' : ''}" data-action="clear-stroke" title="${this.__('editor.properties.noStroke')}">
-                                    <i class="ti ti-circle-off"></i>
+                                    <i class="ti ti-ban"></i>
                                 </button>
                             </div>
                         </div>
@@ -701,6 +927,31 @@ export class PropertyPanel extends PanelBase {
                             <input type="number" class="form-input form-input-sm" data-property="rx" value="${rx}" min="0" max="100">
                             <span>px</span>
                         </div>
+                    </div>
+                    ` : ''}
+                    ${isLine ? `
+                    <div class="property-item">
+                        <label>${this.__('editor.properties.lineStyle') || 'Cizgi Stili'}</label>
+                        <select class="form-input form-input-sm" data-property="lineDashPreset">
+                            <option value="solid" ${lineStyle === 'solid' ? 'selected' : ''}>${this.__('editor.properties.solid') || 'Duz'}</option>
+                            <option value="dashed" ${lineStyle === 'dashed' ? 'selected' : ''}>${this.__('editor.properties.dashed') || 'Kesik'}</option>
+                            <option value="longDashed" ${lineStyle === 'longDashed' ? 'selected' : ''}>${this.__('editor.properties.longDashed') || 'Uzun Kesik'}</option>
+                            <option value="dotted" ${lineStyle === 'dotted' ? 'selected' : ''}>${this.__('editor.properties.dotted') || 'Nokta'}</option>
+                            <option value="dashDot" ${lineStyle === 'dashDot' ? 'selected' : ''}>${this.__('editor.properties.dashDot') || 'Kesik-Nokta'}</option>
+                            <option value="dashDotDot" ${lineStyle === 'dashDotDot' ? 'selected' : ''}>Dash Dot Dot</option>
+                            <option value="denseDash" ${lineStyle === 'denseDash' ? 'selected' : ''}>Dense Dash</option>
+                            <option value="sparseDot" ${lineStyle === 'sparseDot' ? 'selected' : ''}>Sparse Dot</option>
+                            <option value="rail" ${lineStyle === 'rail' ? 'selected' : ''}>Rail</option>
+                            <option value="pulse" ${lineStyle === 'pulse' ? 'selected' : ''}>Pulse</option>
+                        </select>
+                    </div>
+                    <div class="property-item">
+                        <label>Line Cap</label>
+                        <select class="form-input form-input-sm" data-property="strokeLineCap">
+                            <option value="butt" ${lineCap === 'butt' ? 'selected' : ''}>Butt</option>
+                            <option value="round" ${lineCap === 'round' ? 'selected' : ''}>Round</option>
+                            <option value="square" ${lineCap === 'square' ? 'selected' : ''}>Square</option>
+                        </select>
                     </div>
                     ` : ''}
                 </div>
@@ -806,15 +1057,27 @@ export class PropertyPanel extends PanelBase {
      * @returns {string}
      */
     _renderFrameSection() {
-        const obj = this._selectedObject;
+        const obj = this._resolveFrameTargetObject() || this._selectedObject;
         if (!obj) return '';
 
-        const frameId = obj[CUSTOM_PROPS.FRAME_ID];
+        const frameId = obj[CUSTOM_PROPS.FRAME_ID] || obj.get?.(CUSTOM_PROPS.FRAME_ID);
 
         if (frameId) {
             // Frame applied - show preview + change/remove buttons
-            let thumbHtml = '<div class="frame-preview-thumb"><i class="ti ti-frame" style="font-size:24px;opacity:0.4"></i></div>';
+            const basePath = window.OmnexConfig?.basePath || '';
+            const safeFrameId = String(frameId || '').replace(/"/g, '&quot;');
+            const fallbackThumbPath = `${basePath}/assets/frames/_thumbs/${safeFrameId}.png`;
+            let thumbHtml = `
+                <div class="frame-preview-thumb">
+                    <div class="frame-preview-thumb-inner">
+                        <img src="${fallbackThumbPath}" alt="${safeFrameId}" loading="lazy">
+                    </div>
+                </div>
+            `;
             let frameName = frameId;
+            const frameColor = this._normalizeColorHex(
+                obj[CUSTOM_PROPS.FRAME_COLOR] || obj.get?.(CUSTOM_PROPS.FRAME_COLOR) || '#000000'
+            );
 
             // Try to get frame details (will be populated after async load)
             return `
@@ -829,6 +1092,10 @@ export class PropertyPanel extends PanelBase {
                             <div class="frame-preview-name">${frameName}</div>
                             <div class="frame-preview-type"></div>
                         </div>
+                    </div>
+                    <div class="property-item">
+                        <label>${this.__('editor.frame.color') || 'Çerçeve Rengi'}</label>
+                        ${this._renderColorInput('frameColor', frameColor)}
                     </div>
                     <div class="frame-actions">
                         <button class="btn btn-sm btn-outline" data-action="pick-frame">
@@ -862,6 +1129,7 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     async _populateFramePreview() {
+        this._hideFramePreviewPopup();
         const row = this._container?.querySelector('#frame-preview-row');
         if (!row) return;
 
@@ -875,7 +1143,13 @@ export class PropertyPanel extends PanelBase {
 
             const thumb = row.querySelector('.frame-preview-thumb');
             if (thumb) {
-                thumb.innerHTML = `<img src="${getFrameThumbPath(frameDef)}" alt="${frameDef.title}">`;
+                const thumbPath = getFrameThumbPath(frameDef);
+                thumb.innerHTML = `
+                    <div class="frame-preview-thumb-inner">
+                        <img src="${thumbPath}" alt="${frameDef.title}">
+                    </div>
+                `;
+                this._bindFramePreviewHover(thumb, thumbPath, frameDef.title || frameId);
             }
             const nameEl = row.querySelector('.frame-preview-name');
             if (nameEl) nameEl.textContent = frameDef.title;
@@ -884,6 +1158,69 @@ export class PropertyPanel extends PanelBase {
         } catch (e) {
             // Silently ignore - preview is a nice-to-have
         }
+    }
+
+    _bindFramePreviewHover(thumbEl, imageSrc, title = '') {
+        if (!thumbEl || !imageSrc) return;
+
+        this._addEventListener(thumbEl, 'mouseenter', (e) => {
+            this._showFramePreviewPopup(imageSrc, title, e.clientX, e.clientY);
+        });
+        this._addEventListener(thumbEl, 'mousemove', (e) => {
+            this._moveFramePreviewPopup(e.clientX, e.clientY);
+        });
+        this._addEventListener(thumbEl, 'mouseleave', () => {
+            this._hideFramePreviewPopup();
+        });
+    }
+
+    _showFramePreviewPopup(imageSrc, title, x, y) {
+        this._hideFramePreviewPopup();
+
+        const el = document.createElement('div');
+        el.className = 'frame-preview-floating';
+        el.innerHTML = `
+            <div class="frame-preview-floating-title">${String(title || '')}</div>
+            <div class="frame-preview-floating-image">
+                <img src="${imageSrc}" alt="${String(title || '')}">
+            </div>
+        `;
+
+        document.body.appendChild(el);
+        this._framePreviewPopupEl = el;
+        this._moveFramePreviewPopup(x, y);
+        requestAnimationFrame(() => {
+            if (this._framePreviewPopupEl) {
+                this._framePreviewPopupEl.classList.add('show');
+            }
+        });
+    }
+
+    _moveFramePreviewPopup(x, y) {
+        const el = this._framePreviewPopupEl;
+        if (!el) return;
+
+        const margin = 14;
+        const popupW = 190;
+        const popupH = 220;
+        let left = (Number(x) || 0) + margin;
+        let top = (Number(y) || 0) + margin;
+
+        const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+        const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+
+        if (left + popupW > vw - 8) left = Math.max(8, (Number(x) || 0) - popupW - margin);
+        if (top + popupH > vh - 8) top = Math.max(8, vh - popupH - 8);
+
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+    }
+
+    _hideFramePreviewPopup() {
+        if (this._framePreviewPopupEl?.parentNode) {
+            this._framePreviewPopupEl.parentNode.removeChild(this._framePreviewPopupEl);
+        }
+        this._framePreviewPopupEl = null;
     }
 
     /**
@@ -1051,26 +1388,54 @@ export class PropertyPanel extends PanelBase {
     _clearStroke() {
         if (!this._selectedObject) return;
 
-        this._selectedObject.set('stroke', null);
-        this._selectedObject.set('strokeWidth', 0);
+        if (this._isLibraryShapeObject(this._selectedObject)) {
+            const targets = this._getShapeDrawableTargets(this._selectedObject);
+            targets.forEach(target => {
+                target.set('stroke', null);
+                target.set('strokeWidth', 0);
+            });
+        } else {
+            this._selectedObject.set('stroke', null);
+            this._selectedObject.set('strokeWidth', 0);
+        }
         this.canvas?.requestRenderAll();
         this.refresh();
         this._emitModified();
     }
+
+    _clearFill() {
+        if (!this._selectedObject) return;
+
+        if (this._isLibraryShapeObject(this._selectedObject)) {
+            const targets = this._getShapeDrawableTargets(this._selectedObject);
+            targets.forEach(target => target.set('fill', 'rgba(0,0,0,0)'));
+        } else {
+            this._selectedObject.set('fill', 'rgba(0,0,0,0)');
+        }
+
+        this.canvas?.requestRenderAll();
+        this.refresh();
+        this._emitModified();
+    }
+
 
     /**
      * Open frame picker and apply selected frame
      * @private
      */
     async _pickFrame() {
-        if (!this._selectedObject || !this.canvas) return;
+        if (!this.canvas) return;
+        const targetObj = this._resolveFrameTargetObject();
+        if (!targetObj) return;
 
         const { FramePicker } = await import('../components/FramePicker.js');
 
         FramePicker.open({
             __: (key) => this.__(`editor.${key}`),
             onSelect: async (frameDef) => {
-                if (!this._selectedObject || !this.canvas) return;
+                if (!this.canvas) return;
+                const liveTarget = this._resolveFrameTargetObject() || targetObj;
+                if (!liveTarget) return;
 
                 // Use frameService from editor if available
                 const frameService = this._frameService || this.editor?.frameService;
@@ -1079,7 +1444,7 @@ export class PropertyPanel extends PanelBase {
                     return;
                 }
 
-                await frameService.applyFrame(this._selectedObject, frameDef, this.canvas);
+                await frameService.applyFrame(liveTarget, frameDef, this.canvas);
                 this.refresh();
                 this._emitModified();
             }
@@ -1091,14 +1456,55 @@ export class PropertyPanel extends PanelBase {
      * @private
      */
     _removeFrame() {
-        if (!this._selectedObject || !this.canvas) return;
+        if (!this.canvas) return;
+        const targetObj = this._resolveFrameTargetObject();
+        if (!targetObj) return;
 
         const frameService = this._frameService || this.editor?.frameService;
         if (!frameService) return;
 
-        frameService.removeFrame(this._selectedObject, this.canvas);
+        frameService.removeFrame(targetObj, this.canvas);
         this.refresh();
         this._emitModified();
+    }
+
+    _resolveFrameTargetObject() {
+        if (!this.canvas) return null;
+
+        const activeObj = this._selectedObject || this.canvas.getActiveObject?.() || null;
+        if (!activeObj) return null;
+
+        const activeType = String(activeObj.type || '').toLowerCase();
+        if (activeType === 'activeselection' && typeof activeObj.getObjects === 'function') {
+            const members = activeObj.getObjects();
+            return members.find((obj) =>
+                String(
+                    obj?.[CUSTOM_PROPS.CUSTOM_TYPE] ||
+                    obj?.custom_type ||
+                    obj?.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+                    ''
+                ).toLowerCase() !== CUSTOM_TYPES.FRAME_OVERLAY
+            ) || null;
+        }
+
+        const customType = String(
+            activeObj?.[CUSTOM_PROPS.CUSTOM_TYPE] ||
+            activeObj?.custom_type ||
+            activeObj?.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+            ''
+        ).toLowerCase();
+        if (customType === CUSTOM_TYPES.FRAME_OVERLAY) {
+            const targetId =
+                activeObj?.[CUSTOM_PROPS.FRAME_TARGET_ID] ||
+                activeObj?.frameTargetId ||
+                activeObj?.get?.(CUSTOM_PROPS.FRAME_TARGET_ID);
+            if (!targetId) return null;
+            return this.canvas.getObjects().find((obj) =>
+                (obj?.[CUSTOM_PROPS.OBJECT_ID] || obj?.get?.(CUSTOM_PROPS.OBJECT_ID)) === targetId
+            ) || null;
+        }
+
+        return activeObj;
     }
 
     /**
@@ -1383,6 +1789,11 @@ export class PropertyPanel extends PanelBase {
             this._addEventListener(btn, 'click', () => this._clearStroke());
         });
 
+        // Clear fill (iç dolgu yok)
+        this.$$('[data-action="clear-fill"]').forEach(btn => {
+            this._addEventListener(btn, 'click', () => this._clearFill());
+        });
+
         // Responsive: Anchor butonları (data-property="anchorX/Y" data-value="left/center/right")
         this.$$('.btn-group .btn-icon[data-property]').forEach(btn => {
             this._addEventListener(btn, 'click', (e) => {
@@ -1484,6 +1895,10 @@ export class PropertyPanel extends PanelBase {
             case 'opacity':
                 // Yüzdeyi 0-1 aralığına dönüştür
                 this._selectedObject.set('opacity', value / 100);
+                this._selectedObject.dirty = true;
+                this._getObjectChildren(this._selectedObject).forEach((child) => {
+                    child.dirty = true;
+                });
                 break;
 
             case 'imageIndex':
@@ -1517,34 +1932,66 @@ export class PropertyPanel extends PanelBase {
                 break;
 
             case 'fill': {
-                const normalizedFill = this._normalizeColorHex(String(value), '#000000');
-                if (hasTextTargets) {
-                    textTargets.forEach(target => target.set('fill', normalizedFill));
-                } else {
-                    this._selectedObject.set('fill', normalizedFill);
+                if (!this._applyShapeProperty('fill', value)) {
+                    const normalizedFill = this._normalizeColorHex(String(value), '#000000');
+                    if (hasTextTargets) {
+                        textTargets.forEach(target => target.set('fill', normalizedFill));
+                    } else {
+                        this._selectedObject.set('fill', normalizedFill);
+                    }
                 }
                 break;
             }
 
             case 'stroke':
-                this._selectedObject.set('stroke', this._normalizeColorHex(String(value), '#000000'));
-                if ((this._selectedObject.strokeWidth || 0) <= 0) {
-                    this._selectedObject.set('strokeWidth', 1);
+                if (!this._applyShapeProperty('stroke', value)) {
+                    this._selectedObject.set('stroke', this._normalizeColorHex(String(value), '#000000'));
+                    if ((this._selectedObject.strokeWidth || 0) <= 0) {
+                        this._selectedObject.set('strokeWidth', 1);
+                    }
                 }
                 break;
 
             case 'strokeWidth': {
-                const safeWidth = Math.max(0, Number(value) || 0);
-                this._selectedObject.set('strokeWidth', safeWidth);
-                if (safeWidth > 0) {
-                    const currentStroke = this._selectedObject.stroke;
-                    const hasVisibleStroke = typeof currentStroke === 'string' && currentStroke !== '' && currentStroke !== 'transparent';
-                    if (!hasVisibleStroke) {
-                        const strokePicker = this.$('input[type="color"][data-property="stroke"]');
-                        const fallbackStroke = this._normalizeColorHex(strokePicker?.value || '#000000');
-                        this._selectedObject.set('stroke', fallbackStroke);
+                if (!this._applyShapeProperty('strokeWidth', value)) {
+                    const safeWidth = Math.max(0, Number(value) || 0);
+                    this._selectedObject.set('strokeWidth', safeWidth);
+                    if (safeWidth > 0) {
+                        const currentStroke = this._selectedObject.stroke;
+                        const hasVisibleStroke = typeof currentStroke === 'string' && currentStroke !== '' && currentStroke !== 'transparent';
+                        if (!hasVisibleStroke) {
+                            const strokePicker = this.$('input[type="color"][data-property="stroke"]');
+                            const fallbackStroke = this._normalizeColorHex(strokePicker?.value || '#000000');
+                            this._selectedObject.set('stroke', fallbackStroke);
+                        }
                     }
                 }
+                break;
+            }
+
+            case 'lineDashPreset': {
+                this._selectedObject.set('strokeDashArray', this._dashArrayFromLinePreset(value));
+                break;
+            }
+
+            case 'strokeLineCap': {
+                const nextCap = String(value || 'round');
+                this._selectedObject.set('strokeLineCap', nextCap);
+                break;
+            }
+
+            case 'frameColor': {
+                const targetObj = this._resolveFrameTargetObject();
+                if (!targetObj) break;
+                const nextColor = this._normalizeColorHex(String(value), '#000000');
+                targetObj[CUSTOM_PROPS.FRAME_COLOR] = nextColor;
+                try {
+                    targetObj.set?.(CUSTOM_PROPS.FRAME_COLOR, nextColor);
+                } catch (err) {
+                    // ignore
+                }
+                const frameService = this._frameService || this.editor?.frameService;
+                frameService?.updateFrame(targetObj, this.canvas);
                 break;
             }
 
@@ -1565,7 +2012,21 @@ export class PropertyPanel extends PanelBase {
                 shouldApplyPriceFormatting = true;
                 break;
 
-            case 'fontFamily':
+            case 'fontFamily': {
+                const nextFontFamily = String(value || '').trim();
+                if (hasTextTargets) {
+                    textTargets.forEach(target => {
+                        target.set('fontFamily', nextFontFamily);
+                        this._applyAutoTextboxWidthIfEnabled(target);
+                        target.initDimensions?.();
+                        target.setCoords?.();
+                    });
+                } else {
+                    this._selectedObject.set('fontFamily', nextFontFamily);
+                    this._applyAutoTextboxWidthIfEnabled(this._selectedObject);
+                }
+                break;
+            }
             case 'fontSize':
             case 'fontStyle':
             case 'underline':
@@ -1644,6 +2105,23 @@ export class PropertyPanel extends PanelBase {
         }
 
         this.canvas.requestRenderAll();
+
+        if (property === 'fontFamily') {
+            const nextFontFamily = String(value || '').trim();
+            this._loadFontFamily(nextFontFamily).then(() => {
+                const reloadTargets = this._getTextTargets();
+                if (reloadTargets.length > 0) {
+                    reloadTargets.forEach((target) => {
+                        target.initDimensions?.();
+                        target.setCoords?.();
+                    });
+                } else if (this._isDirectTextObject(this._selectedObject)) {
+                    this._selectedObject.initDimensions?.();
+                    this._selectedObject.setCoords?.();
+                }
+                this.canvas?.requestRenderAll?.();
+            });
+        }
 
         // Range-Number sync: aynı property'li diğer input'u güncelle
         if (input.type === 'range' || input.type === 'number') {
@@ -2096,6 +2574,12 @@ export class PropertyPanel extends PanelBase {
         const midlineEnabled = !!this._readObjectProp(target, CUSTOM_PROPS.PRICE_MIDLINE_ENABLED, false);
         const midlineThicknessRaw = Number(this._readObjectProp(target, CUSTOM_PROPS.PRICE_MIDLINE_THICKNESS, 1));
         const midlineThickness = Math.max(1, Math.min(8, Number.isFinite(midlineThicknessRaw) ? midlineThicknessRaw : 1));
+        const currentOffsets = this._readObjectProp(target, 'offsets', {});
+        const safeOffsets = (currentOffsets && typeof currentOffsets === 'object') ? currentOffsets : {};
+        const priceMidlineOffsets = {
+            ...safeOffsets,
+            linethrough: -0.40
+        };
 
         target.set('text', text);
         target.text = text;
@@ -2103,8 +2587,13 @@ export class PropertyPanel extends PanelBase {
         target.styles = styles;
         target.set('linethrough', midlineEnabled);
         target.linethrough = midlineEnabled;
-        target.set('textDecorationThickness', midlineThickness);
-        target.textDecorationThickness = midlineThickness;
+        target.set('offsets', priceMidlineOffsets);
+        target.offsets = priceMidlineOffsets;
+        // Fabric.js v7 formula: textDecorationThickness * scaleY / 10
+        // So multiply by 10 to get actual pixel values (1-8 → 10-80)
+        const fabricThickness = midlineThickness * 6;
+        target.set('textDecorationThickness', fabricThickness);
+        target.textDecorationThickness = fabricThickness;
         target.initDimensions?.();
         target.setCoords?.();
     }
@@ -2127,6 +2616,129 @@ export class PropertyPanel extends PanelBase {
         this._selectedObject.set(propName, propValue);
         this._selectedObject[propName] = propValue;
         this._selectedObject.setCoords?.();
+    }
+
+    _getFontOptions(currentFontFamily = '') {
+        const options = this._fontCatalog.map(item => item.family);
+        const normalizedCurrent = this._normalizeFontFamilyName(currentFontFamily);
+        const hasCurrent = options.some(f => this._isSameFontFamily(f, normalizedCurrent));
+        if (normalizedCurrent && !hasCurrent) {
+            options.unshift(normalizedCurrent);
+        }
+        return options;
+    }
+
+    _normalizeFontFamilyName(fontFamily) {
+        return String(fontFamily || '')
+            .trim()
+            .replace(/^['"]+|['"]+$/g, '');
+    }
+
+    _isSameFontFamily(left, right) {
+        return this._normalizeFontFamilyName(left).toLowerCase() === this._normalizeFontFamilyName(right).toLowerCase();
+    }
+
+    _ensureEditorFontStylesheet() {
+        if (typeof document === 'undefined') return Promise.resolve();
+        if (this._fontStylesheetReadyPromise) return this._fontStylesheetReadyPromise;
+
+        const googleFonts = this._fontCatalog.filter(f => f.source === 'google').map(f => f.family);
+        if (googleFonts.length === 0) {
+            this._fontStylesheetInjected = true;
+            this._fontStylesheetReadyPromise = Promise.resolve();
+            return this._fontStylesheetReadyPromise;
+        }
+
+        const baseHref = 'https://fonts.googleapis.com/css2';
+        const families = googleFonts
+            .map(name => `family=${encodeURIComponent(name).replace(/%20/g, '+')}:wght@300;400;500;600;700`)
+            .join('&');
+        const href = `${baseHref}?${families}&display=swap`;
+
+        const selector = 'link[data-editor-fonts="property-panel"]';
+        let link = document.querySelector(selector);
+        if (!link) {
+            const newLink = document.createElement('link');
+            newLink.rel = 'stylesheet';
+            newLink.href = href;
+            newLink.setAttribute('data-editor-fonts', 'property-panel');
+            document.head?.appendChild(newLink);
+            link = newLink;
+        }
+
+        this._fontStylesheetInjected = true;
+        this._fontStylesheetReadyPromise = new Promise((resolve) => {
+            if (!link) {
+                resolve();
+                return;
+            }
+
+            const done = () => {
+                link.setAttribute('data-loaded', '1');
+                resolve();
+            };
+
+            if (link.getAttribute('data-loaded') === '1' || link.sheet) {
+                done();
+                return;
+            }
+
+            link.addEventListener('load', done, { once: true });
+            link.addEventListener('error', done, { once: true });
+        });
+
+        return this._fontStylesheetReadyPromise;
+    }
+
+    _loadFontFamily(fontFamily) {
+        const family = this._normalizeFontFamilyName(fontFamily);
+        if (!family) return Promise.resolve();
+        if (!document?.fonts?.load) return Promise.resolve();
+
+        if (this._fontLoadPromises.has(family)) {
+            return this._fontLoadPromises.get(family);
+        }
+
+        const waitForStyles = this._isGoogleFontFamily(family)
+            ? (this._fontStylesheetReadyPromise || this._ensureEditorFontStylesheet())
+            : Promise.resolve();
+
+        const loadPromise = waitForStyles
+            .then(() => document.fonts.load(`16px "${family}"`))
+            .then(() => {})
+            .catch(() => {})
+            .finally(() => {
+                this._fontLoadPromises.delete(family);
+            });
+
+        this._fontLoadPromises.set(family, loadPromise);
+        return loadPromise;
+    }
+
+    _preloadEditorFonts() {
+        if (!document?.fonts?.load) return;
+
+        const preloadFamilies = this._fontCatalog
+            .filter(item => item.source === 'google')
+            .map(item => item.family);
+        const preloadWeights = ['300', '400', '500', '600', '700'];
+
+        (this._fontStylesheetReadyPromise || this._ensureEditorFontStylesheet())
+            .then(() => {
+                preloadFamilies.forEach((family) => {
+                    this._loadFontFamily(family);
+                    preloadWeights.forEach((weight) => {
+                        document.fonts.load(`${weight} 16px "${family}"`).catch(() => {});
+                    });
+                });
+            });
+    }
+
+    _isGoogleFontFamily(fontFamily) {
+        const family = this._normalizeFontFamilyName(fontFamily);
+        return this._fontCatalog.some(
+            item => item.source === 'google' && this._isSameFontFamily(item.family, family)
+        );
     }
 
     /**
@@ -2173,6 +2785,8 @@ export class PropertyPanel extends PanelBase {
      * Panel'i dispose et
      */
     dispose() {
+        this._hideFramePreviewPopup();
+
         // Update timer temizle
         if (this._updateTimer) {
             clearTimeout(this._updateTimer);

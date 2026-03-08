@@ -57,6 +57,7 @@ if ($method === 'GET') {
             'language' => 'tr',
             'timezone' => 'Europe/Istanbul',
             'date_format' => 'DD.MM.YYYY',
+            'session_timeout_minutes' => 43200,
             'notify_email' => true,
             'notify_push' => false,
             'notify_errors' => true

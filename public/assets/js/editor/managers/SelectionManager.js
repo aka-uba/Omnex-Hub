@@ -31,7 +31,7 @@
 
 import { eventBus, EVENTS } from '../core/EventBus.js';
 import { CUSTOM_PROPS, isTransient } from '../core/CustomProperties.js';
-import { ActiveSelection } from '../core/FabricExports.js';
+import { ActiveSelection, Group } from '../core/FabricExports.js';
 
 /**
  * SelectionManager Sınıfı
@@ -223,7 +223,7 @@ export class SelectionManager {
         if (activeObject === object) {
             // Tek seçim ise tamamen kaldır
             this.deselectAll();
-        } else if (activeObject.type === 'activeSelection' || activeObject.type === 'ActiveSelection') {
+        } else if (this._isActiveSelectionObject(activeObject)) {
             // Çoklu seçimden çıkar
             const remainingObjects = activeObject.getObjects().filter(obj => obj !== object);
             if (remainingObjects.length === 0) {
@@ -398,10 +398,7 @@ export class SelectionManager {
      * @returns {Object[]}
      */
     getSelectedGroups() {
-        // Fabric.js v7: obj.type = 'Group' (capitalized)
-        return this._selectedObjects.filter(obj =>
-            obj.type === 'group' || obj.type === 'Group'
-        );
+        return this._selectedObjects.filter(obj => this._isGroupObject(obj));
     }
 
     // ==========================================
@@ -439,13 +436,21 @@ export class SelectionManager {
      * @returns {Object|null} Oluşturulan grup
      */
     groupSelected() {
-        if (!this.canvas || this._selectedObjects.length < 2) return null;
+        if (!this.canvas) return null;
 
         const activeObject = this.canvas.getActiveObject();
-        if (!activeObject || (activeObject.type !== 'activeSelection' && activeObject.type !== 'ActiveSelection')) return null;
+        if (!this._isActiveSelectionObject(activeObject)) {
+            return null;
+        }
 
-        // Grupla
-        const group = activeObject.toGroup();
+        const selectionObjects = typeof activeObject.getObjects === 'function' ? activeObject.getObjects() : [];
+        if (!Array.isArray(selectionObjects) || selectionObjects.length < 2) {
+            return null;
+        }
+
+        // Fabric 7: manuel group akışı
+        const group = this._groupSelectionManually(selectionObjects);
+        if (!group) return null;
 
         // Custom properties ekle
         group.set(CUSTOM_PROPS.CUSTOM_TYPE, 'group');
@@ -465,16 +470,17 @@ export class SelectionManager {
         if (!this.canvas) return null;
 
         const activeObject = this.canvas.getActiveObject();
-        // Fabric.js v7: obj.type = 'Group' (capitalized)
-        if (!activeObject || (activeObject.type !== 'group' && activeObject.type !== 'Group')) return null;
+        if (!this._isGroupObject(activeObject)) {
+            return null;
+        }
 
-        // Grubu çöz
-        const objects = activeObject.toActiveSelection();
+        // Fabric 7: manuel ungroup akışı
+        const objects = this._ungroupManually(activeObject);
 
         this.canvas.requestRenderAll();
         eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'ungroup' });
 
-        return objects ? objects.getObjects() : null;
+        return Array.isArray(objects) ? objects : null;
     }
 
     // ==========================================
@@ -594,6 +600,104 @@ export class SelectionManager {
             const v = c === 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
+    }
+
+    /**
+     * ActiveSelection tip kontrolü (Fabric 7 farklı type casing varyantları)
+     * @private
+     * @param {Object|null} obj
+     * @returns {boolean}
+     */
+    _isActiveSelectionObject(obj) {
+        const t = String(obj?.type || '').toLowerCase();
+        return t === 'activeselection';
+    }
+
+    /**
+     * Group tip kontrolü (Fabric 7 farklı type casing varyantları)
+     * @private
+     * @param {Object|null} obj
+     * @returns {boolean}
+     */
+    _isGroupObject(obj) {
+        const t = String(obj?.type || '').toLowerCase();
+        return t === 'group';
+    }
+
+    /**
+     * ActiveSelection -> Group manuel fallback (toGroup olmayan sürümler için)
+     * @private
+     * @param {Object[]} selectionObjects
+     * @returns {Object|null}
+     */
+    _groupSelectionManually(selectionObjects) {
+        if (!this.canvas || !Array.isArray(selectionObjects) || selectionObjects.length < 2) return null;
+
+        const canvas = this.canvas;
+        const canvasObjects = canvas.getObjects();
+        const indexed = selectionObjects
+            .map(obj => ({ obj, idx: canvasObjects.indexOf(obj) }))
+            .filter(x => x.idx >= 0)
+            .sort((a, b) => a.idx - b.idx);
+        const orderedObjects = indexed.map(x => x.obj);
+        if (orderedObjects.length < 2) return null;
+
+        const insertIndex = indexed[0].idx;
+        canvas.discardActiveObject();
+        orderedObjects.forEach(obj => canvas.remove(obj));
+
+        const group = new Group(orderedObjects, {});
+        canvas.add(group);
+        if (typeof canvas.moveTo === 'function') {
+            canvas.moveTo(group, insertIndex);
+        }
+        canvas.setActiveObject(group);
+        group.setCoords?.();
+        return group;
+    }
+
+    /**
+     * Group çözme manuel fallback (toActiveSelection olmayan sürümler için)
+     * @private
+     * @param {Object} groupObj
+     * @returns {Object[]|null}
+     */
+    _ungroupManually(groupObj) {
+        if (!this.canvas || !groupObj || typeof groupObj.getObjects !== 'function') return null;
+
+        const canvas = this.canvas;
+        const groupIndex = canvas.getObjects().indexOf(groupObj);
+        const members = groupObj.getObjects().slice();
+        if (members.length === 0) return [];
+
+        canvas.discardActiveObject();
+
+        // Fabric 7: Objeleri gruptan remove ederek çıkar (absolute pozisyonu korur)
+        if (typeof groupObj.remove === 'function') {
+            members.forEach((obj) => groupObj.remove(obj));
+        } else if (typeof groupObj._restoreObjectsState === 'function') {
+            // Beklenmeyen durumda son çare fallback
+            groupObj._restoreObjectsState();
+        }
+
+        canvas.remove(groupObj);
+        members.forEach((obj, i) => {
+            obj.group = null;
+            canvas.add(obj);
+            if (typeof canvas.moveTo === 'function' && groupIndex >= 0) {
+                canvas.moveTo(obj, groupIndex + i);
+            }
+            obj.setCoords?.();
+        });
+
+        if (members.length > 1) {
+            const selection = new ActiveSelection(members, { canvas });
+            canvas.setActiveObject(selection);
+        } else {
+            canvas.setActiveObject(members[0]);
+        }
+
+        return members;
     }
 
     /**

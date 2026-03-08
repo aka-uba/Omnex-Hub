@@ -646,7 +646,8 @@ class MqttBrokerService
             if ($existingAssignment) {
                 $this->db->update('device_content_assignments', [
                     'content_type' => 'mqtt_payload',
-                    'content_id' => $payloadRelativePath
+                    'content_id' => $payloadRelativePath,
+                    'created_at' => date('Y-m-d H:i:s')
                 ], 'id = ?', [$existingAssignment['id']]);
             } else {
                 $this->db->insert('device_content_assignments', [
@@ -761,13 +762,16 @@ class MqttBrokerService
         }
 
         $effectivePath = $preparedImage['path'] ?? $sourcePath;
+        $diskPath = $preparedImage['disk_path'] ?? $this->toDiskPath($effectivePath);
+        if ($diskPath && !$this->isValidImageFile($diskPath)) {
+            return [];
+        }
 
         $publicPath = $this->toPublicMediaUrl($companyId, $effectivePath);
         if ($publicPath === null) {
             return [];
         }
 
-        $diskPath = $preparedImage['disk_path'] ?? $this->toDiskPath($effectivePath);
         $md5 = $preparedImage['md5'] ?? (($diskPath && file_exists($diskPath)) ? strtoupper(md5_file($diskPath)) : '');
 
         $pictureSafeLeftInset = $this->resolvePictureSafeLeftInsetForSendParams($sendParams, $x);
@@ -1157,6 +1161,25 @@ class MqttBrokerService
         }
 
         return null;
+    }
+
+    private function isValidImageFile(?string $path): bool
+    {
+        if (!is_string($path) || $path === '' || !is_file($path)) {
+            return false;
+        }
+
+        $size = @filesize($path);
+        if (!is_int($size) || $size <= 0) {
+            return false;
+        }
+
+        $imgInfo = @getimagesize($path);
+        if (!is_array($imgInfo)) {
+            return false;
+        }
+
+        return !empty($imgInfo[0]) && !empty($imgInfo[1]);
     }
 
     /**
@@ -1635,4 +1658,3 @@ class MqttBrokerService
         return $this->db->fetch($sql, $params) ?: null;
     }
 }
-

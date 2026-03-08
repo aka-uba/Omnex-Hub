@@ -46,6 +46,7 @@ export class LayersPanel extends PanelBase {
          * @type {Object}
          */
         this.canvas = options.canvas;
+        this.selectionManager = options.selectionManager || null;
 
         /**
          * Seçili katman ID'si
@@ -81,14 +82,14 @@ export class LayersPanel extends PanelBase {
         this._canvasHandlers.selectionCreated = (e) => {
             const obj = e.selected?.[0];
             if (obj) {
-                this._selectedLayerId = obj.get(CUSTOM_PROPS.ID) || null;
+                this._selectedLayerId = obj.get(CUSTOM_PROPS.OBJECT_ID) || null;
                 this._updateLayerSelection();
             }
         };
         this._canvasHandlers.selectionUpdated = (e) => {
             const obj = e.selected?.[0];
             if (obj) {
-                this._selectedLayerId = obj.get(CUSTOM_PROPS.ID) || null;
+                this._selectedLayerId = obj.get(CUSTOM_PROPS.OBJECT_ID) || null;
                 this._updateLayerSelection();
             }
         };
@@ -129,8 +130,11 @@ export class LayersPanel extends PanelBase {
 
         // Çoklu seçim kontrolü
         const activeObj = this.canvas?.getActiveObject();
-        const isMultiSelect = activeObj?.type === 'activeselection' || activeObj?.type === 'activeSelection' || activeObj?.type === 'ActiveSelection';
+        const isMultiSelect = this._isActiveSelectionObject(activeObj);
+        const isGroup = this._isGroupObject(activeObj);
         const multiClass = isMultiSelect ? '' : 'disabled';
+        const groupClass = isMultiSelect ? '' : 'disabled';
+        const ungroupClass = isGroup ? '' : 'disabled';
 
         return `
             <div class="layers-toolbar">
@@ -145,6 +149,13 @@ export class LayersPanel extends PanelBase {
                 </button>
                 <button type="button" class="btn-icon" data-action="send-back" title="${this.__('editor.layers.sendToBack')}">
                     <i class="ti ti-arrow-bar-to-down"></i>
+                </button>
+                <span class="layers-toolbar-separator"></span>
+                <button type="button" class="btn-icon ${groupClass}" data-action="group-objects" title="${this.__('editor.layers.groupObjects')}">
+                    <i class="ti ti-box-multiple"></i>
+                </button>
+                <button type="button" class="btn-icon ${ungroupClass}" data-action="ungroup-objects" title="${this.__('editor.layers.ungroupObjects')}">
+                    <i class="ti ti-arrows-split-2"></i>
                 </button>
                 <span class="layers-toolbar-separator"></span>
                 <button type="button" class="btn-icon ${multiClass}" data-action="align-left" title="${this.__('editor.layers.alignLeft')}">
@@ -187,7 +198,7 @@ export class LayersPanel extends PanelBase {
      * @returns {string} HTML string
      */
     _renderLayerItem(obj, index) {
-        const id = obj.get(CUSTOM_PROPS.ID) || `layer-${index}`;
+        const id = obj.get(CUSTOM_PROPS.OBJECT_ID) || `layer-${index}`;
         const type = obj.type;
         const customType = obj.get(CUSTOM_PROPS.TYPE) || type;
         const visible = obj.visible !== false;
@@ -195,7 +206,7 @@ export class LayersPanel extends PanelBase {
         const selected = this._selectedLayerId === id;
 
         // Nesne adını belirle
-        let name = obj.get(CUSTOM_PROPS.NAME) || this._getObjectTypeName(customType);
+        let name = obj.get(CUSTOM_PROPS.OBJECT_NAME) || this._getObjectTypeName(customType);
 
         // Metin nesneleri için içeriği göster
         if (this._isTextObject(obj)) {
@@ -403,6 +414,10 @@ export class LayersPanel extends PanelBase {
         this.$('[data-action="bring-forward"]')?.addEventListener('click', () => this._bringForward());
         this.$('[data-action="send-backward"]')?.addEventListener('click', () => this._sendBackward());
         this.$('[data-action="send-back"]')?.addEventListener('click', () => this._sendToBack());
+
+        // Toolbar butonları - Gruplama
+        this.$('[data-action="group-objects"]')?.addEventListener('click', () => this._groupObjects());
+        this.$('[data-action="ungroup-objects"]')?.addEventListener('click', () => this._ungroupObjects());
 
         // Toolbar butonları - Hizalama
         this.$('[data-action="align-left"]')?.addEventListener('click', () => this._alignObjects('left'));
@@ -660,6 +675,37 @@ export class LayersPanel extends PanelBase {
     }
 
     // ==========================================
+    // GRUPLAMA
+    // ==========================================
+
+    /**
+     * Seçili nesneleri grupla
+     * @private
+     */
+    _groupObjects() {
+        if (!this.canvas) return;
+
+        if (!this.selectionManager || typeof this.selectionManager.groupSelected !== 'function') return;
+
+        const grouped = this.selectionManager.groupSelected();
+        if (!grouped) return;
+        this.refresh();
+    }
+
+    /**
+     * Seçili grubu çöz
+     * @private
+     */
+    _ungroupObjects() {
+        if (!this.canvas) return;
+        if (!this.selectionManager || typeof this.selectionManager.ungroupSelected !== 'function') return;
+
+        const ungrouped = this.selectionManager.ungroupSelected();
+        if (!ungrouped) return;
+        this.refresh();
+    }
+
+    // ==========================================
     // HİZALAMA & DAĞITMA
     // ==========================================
 
@@ -673,7 +719,7 @@ export class LayersPanel extends PanelBase {
         if (!activeObj) return null;
 
         // ActiveSelection (çoklu seçim)
-        if (activeObj.type === 'activeselection' || activeObj.type === 'activeSelection' || activeObj.type === 'ActiveSelection') {
+        if (this._isActiveSelectionObject(activeObj)) {
             const objects = activeObj.getObjects();
             return objects && objects.length >= 2 ? objects : null;
         }
@@ -694,9 +740,19 @@ export class LayersPanel extends PanelBase {
 
         if (hasRotatedObject) {
             // Rotasyonlu nesnelerde mevcut boundingRect hizalama daha güvenli
-            const groupBound = activeSelection.getBoundingRect(true);
+            const objectBounds = objects.map(obj => this._getEffectiveBoundingRect(obj));
+            const groupLeft = Math.min(...objectBounds.map(b => b.left));
+            const groupTop = Math.min(...objectBounds.map(b => b.top));
+            const groupRight = Math.max(...objectBounds.map(b => b.left + b.width));
+            const groupBottom = Math.max(...objectBounds.map(b => b.top + b.height));
+            const groupBound = {
+                left: groupLeft,
+                top: groupTop,
+                width: groupRight - groupLeft,
+                height: groupBottom - groupTop
+            };
             objects.forEach(obj => {
-                const objBound = obj.getBoundingRect(true);
+                const objBound = this._getEffectiveBoundingRect(obj);
                 switch (direction) {
                     case 'left':
                         obj.set('left', obj.left + (groupBound.left - objBound.left));
@@ -734,7 +790,7 @@ export class LayersPanel extends PanelBase {
         } else {
             // Rotasyonsuz nesnelerde origin/anchor bazlı hizalama:
             // Text/Textbox iç girinti farklarından etkilenmez, kutu başlangıcını eşitler.
-            const anchorBounds = objects.map(obj => this._getAnchorBounds(obj));
+            const anchorBounds = objects.map(obj => this._getEffectiveBounds(obj));
             const minLeft = Math.min(...anchorBounds.map(b => b.left));
             const maxRight = Math.max(...anchorBounds.map(b => b.right));
             const minTop = Math.min(...anchorBounds.map(b => b.top));
@@ -769,6 +825,7 @@ export class LayersPanel extends PanelBase {
 
         activeSelection.setCoords();
         this.canvas.requestRenderAll();
+        this._emitObjectsModified(objects, 'align');
         eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'align' });
     }
 
@@ -779,8 +836,16 @@ export class LayersPanel extends PanelBase {
      * @returns {{left:number,right:number,top:number,bottom:number}}
      */
     _getAnchorBounds(obj) {
-        const width = Math.max(0, (Number(obj?.width) || 0) * (Number(obj?.scaleX) || 1));
-        const height = Math.max(0, (Number(obj?.height) || 0) * (Number(obj?.scaleY) || 1));
+        const scaleX = Number(obj?.scaleX) || 1;
+        const scaleY = Number(obj?.scaleY) || 1;
+        const contentW = Math.max(0, (Number(obj?.width) || 0) * scaleX);
+        const contentH = Math.max(0, (Number(obj?.height) || 0) * scaleY);
+
+        // strokeUniform=true → stroke doesn't scale, adds fixed px on each side
+        const sw = Number(obj?.strokeWidth) || 0;
+        const strokeExtra = obj?.strokeUniform ? sw : sw * Math.max(scaleX, scaleY);
+        const width = contentW + strokeExtra;
+        const height = contentH + strokeExtra;
 
         const originX = String(obj?.originX || 'left').toLowerCase();
         const originY = String(obj?.originY || 'top').toLowerCase();
@@ -788,13 +853,13 @@ export class LayersPanel extends PanelBase {
         const rawLeft = Number(obj?.left) || 0;
         const rawTop = Number(obj?.top) || 0;
 
-        let left = rawLeft;
+        let left = rawLeft - (strokeExtra / 2);
         if (originX === 'center') left = rawLeft - (width / 2);
-        else if (originX === 'right') left = rawLeft - width;
+        else if (originX === 'right') left = rawLeft - width + (strokeExtra / 2);
 
-        let top = rawTop;
+        let top = rawTop - (strokeExtra / 2);
         if (originY === 'center') top = rawTop - (height / 2);
-        else if (originY === 'bottom') top = rawTop - height;
+        else if (originY === 'bottom') top = rawTop - height + (strokeExtra / 2);
 
         return {
             left,
@@ -805,6 +870,78 @@ export class LayersPanel extends PanelBase {
     }
 
     /**
+     * Frame varsa frame overlay'i; yoksa nesnenin kendi anchor bounds'unu dÃ¶ndÃ¼r.
+     * @private
+     * @param {Object} obj
+     * @returns {{left:number,right:number,top:number,bottom:number,width:number,height:number,isFrameBounds:boolean}}
+     */
+    _getEffectiveBounds(obj) {
+        const frameObj = this._getFrameOverlayObject(obj);
+        if (frameObj) {
+            const rect = frameObj.getBoundingRect(true);
+            const left = rect.left;
+            const top = rect.top;
+            const width = rect.width;
+            const height = rect.height;
+            return {
+                left,
+                right: left + width,
+                top,
+                bottom: top + height,
+                width,
+                height,
+                isFrameBounds: true
+            };
+        }
+
+        const anchorBounds = this._getAnchorBounds(obj);
+        return {
+            ...anchorBounds,
+            width: anchorBounds.right - anchorBounds.left,
+            height: anchorBounds.bottom - anchorBounds.top,
+            isFrameBounds: false
+        };
+    }
+
+    /**
+     * Rotasyonlu akÄ±ÅŸlarda kullanÄ±lan etkin boundingRect.
+     * @private
+     * @param {Object} obj
+     * @returns {{left:number,top:number,width:number,height:number}}
+     */
+    _getEffectiveBoundingRect(obj) {
+        const frameObj = this._getFrameOverlayObject(obj);
+        if (frameObj) {
+            return frameObj.getBoundingRect(true);
+        }
+        return obj.getBoundingRect(true);
+    }
+
+    /**
+     * Hedef nesneye baÄŸlÄ± frame overlay nesnesini bul.
+     * @private
+     * @param {Object} obj
+     * @returns {Object|null}
+     */
+    _getFrameOverlayObject(obj) {
+        if (!obj || !this.canvas) return null;
+
+        const overlayId = obj[CUSTOM_PROPS.FRAME_OVERLAY_ID];
+        if (!overlayId) return null;
+
+        const objects = this.canvas.getObjects();
+        for (let i = 0; i < objects.length; i++) {
+            const candidate = objects[i];
+            const customType = candidate.get(CUSTOM_PROPS.CUSTOM_TYPE) || candidate[CUSTOM_PROPS.CUSTOM_TYPE];
+            if (candidate[CUSTOM_PROPS.OBJECT_ID] === overlayId && customType === 'frame-overlay') {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Objenin X konumunu hedef anchor'a göre ayarla.
      * @private
      * @param {Object} obj
@@ -812,7 +949,21 @@ export class LayersPanel extends PanelBase {
      * @param {number} value
      */
     _setObjectXByAnchor(obj, anchor, value) {
-        const width = Math.max(0, (Number(obj?.width) || 0) * (Number(obj?.scaleX) || 1));
+        const effective = this._getEffectiveBounds(obj);
+        if (effective.isFrameBounds) {
+            let targetLeft = value;
+            if (anchor === 'center') targetLeft = value - (effective.width / 2);
+            else if (anchor === 'right') targetLeft = value - effective.width;
+            const deltaX = targetLeft - effective.left;
+            obj.set('left', (Number(obj?.left) || 0) + deltaX);
+            return;
+        }
+
+        const scaleX = Number(obj?.scaleX) || 1;
+        const contentW = Math.max(0, (Number(obj?.width) || 0) * scaleX);
+        const sw = Number(obj?.strokeWidth) || 0;
+        const strokeExtra = obj?.strokeUniform ? sw : sw * scaleX;
+        const width = contentW + strokeExtra;
         const originX = String(obj?.originX || 'left').toLowerCase();
 
         let centerX = value;
@@ -820,8 +971,9 @@ export class LayersPanel extends PanelBase {
         else if (anchor === 'right') centerX = value - (width / 2);
 
         let nextLeft = centerX;
-        if (originX === 'left') nextLeft = centerX - (width / 2);
-        else if (originX === 'right') nextLeft = centerX + (width / 2);
+        if (originX === 'left') nextLeft = centerX - (contentW / 2);
+        else if (originX === 'center') nextLeft = centerX;
+        else if (originX === 'right') nextLeft = centerX + (contentW / 2);
 
         obj.set('left', nextLeft);
     }
@@ -834,7 +986,21 @@ export class LayersPanel extends PanelBase {
      * @param {number} value
      */
     _setObjectYByAnchor(obj, anchor, value) {
-        const height = Math.max(0, (Number(obj?.height) || 0) * (Number(obj?.scaleY) || 1));
+        const effective = this._getEffectiveBounds(obj);
+        if (effective.isFrameBounds) {
+            let targetTop = value;
+            if (anchor === 'center') targetTop = value - (effective.height / 2);
+            else if (anchor === 'bottom') targetTop = value - effective.height;
+            const deltaY = targetTop - effective.top;
+            obj.set('top', (Number(obj?.top) || 0) + deltaY);
+            return;
+        }
+
+        const scaleY = Number(obj?.scaleY) || 1;
+        const contentH = Math.max(0, (Number(obj?.height) || 0) * scaleY);
+        const sw = Number(obj?.strokeWidth) || 0;
+        const strokeExtra = obj?.strokeUniform ? sw : sw * scaleY;
+        const height = contentH + strokeExtra;
         const originY = String(obj?.originY || 'top').toLowerCase();
 
         let centerY = value;
@@ -842,8 +1008,9 @@ export class LayersPanel extends PanelBase {
         else if (anchor === 'bottom') centerY = value - (height / 2);
 
         let nextTop = centerY;
-        if (originY === 'top') nextTop = centerY - (height / 2);
-        else if (originY === 'bottom') nextTop = centerY + (height / 2);
+        if (originY === 'top') nextTop = centerY - (contentH / 2);
+        else if (originY === 'center') nextTop = centerY;
+        else if (originY === 'bottom') nextTop = centerY + (contentH / 2);
 
         obj.set('top', nextTop);
     }
@@ -864,10 +1031,10 @@ export class LayersPanel extends PanelBase {
             if (direction === 'horizontal') {
                 // Nesneleri sol kenarlarına göre sırala
                 const sorted = [...objects].sort((a, b) => {
-                    return a.getBoundingRect(true).left - b.getBoundingRect(true).left;
+                    return this._getEffectiveBoundingRect(a).left - this._getEffectiveBoundingRect(b).left;
                 });
 
-                const bounds = sorted.map(obj => obj.getBoundingRect(true));
+                const bounds = sorted.map(obj => this._getEffectiveBoundingRect(obj));
                 const firstLeft = bounds[0].left;
                 const lastRight = bounds[bounds.length - 1].left + bounds[bounds.length - 1].width;
                 const totalObjWidth = bounds.reduce((sum, b) => sum + b.width, 0);
@@ -886,10 +1053,10 @@ export class LayersPanel extends PanelBase {
             } else {
                 // Nesneleri üst kenarlarına göre sırala
                 const sorted = [...objects].sort((a, b) => {
-                    return a.getBoundingRect(true).top - b.getBoundingRect(true).top;
+                    return this._getEffectiveBoundingRect(a).top - this._getEffectiveBoundingRect(b).top;
                 });
 
-                const bounds = sorted.map(obj => obj.getBoundingRect(true));
+                const bounds = sorted.map(obj => this._getEffectiveBoundingRect(obj));
                 const firstTop = bounds[0].top;
                 const lastBottom = bounds[bounds.length - 1].top + bounds[bounds.length - 1].height;
                 const totalObjHeight = bounds.reduce((sum, b) => sum + b.height, 0);
@@ -908,7 +1075,7 @@ export class LayersPanel extends PanelBase {
             }
         } else if (direction === 'horizontal') {
             const items = objects
-                .map(obj => ({ obj, bounds: this._getAnchorBounds(obj) }))
+                .map(obj => ({ obj, bounds: this._getEffectiveBounds(obj) }))
                 .sort((a, b) => a.bounds.left - b.bounds.left);
 
             const firstLeft = items[0].bounds.left;
@@ -928,7 +1095,7 @@ export class LayersPanel extends PanelBase {
             });
         } else {
             const items = objects
-                .map(obj => ({ obj, bounds: this._getAnchorBounds(obj) }))
+                .map(obj => ({ obj, bounds: this._getEffectiveBounds(obj) }))
                 .sort((a, b) => a.bounds.top - b.bounds.top);
 
             const firstTop = items[0].bounds.top;
@@ -950,6 +1117,7 @@ export class LayersPanel extends PanelBase {
 
         activeSelection.setCoords();
         this.canvas.requestRenderAll();
+        this._emitObjectsModified(objects, 'distribute');
         eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'distribute' });
     }
 
@@ -960,6 +1128,17 @@ export class LayersPanel extends PanelBase {
      * @param {number} targetIndex - Hedef indeks
      * @param {boolean} insertBefore - Önüne mi eklenecek
      */
+    _emitObjectsModified(objects, action) {
+        if (!Array.isArray(objects)) return;
+        objects.forEach((obj) => {
+            if (!obj) return;
+            eventBus.emit(EVENTS.OBJECT_MODIFIED, {
+                target: obj,
+                action
+            });
+        });
+    }
+
     _reorderLayer(layerId, targetIndex, insertBefore) {
         if (!this.canvas) return;
 
@@ -997,7 +1176,7 @@ export class LayersPanel extends PanelBase {
         if (!this.canvas) return null;
 
         return this.canvas.getObjects().find(obj => {
-            return obj.get(CUSTOM_PROPS.ID) === id;
+            return obj.get(CUSTOM_PROPS.OBJECT_ID) === id;
         }) || null;
     }
 
@@ -1023,9 +1202,8 @@ export class LayersPanel extends PanelBase {
         if (!this.element) return;
 
         const activeObj = this.canvas?.getActiveObject();
-        const isMultiSelect = activeObj?.type === 'activeselection' ||
-                              activeObj?.type === 'activeSelection' ||
-                              activeObj?.type === 'ActiveSelection';
+        const isMultiSelect = this._isActiveSelectionObject(activeObj);
+        const isGroup = this._isGroupObject(activeObj);
 
         const alignActions = [
             'align-left', 'align-center-h', 'align-right',
@@ -1043,6 +1221,36 @@ export class LayersPanel extends PanelBase {
                 }
             }
         });
+
+        const groupBtn = this.$('[data-action="group-objects"]');
+        if (groupBtn) {
+            groupBtn.classList.toggle('disabled', !isMultiSelect);
+        }
+
+        const ungroupBtn = this.$('[data-action="ungroup-objects"]');
+        if (ungroupBtn) {
+            ungroupBtn.classList.toggle('disabled', !isGroup);
+        }
+    }
+
+    /**
+     * ActiveSelection tip kontrolü (Fabric 7 farklı casing varyantları)
+     * @private
+     * @param {Object|null} obj
+     * @returns {boolean}
+     */
+    _isActiveSelectionObject(obj) {
+        return String(obj?.type || '').toLowerCase() === 'activeselection';
+    }
+
+    /**
+     * Group tip kontrolü (Fabric 7 farklı casing varyantları)
+     * @private
+     * @param {Object|null} obj
+     * @returns {boolean}
+     */
+    _isGroupObject(obj) {
+        return String(obj?.type || '').toLowerCase() === 'group';
     }
 
     /**

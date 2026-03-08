@@ -486,8 +486,18 @@ if ($deviceId) {
             }
         }
 
-        // 4. Yoksa GD ile basit render yap ve temp dosyaya kaydet
-        if (!$imageSource) {
+        $isBitmapImage = function ($path) {
+            if (!is_string($path) || trim($path) === '' || !file_exists($path)) {
+                return false;
+            }
+
+            $size = @filesize($path);
+            $info = @getimagesize($path);
+            return is_int($size) && $size > 0 && is_array($info) && !empty($info[0]) && !empty($info[1]);
+        };
+
+        // 4. Kaynak yoksa veya kaynak bitmap degilse GD ile basit render yap ve temp dosyaya kaydet
+        if (!$imageSource || !$isBitmapImage($imageSource)) {
             $imageBase64Data = $imageBase64 ?? $renderer->renderSimpleImage($product, $template['width'], $template['height']);
             $imageData = base64_decode($imageBase64Data);
 

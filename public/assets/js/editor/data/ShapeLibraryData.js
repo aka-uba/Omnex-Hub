@@ -407,6 +407,106 @@ function productHighlightBarShape({ fillRef, radius }) {
     return `<rect x="130" y="260" width="764" height="200" rx="${Math.max(radius, 24)}" fill="none" stroke="${fillRef}" stroke-width="60"/>`;
 }
 
+function minimalPriceTagShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<path d="M220 210 H704 L844 360 L704 510 H220 Z" fill="${fillRef}" ${c}/><circle cx="704" cy="360" r="28" fill="#ffffff" opacity="0.92"/>`,
+        `<path d="M220 210 H704 L844 360 L704 510 H220 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><circle cx="704" cy="360" r="20" fill="none" stroke="currentColor" stroke-width="10"/>`,
+        `<path d="M220 210 H704 L844 360 L704 510 H220 Z" fill="${fillRef}" ${c}/><path d="M280 252 H666 L756 360 L666 468 H280 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function premiumLabelBadgeShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        burstPath(18, 198, 260, `fill="${fillRef}" ${c}`) + `<circle cx="512" cy="360" r="164" fill="${fillRef}" opacity="0.88" ${c}/>`,
+        burstPath(18, 198, 260, `fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 30)}"`) + `<circle cx="512" cy="360" r="164" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 20)}"/>`,
+        burstPath(18, 198, 260, `fill="${fillRef}" ${c}`) + `<circle cx="512" cy="360" r="164" fill="none" stroke="currentColor" stroke-width="14"/><path d="M328 420 H696 L636 486 H388 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function saleStickerShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<circle cx="490" cy="330" r="210" fill="${fillRef}" ${c}/><path d="M600 470 L760 620 L548 560 Z" fill="${fillRef}" ${c}/>`,
+        `<circle cx="490" cy="330" r="210" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><path d="M600 470 L760 620 L548 560 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/>`,
+        `<circle cx="490" cy="330" r="210" fill="${fillRef}" ${c}/><path d="M600 470 L760 620 L548 560 Z" fill="${fillRef}" ${c}/><circle cx="490" cy="330" r="156" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function cornerBracketFrameShape({ fillRef }) {
+    return `<path d="M180 220 V130 H360" fill="none" stroke="${fillRef}" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/><path d="M844 220 V130 H664" fill="none" stroke="${fillRef}" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/><path d="M180 500 V590 H360" fill="none" stroke="${fillRef}" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/><path d="M844 500 V590 H664" fill="none" stroke="${fillRef}" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+function ticketStubShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<path d="M170 250 H854 V318 C808 318 778 344 778 378 C778 412 808 438 854 438 V506 H170 V438 C216 438 246 412 246 378 C246 344 216 318 170 318 Z" fill="${fillRef}" ${c}/>`,
+        `<path d="M170 250 H854 V318 C808 318 778 344 778 378 C778 412 808 438 854 438 V506 H170 V438 C216 438 246 412 246 378 C246 344 216 318 170 318 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 32)}"/>`,
+        `<path d="M170 250 H854 V318 C808 318 778 344 778 378 C778 412 808 438 854 438 V506 H170 V438 C216 438 246 412 246 378 C246 344 216 318 170 318 Z" fill="${fillRef}" ${c}/><path d="M244 286 H780 V324 C740 332 716 352 716 378 C716 404 740 424 780 432 V470 H244 V432 C284 424 308 404 308 378 C308 352 284 332 244 324 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function hangingTagShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<path d="M290 150 H734 L824 250 V570 H200 V250 Z" fill="${fillRef}" ${c}/><circle cx="512" cy="250" r="34" fill="#ffffff" opacity="0.9"/>`,
+        `<path d="M290 150 H734 L824 250 V570 H200 V250 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><circle cx="512" cy="250" r="22" fill="none" stroke="currentColor" stroke-width="10"/>`,
+        `<path d="M290 150 H734 L824 250 V570 H200 V250 Z" fill="${fillRef}" ${c}/><circle cx="512" cy="250" r="24" fill="none" stroke="currentColor" stroke-width="10"/><path d="M258 230 H766 V522 H258 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function diagonalPromoStripShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<path d="M180 430 L300 210 H844 L724 430 Z" fill="${fillRef}" ${c}/>`,
+        `<path d="M180 430 L300 210 H844 L724 430 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/>`,
+        `<path d="M180 430 L300 210 H844 L724 430 Z" fill="${fillRef}" ${c}/><path d="M268 394 L354 246 H756 L670 394 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function tabletHeaderStripShape({ fillRef, strokeWidth, variant, radius }) {
+    return roundedRectShape({ fillRef, strokeWidth, variant, radius: Math.max(10, Math.min(radius, 56)) });
+}
+
+function sideNotchLabelShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<path d="M170 240 H810 L904 360 L810 480 H170 L230 360 Z" fill="${fillRef}" ${c}/>`,
+        `<path d="M170 240 H810 L904 360 L810 480 H170 L230 360 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/>`,
+        `<path d="M170 240 H810 L904 360 L810 480 H170 L230 360 Z" fill="${fillRef}" ${c}/><path d="M252 284 H760 L824 360 L760 436 H252 L316 360 Z" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function splitPillBadgeShape({ fillRef, strokeWidth, variant }) {
+    const c = BASE_COMMON(strokeWidth);
+    return shapeByVariant(variant,
+        `<rect x="150" y="250" width="724" height="220" rx="110" fill="${fillRef}" ${c}/><path d="M512 250 V470" fill="none" stroke="currentColor" stroke-width="18" opacity="0.45"/>`,
+        `<rect x="150" y="250" width="724" height="220" rx="110" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><path d="M512 250 V470" fill="none" stroke="currentColor" stroke-width="14"/>`,
+        `<rect x="150" y="250" width="724" height="220" rx="110" fill="${fillRef}" ${c}/><rect x="208" y="292" width="608" height="136" rx="68" fill="none" stroke="currentColor" stroke-width="12"/><path d="M512 292 V428" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function pointerCalloutShape({ fillRef, strokeWidth, variant, radius }) {
+    const c = BASE_COMMON(strokeWidth);
+    const r = Math.max(12, Math.min(radius, 56));
+    return shapeByVariant(variant,
+        `<rect x="170" y="180" width="684" height="300" rx="${r}" fill="${fillRef}" ${c}/><path d="M520 480 L640 620 L470 530 Z" fill="${fillRef}" ${c}/>`,
+        `<rect x="170" y="180" width="684" height="300" rx="${r}" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><path d="M520 480 L640 620 L470 530 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/>`,
+        `<rect x="170" y="180" width="684" height="300" rx="${r}" fill="${fillRef}" ${c}/><path d="M520 480 L640 620 L470 530 Z" fill="${fillRef}" ${c}/><rect x="236" y="240" width="552" height="184" rx="${Math.max(0, r - 10)}" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
+function bottomTabBannerShape({ fillRef, strokeWidth, variant, radius }) {
+    const c = BASE_COMMON(strokeWidth);
+    const r = Math.max(10, Math.min(radius, 54));
+    return shapeByVariant(variant,
+        `<rect x="150" y="180" width="724" height="300" rx="${r}" fill="${fillRef}" ${c}/><path d="M340 480 L420 620 L520 480 Z" fill="${fillRef}" ${c}/><path d="M504 480 L604 620 L684 480 Z" fill="${fillRef}" ${c}/>`,
+        `<rect x="150" y="180" width="724" height="300" rx="${r}" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><path d="M340 480 L420 620 L520 480 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/><path d="M504 480 L604 620 L684 480 Z" fill="none" stroke="currentColor" stroke-width="${Math.max(strokeWidth, 34)}"/>`,
+        `<rect x="150" y="180" width="724" height="300" rx="${r}" fill="${fillRef}" ${c}/><path d="M340 480 L420 620 L520 480 Z" fill="${fillRef}" ${c}/><path d="M504 480 L604 620 L684 480 Z" fill="${fillRef}" ${c}/><rect x="220" y="236" width="584" height="184" rx="${Math.max(0, r - 8)}" fill="none" stroke="currentColor" stroke-width="12"/>`
+    );
+}
+
 // ─── Shape Catalog ───────────────────────────────────────────────
 
 function toId(name) {
@@ -476,6 +576,34 @@ export const SHAPES = [
     { id: 'coupon-shape-wide',          name: 'Coupon Shape Wide',           category: 'tag',     tags: ['discount','price'],             variants: ['solid','outline'],          radiusMode: 'none',         draw: couponTicketShape },
     { id: 'modern-sale-tag',            name: 'Modern Sale Tag',             category: 'tag',     tags: ['sale','price'],                 variants: ['outline','double'],         radiusMode: 'none',         draw: modernSaleTagShape },
     { id: 'product-highlight-bar',      name: 'Product Highlight Bar',       category: 'frame',   tags: ['food','price'],                 variants: ['outline'],                  radiusMode: 'cornerRadius', draw: productHighlightBarShape },
+    { id: 'minimal-price-tag',          name: 'Minimal Price Tag',           category: 'tag',     tags: ['price','discount'],             variants: ['solid','outline','double'], radiusMode: 'none',         draw: minimalPriceTagShape },
+    { id: 'premium-label-badge',        name: 'Premium Label Badge',         category: 'badge',   tags: ['premium','sale'],               variants: ['solid','outline','double'], radiusMode: 'none',         draw: premiumLabelBadgeShape },
+    { id: 'sale-sticker',               name: 'Sale Sticker',                category: 'sticker', tags: ['sale','discount'],              variants: ['solid','outline','double'], radiusMode: 'cornerRadius', draw: saleStickerShape },
+    { id: 'corner-bracket-frame',       name: 'Corner Bracket Frame',        category: 'frame',   tags: ['highlight','product'],          variants: ['outline'],                  radiusMode: 'none',         draw: cornerBracketFrameShape },
+    { id: 'ticket-stub-shape',          name: 'Ticket Stub Shape',           category: 'tag',     tags: ['ticket','coupon','price'],      variants: ['solid','outline','double'], radiusMode: 'none',         draw: ticketStubShape },
+    { id: 'hanging-tag',                name: 'Hanging Tag',                 category: 'tag',     tags: ['tag','price','label'],          variants: ['solid','outline','double'], radiusMode: 'none',         draw: hangingTagShape },
+    { id: 'diagonal-promo-strip',       name: 'Diagonal Promo Strip',        category: 'banner',  tags: ['promo','discount','sale'],      variants: ['solid','outline','double'], radiusMode: 'none',         draw: diagonalPromoStripShape },
+    { id: 'tablet-header-strip',        name: 'Tablet Header Strip',         category: 'banner',  tags: ['header','tablet','highlight'],  variants: ['solid','outline','double'], radiusMode: 'cornerRadius', draw: tabletHeaderStripShape },
+    { id: 'side-notch-label',           name: 'Side Notch Label',            category: 'tag',     tags: ['label','price','tablet'],       variants: ['solid','outline','double'], radiusMode: 'none',         draw: sideNotchLabelShape },
+    { id: 'split-pill-badge',           name: 'Split Pill Badge',            category: 'badge',   tags: ['badge','price','modern'],       variants: ['solid','outline','double'], radiusMode: 'none',         draw: splitPillBadgeShape },
+    { id: 'pointer-callout',            name: 'Pointer Callout',             category: 'sticker', tags: ['callout','promo','tablet'],     variants: ['solid','outline','double'], radiusMode: 'cornerRadius', draw: pointerCalloutShape },
+    { id: 'bottom-tab-banner',          name: 'Bottom Tab Banner',           category: 'banner',  tags: ['banner','promo','header'],      variants: ['solid','outline','double'], radiusMode: 'cornerRadius', draw: bottomTabBannerShape },
+];
+
+/** New/featured shapes for quick filtering */
+export const NEW_SHAPE_IDS = [
+    'minimal-price-tag',
+    'premium-label-badge',
+    'sale-sticker',
+    'corner-bracket-frame',
+    'ticket-stub-shape',
+    'hanging-tag',
+    'diagonal-promo-strip',
+    'tablet-header-strip',
+    'side-notch-label',
+    'split-pill-badge',
+    'pointer-callout',
+    'bottom-tab-banner'
 ];
 
 /** All distinct categories */
@@ -492,6 +620,7 @@ export function getShapeById(id) {
 
 export function getShapesByCategory(category) {
     if (!category || category === 'all') return SHAPES;
+    if (category === 'new') return SHAPES.filter(s => NEW_SHAPE_IDS.includes(s.id));
     return SHAPES.filter(s => s.category === category);
 }
 

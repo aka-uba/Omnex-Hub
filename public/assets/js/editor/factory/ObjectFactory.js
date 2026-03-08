@@ -291,7 +291,7 @@ export class ObjectFactory {
         const defaultTextboxOptions = {
             ...DEFAULT_TEXT_OPTIONS,
             width: 200,
-            splitByGrapheme: true
+            splitByGrapheme: false
         };
         const { fabricProps, customProps } = this._extractCustomProps(options, defaultTextboxOptions);
         const hasExplicitWidth = Object.prototype.hasOwnProperty.call(options, 'width') &&

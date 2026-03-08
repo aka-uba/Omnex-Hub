@@ -233,8 +233,8 @@ export class ClipboardManager {
                 const cloned = await this._deserializeObject(serialized);
                 if (!cloned) continue;
 
-                // Yeni ID ata
-                cloned.set(CUSTOM_PROPS.ID, this._generateUUID());
+                // Yeni objectId ata (frame/selection bağları için benzersiz olmalı)
+                cloned.set(CUSTOM_PROPS.OBJECT_ID, this._generateUUID());
 
                 // Pozisyon ayarla
                 if (center) {
@@ -248,9 +248,11 @@ export class ClipboardManager {
                     const totalOffset = this._pasteCount * offsetX;
                     cloned.set({
                         left: (cloned.left || 0) + totalOffset,
-                        top: (cloned.top || 0) + totalOffset
+                        top: (cloned.top || 0) + (this._pasteCount * offsetY)
                     });
                 }
+
+                this._clampObjectIntoCanvas(cloned);
 
                 this.canvas.add(cloned);
                 pastedObjects.push(cloned);
@@ -304,14 +306,16 @@ export class ClipboardManager {
                 const cloned = await this._deserializeObject(serialized);
                 if (!cloned) continue;
 
-                // Yeni ID ata
-                cloned.set(CUSTOM_PROPS.ID, this._generateUUID());
+                // Yeni objectId ata (frame/selection bağları için benzersiz olmalı)
+                cloned.set(CUSTOM_PROPS.OBJECT_ID, this._generateUUID());
 
                 // Offset ile pozisyonla
                 cloned.set({
                     left: (cloned.left || 0) + this.options.duplicateOffset,
                     top: (cloned.top || 0) + this.options.duplicateOffset
                 });
+
+                this._clampObjectIntoCanvas(cloned);
 
                 this.canvas.add(cloned);
                 duplicatedObjects.push(cloned);
@@ -379,8 +383,8 @@ export class ClipboardManager {
             fabric.util.enlivenObjects([serialized], {
                 reviver: (obj, instance) => {
                     // Custom properties'i geri yükle
-                    if (serialized[CUSTOM_PROPS.ID]) {
-                        instance.set(CUSTOM_PROPS.ID, serialized[CUSTOM_PROPS.ID]);
+                    if (serialized[CUSTOM_PROPS.OBJECT_ID]) {
+                        instance.set(CUSTOM_PROPS.OBJECT_ID, serialized[CUSTOM_PROPS.OBJECT_ID]);
                     }
                     if (serialized[CUSTOM_PROPS.TYPE]) {
                         instance.set(CUSTOM_PROPS.TYPE, serialized[CUSTOM_PROPS.TYPE]);
@@ -401,6 +405,42 @@ export class ClipboardManager {
                 reject(err);
             });
         });
+    }
+
+    /**
+     * Nesneyi canvas sınırları içine taşı (gerekirse).
+     * @private
+     * @param {Object} obj
+     */
+    _clampObjectIntoCanvas(obj) {
+        if (!this.canvas || !obj) return;
+
+        obj.setCoords?.();
+        const rect = obj.getBoundingRect?.(true, true);
+        if (!rect) return;
+
+        const canvasW = Number(this.canvas.width) || 0;
+        const canvasH = Number(this.canvas.height) || 0;
+        if (canvasW <= 0 || canvasH <= 0) return;
+
+        let dx = 0;
+        let dy = 0;
+
+        if (rect.left < 0) dx = -rect.left;
+        if (rect.top < 0) dy = -rect.top;
+
+        const overflowRight = rect.left + rect.width - canvasW;
+        const overflowBottom = rect.top + rect.height - canvasH;
+        if (overflowRight > 0) dx -= overflowRight;
+        if (overflowBottom > 0) dy -= overflowBottom;
+
+        if (dx !== 0 || dy !== 0) {
+            obj.set({
+                left: (Number(obj.left) || 0) + dx,
+                top: (Number(obj.top) || 0) + dy
+            });
+            obj.setCoords?.();
+        }
     }
 
     /**

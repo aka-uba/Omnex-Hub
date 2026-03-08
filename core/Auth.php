@@ -10,21 +10,85 @@ class Auth
     private static ?array $user = null;
 
     /**
+     * Resolve token/session expiries from settings with safe defaults.
+     */
+    private static function resolveTokenExpiries(array $user): array
+    {
+        $accessExpiry = (int)JWT_EXPIRY;
+        $refreshExpiry = (int)REFRESH_TOKEN_EXPIRY;
+
+        try {
+            $db = Database::getInstance();
+            $mergedSettings = [];
+
+            if (!empty($user['company_id'])) {
+                $companySettings = $db->fetch(
+                    "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
+                    [$user['company_id']]
+                );
+                if ($companySettings && !empty($companySettings['data'])) {
+                    $mergedSettings = json_decode($companySettings['data'], true) ?? [];
+                }
+            }
+
+            if (!empty($user['id'])) {
+                $userSettings = $db->fetch(
+                    "SELECT data FROM settings WHERE user_id = ?",
+                    [$user['id']]
+                );
+                if ($userSettings && !empty($userSettings['data'])) {
+                    $mergedSettings = array_merge(
+                        $mergedSettings,
+                        json_decode($userSettings['data'], true) ?? []
+                    );
+                }
+            }
+
+            $sessionTimeoutMinutes = isset($mergedSettings['session_timeout_minutes'])
+                ? (int)$mergedSettings['session_timeout_minutes']
+                : null;
+
+            if ($sessionTimeoutMinutes !== null) {
+                // Allow 5 minutes - 30 days to avoid invalid/extreme values.
+                $sessionTimeoutMinutes = max(5, min(43200, $sessionTimeoutMinutes));
+                $refreshExpiry = $sessionTimeoutMinutes * 60;
+            }
+
+            if (isset($mergedSettings['access_token_timeout_minutes'])) {
+                $accessTimeoutMinutes = max(5, min(1440, (int)$mergedSettings['access_token_timeout_minutes']));
+                $accessExpiry = $accessTimeoutMinutes * 60;
+            } else {
+                // Ensure access token never exceeds refresh/session expiry.
+                $accessExpiry = min($accessExpiry, $refreshExpiry);
+            }
+        } catch (\Throwable $e) {
+            // Keep defaults if settings lookup fails.
+        }
+
+        return [
+            'access' => $accessExpiry,
+            'refresh' => $refreshExpiry
+        ];
+    }
+
+    /**
      * Generate access and refresh tokens
      */
     public static function generateTokens(array $user): array
     {
+        $expiries = self::resolveTokenExpiries($user);
+
         $accessToken = self::createToken([
             'user_id' => $user['id'],
             'email' => $user['email'],
             'role' => $user['role'],
             'company_id' => $user['company_id'] ?? null
-        ], JWT_EXPIRY);
+        ], $expiries['access']);
 
         $refreshToken = self::createToken([
             'user_id' => $user['id'],
             'type' => 'refresh'
-        ], REFRESH_TOKEN_EXPIRY);
+        ], $expiries['refresh']);
 
         // Store session in database
         $db = Database::getInstance();
@@ -33,7 +97,7 @@ class Auth
             'user_id' => $user['id'],
             'token_hash' => hash('sha256', $accessToken),
             'refresh_token_hash' => hash('sha256', $refreshToken),
-            'expires_at' => date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXPIRY),
+            'expires_at' => date('Y-m-d H:i:s', time() + $expiries['refresh']),
             'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '',
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'last_activity' => date('Y-m-d H:i:s'),
@@ -44,7 +108,7 @@ class Auth
             'access_token' => $accessToken,
             'refresh_token' => $refreshToken,
             'token_type' => 'Bearer',
-            'expires_in' => JWT_EXPIRY
+            'expires_in' => $expiries['access']
         ];
     }
 

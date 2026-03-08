@@ -70,6 +70,7 @@
             "barcode": "Barkod",
             "qrcode": "QR Kod",
             "shape": "Şekil",
+            "borderFrame": "Cerceve",
             "line": "Çizgi",
             "rectangle": "Dikdörtgen",
             "circle": "Daire",
@@ -95,6 +96,7 @@
             "selectElement": "Düzenlemek için bir eleman seçin",
             "noSelection": "Seçili eleman yok",
             "text": "Metin",
+            "content": "Metin İçeriği",
             "image": "Görsel",
             "replaceImage": "Görseli Değiştir",
             "editBarcode": "Barkodu Düzenle",
@@ -142,6 +144,7 @@
             "shadowOffsetY": "Gölge Y",
             "shadowBlur": "Bulanıklık",
             "noStroke": "Kenarlık Yok",
+            "noFill": "Iç Dolgu Yok",
             "padding": "İç Boşluk",
             "bold": "Kalın",
             "italic": "İtalik",
@@ -256,6 +259,7 @@
             "double": "Cift",
             "radius": "Yaricap",
             "all": "Tumu",
+            "new": "Yeni",
             "noResults": "Sonuc bulunamadi",
             "cat_banner": "Banner",
             "cat_badge": "Rozet",
@@ -465,7 +469,9 @@
             "alignCenterV": "Dikey Ortala",
             "alignBottom": "Alta Hizala",
             "distributeH": "Yatay Eşit Dağıt",
-            "distributeV": "Dikey Eşit Dağıt"
+            "distributeV": "Dikey Eşit Dağıt",
+            "groupObjects": "Grupla",
+            "ungroupObjects": "Grubu Çöz"
         },
         "subToolbar": {
             "toggle": "Eleman Çubuğunu Aç/Kapat",

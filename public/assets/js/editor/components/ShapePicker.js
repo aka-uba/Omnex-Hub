@@ -10,9 +10,10 @@ import { SHAPES, CATEGORIES, SHAPE_VIEWBOX, getShapesByCategory, searchShapes, r
 
 const CATEGORY_ICONS = {
     all:     'ti-layout-grid',
+    new:     'ti-sparkles',
     banner:  'ti-flag',
     badge:   'ti-rosette',
-    ribbon:  'ti-ribbon',
+    ribbon:  'ti-bookmark',
     sticker: 'ti-sticker',
     frame:   'ti-frame',
     tag:     'ti-tag',
@@ -73,6 +74,7 @@ export class ShapePicker {
                     </div>
                     <div class="shape-picker-categories">
                         <button class="sp-cat active" data-cat="all"><i class="ti ${CATEGORY_ICONS.all}"></i> ${__('editor.shapePicker.all') || 'Tumu'}</button>
+                        <button class="sp-cat" data-cat="new"><i class="ti ${CATEGORY_ICONS.new}"></i> ${__('editor.shapePicker.new') || 'Yeni'}</button>
                         ${CATEGORIES.map(c => `<button class="sp-cat" data-cat="${c}"><i class="ti ${CATEGORY_ICONS[c] || 'ti-shape'}"></i> ${__('editor.shapePicker.cat_' + c) || c.charAt(0).toUpperCase() + c.slice(1)}</button>`).join('')}
                     </div>
                 </div>

@@ -117,7 +117,11 @@
             "language": "Taal",
             "currency": "Munteenheid",
             "dateFormat": "Datumnotatie",
-            "theme": "Thema"
+            "theme": "Thema",
+            "sessionTimeoutMinutes": "Sessieduur (minuten)"
+        },
+        "hints": {
+            "sessionTimeoutMinutes": "5 - 43200 minuten (standaard: 43200 = 30 dagen)"
         },
         "placeholders": {
             "companyName": "Bedrijfsnaam",

@@ -181,6 +181,7 @@ export class HistoryManager {
             timestamp: Date.now()
         });
         this._lastStateHash = this._hashState(state);
+        this._notifyHistoryChange();
     }
 
     /**
@@ -379,6 +380,7 @@ export class HistoryManager {
         // Fabric.js 7: Promise tabanlı API
         this.canvas.loadFromJSON(json).then(() => {
             this.canvas.requestRenderAll();
+            eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'history-load' });
         });
     }
 
@@ -483,6 +485,13 @@ export class HistoryManager {
             } catch (err) {
                 console.error('HistoryManager: Callback hatası:', err);
             }
+        });
+
+        eventBus.emit(EVENTS.HISTORY_CHANGE, {
+            canUndo,
+            canRedo,
+            undoCount,
+            redoCount
         });
     }
 

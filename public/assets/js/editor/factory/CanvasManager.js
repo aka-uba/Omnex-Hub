@@ -35,7 +35,7 @@
  */
 
 import { eventBus, EVENTS } from '../core/EventBus.js';
-import { CUSTOM_PROPS, isTransient } from '../core/CustomProperties.js';
+import { CUSTOM_PROPS, CUSTOM_TYPES, isTransient } from '../core/CustomProperties.js';
 import {
     Canvas,
     StaticCanvas,
@@ -259,6 +259,7 @@ export class CanvasManager {
 
         // Selection events
         this._eventHandlers.selectionCreated = (e) => {
+            this._normalizeFrameOverlaySelection(e);
             eventBus.emit(EVENTS.SELECTION_CREATED, {
                 selected: e.selected,
                 target: e.target
@@ -267,6 +268,7 @@ export class CanvasManager {
         this.canvas.on('selection:created', this._eventHandlers.selectionCreated);
 
         this._eventHandlers.selectionUpdated = (e) => {
+            this._normalizeFrameOverlaySelection(e);
             eventBus.emit(EVENTS.SELECTION_UPDATED, {
                 selected: e.selected,
                 deselected: e.deselected,
@@ -305,33 +307,13 @@ export class CanvasManager {
         this._eventHandlers.objectMoving = (e) => {
             const obj = e.target;
             if (obj) {
+                if (this._isFrameOverlay(obj)) {
+                    this._syncFrameOverlayToTarget(obj);
+                    return;
+                }
+
                 // Canvas sınırlarını al
-                const canvasWidth = this.canvas.width;
-                const canvasHeight = this.canvas.height;
-
-                // Nesnenin bounding box'ını al
-                const boundingRect = obj.getBoundingRect(true, true);
-                const objWidth = boundingRect.width;
-                const objHeight = boundingRect.height;
-
-                // Sol sınır kontrolü
-                if (boundingRect.left < 0) {
-                    obj.left = obj.left - boundingRect.left;
-                }
-                // Sağ sınır kontrolü
-                if (boundingRect.left + objWidth > canvasWidth) {
-                    obj.left = obj.left - (boundingRect.left + objWidth - canvasWidth);
-                }
-                // Üst sınır kontrolü
-                if (boundingRect.top < 0) {
-                    obj.top = obj.top - boundingRect.top;
-                }
-                // Alt sınır kontrolü
-                if (boundingRect.top + objHeight > canvasHeight) {
-                    obj.top = obj.top - (boundingRect.top + objHeight - canvasHeight);
-                }
-
-                obj.setCoords();
+                this._clampObjectWithinCanvas(obj);
             }
 
             eventBus.emit(EVENTS.OBJECT_MOVING, {
@@ -481,6 +463,170 @@ export class CanvasManager {
         this.canvas.on('mouse:dblclick', this._eventHandlers.mouseDblclick);
     }
 
+    _isFrameOverlay(obj) {
+        if (!obj) return false;
+        const customType = String(
+            obj[CUSTOM_PROPS.CUSTOM_TYPE] ||
+            obj.customType ||
+            obj.custom_type ||
+            obj.get?.(CUSTOM_PROPS.CUSTOM_TYPE) ||
+            ''
+        ).toLowerCase();
+
+        if (customType === CUSTOM_TYPES.FRAME_OVERLAY) return true;
+
+        // Legacy/fallback detection: frame metadata varsa overlay kabul et
+        return !!(obj[CUSTOM_PROPS.FRAME_TARGET_ID] && obj[CUSTOM_PROPS.FRAME_ID]);
+    }
+
+    _findFrameTarget(overlay) {
+        if (!this.canvas || !overlay) return null;
+        const targetId = overlay[CUSTOM_PROPS.FRAME_TARGET_ID];
+        if (!targetId) return null;
+
+        return this.canvas.getObjects().find(
+            o => o &&
+                o[CUSTOM_PROPS.OBJECT_ID] === targetId &&
+                !this._isFrameOverlay(o)
+        ) || null;
+    }
+
+    _lockFrameOverlayInteraction(overlay) {
+        if (!overlay) return;
+        overlay.set({
+            selectable: false,
+            evented: false,
+            hasControls: false,
+            hasBorders: false,
+            lockMovementX: true,
+            lockMovementY: true
+        });
+        overlay.setCoords();
+    }
+
+    _syncFrameOverlayToTarget(overlay) {
+        if (!overlay || !this.canvas) return;
+        this._lockFrameOverlayInteraction(overlay);
+
+        const target = this._findFrameTarget(overlay);
+        if (!target) return;
+
+        const center = typeof target.getCenterPoint === 'function'
+            ? target.getCenterPoint()
+            : { x: Number(target.left) || 0, y: Number(target.top) || 0 };
+
+        const offsetLeft = Number(overlay._frameOffsetLeft) || 0;
+        const offsetTop = Number(overlay._frameOffsetTop) || 0;
+
+        overlay.set({
+            left: center.x + offsetLeft,
+            top: center.y + offsetTop
+        });
+        overlay.setCoords();
+        this.canvas.requestRenderAll();
+    }
+
+    _normalizeFrameOverlaySelection(e) {
+        if (!this.canvas) return;
+
+        const candidate = e?.target || (Array.isArray(e?.selected) ? e.selected[0] : null);
+        if (!this._isFrameOverlay(candidate)) return;
+
+        this._lockFrameOverlayInteraction(candidate);
+        const target = this._findFrameTarget(candidate);
+        if (!target) {
+            this.canvas.discardActiveObject();
+            this.canvas.requestRenderAll();
+            return;
+        }
+
+        this.canvas.setActiveObject(target);
+        target.setCoords();
+        this.canvas.requestRenderAll();
+    }
+
+    _clampObjectWithinCanvas(obj) {
+        if (!obj || !this.canvas) return;
+
+        const canvasWidth = Number(this.canvas.width) || 0;
+        const canvasHeight = Number(this.canvas.height) || 0;
+        const boundingRect = obj.getBoundingRect(true, true);
+        const objWidth = Number(boundingRect.width) || 0;
+        const objHeight = Number(boundingRect.height) || 0;
+
+        if (boundingRect.left < 0) {
+            obj.left = (Number(obj.left) || 0) - boundingRect.left;
+        }
+        if (boundingRect.left + objWidth > canvasWidth) {
+            obj.left = (Number(obj.left) || 0) - (boundingRect.left + objWidth - canvasWidth);
+        }
+        if (boundingRect.top < 0) {
+            obj.top = (Number(obj.top) || 0) - boundingRect.top;
+        }
+        if (boundingRect.top + objHeight > canvasHeight) {
+            obj.top = (Number(obj.top) || 0) - (boundingRect.top + objHeight - canvasHeight);
+        }
+
+        obj.setCoords();
+    }
+
+    _syncAttachedFrameOverlay(targetObj) {
+        if (!this.canvas || !targetObj || this._isFrameOverlay(targetObj)) return;
+
+        const overlayId = targetObj[CUSTOM_PROPS.FRAME_OVERLAY_ID];
+        if (!overlayId) return;
+
+        const frameObj = this.canvas.getObjects().find(
+            o => o?.[CUSTOM_PROPS.OBJECT_ID] === overlayId && this._isFrameOverlay(o)
+        );
+        if (!frameObj) return;
+
+        const center = typeof targetObj.getCenterPoint === 'function'
+            ? targetObj.getCenterPoint()
+            : { x: Number(targetObj.left) || 0, y: Number(targetObj.top) || 0 };
+
+        const offsetLeft = Number(frameObj._frameOffsetLeft) || 0;
+        const offsetTop = Number(frameObj._frameOffsetTop) || 0;
+
+        frameObj.set({
+            left: center.x + offsetLeft,
+            top: center.y + offsetTop
+        });
+        frameObj.setCoords();
+    }
+
+    nudgeSelected(dx = 0, dy = 0) {
+        if (!this.canvas) return false;
+        if (!dx && !dy) return false;
+
+        const activeObject = this.canvas.getActiveObject();
+        if (!activeObject) return false;
+
+        if (this._isFrameOverlay(activeObject)) {
+            this._syncFrameOverlayToTarget(activeObject);
+            return false;
+        }
+
+        const activeType = String(activeObject.type || '').toLowerCase();
+
+        activeObject.set({
+            left: (Number(activeObject.left) || 0) + dx,
+            top: (Number(activeObject.top) || 0) + dy
+        });
+        this._clampObjectWithinCanvas(activeObject);
+
+        if (activeType === 'activeselection' && typeof activeObject.getObjects === 'function') {
+            activeObject.getObjects().forEach(obj => this._syncAttachedFrameOverlay(obj));
+        } else {
+            this._syncAttachedFrameOverlay(activeObject);
+        }
+
+        this.canvas.requestRenderAll();
+        eventBus.emit(EVENTS.OBJECT_MOVING, { target: activeObject });
+        eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'nudge' });
+        return true;
+    }
+
     /**
      * Keyboard event'lerini bağla
      * @private
@@ -527,6 +673,41 @@ export class CanvasManager {
             if (e.ctrlKey && (e.code === 'Minus' || e.code === 'NumpadSubtract')) {
                 e.preventDefault();
                 this.zoomOut();
+            }
+
+            // Ctrl+S: Kaydet
+            if (e.ctrlKey && e.code === 'KeyS' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('save-btn')?.click();
+            }
+
+            // Arrow keys: seçili nesneyi itele (Shift ile 10px)
+            if (!e.ctrlKey && !e.metaKey && !e.altKey && !this._isInputFocused()) {
+                const step = e.shiftKey ? 10 : 1;
+                let dx = 0;
+                let dy = 0;
+
+                switch (e.code) {
+                    case 'ArrowLeft':
+                        dx = -step;
+                        break;
+                    case 'ArrowRight':
+                        dx = step;
+                        break;
+                    case 'ArrowUp':
+                        dy = -step;
+                        break;
+                    case 'ArrowDown':
+                        dy = step;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (dx !== 0 || dy !== 0) {
+                    e.preventDefault();
+                    this.nudgeSelected(dx, dy);
+                }
             }
         };
 
@@ -851,15 +1032,42 @@ export class CanvasManager {
 
         if (activeObject.type === 'activeSelection' || activeObject.type === 'ActiveSelection') {
             activeObject.forEachObject(obj => {
+                this._removeAttachedFrameOverlay(obj);
                 this.canvas.remove(obj);
             });
             this.canvas.discardActiveObject();
         } else {
+            this._removeAttachedFrameOverlay(activeObject);
             this.canvas.remove(activeObject);
         }
 
         this.canvas.requestRenderAll();
         eventBus.emit(EVENTS.CANVAS_MODIFIED, { source: 'delete' });
+    }
+
+    /**
+     * Remove frame overlay linked to target object (if any).
+     * CanvasManager has no FrameService dependency, so cleanup is done via custom props.
+     * @private
+     * @param {Object} targetObj
+     */
+    _removeAttachedFrameOverlay(targetObj) {
+        if (!this.canvas || !targetObj) return;
+
+        const overlayId = targetObj[CUSTOM_PROPS.FRAME_OVERLAY_ID];
+        if (!overlayId) return;
+
+        const overlayObj = this.canvas.getObjects().find((obj) =>
+            obj?.[CUSTOM_PROPS.OBJECT_ID] === overlayId &&
+            this._isFrameOverlay(obj)
+        );
+
+        if (overlayObj) {
+            this.canvas.remove(overlayObj);
+        }
+
+        delete targetObj[CUSTOM_PROPS.FRAME_ID];
+        delete targetObj[CUSTOM_PROPS.FRAME_OVERLAY_ID];
     }
 
     // ==========================================

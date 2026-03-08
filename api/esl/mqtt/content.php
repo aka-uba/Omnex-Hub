@@ -210,6 +210,12 @@ $buildTaskFromImagePath = function(string $imagePath, string $clientIdForTask, s
         return null;
     }
 
+    $size = @filesize($fullPath);
+    $imgInfo = @getimagesize($fullPath);
+    if (!is_int($size) || $size <= 0 || !is_array($imgInfo) || empty($imgInfo[0]) || empty($imgInfo[1])) {
+        return null;
+    }
+
     $md5 = md5_file($fullPath);
     $fileName = basename($fullPath);
     $pictureUrl = rtrim($serverBaseUrl, '/') . '/' . ltrim((string)$relativePath, '/');
@@ -304,6 +310,53 @@ $normalizeTaskMediaUrls = function (array $task) use ($rewriteMediaUrl): array {
     return $task;
 };
 
+$hasValidTaskPicture = function (array $task) use ($serverBaseUrl, $serverBasePath, $requestHostNormalized): bool {
+    if (!isset($task['LabelPicture']) || !is_array($task['LabelPicture'])) {
+        return true;
+    }
+
+    $pictureUrl = trim((string)($task['LabelPicture']['PictureUrl'] ?? ''));
+    if ($pictureUrl === '') {
+        return true;
+    }
+
+    if (!preg_match('#^https?://#i', $pictureUrl)) {
+        return false;
+    }
+
+    $parts = parse_url($pictureUrl);
+    if (!$parts || empty($parts['host'])) {
+        return false;
+    }
+
+    $urlHost = strtolower((string)$parts['host']);
+    $isLocalHost = in_array($urlHost, ['localhost', '127.0.0.1', '::1'], true);
+    $isInternalHost = $isLocalHost || ($requestHostNormalized !== '' && $urlHost === $requestHostNormalized);
+
+    if (!$isInternalHost) {
+        return true;
+    }
+
+    $path = (string)($parts['path'] ?? '');
+    if ($path === '') {
+        return false;
+    }
+
+    $relativePath = ltrim($path, '/');
+    if ($serverBasePath !== '' && strpos($path, $serverBasePath . '/') === 0) {
+        $relativePath = ltrim(substr($path, strlen($serverBasePath)), '/');
+    }
+
+    $fullPath = BASE_PATH . '/' . $relativePath;
+    if (!is_file($fullPath)) {
+        return false;
+    }
+
+    $size = @filesize($fullPath);
+    $imgInfo = @getimagesize($fullPath);
+    return is_int($size) && $size > 0 && is_array($imgInfo) && !empty($imgInfo[0]) && !empty($imgInfo[1]);
+};
+
 // ============================================================
 // ONCELIK 1: Cihaza ozel icerik atamasi (device_content_assignments)
 // render.php bu tabloya cihaz bazli atama yapar
@@ -345,6 +398,9 @@ if ($assignment && $assignment['content_id']) {
                         '%u',
                         crc32(json_encode($taskData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                     );
+                }
+                if (!$hasValidTaskPicture($taskData)) {
+                    $taskData = null;
                 }
             }
         }
