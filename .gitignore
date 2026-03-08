@@ -26,6 +26,7 @@ kutuphane/
 
 # ---- Android Player (separate project) ----
 android-player/
+android-player-build/
 android-player.zip
 
 # ---- ESL Research Files ----
@@ -46,13 +47,18 @@ downloads/
 # ---- Temp Files ----
 .tmp/
 Yeni klasör/
+Yeni-klasor/
 nul
 _nul
+tmp_*.php
+tmp_*.json
 
 # ---- Claude AI Config (keep CLAUDE.md only) ----
 .claude/memory/
 .claude/plans/
 .claude/settings.json
+.claude/settings.local.json
+.claude/launch.json
 
 # ---- Storage (runtime data - keep only gitkeep and wsdl) ----
 storage/cache/
@@ -65,6 +71,7 @@ storage/media/
 storage/templates/portrait/
 storage/templates/landscape/
 storage/public/samples/
+storage/tmp/
 storage/*.ab
 storage/*.py
 storage/*.php
@@ -81,6 +88,9 @@ translate_*.log
 _*.php
 temp_*.php
 test_*.php
+tools/bg-remover*.html
+tools/check_template_obj.php
+tools/test-product.png
 scan_ports.php
 verify_jwt.php
 run-migration.php
@@ -97,8 +107,11 @@ market_etiket_sistemi_hata_temizleme_ve_cloud_uyum_plani.md
 # ---- VBS Scripts ----
 *.vbs
 
-# ---- Deploy (secrets only - deploy/ config files ARE tracked) ----
+# ---- Deploy (local build artifacts) ----
 # deploy/.env is excluded above in Environment & Secrets section
+deploy/assets/
+deploy/locales/
+deploy/yeni/
 
 # ---- Local Gateway Manager (separate project) ----
 local-gateway-manager/
