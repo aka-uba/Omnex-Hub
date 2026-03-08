@@ -1,0 +1,131 @@
+{
+    "title": "Şirkət yedəkləri",
+    "subtitle": "Şirkət məlumatlarını yedəkləyin və bərpa edin",
+    "breadcrumb": "Yedəklər",
+
+    "settings": {
+        "title": "Yedəkləmə parametrləri",
+        "enabled": "Avtomatik yedəkləmə",
+        "cycle": "Yedəkləmə dövrü",
+        "cycle_daily": "Gündəlik",
+        "cycle_weekly": "Həftəlik",
+        "cycle_monthly": "Aylıq",
+        "retention": "Saxlanacaq yedək sayı",
+        "include_media": "Media fayllarını daxil et",
+        "last_run": "Son icra",
+        "save": "Parametrləri saxla",
+        "saved": "Parametrlər saxlanıldı",
+        "never_run": "Hələ icra olunmayıb"
+    },
+
+    "list": {
+        "company_name": "Şirkət adı",
+        "products": "Məhsullar",
+        "devices": "Cihazlar",
+        "templates": "Şablonlar",
+        "last_backup": "Son yedək",
+        "backup_count": "Yedək sayı",
+        "total_size": "Ümumi həcm",
+        "status": "Status",
+        "actions": "Əməliyyatlar",
+        "no_backups": "Hələ yedək yaradılmayıb",
+        "never": "Heç vaxt"
+    },
+
+    "actions": {
+        "backup_now": "İndi yedəklə",
+        "history": "Tarixçə",
+        "download_latest": "Sonuncunu yüklə",
+        "import": "İdxal et",
+        "delete": "Sil",
+        "download": "Yüklə",
+        "restore": "Bərpa et",
+        "select_all": "Hamısını seç",
+        "deselect_all": "Seçimi ləğv et"
+    },
+
+    "history": {
+        "title": "Yedək tarixçəsi",
+        "date": "Tarix",
+        "size": "Həcm",
+        "type": "Növ",
+        "tables": "Cədvəllər",
+        "media": "Media",
+        "status": "Status",
+        "manual": "Əllə",
+        "scheduled": "Planlaşdırılmış",
+        "yes": "Daxildir",
+        "no": "Xaricdir"
+    },
+
+    "status": {
+        "pending": "Gözləyir",
+        "running": "İcra olunur",
+        "completed": "Tamamlandı",
+        "failed": "Uğursuz"
+    },
+
+    "export": {
+        "title": "Yedək yarat",
+        "company": "Şirkət",
+        "include_media": "Media fayllarını daxil et",
+        "media_note": "Media daxil edildikdə yedək həcmi böyük ola bilər",
+        "start": "Yedəkləməni başlat",
+        "started": "Yedəkləmə başladıldı",
+        "completed": "Yedək uğurla yaradıldı",
+        "failed": "Yedəkləmə uğursuz oldu",
+        "already_running": "Bu şirkət üçün artıq yedəkləmə davam edir",
+        "select_title": "Yedəkləmə seçimləri",
+        "select_desc": "Yedəkləmək istədiyiniz məlumat kateqoriyalarını seçin.",
+        "no_selection": "Ən azı bir kateqoriya seçin"
+    },
+
+    "import_modal": {
+        "title": "Yedəyi idxal et",
+        "file": "Yedək faylı",
+        "file_hint": "Dəstəklənən format: .tar.gz",
+        "mode": "İdxal rejimi",
+        "mode_overwrite": "Mövcud şirkətin üzərinə yaz",
+        "mode_new": "Yeni şirkət olaraq yarat",
+        "target_company": "Hədəf şirkət",
+        "new_company_name": "Yeni şirkət adı",
+        "include_media": "Media fayllarını daxil et",
+        "start": "İdxalı başlat",
+        "started": "İdxal başladıldı",
+        "completed": "İdxal uğurla tamamlandı",
+        "failed": "İdxal uğursuz oldu"
+    },
+
+    "restore_confirm": {
+        "title": "Yedəyi bərpa et",
+        "warning": "Bu əməliyyat hədəf şirkətin seçilmiş kateqoriyalardakı məlumatlarını silib yedəyin məlumatları ilə əvəz edəcək!",
+        "source": "Mənbə yedək",
+        "mode": "Bərpa rejimi",
+        "mode_overwrite": "Mövcud şirkətə bərpa et",
+        "mode_new": "Yeni şirkət olaraq idxal et",
+        "target_company": "Hədəf şirkət",
+        "type_name": "Təsdiq üçün hədəf şirkət adını yazın:",
+        "name_mismatch": "Şirkət adı uyğun gəlmir!",
+        "name_required": "Şirkət adı tələb olunur",
+        "started": "Bərpa başladılır...",
+        "confirm": "Bərpa et",
+        "cancel": "Ləğv et",
+        "loading": "Yedək məlumatları oxunur...",
+        "peek_failed": "Yedək oxuna bilmədi",
+        "select_groups": "Bərpa ediləcək məlumatlar",
+        "no_selection": "Ən azı bir kateqoriya seçin",
+        "no_media_in_backup": "Bu yedəkdə media faylı yoxdur"
+    },
+
+    "delete_confirm": {
+        "title": "Yedəyi sil",
+        "message": "Bu yedək həmişəlik silinəcək. Davam etmək istəyirsiniz?"
+    },
+
+    "size": {
+        "bytes": "B",
+        "kb": "KB",
+        "mb": "MB",
+        "gb": "GB"
+    }
+}

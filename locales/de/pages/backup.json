@@ -1,0 +1,131 @@
+{
+    "title": "Firmen-Backups",
+    "subtitle": "Firmendaten sichern und wiederherstellen",
+    "breadcrumb": "Backups",
+
+    "settings": {
+        "title": "Backup-Einstellungen",
+        "enabled": "Automatisches Backup",
+        "cycle": "Backup-Zyklus",
+        "cycle_daily": "Täglich",
+        "cycle_weekly": "Wöchentlich",
+        "cycle_monthly": "Monatlich",
+        "retention": "Aufzubewahrende Backups",
+        "include_media": "Mediendateien einschließen",
+        "last_run": "Letzter Lauf",
+        "save": "Einstellungen speichern",
+        "saved": "Einstellungen gespeichert",
+        "never_run": "Noch nie ausgeführt"
+    },
+
+    "list": {
+        "company_name": "Firmenname",
+        "products": "Produkte",
+        "devices": "Geräte",
+        "templates": "Vorlagen",
+        "last_backup": "Letztes Backup",
+        "backup_count": "Backup-Anzahl",
+        "total_size": "Gesamtgröße",
+        "status": "Status",
+        "actions": "Aktionen",
+        "no_backups": "Noch keine Backups erstellt",
+        "never": "Nie"
+    },
+
+    "actions": {
+        "backup_now": "Jetzt sichern",
+        "history": "Verlauf",
+        "download_latest": "Neuestes herunterladen",
+        "import": "Importieren",
+        "delete": "Löschen",
+        "download": "Herunterladen",
+        "restore": "Wiederherstellen",
+        "select_all": "Alle auswählen",
+        "deselect_all": "Auswahl aufheben"
+    },
+
+    "history": {
+        "title": "Backup-Verlauf",
+        "date": "Datum",
+        "size": "Größe",
+        "type": "Typ",
+        "tables": "Tabellen",
+        "media": "Medien",
+        "status": "Status",
+        "manual": "Manuell",
+        "scheduled": "Geplant",
+        "yes": "Eingeschlossen",
+        "no": "Ausgeschlossen"
+    },
+
+    "status": {
+        "pending": "Ausstehend",
+        "running": "Läuft",
+        "completed": "Abgeschlossen",
+        "failed": "Fehlgeschlagen"
+    },
+
+    "export": {
+        "title": "Backup erstellen",
+        "company": "Firma",
+        "include_media": "Mediendateien einschließen",
+        "media_note": "Das Einschließen von Medien kann die Backup-Größe erheblich erhöhen",
+        "start": "Backup starten",
+        "started": "Backup gestartet",
+        "completed": "Backup erfolgreich erstellt",
+        "failed": "Backup fehlgeschlagen",
+        "already_running": "Für diese Firma läuft bereits ein Backup",
+        "select_title": "Backup-Optionen",
+        "select_desc": "Wählen Sie die Datenkategorien aus, die Sie sichern möchten.",
+        "no_selection": "Wählen Sie mindestens eine Kategorie"
+    },
+
+    "import_modal": {
+        "title": "Backup importieren",
+        "file": "Backup-Datei",
+        "file_hint": "Unterstütztes Format: .tar.gz",
+        "mode": "Import-Modus",
+        "mode_overwrite": "Bestehende Firma überschreiben",
+        "mode_new": "Als neue Firma erstellen",
+        "target_company": "Zielfirma",
+        "new_company_name": "Neuer Firmenname",
+        "include_media": "Mediendateien einschließen",
+        "start": "Import starten",
+        "started": "Import gestartet",
+        "completed": "Import erfolgreich abgeschlossen",
+        "failed": "Import fehlgeschlagen"
+    },
+
+    "restore_confirm": {
+        "title": "Backup wiederherstellen",
+        "warning": "Dieser Vorgang löscht die ausgewählten Kategoriedaten der Zielfirma und ersetzt sie durch die Backup-Daten!",
+        "source": "Quell-Backup",
+        "mode": "Wiederherstellungsmodus",
+        "mode_overwrite": "In bestehende Firma wiederherstellen",
+        "mode_new": "Als neue Firma importieren",
+        "target_company": "Zielfirma",
+        "type_name": "Geben Sie den Firmennamen zur Bestätigung ein:",
+        "name_mismatch": "Firmenname stimmt nicht überein!",
+        "name_required": "Firmenname ist erforderlich",
+        "started": "Wiederherstellung wird gestartet...",
+        "confirm": "Wiederherstellen",
+        "cancel": "Abbrechen",
+        "loading": "Backup-Informationen werden gelesen...",
+        "peek_failed": "Backup konnte nicht gelesen werden",
+        "select_groups": "Wiederherzustellende Daten",
+        "no_selection": "Wählen Sie mindestens eine Kategorie",
+        "no_media_in_backup": "Keine Mediendateien in diesem Backup"
+    },
+
+    "delete_confirm": {
+        "title": "Backup löschen",
+        "message": "Dieses Backup wird dauerhaft gelöscht. Möchten Sie fortfahren?"
+    },
+
+    "size": {
+        "bytes": "B",
+        "kb": "KB",
+        "mb": "MB",
+        "gb": "GB"
+    }
+}

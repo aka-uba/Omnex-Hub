@@ -1,0 +1,131 @@
+{
+    "title": "Sauvegardes des entreprises",
+    "subtitle": "Sauvegarder et restaurer les données des entreprises",
+    "breadcrumb": "Sauvegardes",
+
+    "settings": {
+        "title": "Paramètres de sauvegarde",
+        "enabled": "Sauvegarde automatique",
+        "cycle": "Cycle de sauvegarde",
+        "cycle_daily": "Quotidien",
+        "cycle_weekly": "Hebdomadaire",
+        "cycle_monthly": "Mensuel",
+        "retention": "Sauvegardes à conserver",
+        "include_media": "Inclure les fichiers média",
+        "last_run": "Dernière exécution",
+        "save": "Enregistrer les paramètres",
+        "saved": "Paramètres enregistrés",
+        "never_run": "Jamais exécuté"
+    },
+
+    "list": {
+        "company_name": "Nom de l'entreprise",
+        "products": "Produits",
+        "devices": "Appareils",
+        "templates": "Modèles",
+        "last_backup": "Dernière sauvegarde",
+        "backup_count": "Nombre de sauvegardes",
+        "total_size": "Taille totale",
+        "status": "Statut",
+        "actions": "Actions",
+        "no_backups": "Aucune sauvegarde créée",
+        "never": "Jamais"
+    },
+
+    "actions": {
+        "backup_now": "Sauvegarder maintenant",
+        "history": "Historique",
+        "download_latest": "Télécharger la dernière",
+        "import": "Importer",
+        "delete": "Supprimer",
+        "download": "Télécharger",
+        "restore": "Restaurer",
+        "select_all": "Tout sélectionner",
+        "deselect_all": "Tout désélectionner"
+    },
+
+    "history": {
+        "title": "Historique des sauvegardes",
+        "date": "Date",
+        "size": "Taille",
+        "type": "Type",
+        "tables": "Tables",
+        "media": "Médias",
+        "status": "Statut",
+        "manual": "Manuel",
+        "scheduled": "Planifié",
+        "yes": "Inclus",
+        "no": "Exclu"
+    },
+
+    "status": {
+        "pending": "En attente",
+        "running": "En cours",
+        "completed": "Terminé",
+        "failed": "Échoué"
+    },
+
+    "export": {
+        "title": "Créer une sauvegarde",
+        "company": "Entreprise",
+        "include_media": "Inclure les fichiers média",
+        "media_note": "L'inclusion des médias peut augmenter considérablement la taille de la sauvegarde",
+        "start": "Démarrer la sauvegarde",
+        "started": "Sauvegarde démarrée",
+        "completed": "Sauvegarde créée avec succès",
+        "failed": "La sauvegarde a échoué",
+        "already_running": "Une sauvegarde est déjà en cours pour cette entreprise",
+        "select_title": "Options de sauvegarde",
+        "select_desc": "Sélectionnez les catégories de données à sauvegarder.",
+        "no_selection": "Sélectionnez au moins une catégorie"
+    },
+
+    "import_modal": {
+        "title": "Importer une sauvegarde",
+        "file": "Fichier de sauvegarde",
+        "file_hint": "Format pris en charge : .tar.gz",
+        "mode": "Mode d'importation",
+        "mode_overwrite": "Écraser l'entreprise existante",
+        "mode_new": "Créer comme nouvelle entreprise",
+        "target_company": "Entreprise cible",
+        "new_company_name": "Nouveau nom d'entreprise",
+        "include_media": "Inclure les fichiers média",
+        "start": "Démarrer l'importation",
+        "started": "Importation démarrée",
+        "completed": "Importation terminée avec succès",
+        "failed": "L'importation a échoué"
+    },
+
+    "restore_confirm": {
+        "title": "Restaurer la sauvegarde",
+        "warning": "Cette opération supprimera les données des catégories sélectionnées de l'entreprise cible et les remplacera par les données de la sauvegarde !",
+        "source": "Sauvegarde source",
+        "mode": "Mode de restauration",
+        "mode_overwrite": "Restaurer dans l'entreprise existante",
+        "mode_new": "Importer comme nouvelle entreprise",
+        "target_company": "Entreprise cible",
+        "type_name": "Saisissez le nom de l'entreprise pour confirmer :",
+        "name_mismatch": "Le nom de l'entreprise ne correspond pas !",
+        "name_required": "Le nom de l'entreprise est requis",
+        "started": "Restauration en cours de démarrage...",
+        "confirm": "Restaurer",
+        "cancel": "Annuler",
+        "loading": "Lecture des informations de sauvegarde...",
+        "peek_failed": "Impossible de lire la sauvegarde",
+        "select_groups": "Données à restaurer",
+        "no_selection": "Sélectionnez au moins une catégorie",
+        "no_media_in_backup": "Aucun fichier média dans cette sauvegarde"
+    },
+
+    "delete_confirm": {
+        "title": "Supprimer la sauvegarde",
+        "message": "Cette sauvegarde sera définitivement supprimée. Voulez-vous continuer ?"
+    },
+
+    "size": {
+        "bytes": "O",
+        "kb": "Ko",
+        "mb": "Mo",
+        "gb": "Go"
+    }
+}

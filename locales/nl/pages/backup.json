@@ -1,0 +1,131 @@
+{
+    "title": "Bedrijfsback-ups",
+    "subtitle": "Bedrijfsgegevens back-uppen en herstellen",
+    "breadcrumb": "Back-ups",
+
+    "settings": {
+        "title": "Back-up instellingen",
+        "enabled": "Automatische back-up",
+        "cycle": "Back-up cyclus",
+        "cycle_daily": "Dagelijks",
+        "cycle_weekly": "Wekelijks",
+        "cycle_monthly": "Maandelijks",
+        "retention": "Te bewaren back-ups",
+        "include_media": "Mediabestanden opnemen",
+        "last_run": "Laatste uitvoering",
+        "save": "Instellingen opslaan",
+        "saved": "Instellingen opgeslagen",
+        "never_run": "Nog nooit uitgevoerd"
+    },
+
+    "list": {
+        "company_name": "Bedrijfsnaam",
+        "products": "Producten",
+        "devices": "Apparaten",
+        "templates": "Sjablonen",
+        "last_backup": "Laatste back-up",
+        "backup_count": "Aantal back-ups",
+        "total_size": "Totale grootte",
+        "status": "Status",
+        "actions": "Acties",
+        "no_backups": "Nog geen back-ups gemaakt",
+        "never": "Nooit"
+    },
+
+    "actions": {
+        "backup_now": "Nu back-uppen",
+        "history": "Geschiedenis",
+        "download_latest": "Laatste downloaden",
+        "import": "Importeren",
+        "delete": "Verwijderen",
+        "download": "Downloaden",
+        "restore": "Herstellen",
+        "select_all": "Alles selecteren",
+        "deselect_all": "Selectie opheffen"
+    },
+
+    "history": {
+        "title": "Back-up geschiedenis",
+        "date": "Datum",
+        "size": "Grootte",
+        "type": "Type",
+        "tables": "Tabellen",
+        "media": "Media",
+        "status": "Status",
+        "manual": "Handmatig",
+        "scheduled": "Gepland",
+        "yes": "Inbegrepen",
+        "no": "Uitgesloten"
+    },
+
+    "status": {
+        "pending": "Wachtend",
+        "running": "Bezig",
+        "completed": "Voltooid",
+        "failed": "Mislukt"
+    },
+
+    "export": {
+        "title": "Back-up maken",
+        "company": "Bedrijf",
+        "include_media": "Mediabestanden opnemen",
+        "media_note": "Het opnemen van media kan de back-upgrootte aanzienlijk vergroten",
+        "start": "Back-up starten",
+        "started": "Back-up gestart",
+        "completed": "Back-up succesvol gemaakt",
+        "failed": "Back-up mislukt",
+        "already_running": "Er is al een back-up bezig voor dit bedrijf",
+        "select_title": "Back-up opties",
+        "select_desc": "Selecteer de gegevenscategorieën die u wilt back-uppen.",
+        "no_selection": "Selecteer ten minste één categorie"
+    },
+
+    "import_modal": {
+        "title": "Back-up importeren",
+        "file": "Back-up bestand",
+        "file_hint": "Ondersteund formaat: .tar.gz",
+        "mode": "Import modus",
+        "mode_overwrite": "Bestaand bedrijf overschrijven",
+        "mode_new": "Als nieuw bedrijf aanmaken",
+        "target_company": "Doelbedrijf",
+        "new_company_name": "Nieuwe bedrijfsnaam",
+        "include_media": "Mediabestanden opnemen",
+        "start": "Import starten",
+        "started": "Import gestart",
+        "completed": "Import succesvol voltooid",
+        "failed": "Import mislukt"
+    },
+
+    "restore_confirm": {
+        "title": "Back-up herstellen",
+        "warning": "Deze bewerking verwijdert de geselecteerde categoriegegevens van het doelbedrijf en vervangt deze door de back-upgegevens!",
+        "source": "Bron back-up",
+        "mode": "Herstelmodus",
+        "mode_overwrite": "Herstellen naar bestaand bedrijf",
+        "mode_new": "Importeren als nieuw bedrijf",
+        "target_company": "Doelbedrijf",
+        "type_name": "Typ de bedrijfsnaam ter bevestiging:",
+        "name_mismatch": "Bedrijfsnaam komt niet overeen!",
+        "name_required": "Bedrijfsnaam is vereist",
+        "started": "Herstel wordt gestart...",
+        "confirm": "Herstellen",
+        "cancel": "Annuleren",
+        "loading": "Back-up informatie wordt gelezen...",
+        "peek_failed": "Kan back-up niet lezen",
+        "select_groups": "Te herstellen gegevens",
+        "no_selection": "Selecteer ten minste één categorie",
+        "no_media_in_backup": "Geen mediabestanden in deze back-up"
+    },
+
+    "delete_confirm": {
+        "title": "Back-up verwijderen",
+        "message": "Deze back-up wordt permanent verwijderd. Wilt u doorgaan?"
+    },
+
+    "size": {
+        "bytes": "B",
+        "kb": "KB",
+        "mb": "MB",
+        "gb": "GB"
+    }
+}
