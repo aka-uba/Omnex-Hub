@@ -189,14 +189,14 @@ export class ProductFormPage {
                                     </div>
                                     <div class="form-group md:col-span-2">
                                         <label class="form-label">${this.__('form.fields.description')}</label>
-                                        <textarea id="description" class="form-input" rows="3" placeholder="${this.__('form.placeholders.description')}"></textarea>
+                                        <textarea id="description" class="form-input" rows="6" placeholder="${this.__('form.placeholders.description')}"></textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- HAL Kayıt Kartı -->
-                        <div class="chart-card collapsible mb-6">
+                        <!-- HAL Kayıt Kartı (firma HAL entegrasyonu aktifse gösterilir) -->
+                        <div id="hal-card" class="chart-card collapsible mb-6" style="display: none;">
                             <div class="chart-card-header">
                                 <h2 class="chart-card-title">
                                     <i class="ti ti-certificate"></i>
@@ -609,7 +609,9 @@ export class ProductFormPage {
 
         // Initialize BarcodeSection module
         this._initBarcodeSection();
-        this._initHalKunyeSection();
+
+        // HAL card: firma HAL entegrasyonu aktif ve yapılandırılmışsa göster
+        await this._checkHalIntegration();
 
         // Initialize PriceHistorySection module (only for edit mode)
         if (this.productId) {
@@ -705,6 +707,29 @@ export class ProductFormPage {
 
         // Bind events after init
         this.barcodeSection.bindEvents();
+    }
+
+    /**
+     * Check HAL integration status and show/hide HAL card
+     */
+    async _checkHalIntegration() {
+        try {
+            const response = await this.app.api.get('/hal/settings');
+            if (response.success && response.data?.meta?.is_active && response.data?.configured) {
+                const halCard = document.getElementById('hal-card');
+                if (halCard) {
+                    halCard.style.display = '';
+                }
+                this._initHalKunyeSection();
+
+                // Mevcut ürün düzenleniyorsa HAL verisini yükle
+                if (this.productId) {
+                    this.loadProductionTypeFromHalData();
+                }
+            }
+        } catch (e) {
+            // HAL entegrasyonu yoksa veya hata oluşursa card gizli kalır
+        }
     }
 
     /**
@@ -1430,8 +1455,7 @@ export class ProductFormPage {
             this.priceHistorySection.setHistory(this.product.price_history);
         }
 
-        // HAL verisinden üretim şeklini yükle (product_hal_data tablosundan)
-        this.loadProductionTypeFromHalData();
+        // HAL verisinden üretim şeklini yükleme _checkHalIntegration() içinde yapılır
     }
 
     /**

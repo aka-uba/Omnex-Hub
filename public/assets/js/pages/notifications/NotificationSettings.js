@@ -25,7 +25,8 @@ export class NotificationSettingsPage {
             email_digest: 'never',
             dnd_enabled: false,
             dnd_start: '22:00',
-            dnd_end: '08:00'
+            dnd_end: '08:00',
+            device_notification_retention_days: 30
         };
         this.isSaving = false;
     }
@@ -42,6 +43,11 @@ export class NotificationSettingsPage {
      */
     async preload() {
         await this.app.i18n.loadPageTranslations('notifications');
+    }
+
+    isSuperAdmin() {
+        const user = this.app.state.get('user');
+        return String(user?.role || '').toLowerCase() === 'superadmin';
     }
 
     /**
@@ -289,6 +295,32 @@ export class NotificationSettingsPage {
                     </div>
                 </div>
 
+                ${this.isSuperAdmin() ? `
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="ti ti-device-desktop mr-2"></i>
+                            ${this.__('settings.deviceNotificationsTitle')}
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="setting-device-retention-days">
+                                ${this.__('settings.deviceRetentionDaysLabel')}
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="setting-device-retention-days"
+                                   min="1"
+                                   max="365"
+                                   step="1"
+                                   value="${Number(this.settings.device_notification_retention_days || 30)}">
+                            <p class="text-muted text-sm mt-2">${this.__('settings.deviceRetentionDaysHelp')}</p>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
                 <!-- Save Button (Mobile) -->
                 <div class="settings-footer">
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -410,6 +442,13 @@ export class NotificationSettingsPage {
         if (dndStartEl) dndStartEl.value = this.settings.dnd_start || '22:00';
         if (dndEndEl) dndEndEl.value = this.settings.dnd_end || '08:00';
 
+        const retentionEl = document.getElementById('setting-device-retention-days');
+        if (retentionEl) {
+            retentionEl.value = String(
+                Math.max(1, Math.min(365, Number(this.settings.device_notification_retention_days || 30)))
+            );
+        }
+
         // Show/hide DND time settings
         if (dndTimeSettings) {
             dndTimeSettings.style.display = this.settings.dnd_enabled ? 'block' : 'none';
@@ -463,7 +502,7 @@ export class NotificationSettingsPage {
         if (!settingsContainer) return;
 
         // Get all inputs except the master switch
-        const inputs = settingsContainer.querySelectorAll('input:not(#setting-enabled)');
+        const inputs = settingsContainer.querySelectorAll('input:not(#setting-enabled):not(#setting-device-retention-days)');
         inputs.forEach(input => {
             input.disabled = !enabled;
             const toggle = input.closest('.toggle-switch');
@@ -501,7 +540,7 @@ export class NotificationSettingsPage {
                 // Show test notification
                 new Notification('Omnex Display Hub', {
                     body: this.__('settings.desktopTestMessage'),
-                    icon: window.OmnexConfig?.basePath + '/branding/favicon.svg'
+                    icon: window.OmnexConfig?.basePath + '/branding/favicon.png'
                 });
             } else {
                 Toast.warning(this.__('settings.desktopPermissionDenied'));
@@ -528,6 +567,12 @@ export class NotificationSettingsPage {
             dnd_start: document.getElementById('setting-dnd-start')?.value || '22:00',
             dnd_end: document.getElementById('setting-dnd-end')?.value || '08:00'
         };
+
+        if (this.isSuperAdmin()) {
+            const retentionInput = document.getElementById('setting-device-retention-days');
+            const retentionDays = Number(retentionInput?.value || this.settings.device_notification_retention_days || 30);
+            settings.device_notification_retention_days = Math.max(1, Math.min(365, Number.isFinite(retentionDays) ? retentionDays : 30));
+        }
 
         // Collect type settings
         const types = ['info', 'success', 'warning', 'error', 'system'];

@@ -8,7 +8,9 @@
         "all": "Hamısı",
         "unread": "Oxunmamış",
         "system": "Sistem",
-        "archived": "Arxivləşdirilib"
+        "archived": "Arxivləşdirilib",
+        "deviceSend": "Cihaz gonderimleri",
+        "read": "Oxuyun"
     },
     "actions": {
         "markAllRead": "Hamısını Oxunmuş kimi qeyd edin",
@@ -172,6 +174,9 @@
         "desktopBlocked": "Masaüstü bildirişləri bloklanıb. Brauzer parametrlərindən icazə verin.",
         "desktopTestMessage": "Masaüstü bildirişləri uğurla aktivləşdirildi!",
         "desktopPermissionDenied": "Masaüstü bildirişlər üçün icazə rədd edildi",
-        "desktopPermissionError": "Bildiriş icazəsi almaq alınmadı"
+        "desktopPermissionError": "Bildiriş icazəsi almaq alınmadı",
+        "deviceNotificationsTitle": "Cihaz gonderis bildirisleri",
+        "deviceRetentionDaysLabel": "Saxlama muddeti (gun)",
+        "deviceRetentionDaysHelp": "Novbe/cihaz gonderislerinden yaranan bildirisler bu muddetden sonra avtomatik silinir. Yalniz SuperAdmin gore biler."
     }
 }

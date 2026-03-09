@@ -8,7 +8,9 @@
         "all": "Tümü",
         "unread": "Okunmamış",
         "system": "Sistem",
-        "archived": "Arşivlenenler"
+        "archived": "Arşivlenenler",
+        "deviceSend": "Cihaz Gönderimleri",
+        "read": "Okundu"
     },
     "actions": {
         "markAllRead": "Tümünü Okundu İşaretle",
@@ -172,6 +174,9 @@
         "desktopBlocked": "Masaüstü bildirimleri engellendi. Tarayıcı ayarlarından izin verin.",
         "desktopTestMessage": "Masaüstü bildirimleri başarıyla etkinleştirildi!",
         "desktopPermissionDenied": "Masaüstü bildirimleri için izin verilmedi",
-        "desktopPermissionError": "Bildirim izni alınamadı"
+        "desktopPermissionError": "Bildirim izni alınamadı",
+        "deviceNotificationsTitle": "Cihaz Gönderim Bildirimleri",
+        "deviceRetentionDaysLabel": "Bildirim tutma süresi (gün)",
+        "deviceRetentionDaysHelp": "Kuyruk/cihaz gönderimlerinden oluşan bildirimler bu süreden sonra otomatik silinir. Sadece SuperAdmin görebilir."
     }
 }

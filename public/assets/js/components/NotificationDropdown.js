@@ -389,16 +389,16 @@ export class NotificationDropdown {
 
                 ${notification.link && isValidURL(notification.link) ? `
                     <div class="notification-modal-action">
-                        <a href="${escapeHTML(notification.link)}" class="btn btn-outline btn-sm">
+                        <button type="button" class="btn btn-outline btn-sm" id="notification-modal-view-details">
                             <i class="ti ti-external-link"></i>
                             <span>${__('notificationDropdown.viewDetails')}</span>
-                        </a>
+                        </button>
                     </div>
                 ` : ''}
             </div>
         `;
 
-        Modal.show({
+        const modal = Modal.show({
             title: __('notificationDropdown.detailTitle'),
             icon: 'ti-bell',
             content: content,
@@ -407,6 +407,169 @@ export class NotificationDropdown {
             showConfirm: false,
             cancelText: __('modal.close')
         });
+
+        setTimeout(() => {
+            const viewBtn = document.getElementById('notification-modal-view-details');
+            if (!viewBtn) return;
+            viewBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const openedInline = await this.openQueueDetailInline(notification.link);
+                if (!openedInline && notification.link) {
+                    window.location.hash = notification.link;
+                }
+            });
+        }, 50);
+    }
+
+    parseQueueDeepLink(link) {
+        if (!link || typeof link !== 'string') return null;
+        const trimmed = link.trim();
+        let queryString = '';
+        if (trimmed.startsWith('#/admin/queue?')) {
+            queryString = trimmed.slice('#/admin/queue?'.length);
+        } else if (trimmed.startsWith('#/queue?')) {
+            queryString = trimmed.slice('#/queue?'.length);
+        } else {
+            return null;
+        }
+        const params = new URLSearchParams(queryString);
+        const job = (params.get('job') || '').trim();
+        const batch = (params.get('batch') || '').trim();
+        if (!job && !batch) return null;
+        return { job, batch };
+    }
+
+    async openQueueDetailInline(link) {
+        const deepLink = this.parseQueueDeepLink(link);
+        if (!deepLink) return false;
+
+        if (deepLink.job) {
+            return await this.showQueueJobDetailModal(deepLink.job);
+        }
+
+        if (deepLink.batch) {
+            return await this.showQueueBatchDetailModal(deepLink.batch);
+        }
+        return false;
+    }
+
+    async showQueueJobDetailModal(jobId) {
+        try {
+            const __ = window.__ || (k => k);
+            const response = await this.app.api.get(`/render-queue/${encodeURIComponent(jobId)}/status`);
+            if (!response.success || !response.data) {
+                return false;
+            }
+
+            const job = response.data;
+            const items = Array.isArray(job.items) ? job.items : [];
+            const content = `
+                <div class="notification-modal-content">
+                    <div class="notification-modal-details">
+                        <div class="notification-detail-item"><span class="notification-detail-label">${__('jobs.id')}</span><span class="notification-detail-value"><code>${escapeHTML(job.id || '')}</code></span></div>
+                        <div class="notification-detail-item"><span class="notification-detail-label">${__('jobs.status')}</span><span class="notification-detail-value">${escapeHTML(job.status || '-')}</span></div>
+                        <div class="notification-detail-item"><span class="notification-detail-label">${__('jobs.progress')}</span><span class="notification-detail-value">${Number(job.progress ?? job.progress_percent ?? 0)}%</span></div>
+                        <div class="notification-detail-item"><span class="notification-detail-label">${__('jobs.devices')}</span><span class="notification-detail-value">${Number(job.devices_completed || 0)} / ${Number(job.devices_total || 0)}</span></div>
+                    </div>
+                    <div class="notification-modal-message" style="max-height:260px; overflow:auto;">
+                        ${items.map(item => `<p>${escapeHTML(item.device_name || item.device_id || 'Cihaz')} - ${escapeHTML(item.status || '-')}</p>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            Modal.show({
+                title: __('modal.viewDetails'),
+                icon: 'ti-list-details',
+                content,
+                size: 'lg',
+                showFooter: true,
+                showConfirm: false,
+                cancelText: __('modal.close')
+            });
+            return true;
+        } catch (error) {
+            Logger.error('Failed to open inline queue job detail from notification:', error);
+            return false;
+        }
+    }
+
+    async loadBatchJobs(batchId) {
+        const maxPages = 30;
+        const limit = 100;
+        let offset = 0;
+        const allRows = [];
+
+        for (let page = 0; page < maxPages; page += 1) {
+            const response = await this.app.api.get('/render-queue', {
+                status: 'all',
+                limit,
+                offset
+            });
+            const rows = response.success ? (response.data?.queues || []) : [];
+            allRows.push(...rows);
+
+            const pagination = response.data?.pagination || {};
+            const hasMore = Boolean(pagination.has_more);
+            if (!hasMore || rows.length === 0) {
+                break;
+            }
+            offset += limit;
+        }
+
+        return allRows.filter(job => String(job.batch_id || '') === String(batchId));
+    }
+
+    async showQueueBatchDetailModal(batchId) {
+        try {
+            const __ = window.__ || (k => k);
+            const batchJobs = await this.loadBatchJobs(batchId);
+            if (batchJobs.length === 0) return false;
+            if (batchJobs.length === 1) {
+                return await this.showQueueJobDetailModal(batchJobs[0].id);
+            }
+
+            const content = `
+                <div class="notification-modal-content">
+                    <div class="notification-modal-message">
+                        <p>${__('batch.totalProducts')}: ${batchJobs.length}</p>
+                        ${batchJobs.map(job => `
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;">
+                                <span>${escapeHTML(job.product_name || '-')}</span>
+                                <button type="button" class="btn btn-outline btn-sm dropdown-inline-job" data-job-id="${escapeHTML(job.id || '')}">
+                                    <i class="ti ti-eye"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            const modal = Modal.show({
+                title: __('batch.detailTitle'),
+                icon: 'ti-stack-2',
+                content,
+                size: 'lg',
+                showFooter: true,
+                showConfirm: false,
+                cancelText: __('modal.close')
+            });
+
+            setTimeout(() => {
+                const modalEl = document.getElementById(modal.id);
+                modalEl?.querySelectorAll('.dropdown-inline-job')?.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const selectedJobId = btn.getAttribute('data-job-id') || '';
+                        if (selectedJobId) {
+                            this.showQueueJobDetailModal(selectedJobId);
+                        }
+                    });
+                });
+            }, 50);
+            return true;
+        } catch (error) {
+            Logger.error('Failed to open inline queue batch detail from notification:', error);
+            return false;
+        }
     }
 
     /**

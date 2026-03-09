@@ -16,6 +16,7 @@ const DEVICE_CATEGORIES = [
     { key: 'signage_fiyatgor', icon: 'ti-price-tag' },
     { key: 'signage_tv', icon: 'ti-device-tv' }
 ];
+const SUPPORTED_CURRENCIES = ['TRY', 'USD', 'EUR'];
 
 const FEATURE_LIST = [
     'esl_support',
@@ -43,6 +44,7 @@ export class LicensePlanFormPage {
         this.app = app;
         this.plan = null;
         this.isEdit = false;
+        this._lastPerDeviceTypeCurrency = 'TRY';
     }
 
     __(key, params = {}) {
@@ -88,8 +90,8 @@ export class LicensePlanFormPage {
 
         const durationMonths = Math.max(1, parseInt(plan?.duration_months, 10) || 1);
         const perDeviceUnitPrice = this._getPerDeviceUnitPrice(plan);
-        const perDeviceTypeExchangeRate = Math.max(0.01, parseFloat(pricingMeta.exchange_rate) || 1);
-        const perDeviceTypeBaseCurrency = pricingMeta.base_currency || 'USD';
+        const selectedPlanCurrency = plan?.currency || 'TRY';
+        const perDeviceTypeRates = this._resolvePerDeviceTypeRates(selectedPlanCurrency, pricingMeta);
 
         return `
             <div class="page-header">
@@ -215,10 +217,18 @@ export class LicensePlanFormPage {
                                 </h4>
                                 <p class="text-muted text-xs mb-3">${this.__('licenses.plans.form.deviceCategoriesHint')}</p>
                                 <div class="device-category-pricing-grid">
+                                    <div class="device-category-pricing-head">
+                                        <div class="device-category-pricing-head-label"></div>
+                                        <div class="device-category-pricing-head-cols">
+                                            <span>${this.__('licenses.pricing.deviceCount')}</span>
+                                            <span>${this.__('licenses.pricing.unitPrice')}</span>
+                                            <span>${this.__('licenses.plans.form.currency')}</span>
+                                        </div>
+                                    </div>
                                     ${DEVICE_CATEGORIES.map(cat => {
                                         const isChecked = deviceCategories.includes(cat.key);
                                         const defaultPrice = defaultPricing[cat.key]?.unit_price || 0;
-                                        const defaultCurrency = defaultPricing[cat.key]?.currency || perDeviceTypeBaseCurrency;
+                                        const defaultCurrency = defaultPricing[cat.key]?.currency || selectedPlanCurrency;
                                         const defaultCount = parseInt(defaultPricing[cat.key]?.device_count ?? defaultPricing[cat.key]?.default_count ?? 0, 10) || 0;
                                         return `
                                             <div class="device-category-row">
@@ -228,7 +238,7 @@ export class LicensePlanFormPage {
                                                     <span>${this.__('licenses.deviceCategories.' + cat.key)}</span>
                                                 </label>
                                                 <div class="device-category-price-inputs">
-                                                    <input type="number" class="form-input form-input-sm device-cat-count" data-category="${cat.key}" value="${defaultCount}" step="1" min="0" placeholder="Adet" ${!isChecked ? 'disabled' : ''}>
+                                                    <input type="number" class="form-input form-input-sm device-cat-count" data-category="${cat.key}" value="${defaultCount}" step="1" min="0" placeholder="${this.__('licenses.pricing.deviceCount')}" ${!isChecked ? 'disabled' : ''}>
                                                     <input type="number" class="form-input form-input-sm device-cat-price" data-category="${cat.key}" value="${defaultPrice}" step="0.01" min="0" placeholder="${this.__('licenses.pricing.unitPrice')}" ${!isChecked ? 'disabled' : ''}>
                                                     <select class="form-select form-select-sm device-cat-currency" data-category="${cat.key}" ${!isChecked ? 'disabled' : ''}>
                                                         <option value="USD" ${defaultCurrency === 'USD' ? 'selected' : ''}>USD</option>
@@ -240,22 +250,31 @@ export class LicensePlanFormPage {
                                         `;
                                     }).join('')}
                                 </div>
-                                <div class="grid grid-cols-4 gap-4 mt-4">
+                                <div class="grid grid-cols-3 gap-4 mt-4">
+                                    ${SUPPORTED_CURRENCIES.map((fromCurrency) => {
+                                        const isSelected = fromCurrency === selectedPlanCurrency;
+                                        const rateValue = isSelected ? 1 : Math.max(0.000001, parseFloat(perDeviceTypeRates[fromCurrency]) || 1);
+                                        return `
+                                            <div class="form-group">
+                                                <label class="form-label">${this.__('licenses.pricing.exchangeRate')} (1 ${fromCurrency} = ? <span class="rate-target-currency">${selectedPlanCurrency}</span>)</label>
+                                                <input type="number"
+                                                       class="form-input device-rate-input"
+                                                       data-from-currency="${fromCurrency}"
+                                                       value="${rateValue}"
+                                                       step="0.0001"
+                                                       min="0.000001"
+                                                       ${isSelected ? 'readonly' : ''}>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mt-2">
                                     <div class="form-group">
-                                        <label class="form-label">Kur</label>
-                                        <input type="number" id="plan-exchange-rate" class="form-input" value="${perDeviceTypeExchangeRate}" step="0.01" min="0.01">
-                                        <small class="text-muted text-xs">Secili baz para birimi icin manuel kur.</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Baz Para Birimi</label>
-                                        <input type="text" id="plan-base-currency" class="form-input" value="${escapeHTML(perDeviceTypeBaseCurrency)}" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Aylik Toplam</label>
+                                        <label class="form-label">${this.__('licenses.pricing.monthlyTotal')} (<span class="monthly-total-currency">${selectedPlanCurrency}</span>)</label>
                                         <input type="text" id="plan-device-type-monthly-total" class="form-input" value="0.00" readonly>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Aylik TL Karsiligi</label>
+                                        <label class="form-label">${this.__('licenses.pricing.monthlyTotal')} (TRY)</label>
                                         <input type="text" id="plan-device-type-monthly-try-total" class="form-input" value="0.00" readonly>
                                     </div>
                                 </div>
@@ -368,6 +387,124 @@ export class LicensePlanFormPage {
         this.bindEvents();
     }
 
+    _resolvePerDeviceTypeRates(selectedCurrency = 'TRY', pricingMeta = {}) {
+        const safeSelected = SUPPORTED_CURRENCIES.includes(selectedCurrency) ? selectedCurrency : 'TRY';
+        const rates = {};
+        SUPPORTED_CURRENCIES.forEach((currency) => {
+            rates[currency] = currency === safeSelected ? 1 : 1;
+        });
+
+        if (pricingMeta && typeof pricingMeta.exchange_rates === 'object' && pricingMeta.exchange_rates !== null) {
+            SUPPORTED_CURRENCIES.forEach((currency) => {
+                if (currency === safeSelected) return;
+                const val = parseFloat(pricingMeta.exchange_rates[currency]);
+                rates[currency] = Number.isFinite(val) && val > 0 ? val : 1;
+            });
+            return rates;
+        }
+
+        const legacyRate = parseFloat(pricingMeta.exchange_rate);
+        const legacyBase = pricingMeta.base_currency || safeSelected;
+        if (Number.isFinite(legacyRate) && legacyRate > 0) {
+            if (safeSelected === 'TRY' && legacyBase !== 'TRY') {
+                rates[legacyBase] = legacyRate;
+            } else if (legacyBase === safeSelected && safeSelected !== 'TRY') {
+                rates.TRY = 1 / legacyRate;
+            }
+        }
+
+        return rates;
+    }
+
+    _getPerDeviceTypeRateMap(selectedCurrency = 'TRY') {
+        const safeSelected = SUPPORTED_CURRENCIES.includes(selectedCurrency) ? selectedCurrency : 'TRY';
+        const map = {};
+        SUPPORTED_CURRENCIES.forEach((currency) => {
+            if (currency === safeSelected) {
+                map[currency] = 1;
+                return;
+            }
+            const input = document.querySelector(`.device-rate-input[data-from-currency="${currency}"]`);
+            const val = parseFloat(input?.value);
+            map[currency] = Number.isFinite(val) && val > 0 ? val : 1;
+        });
+        return map;
+    }
+
+    _getCurrencyFactor(fromCurrency, toCurrency, rateMap, selectedCurrency) {
+        if (!fromCurrency || !toCurrency) return 1;
+        if (fromCurrency === toCurrency) return 1;
+        if (toCurrency === selectedCurrency) {
+            return Math.max(0.000001, parseFloat(rateMap[fromCurrency]) || 1);
+        }
+        if (fromCurrency === selectedCurrency) {
+            const toToSelected = Math.max(0.000001, parseFloat(rateMap[toCurrency]) || 1);
+            return 1 / toToSelected;
+        }
+        const fromToSelected = Math.max(0.000001, parseFloat(rateMap[fromCurrency]) || 1);
+        const toToSelected = Math.max(0.000001, parseFloat(rateMap[toCurrency]) || 1);
+        return fromToSelected / toToSelected;
+    }
+
+    _toCanonicalTryRates(selectedCurrency, currentRateMap) {
+        const safeSelected = SUPPORTED_CURRENCIES.includes(selectedCurrency) ? selectedCurrency : 'TRY';
+        const safeMap = currentRateMap || {};
+        const selectedToTry = safeSelected === 'TRY'
+            ? 1
+            : (1 / Math.max(0.000001, parseFloat(safeMap.TRY) || 1));
+
+        const canonical = { TRY: 1 };
+        SUPPORTED_CURRENCIES.forEach((currency) => {
+            if (currency === 'TRY') return;
+            if (currency === safeSelected) {
+                canonical[currency] = selectedToTry;
+                return;
+            }
+            const fromToSelected = Math.max(0.000001, parseFloat(safeMap[currency]) || 1);
+            canonical[currency] = fromToSelected * selectedToTry;
+        });
+        return canonical;
+    }
+
+    _fromCanonicalTryRates(targetCurrency, canonicalTryRates) {
+        const safeTarget = SUPPORTED_CURRENCIES.includes(targetCurrency) ? targetCurrency : 'TRY';
+        const targetToTry = Math.max(0.000001, parseFloat(canonicalTryRates?.[safeTarget]) || 1);
+        const map = {};
+
+        SUPPORTED_CURRENCIES.forEach((fromCurrency) => {
+            if (fromCurrency === safeTarget) {
+                map[fromCurrency] = 1;
+                return;
+            }
+            const fromToTry = Math.max(0.000001, parseFloat(canonicalTryRates?.[fromCurrency]) || 1);
+            map[fromCurrency] = fromToTry / targetToTry;
+        });
+
+        return map;
+    }
+
+    _syncRateInputsForCurrencyChange(previousCurrency, currentCurrency) {
+        if (!SUPPORTED_CURRENCIES.includes(currentCurrency)) return;
+
+        const oldMap = this._getPerDeviceTypeRateMap(previousCurrency);
+        const canonicalTryRates = this._toCanonicalTryRates(previousCurrency, oldMap);
+        const newMap = this._fromCanonicalTryRates(currentCurrency, canonicalTryRates);
+
+        document.querySelectorAll('.device-rate-input').forEach((input) => {
+            const fromCurrency = input.dataset.fromCurrency;
+            const isSelected = fromCurrency === currentCurrency;
+            input.readOnly = isSelected;
+            input.value = isSelected ? '1' : (Math.max(0.000001, parseFloat(newMap[fromCurrency]) || 1)).toFixed(6);
+        });
+
+        document.querySelectorAll('.rate-target-currency').forEach((el) => {
+            el.textContent = currentCurrency;
+        });
+        document.querySelectorAll('.monthly-total-currency').forEach((el) => {
+            el.textContent = currentCurrency;
+        });
+    }
+
     bindEvents() {
         // Form submit
         const form = document.getElementById('plan-page-form');
@@ -401,12 +538,6 @@ export class LicensePlanFormPage {
                         input.disabled = !e.target.checked;
                     }
                 });
-                if (e.target.checked) {
-                    const rowCurrency = row?.querySelector('.device-cat-currency');
-                    if (rowCurrency) {
-                        rowCurrency.value = document.getElementById('plan-currency')?.value || rowCurrency.value;
-                    }
-                }
                 this._syncPerDeviceTypePrice();
             });
         });
@@ -416,9 +547,12 @@ export class LicensePlanFormPage {
             input.addEventListener('change', () => this._syncPerDeviceTypePrice());
         });
 
-        document.getElementById('plan-exchange-rate')?.addEventListener('input', () => this._syncPerDeviceTypePrice());
+        document.querySelectorAll('.device-rate-input').forEach((input) => {
+            input.addEventListener('input', () => this._syncPerDeviceTypePrice());
+            input.addEventListener('change', () => this._syncPerDeviceTypePrice());
+        });
         document.getElementById('plan-currency')?.addEventListener('change', () => {
-            this._syncPerDeviceTypeCurrency();
+            this._syncPerDeviceTypeCurrency(true);
             this._syncPerDeviceTypePrice();
         });
 
@@ -442,8 +576,9 @@ export class LicensePlanFormPage {
         }
 
         // Initial sync
+        this._lastPerDeviceTypeCurrency = document.getElementById('plan-currency')?.value || 'TRY';
         this._syncPricingMode();
-        this._syncPerDeviceTypeCurrency();
+        this._syncPerDeviceTypeCurrency(false);
         this._syncPerDeviceTypePrice();
     }
 
@@ -452,7 +587,6 @@ export class LicensePlanFormPage {
         const perDeviceGroup = document.getElementById('per-device-price-group');
         const perDeviceTypeSection = document.getElementById('device-type-pricing-section');
         const priceInput = document.getElementById('plan-price');
-        const currencyInput = document.getElementById('plan-currency');
 
         if (perDeviceGroup) {
             perDeviceGroup.style.display = mode === 'per_device' ? '' : 'none';
@@ -467,7 +601,7 @@ export class LicensePlanFormPage {
         if (mode === 'per_device') {
             this._syncPerDevicePrice();
         } else if (mode === 'per_device_type') {
-            this._syncPerDeviceTypeCurrency();
+            this._syncPerDeviceTypeCurrency(false);
             this._syncPerDeviceTypePrice();
         }
     }
@@ -492,12 +626,11 @@ export class LicensePlanFormPage {
         if (mode !== 'per_device_type') return;
 
         const duration = Math.max(1, parseInt(document.getElementById('plan-duration')?.value, 10) || 1);
-        const exchangeRate = Math.max(0.01, parseFloat(document.getElementById('plan-exchange-rate')?.value) || 1);
         const selectedCurrency = document.getElementById('plan-currency')?.value || 'TRY';
+        const rateMap = this._getPerDeviceTypeRateMap(selectedCurrency);
         const priceInput = document.getElementById('plan-price');
         const monthlyTotalInput = document.getElementById('plan-device-type-monthly-total');
         const monthlyTryTotalInput = document.getElementById('plan-device-type-monthly-try-total');
-        const baseCurrencyInput = document.getElementById('plan-base-currency');
         const summaryEl = document.getElementById('plan-device-type-summary');
 
         const checkedRows = Array.from(document.querySelectorAll('.device-cat-checkbox:checked')).map((checkbox) => {
@@ -505,23 +638,29 @@ export class LicensePlanFormPage {
             const count = parseInt(document.querySelector(`.device-cat-count[data-category="${category}"]`)?.value, 10) || 0;
             const unitPrice = parseFloat(document.querySelector(`.device-cat-price[data-category="${category}"]`)?.value) || 0;
             const currency = document.querySelector(`.device-cat-currency[data-category="${category}"]`)?.value || 'USD';
-
-            return { category, count, unitPrice, currency, subtotal: count * unitPrice };
+            const subtotal = count * unitPrice;
+            const factorToSelected = this._getCurrencyFactor(currency, selectedCurrency, rateMap, selectedCurrency);
+            return { category, count, unitPrice, currency, subtotal, subtotalSelected: subtotal * factorToSelected };
         });
 
-        const currencies = [...new Set(checkedRows.map((row) => row.currency).filter(Boolean))];
-        const baseCurrency = selectedCurrency || currencies[0] || 'USD';
-        const monthlyBaseTotal = checkedRows.reduce((sum, row) => sum + row.subtotal, 0);
-        const monthlyTryTotal = baseCurrency === 'TRY'
-            ? monthlyBaseTotal
-            : (monthlyBaseTotal * exchangeRate);
-        const planTotal = monthlyBaseTotal * duration;
+        const monthlySelectedTotal = checkedRows.reduce((sum, row) => sum + row.subtotalSelected, 0);
+        const selectedToTryFactor = this._getCurrencyFactor(selectedCurrency, 'TRY', rateMap, selectedCurrency);
+        const monthlyTryTotal = monthlySelectedTotal * selectedToTryFactor;
+        const planTotal = monthlySelectedTotal * duration;
+        const currencyBreakdown = {};
+        checkedRows.forEach((row) => {
+            if (!currencyBreakdown[row.currency]) {
+                currencyBreakdown[row.currency] = {
+                    subtotal: 0,
+                    subtotalSelected: 0
+                };
+            }
+            currencyBreakdown[row.currency].subtotal += row.subtotal;
+            currencyBreakdown[row.currency].subtotalSelected += row.subtotalSelected;
+        });
 
-        if (baseCurrencyInput) {
-            baseCurrencyInput.value = baseCurrency;
-        }
         if (monthlyTotalInput) {
-            monthlyTotalInput.value = monthlyBaseTotal.toFixed(2);
+            monthlyTotalInput.value = monthlySelectedTotal.toFixed(2);
         }
         if (monthlyTryTotalInput) {
             monthlyTryTotalInput.value = monthlyTryTotal.toFixed(2);
@@ -530,34 +669,42 @@ export class LicensePlanFormPage {
             priceInput.value = planTotal.toFixed(2);
         }
         if (summaryEl) {
-            const warning = currencies.length > 1
-                ? '<div class="mt-2 text-warning">Birden fazla para birimi secili. Kur tek baz para birimine gore uygulanir.</div>'
-                : '';
+            const breakdownLines = Object.entries(currencyBreakdown).map(([currency, totals]) => {
+                const toSelected = this._getCurrencyFactor(currency, selectedCurrency, rateMap, selectedCurrency);
+                const toTry = this._getCurrencyFactor(currency, 'TRY', rateMap, selectedCurrency);
+                return `
+                    <div>${this.__('licenses.pricing.subtotal')} (${escapeHTML(currency)}): <strong>${totals.subtotal.toFixed(2)}</strong></div>
+                    <div class="text-muted text-xs">${this.__('licenses.pricing.exchangeRate')}: 1 ${escapeHTML(currency)} = ${toSelected.toFixed(6)} ${escapeHTML(selectedCurrency)}</div>
+                    <div class="text-muted text-xs">${this.__('licenses.pricing.exchangeRate')}: 1 ${escapeHTML(currency)} = ${toTry.toFixed(6)} TRY</div>
+                    <div class="text-muted text-xs">${this.__('licenses.pricing.subtotal')} (${escapeHTML(selectedCurrency)}): ${totals.subtotalSelected.toFixed(2)}</div>
+                `;
+            }).join('<hr style="margin:8px 0; border-color:var(--border-color); opacity:.4;">');
+
             summaryEl.innerHTML = `
-                <div>Aylik toplam (${escapeHTML(baseCurrency)}): <strong>${monthlyBaseTotal.toFixed(2)}</strong></div>
-                <div>Aylik toplam (TRY): <strong>${monthlyTryTotal.toFixed(2)}</strong></div>
-                <div>Plan toplam (${escapeHTML(selectedCurrency)}): <strong>${planTotal.toFixed(2)}</strong></div>
-                ${warning}
+                <div>${this.__('licenses.pricing.monthlyTotal')} (${escapeHTML(selectedCurrency)}): <strong>${monthlySelectedTotal.toFixed(2)}</strong></div>
+                <div>${this.__('licenses.pricing.monthlyTotal')} (TRY): <strong>${monthlyTryTotal.toFixed(2)}</strong></div>
+                <div>${this.__('licenses.pricing.annualTotal')} (${escapeHTML(selectedCurrency)}): <strong>${planTotal.toFixed(2)}</strong></div>
+                ${breakdownLines ? `<div class="mt-2">${breakdownLines}</div>` : ''}
             `;
         }
     }
 
-    _syncPerDeviceTypeCurrency() {
+    _syncPerDeviceTypeCurrency(resetRows = false) {
         const mode = document.getElementById('plan-pricing-mode')?.value;
         if (mode !== 'per_device_type') return;
 
         const selectedCurrency = document.getElementById('plan-currency')?.value || 'TRY';
-        const baseCurrencyInput = document.getElementById('plan-base-currency');
+        const previousCurrency = this._lastPerDeviceTypeCurrency || selectedCurrency;
+        this._syncRateInputsForCurrencyChange(previousCurrency, selectedCurrency);
+        this._lastPerDeviceTypeCurrency = selectedCurrency;
 
-        if (baseCurrencyInput) {
-            baseCurrencyInput.value = selectedCurrency;
+        if (resetRows) {
+            document.querySelectorAll('.device-cat-currency').forEach((select) => {
+                if (!select.disabled && !select.value) {
+                    select.value = selectedCurrency;
+                }
+            });
         }
-
-        document.querySelectorAll('.device-cat-currency').forEach((select) => {
-            if (!select.disabled) {
-                select.value = selectedCurrency;
-            }
-        });
     }
 
     _getPerDeviceUnitPrice(plan) {
@@ -621,8 +768,8 @@ export class LicensePlanFormPage {
         let defaultDevicePricing = {};
 
         if (pricingMode === 'per_device_type') {
-            const exchangeRate = Math.max(0.01, parseFloat(document.getElementById('plan-exchange-rate')?.value) || 1);
-            const baseCurrency = document.getElementById('plan-currency')?.value || document.getElementById('plan-base-currency')?.value || 'USD';
+            const baseCurrency = document.getElementById('plan-currency')?.value || 'USD';
+            const exchangeRates = this._getPerDeviceTypeRateMap(baseCurrency);
             const monthlyBaseTotal = Math.max(0, parseFloat(document.getElementById('plan-device-type-monthly-total')?.value) || 0);
 
             document.querySelectorAll('.device-cat-checkbox:checked').forEach(cb => {
@@ -644,13 +791,15 @@ export class LicensePlanFormPage {
             }
 
             if (monthlyBaseTotal <= 0) {
-                Toast.error('Cihaz bazli toplam sifirdan buyuk olmali');
+                Toast.error(this.__('licenses.plans.validation.priceInvalid'));
                 return;
             }
 
             defaultDevicePricing._meta = {
-                exchange_rate: exchangeRate,
-                base_currency: baseCurrency
+                base_currency: baseCurrency,
+                exchange_rates: exchangeRates,
+                // Backward compatibility for legacy readers
+                exchange_rate: this._getCurrencyFactor(baseCurrency, 'TRY', exchangeRates, baseCurrency)
             };
             normalizedPrice = monthlyBaseTotal * Math.max(1, durationMonths);
         }

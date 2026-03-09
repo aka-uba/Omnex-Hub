@@ -1,7 +1,60 @@
 # CLAUDE.md - Omnex Display Hub Gelistirme Rehberi
 
 Bu dosya, Claude AI asistaninin projeyi anlamasi ve devam ettirmesi icin olusturulmustur.
-Son guncelleme: 2026-02-27 (v2.0.23)
+Son guncelleme: 2026-03-08 (v2.0.24)
+
+---
+
+## Codex-Style Workflow (Kalici Calisma Hafizasi)
+
+Bu proje, her gorevde hizli ve tutarli ilerlemek icin kalici hafiza dosyalari kullanir.
+
+### Proje yolu
+
+`C:\xampp\htdocs\market-etiket-sistemi`
+
+### Zorunlu baslangic adimlari (her gorevde)
+
+1. `AGENTS.md` dosyasini oku.
+2. `.codex/PROJECT_SNAPSHOT.md` dosyasini oku.
+3. `.codex/WORKFLOW.md` dosyasini oku.
+4. `.codex/CHANGE_MEMORY.md` dosyasinin son kayitlarini (en az son 80 satir) oku.
+5. Gerekirse derin baglam icin `.claude/CLAUDE.md` icerigini referans al.
+
+### Calisma yontemi
+
+- Istek geldiginde once ilgili dosyalari analiz et, sonra minimum gerekli degisikligi yap.
+- Mevcut kod stilini koru.
+- Gereksiz refactor yapma.
+- Cok dosyali buyuk degisiklik yerine kontrollu, kucuk adimlarla ilerle.
+- Hardcoded kullanici metni ekleme; i18n key kullan.
+- Eklenen/guncellenen her kullanici metni icin desteklenen 8 dilin tamamina ceviri ekle.
+- Yerel dil karakterlerini koru; ceviri metinlerinde diakritikleri/asli karakterleri ASCII'ye indirgeyip bozma.
+
+### Dogrulama (zorunlu)
+
+- Degisen dosya tipine gore `.codex/QUICK_CHECKS.md` icindeki komutlari calistir.
+- En az bir sozdizimi/dogrulama kontrolu yap.
+- Kontrol yapilmadiysa sebebini acikca yaz.
+
+### Hafiza guncelleme (zorunlu, her gorev sonunda)
+
+`.codex/CHANGE_MEMORY.md` dosyasina yeni kayit ekle:
+
+- Tarih
+- Istek ozeti
+- Yapilan degisiklik
+- Degisen dosyalar
+- Calistirilan kontroller
+- Risk / takip aksiyonu
+
+### Guvenlik kurallari
+
+- Hafiza dosyalarina asla secret/token/parola/private key yazma.
+- Loglari kisa, pratik ve gorev odakli tut.
+- Her final yanitta neyin degistigi ve hangi kontrollerin calistigi net belirtilmeli.
+- Dosya encoding'ini koru; yazim sirasinda encoding donusumu yapma.
+- Bozulma/kayip riski olan dosyalarda temp yedekle calis ve gerekirse yedekten geri don.
 
 ---
 

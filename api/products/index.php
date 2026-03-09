@@ -38,7 +38,7 @@ if ($search) {
     $searchTerm = "%$search%";
     $searchTermNorm = "%$searchNorm%";
 
-    // SQLite REPLACE chain for Turkish character normalization on DB fields
+    // REPLACE chain for Turkish character normalization on DB fields
     $normExpr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(name),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
     $normExprSku = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(sku),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
     $normExprBarcode = "LOWER(barcode)";

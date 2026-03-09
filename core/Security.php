@@ -295,7 +295,7 @@ class Security
      * Sanitize filename
      */
     /**
-     * Atomic rate limit check using SQLite
+     * Atomic rate limit check
      */
     public static function checkRateLimitAtomic(string $key, int $limit, int $windowSeconds): bool
     {

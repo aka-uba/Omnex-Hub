@@ -1606,15 +1606,11 @@ export class EditorWrapper {
             const slotTop = frameY + (slotRow * slotHeight);
 
             // Obje center origin ile çalışıyor — yarı genişlik/yükseklik hesapla
-            const halfW = (obj.getScaledWidth?.() || obj.width || 0) / 2;
-            const halfH = (obj.getScaledHeight?.() || obj.height || 0) / 2;
-
-            // Center noktasının slot içinde kalmasını sağla (2px padding)
             const pad = 2;
-            const minX = slotLeft + pad + halfW;
-            const minY = slotTop + pad + halfH;
-            const maxX = slotLeft + slotWidth - pad - halfW;
-            const maxY = slotTop + slotHeight - pad - halfH;
+            const minX = slotLeft + pad;
+            const minY = slotTop + pad;
+            const maxX = slotLeft + slotWidth - pad;
+            const maxY = slotTop + slotHeight - pad;
 
             obj.set({
                 left: Math.max(minX, Math.min(maxX, obj.left)),

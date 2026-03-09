@@ -23,6 +23,7 @@ export class CacheManager {
                 if (event.data?.action === 'reload') {
                     Logger.log('[CacheManager] SW requested reload');
                     window.location.reload(true);
+                    return;
                 }
             });
         }

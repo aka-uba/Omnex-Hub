@@ -9,6 +9,8 @@
  * - priority: low, normal, high, urgent
  * - page: page number (default: 1)
  * - limit: items per page (default: 20)
+ * - sort_by: created_at, title, type, status, priority
+ * - sort_dir: ASC, DESC
  */
 
 $db = Database::getInstance();
@@ -29,7 +31,10 @@ $offset = ($page - 1) * $limit;
 // Status filter
 $status = strtolower((string)$request->query('status', 'active'));
 $type = strtolower(trim((string)$request->query('type', '')));
+$category = strtolower(trim((string)$request->query('category', '')));
 $priority = strtolower(trim((string)$request->query('priority', '')));
+$sortBy = strtolower(trim((string)$request->query('sort_by', 'created_at')));
+$sortDir = strtoupper(trim((string)$request->query('sort_dir', 'DESC')));
 
 $where = ["nr.user_id = ?"];
 $params = [$userId];
@@ -60,6 +65,18 @@ if ($type !== '') {
     $params[] = $type;
 }
 
+// Filter by category
+if ($category !== '') {
+    $validCategories = ['device_send'];
+    if (!in_array($category, $validCategories, true)) {
+        Response::badRequest('Gecersiz bildirim kategorisi');
+    }
+
+    if ($category === 'device_send') {
+        $where[] = "(n.link LIKE '#/admin/queue%' OR n.link LIKE '#/queue%')";
+    }
+}
+
 // Filter by priority
 if ($priority !== '') {
     $validPriorities = ['low', 'normal', 'high', 'urgent'];
@@ -80,6 +97,18 @@ if ($companyId) {
 $where[] = "(n.expires_at IS NULL OR n.expires_at > CURRENT_TIMESTAMP)";
 
 $whereClause = 'WHERE ' . implode(' AND ', $where);
+
+// Sorting (whitelist only)
+$sortMap = [
+    'created_at' => 'n.created_at',
+    'title' => 'n.title',
+    'type' => 'n.type',
+    'status' => 'nr.status',
+    'priority' => 'n.priority'
+];
+$sortColumn = $sortMap[$sortBy] ?? $sortMap['created_at'];
+$sortDirection = in_array($sortDir, ['ASC', 'DESC'], true) ? $sortDir : 'DESC';
+$orderClause = "ORDER BY $sortColumn $sortDirection, n.created_at DESC";
 
 // Total count
 $total = $db->fetchColumn(
@@ -111,11 +140,7 @@ $notifications = $db->fetchAll(
      INNER JOIN notifications n ON nr.notification_id = n.id
      LEFT JOIN users u ON CAST(n.created_by AS TEXT) = CAST(u.id AS TEXT)
      $whereClause
-     ORDER BY
-        CASE nr.status WHEN 'unread' THEN 0 WHEN 'sent' THEN 0 ELSE 1 END,
-        n.priority = 'urgent' DESC,
-        n.priority = 'high' DESC,
-        n.created_at DESC
+     $orderClause
      LIMIT ? OFFSET ?",
     array_merge($params, [$limit, $offset])
 );

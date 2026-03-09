@@ -8,7 +8,9 @@
         "all": "Alle",
         "unread": "Ungelesen",
         "system": "System",
-        "archived": "Archiviert"
+        "archived": "Archiviert",
+        "deviceSend": "Gerate-Sendungen",
+        "read": "Gelesen"
     },
     "actions": {
         "markAllRead": "Alle als gelesen markieren",
@@ -172,6 +174,9 @@
         "desktopBlocked": "Desktop-Benachrichtigungen blockiert. Bitte erlauben Sie diese in den Browser-Einstellungen.",
         "desktopTestMessage": "Desktop-Benachrichtigungen erfolgreich aktiviert!",
         "desktopPermissionDenied": "Berechtigung für Desktop-Benachrichtigungen verweigert",
-        "desktopPermissionError": "Benachrichtigungsberechtigung konnte nicht erhalten werden"
+        "desktopPermissionError": "Benachrichtigungsberechtigung konnte nicht erhalten werden",
+        "deviceNotificationsTitle": "Benachrichtigungen fur Gerate-Sendungen",
+        "deviceRetentionDaysLabel": "Aufbewahrungsdauer (Tage)",
+        "deviceRetentionDaysHelp": "Benachrichtigungen aus Queue/Gerate-Sendungen werden nach dieser Anzahl von Tagen automatisch geloscht. Nur fur SuperAdmin sichtbar."
     }
 }

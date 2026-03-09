@@ -20,6 +20,10 @@ export class TemplateListPage {
         this.dataTable = null;
         this.selectedTemplates = new Set();
         this.isSuperAdmin = (this.app.auth?.getRole() || '').toLowerCase() === 'superadmin';
+        this._hoverPreviewHandlersBound = false;
+        this._hoverPreviewMouseOverHandler = null;
+        this._hoverPreviewMouseOutHandler = null;
+        this._hoverPreviewMouseMoveHandler = null;
     }
 
     /**
@@ -385,8 +389,11 @@ export class TemplateListPage {
         const popup = document.getElementById('image-hover-popup');
         const popupImg = popup.querySelector('img');
 
-        // Event delegation for hover
-        document.addEventListener('mouseover', (e) => {
+        if (this._hoverPreviewHandlersBound) {
+            return;
+        }
+
+        this._hoverPreviewMouseOverHandler = (e) => {
             const trigger = e.target.closest('.image-hover-trigger');
             if (!trigger) return;
 
@@ -406,21 +413,27 @@ export class TemplateListPage {
 
             // Position popup
             this.positionHoverPopup(popup, trigger);
-        });
+        };
 
-        document.addEventListener('mouseout', (e) => {
+        this._hoverPreviewMouseOutHandler = (e) => {
             const trigger = e.target.closest('.image-hover-trigger');
             if (trigger) {
                 popup.classList.remove('visible');
             }
-        });
+        };
 
-        document.addEventListener('mousemove', (e) => {
+        this._hoverPreviewMouseMoveHandler = (e) => {
             const trigger = e.target.closest('.image-hover-trigger');
             if (trigger && popup.classList.contains('visible')) {
                 this.positionHoverPopup(popup, trigger, e);
             }
-        });
+        };
+
+        // Event delegation for hover
+        document.addEventListener('mouseover', this._hoverPreviewMouseOverHandler);
+        document.addEventListener('mouseout', this._hoverPreviewMouseOutHandler);
+        document.addEventListener('mousemove', this._hoverPreviewMouseMoveHandler);
+        this._hoverPreviewHandlersBound = true;
     }
 
     /**
@@ -1168,6 +1181,12 @@ export class TemplateListPage {
 
     destroy() {
         window.templateListPage = null;
+        if (this._hoverPreviewHandlersBound) {
+            document.removeEventListener('mouseover', this._hoverPreviewMouseOverHandler);
+            document.removeEventListener('mouseout', this._hoverPreviewMouseOutHandler);
+            document.removeEventListener('mousemove', this._hoverPreviewMouseMoveHandler);
+            this._hoverPreviewHandlersBound = false;
+        }
         // Remove hover popup
         const popup = document.getElementById('image-hover-popup');
         if (popup) popup.remove();

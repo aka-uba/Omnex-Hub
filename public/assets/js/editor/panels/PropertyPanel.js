@@ -1,8 +1,8 @@
 /**
- * PropertyPanel - Ã–zellikler Paneli
+ * PropertyPanel - Özellikler Paneli
  *
- * SeÃ§ili nesnenin Ã¶zelliklerini dÃ¼zenleme paneli.
- * Pozisyon, boyut, renk, font vb. Ã¶zellikleri yÃ¶netir.
+ * Seçili nesnenin özelliklerini düzenleme paneli.
+ * Pozisyon, boyut, renk, font vb. özellikleri yönetir.
  *
  * KULLANIM:
  * ```javascript
@@ -16,7 +16,7 @@
  *
  * propertyPanel.mount();
  *
- * // SeÃ§ili nesne deÄŸiÅŸtiÄŸinde
+ * // Seçili nesne deðiþtiðinde
  * propertyPanel.setSelectedObject(object);
  * ```
  *
@@ -30,11 +30,11 @@ import { CUSTOM_PROPS, CUSTOM_TYPES } from '../core/CustomProperties.js';
 import { Rect } from '../core/FabricExports.js';
 
 /**
- * PropertyPanel SÄ±nÄ±fÄ±
+ * PropertyPanel Sýnýfý
  */
 export class PropertyPanel extends PanelBase {
     /**
-     * @param {Object} options - Panel ayarlarÄ±
+     * @param {Object} options - Panel ayarlarý
      * @param {Object} options.canvas - Fabric.js Canvas instance
      */
     constructor(options = {}) {
@@ -46,25 +46,25 @@ export class PropertyPanel extends PanelBase {
         });
 
         /**
-         * Fabric.js Canvas referansÄ±
+         * Fabric.js Canvas referansý
          * @type {Object}
          */
         this.canvas = options.canvas;
 
         /**
-         * SeÃ§ili nesne
+         * Seçili nesne
          * @type {Object|null}
          */
         this._selectedObject = null;
 
         /**
-         * GÃ¼ncelleme debounce timer
+         * Güncelleme debounce timer
          * @type {number|null}
          */
         this._updateTimer = null;
 
         /**
-         * Event handler referanslarÄ±
+         * Event handler referanslarý
          * @type {Object}
          */
         this._canvasHandlers = {};
@@ -87,12 +87,12 @@ export class PropertyPanel extends PanelBase {
         this._preloadEditorFonts();
         this._framePreviewPopupEl = null;
 
-        // Canvas event'lerini baÄŸla
+        // Canvas event'lerini baðla
         this._bindCanvasEvents();
     }
 
     /**
-     * Canvas event'lerini baÄŸla
+     * Canvas event'lerini baðla
      * @private
      */
     _bindCanvasEvents() {
@@ -123,7 +123,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * SeÃ§ili nesneyi ayarla
+     * Seçili nesneyi ayarla
      * @param {Object|null} object - Fabric.js nesnesi
      */
     setSelectedObject(object) {
@@ -134,7 +134,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Panel iÃ§eriÄŸini render et
+     * Panel içeriðini render et
      * @returns {string} HTML string
      */
     renderContent() {
@@ -143,59 +143,59 @@ export class PropertyPanel extends PanelBase {
         }
 
         const objectType = this._selectedObject.type;
-        // Fabric.js v7: .get() custom prop'larÄ± gÃ¼venilir dÃ¶ndÃ¼rmeyebilir, direct access da dene
+        // Fabric.js v7: .get() custom prop'larý güvenilir döndürmeyebilir, direct access da dene
         const customType = this._selectedObject[CUSTOM_PROPS.CUSTOM_TYPE] || this._selectedObject.get(CUSTOM_PROPS.TYPE);
 
-        // Nesne tipine gÃ¶re panel iÃ§eriÄŸi
+        // Nesne tipine göre panel içeriði
         let sections = [];
 
-        // Nesne tanÄ±mlayÄ±cÄ± baÅŸlÄ±k (en Ã¼ste)
+        // Nesne tanýmlayýcý baþlýk (en üste)
         sections.push(this._renderObjectHeader());
 
-        // Pozisyon & Boyut (tÃ¼m nesneler)
+        // Pozisyon & Boyut (tüm nesneler)
         sections.push(this._renderPositionSection());
 
-        // Metin Ã¶zellikleri
+        // Metin özellikleri
         if (this._isTextObject()) {
             sections.push(this._renderTextSection());
         }
 
-        // Åžekil Ã¶zellikleri
+        // Þekil özellikleri
         if (this._isShapeObject()) {
             sections.push(this._renderShapeSection());
         }
 
-        // Dinamik GÃ¶rsel Ã¶zellikleri (image-placeholder veya slot-image seÃ§ildiÄŸinde)
+        // Dinamik Görsel özellikleri (image-placeholder veya slot-image seçildiðinde)
         const isDynamicImage = customType === 'image-placeholder' || customType === CUSTOM_TYPES.DYNAMIC_IMAGE || customType === CUSTOM_TYPES.SLOT_IMAGE;
-        // Fallback: dynamicField = image_url olan non-text nesneler de dinamik gÃ¶rseldir
+        // Fallback: dynamicField = image_url olan non-text nesneler de dinamik görseldir
         const dynamicFieldValue = this._selectedObject[CUSTOM_PROPS.DYNAMIC_FIELD] || this._selectedObject.get(CUSTOM_PROPS.DYNAMIC_FIELD);
         const isImageFieldFallback = dynamicFieldValue === 'image_url' && !this._isTextObject();
         if (isDynamicImage || isImageFieldFallback) {
             sections.push(this._renderDynamicImageSection());
         }
 
-        // Barkod/QR dÃ¼zenleme
+        // Barkod/QR düzenleme
         if (customType === CUSTOM_TYPES.BARCODE || customType === CUSTOM_TYPES.QRCODE) {
             sections.push(this._renderBarcodeSection());
         }
-        // GÃ¶rsel Ã¶zellikleri (barkod/QR hariÃ§ - onlar image tipinde ama kendi bÃ¶lÃ¼mleri var)
+        // Görsel özellikleri (barkod/QR hariç - onlar image tipinde ama kendi bölümleri var)
         else if (objectType === 'image' || objectType === 'Image') {
             sections.push(this._renderImageSection());
         }
 
-        // KenarlÄ±k & KÃ¶ÅŸe YuvarlaklÄ±ÄŸÄ± (tÃ¼m nesneler)
+        // Kenarlýk & Köþe Yuvarlaklýðý (tüm nesneler)
         sections.push(this._renderBorderSection());
 
-        // GÃ¶lge (tÃ¼m nesneler)
+        // Gölge (tüm nesneler)
         sections.push(this._renderShadowSection());
 
-        // Ã‡erÃ§eve (frame overlay) - overlay seÃ§ili olsa da hedef nesneye yÃ¶nlenerek gÃ¶ster
+        // Çerçeve (frame overlay) - overlay seçili olsa da hedef nesneye yönlenerek göster
         sections.push(this._renderFrameSection());
 
-        // Genel Ã¶zellikler (tÃ¼m nesneler)
+        // Genel özellikler (tüm nesneler)
         sections.push(this._renderGeneralSection());
 
-        // Responsive ayarlarÄ± (anchor, text fit) - tÃ¼m nesneler
+        // Responsive ayarlarý (anchor, text fit) - tüm nesneler
         sections.push(this._renderResponsiveSection());
 
         return `
@@ -206,7 +206,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * SeÃ§im yok mesajÄ±
+     * Seçim yok mesajý
      * @private
      * @returns {string}
      */
@@ -220,7 +220,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Nesne tanÄ±mlayÄ±cÄ± baÅŸlÄ±k
+     * Nesne tanýmlayýcý baþlýk
      * @private
      * @returns {string}
      */
@@ -234,16 +234,16 @@ export class PropertyPanel extends PanelBase {
         const placeholder = obj[CUSTOM_PROPS.PLACEHOLDER] || obj.get(CUSTOM_PROPS.PLACEHOLDER);
         const objectName = obj[CUSTOM_PROPS.OBJECT_NAME] || obj.get(CUSTOM_PROPS.OBJECT_NAME);
 
-        // Ä°kon belirle
+        // Ýkon belirle
         const icon = this._getObjectHeaderIcon(customType);
 
-        // Nesne adÄ±nÄ± belirle (Ã¶ncelik sÄ±rasÄ±)
+        // Nesne adýný belirle (öncelik sýrasý)
         let displayName = '';
         let typeBadge = '';
 
         if (dynamicField) {
-            // Dinamik alanlarda Ã¼st satÄ±r: tasarÄ±m adÄ± (objectName) Ã¶ncelikli
-            // Alt satÄ±r: alan etiketi (Ã¶rn. description -> AÃ§Ä±klama/ÃœrÃ¼n AÃ§Ä±klama)
+            // Dinamik alanlarda üst satýr: tasarým adý (objectName) öncelikli
+            // Alt satýr: alan etiketi (örn. description -> Açýklama/Ürün Açýklama)
             const dynamicLabel = this._getDynamicFieldDisplayName(dynamicField, placeholder);
             displayName = objectName || dynamicLabel || `{${dynamicField}}`;
             typeBadge = dynamicLabel || this.__('editor.elements.dynamicText');
@@ -271,7 +271,7 @@ export class PropertyPanel extends PanelBase {
             typeBadge = this._getTypeDisplayName(customType);
         }
 
-        // EÄŸer displayName ve typeBadge aynÄ±ysa badge gÃ¶sterme
+        // Eðer displayName ve typeBadge aynýysa badge gösterme
         const showBadge = typeBadge && typeBadge !== displayName;
 
         return `
@@ -309,7 +309,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Nesne baÅŸlÄ±ÄŸÄ± iÃ§in ikon
+     * Nesne baþlýðý için ikon
      * @private
      * @param {string} type - Custom type
      * @returns {string}
@@ -345,7 +345,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Tip gÃ¶sterim adÄ±
+     * Tip gösterim adý
      * @private
      * @param {string} type - Custom type
      * @returns {string}
@@ -375,7 +375,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Pozisyon & Boyut bÃ¶lÃ¼mÃ¼
+     * Pozisyon & Boyut bölümü
      * @private
      * @returns {string}
      */
@@ -417,7 +417,7 @@ export class PropertyPanel extends PanelBase {
                         <div class="property-input-group">
                             <input type="range" class="form-range" data-property="angle" value="${angle}" min="0" max="360">
                             <input type="number" class="form-input form-input-sm" data-property="angle" value="${angle}" min="0" max="360">
-                            <span>Â°</span>
+                            <span>°</span>
                         </div>
                     </div>
                 </div>
@@ -426,7 +426,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Metin Ã¶zellikleri bÃ¶lÃ¼mÃ¼
+     * Metin özellikleri bölümü
      * @private
      * @returns {string}
      */
@@ -457,7 +457,7 @@ export class PropertyPanel extends PanelBase {
                 </div>
                 <div class="property-section-body">
                     <div class="property-item">
-                        <label>${this.__('editor.properties.content') || 'Metin Ä°Ã§eriÄŸi'}</label>
+                        <label>${this.__('editor.properties.content') || 'Metin Ýçeriði'}</label>
                         <textarea class="form-input" data-property="text" rows="3">${textValue}</textarea>
                     </div>
                     <div class="property-item">
@@ -536,7 +536,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Åžekil Ã¶zellikleri bÃ¶lÃ¼mÃ¼
+     * Þekil özellikleri bölümü
      * @private
      * @returns {string}
      */
@@ -560,7 +560,7 @@ export class PropertyPanel extends PanelBase {
                         <div class="property-color-row property-color-input with-action">
                             <input type="color" class="form-color" data-property="fill" value="${this._normalizeColorHex(fill)}">
                             <input type="text" class="form-input form-color-hex" data-color-hex-for="fill" value="${this._normalizeColorHex(fill)}" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
-                            <button type="button" class="btn-icon btn-clear-fill" data-action="clear-fill" title="${this.__('editor.properties.noFill') || 'Ä°Ã§ Dolgu Yok'}">
+                            <button type="button" class="btn-icon btn-clear-fill" data-action="clear-fill" title="${this.__('editor.properties.noFill') || 'Ýç Dolgu Yok'}">
                                 <i class="ti ti-ban"></i>
                             </button>
                         </div>
@@ -758,7 +758,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * GÃ¶rsel Ã¶zellikleri bÃ¶lÃ¼mÃ¼
+     * Görsel özellikleri bölümü
      * @private
      * @returns {string}
      */
@@ -793,8 +793,8 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Dinamik GÃ¶rsel Ã¶zellikleri bÃ¶lÃ¼mÃ¼ (image-placeholder / slot-image)
-     * GÃ¶rsel indeks seÃ§imi ve fit modu ayarlarÄ±
+     * Dinamik Görsel özellikleri bölümü (image-placeholder / slot-image)
+     * Görsel indeks seçimi ve fit modu ayarlarý
      * @private
      * @returns {string}
      */
@@ -840,7 +840,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Barkod/QR dÃ¼zenleme bÃ¶lÃ¼mÃ¼
+     * Barkod/QR düzenleme bölümü
      * @private
      * @returns {string}
      */
@@ -872,7 +872,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * KenarlÄ±k & KÃ¶ÅŸe YuvarlaklÄ±ÄŸÄ± bÃ¶lÃ¼mÃ¼ (tÃ¼m nesneler iÃ§in)
+     * Kenarlýk & Köþe Yuvarlaklýðý bölümü (tüm nesneler için)
      * @private
      * @returns {string}
      */
@@ -886,14 +886,14 @@ export class PropertyPanel extends PanelBase {
         const lineStyle = this._linePresetFromDashArray(obj?.strokeDashArray);
         const lineCap = String(obj?.strokeLineCap || 'round').toLowerCase();
 
-        // Stroke rengi - boÅŸ veya null ise transparan gÃ¶ster
+        // Stroke rengi - boþ veya null ise transparan göster
         const strokeColor = stroke && stroke !== 'transparent' ? stroke : '#000000';
         const hasStroke = stroke && stroke !== 'transparent' && strokeWidth > 0;
 
-        // KÃ¶ÅŸe yuvarlaklÄ±ÄŸÄ± sadece rect tÃ¼rÃ¼ nesneler iÃ§in geÃ§erli
+        // Köþe yuvarlaklýðý sadece rect türü nesneler için geçerli
         const isRect = type === 'rect' || type === 'Rect';
-        // GÃ¶rseller iÃ§in clipPath ile rx etkisi verilemez ama Fabric.js image'larda
-        // stroke ve shadow Ã§alÄ±ÅŸÄ±r
+        // Görseller için clipPath ile rx etkisi verilemez ama Fabric.js image'larda
+        // stroke ve shadow çalýþýr
         const isImage = type === 'image' || type === 'Image';
 
         return `
@@ -960,7 +960,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * GÃ¶lge bÃ¶lÃ¼mÃ¼ (tÃ¼m nesneler iÃ§in)
+     * Gölge bölümü (tüm nesneler için)
      * @private
      * @returns {string}
      */
@@ -976,7 +976,7 @@ export class PropertyPanel extends PanelBase {
         const shadowOffsetY = shadow?.offsetY || 0;
         const shadowBlur = shadow?.blur || 0;
 
-        // Shadow color'Ä± hex'e dÃ¶nÃ¼ÅŸtÃ¼r (rgba olabilir)
+        // Shadow color'ý hex'e dönüþtür (rgba olabilir)
         const hexColor = this._shadowColorToHex(shadowColor);
 
         return `
@@ -1022,9 +1022,9 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Shadow rengini hex'e dÃ¶nÃ¼ÅŸtÃ¼r
+     * Shadow rengini hex'e dönüþtür
      * @private
-     * @param {string} color - Renk deÄŸeri (rgba, hex, named)
+     * @param {string} color - Renk deðeri (rgba, hex, named)
      * @returns {string} Hex renk
      */
     _shadowColorToHex(color) {
@@ -1032,14 +1032,14 @@ export class PropertyPanel extends PanelBase {
 
         // Zaten hex ise
         if (color.startsWith('#')) {
-            // 3 haneli hex'i 6 haneliye dÃ¶nÃ¼ÅŸtÃ¼r
+            // 3 haneli hex'i 6 haneliye dönüþtür
             if (color.length === 4) {
                 return '#' + color[1] + color[1] + color[2] + color[2] + color[3] + color[3];
             }
-            return color.substring(0, 7); // alpha kÄ±smÄ±nÄ± kes
+            return color.substring(0, 7); // alpha kýsmýný kes
         }
 
-        // rgba() formatÄ±
+        // rgba() formatý
         const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (rgbaMatch) {
             const r = parseInt(rgbaMatch[1]).toString(16).padStart(2, '0');
@@ -1052,7 +1052,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Ã‡erÃ§eve (Frame Overlay) bÃ¶lÃ¼mÃ¼
+     * Çerçeve (Frame Overlay) bölümü
      * @private
      * @returns {string}
      */
@@ -1094,7 +1094,7 @@ export class PropertyPanel extends PanelBase {
                         </div>
                     </div>
                     <div class="property-item">
-                        <label>${this.__('editor.frame.color') || 'Ã‡erÃ§eve Rengi'}</label>
+                        <label>${this.__('editor.frame.color') || 'Çerçeve Rengi'}</label>
                         ${this._renderColorInput('frameColor', frameColor)}
                     </div>
                     <div class="frame-actions">
@@ -1315,17 +1315,17 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Shadow Ã¶zelliÄŸini gÃ¼ncelle
+     * Shadow özelliðini güncelle
      * @private
      * @param {string} property - shadow-color, shadow-offsetX, shadow-offsetY, shadow-blur
-     * @param {*} value - Yeni deÄŸer
+     * @param {*} value - Yeni deðer
      */
     _updateShadowProperty(property, value) {
         if (!this._selectedObject) return;
 
         let shadow = this._selectedObject.shadow;
         if (!shadow) {
-            // Fabric.js v7 Shadow nesnesi oluÅŸtur
+            // Fabric.js v7 Shadow nesnesi oluþtur
             const ShadowClass = window.fabric?.Shadow;
             if (ShadowClass) {
                 shadow = new ShadowClass({
@@ -1362,7 +1362,7 @@ export class PropertyPanel extends PanelBase {
     /**
      * Shadow toggle
      * @private
-     * @param {boolean} enable - GÃ¶lge aktif/pasif
+     * @param {boolean} enable - Gölge aktif/pasif
      */
     _toggleShadow(enable) {
         if (!this._selectedObject) return;
@@ -1516,7 +1516,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Genel Ã¶zellikler bÃ¶lÃ¼mÃ¼
+     * Genel özellikler bölümü
      * @private
      * @returns {string}
      */
@@ -1554,7 +1554,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Responsive Ã¶zellikleri bÃ¶lÃ¼mÃ¼ (anchor, text fit)
+     * Responsive özellikleri bölümü (anchor, text fit)
      * @private
      * @returns {string}
      */
@@ -1610,7 +1610,7 @@ export class PropertyPanel extends PanelBase {
                 </div>
                 <div class="property-section-body">
                     <div class="property-item">
-                        <label>${this.__('editor.properties.anchorX') || 'Yatay Ã‡apa'}</label>
+                        <label>${this.__('editor.properties.anchorX') || 'Yatay Çapa'}</label>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-icon ${anchorX === 'left' ? 'active' : ''}" data-property="anchorX" data-value="left" title="Sol">
                                 <i class="ti ti-align-left"></i>
@@ -1618,15 +1618,15 @@ export class PropertyPanel extends PanelBase {
                             <button class="btn btn-icon ${anchorX === 'center' ? 'active' : ''}" data-property="anchorX" data-value="center" title="Orta">
                                 <i class="ti ti-align-center"></i>
                             </button>
-                            <button class="btn btn-icon ${anchorX === 'right' ? 'active' : ''}" data-property="anchorX" data-value="right" title="SaÄŸ">
+                            <button class="btn btn-icon ${anchorX === 'right' ? 'active' : ''}" data-property="anchorX" data-value="right" title="Sað">
                                 <i class="ti ti-align-right"></i>
                             </button>
                         </div>
                     </div>
                     <div class="property-item">
-                        <label>${this.__('editor.properties.anchorY') || 'Dikey Ã‡apa'}</label>
+                        <label>${this.__('editor.properties.anchorY') || 'Dikey Çapa'}</label>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-icon ${anchorY === 'top' ? 'active' : ''}" data-property="anchorY" data-value="top" title="Ãœst">
+                            <button class="btn btn-icon ${anchorY === 'top' ? 'active' : ''}" data-property="anchorY" data-value="top" title="Üst">
                                 <i class="ti ti-align-box-top-center"></i>
                             </button>
                             <button class="btn btn-icon ${anchorY === 'center' ? 'active' : ''}" data-property="anchorY" data-value="center" title="Orta">
@@ -1642,8 +1642,8 @@ export class PropertyPanel extends PanelBase {
                         <label>${this.__('editor.properties.textFit') || 'Metin Uyumu'}</label>
                         <select class="form-select form-select-sm" data-property="textFit">
                             <option value="none" ${textFit === 'none' ? 'selected' : ''}>${this.__('editor.properties.textFitNone') || 'Yok'}</option>
-                            <option value="shrink" ${textFit === 'shrink' ? 'selected' : ''}>${this.__('editor.properties.textFitShrink') || 'KÃ¼Ã§Ã¼lt'}</option>
-                            <option value="ellipsis" ${textFit === 'ellipsis' ? 'selected' : ''}>${this.__('editor.properties.textFitEllipsis') || 'ÃœÃ§ Nokta (...)'}</option>
+                            <option value="shrink" ${textFit === 'shrink' ? 'selected' : ''}>${this.__('editor.properties.textFitShrink') || 'Küçült'}</option>
+                            <option value="ellipsis" ${textFit === 'ellipsis' ? 'selected' : ''}>${this.__('editor.properties.textFitEllipsis') || 'Üç Nokta (...)'}</option>
                         </select>
                     </div>
                     <div class="property-item" ${textFit === 'shrink' ? '' : 'style="display:none"'} data-show-for-textfit="shrink">
@@ -1651,12 +1651,12 @@ export class PropertyPanel extends PanelBase {
                         <input type="number" class="form-input form-input-sm" data-property="minFontSize" value="${minFontSize}" min="4" max="72">
                     </div>
                     <div class="property-item" ${textFit === 'ellipsis' ? '' : 'style="display:none"'} data-show-for-textfit="ellipsis">
-                        <label>${this.__('editor.properties.maxLines') || 'Max SatÄ±r'}</label>
+                        <label>${this.__('editor.properties.maxLines') || 'Max Satýr'}</label>
                         <input type="number" class="form-input form-input-sm" data-property="maxLines" value="${maxLines}" min="0" max="20">
                     </div>
                     ${isPriceText ? `
                     <div class="property-item">
-                        <label>Fiyat OndalÄ±k Hane</label>
+                        <label>Fiyat Ondalýk Hane</label>
                         <select class="form-select form-select-sm" data-property="priceFractionDigits">
                             <option value="-1" ${fractionDigits === -1 ? 'selected' : ''}>Otomatik</option>
                             <option value="1" ${fractionDigits === 1 ? 'selected' : ''}>1 Hane</option>
@@ -1664,17 +1664,17 @@ export class PropertyPanel extends PanelBase {
                         </select>
                     </div>
                     <div class="property-item">
-                        <label>OndalÄ±k Boyut (%)</label>
+                        <label>Ondalýk Boyut (%)</label>
                         <input type="number" class="form-input form-input-sm" data-property="priceFractionScalePercent" value="${fractionScalePercent}" min="30" max="100">
                     </div>
                     <div class="property-item property-checkbox">
                         <label>
                             <input type="checkbox" data-property="priceMidlineEnabled" ${midlineEnabled ? 'checked' : ''}>
-                            Fiyat Orta Ã‡izgi
+                            Fiyat Orta Çizgi
                         </label>
                     </div>
                     <div class="property-item">
-                        <label>Ã‡izgi KalÄ±nlÄ±ÄŸÄ±</label>
+                        <label>Çizgi Kalýnlýðý</label>
                         <input type="number" class="form-input form-input-sm" data-property="priceMidlineThickness" value="${midlineThickness}" min="1" max="8">
                     </div>
                     ` : ''}
@@ -1685,12 +1685,12 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Event'leri baÄŸla
+     * Event'leri baðla
      */
     bindEvents() {
         if (!this.element) return;
 
-        // Input deÄŸiÅŸiklikleri
+        // Input deðiþiklikleri
         this.$$('input[data-property], select[data-property], textarea[data-property]').forEach(input => {
             this._addEventListener(input, 'input', (e) => this._handlePropertyChange(e));
             this._addEventListener(input, 'change', (e) => this._handlePropertyChange(e));
@@ -1742,7 +1742,7 @@ export class PropertyPanel extends PanelBase {
             });
         });
 
-        // Style butonlarÄ±
+        // Style butonlarý
         this.$$('[data-action="toggle-bold"]').forEach(btn => {
             this._addEventListener(btn, 'click', () => this._toggleBold());
         });
@@ -1759,7 +1759,7 @@ export class PropertyPanel extends PanelBase {
             this._addEventListener(btn, 'click', () => this._toggleLinethrough());
         });
 
-        // Alignment butonlarÄ±
+        // Alignment butonlarý
         this.$$('[data-action="align"]').forEach(btn => {
             this._addEventListener(btn, 'click', (e) => {
                 const value = e.currentTarget.dataset.value;
@@ -1784,17 +1784,17 @@ export class PropertyPanel extends PanelBase {
             });
         });
 
-        // Clear stroke (kenarlÄ±k yok butonu)
+        // Clear stroke (kenarlýk yok butonu)
         this.$$('[data-action="clear-stroke"]').forEach(btn => {
             this._addEventListener(btn, 'click', () => this._clearStroke());
         });
 
-        // Clear fill (iÃ§ dolgu yok)
+        // Clear fill (iç dolgu yok)
         this.$$('[data-action="clear-fill"]').forEach(btn => {
             this._addEventListener(btn, 'click', () => this._clearFill());
         });
 
-        // Responsive: Anchor butonlarÄ± (data-property="anchorX/Y" data-value="left/center/right")
+        // Responsive: Anchor butonlarý (data-property="anchorX/Y" data-value="left/center/right")
         this.$$('.btn-group .btn-icon[data-property]').forEach(btn => {
             this._addEventListener(btn, 'click', (e) => {
                 const prop = btn.dataset.property;
@@ -1805,14 +1805,14 @@ export class PropertyPanel extends PanelBase {
                 this.canvas?.requestRenderAll();
                 this._emitModified();
 
-                // Active state gÃ¼ncelle
+                // Active state güncelle
                 btn.closest('.btn-group')?.querySelectorAll('.btn-icon').forEach(b => {
                     b.classList.toggle('active', b.dataset.value === val);
                 });
             });
         });
 
-        // Responsive: textFit deÄŸiÅŸtiÄŸinde min font / max lines gÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼
+        // Responsive: textFit deðiþtiðinde min font / max lines görünürlüðü
         this.$$('select[data-property="textFit"]').forEach(sel => {
             this._addEventListener(sel, 'change', () => {
                 const val = sel.value;
@@ -1837,7 +1837,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Ã–zellik deÄŸiÅŸikliÄŸini iÅŸle
+     * Özellik deðiþikliðini iþle
      * @private
      * @param {Event} e - Input event
      */
@@ -1848,12 +1848,12 @@ export class PropertyPanel extends PanelBase {
         const property = input.dataset.property;
         let value = input.type === 'checkbox' ? input.checked : input.value;
 
-        // SayÄ±sal deÄŸerleri dÃ¶nÃ¼ÅŸtÃ¼r
+        // Sayýsal deðerleri dönüþtür
         if (input.type === 'number' || input.type === 'range') {
             value = parseFloat(value);
         }
 
-        // Ã–zel iÅŸlemler
+        // Özel iþlemler
         const objType = (this._selectedObject.type || '').toLowerCase();
         const isTextObject = this._isDirectTextObject(this._selectedObject);
         const textTargets = this._getTextTargets();
@@ -1866,12 +1866,12 @@ export class PropertyPanel extends PanelBase {
         switch (property) {
             case 'width':
                 if (isTextObject) {
-                    // Metin nesneleri iÃ§in doÄŸrudan width set et (scaleX kullanma, stretch olur)
+                    // Metin nesneleri için doðrudan width set et (scaleX kullanma, stretch olur)
                     this._selectedObject.set({ width: value, scaleX: 1 });
                     if (this._selectedObject.initDimensions) this._selectedObject.initDimensions();
                     this._markTextWidthManual(this._selectedObject);
                 } else {
-                    // DiÄŸer nesneler iÃ§in scale ile boyutlandÄ±r
+                    // Diðer nesneler için scale ile boyutlandýr
                     const currentWidth = this._selectedObject.width * this._selectedObject.scaleX;
                     if (currentWidth !== value) {
                         this._selectedObject.set('scaleX', value / this._selectedObject.width);
@@ -1881,9 +1881,9 @@ export class PropertyPanel extends PanelBase {
 
             case 'height':
                 if (isTextObject) {
-                    // Metin nesneleri iÃ§in height scaleY Ã¼zerinden deÄŸil, doÄŸrudan set
+                    // Metin nesneleri için height scaleY üzerinden deðil, doðrudan set
                     this._selectedObject.set({ scaleY: 1 });
-                    // Textbox'ta height metin iÃ§eriÄŸine gÃ¶re otomatik hesaplanÄ±r
+                    // Textbox'ta height metin içeriðine göre otomatik hesaplanýr
                 } else {
                     const currentHeight = this._selectedObject.height * this._selectedObject.scaleY;
                     if (currentHeight !== value) {
@@ -1893,7 +1893,7 @@ export class PropertyPanel extends PanelBase {
                 break;
 
             case 'opacity':
-                // YÃ¼zdeyi 0-1 aralÄ±ÄŸÄ±na dÃ¶nÃ¼ÅŸtÃ¼r
+                // Yüzdeyi 0-1 aralýðýna dönüþtür
                 this._selectedObject.set('opacity', value / 100);
                 this._selectedObject.dirty = true;
                 this._getObjectChildren(this._selectedObject).forEach((child) => {
@@ -1902,7 +1902,7 @@ export class PropertyPanel extends PanelBase {
                 break;
 
             case 'imageIndex':
-                // GÃ¶rsel indeksini integer olarak ayarla (both .set() and direct for v7 compat)
+                // Görsel indeksini integer olarak ayarla (both .set() and direct for v7 compat)
                 {
                     const idx = parseInt(value) || 0;
                     this._selectedObject.set(CUSTOM_PROPS.IMAGE_INDEX, idx);
@@ -2123,7 +2123,7 @@ export class PropertyPanel extends PanelBase {
             });
         }
 
-        // Range-Number sync: aynÄ± property'li diÄŸer input'u gÃ¼ncelle
+        // Range-Number sync: ayný property'li diðer input'u güncelle
         if (input.type === 'range' || input.type === 'number') {
             const siblings = this.$$(`input[data-property="${property}"]`);
             siblings.forEach(sib => {
@@ -2138,9 +2138,9 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * GÃ¶rsel nesnelerde kÃ¶ÅŸe yuvarlama (clipPath ile)
+     * Görsel nesnelerde köþe yuvarlama (clipPath ile)
      * @private
-     * @param {number} radius - KÃ¶ÅŸe yarÄ±Ã§apÄ±
+     * @param {number} radius - Köþe yarýçapý
      */
     _applyImageCornerRadius(radius) {
         if (!this._selectedObject) return;
@@ -2249,7 +2249,7 @@ export class PropertyPanel extends PanelBase {
     /**
      * Text alignment ayarla
      * @private
-     * @param {string} align - Hizalama deÄŸeri
+     * @param {string} align - Hizalama deðeri
      */
     _setTextAlign(align) {
         if (!this._selectedObject) return;
@@ -2269,7 +2269,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * GÃ¶rsel deÄŸiÅŸtir
+     * Görsel deðiþtir
      * @private
      */
     _replaceImage() {
@@ -2279,7 +2279,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Barkod/QR dÃ¼zenle
+     * Barkod/QR düzenle
      * @private
      */
     _editBarcode() {
@@ -2289,7 +2289,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Ã–zellik deÄŸerlerini gÃ¼ncelle (canvas'tan oku)
+     * Özellik deðerlerini güncelle (canvas'tan oku)
      * @private
      */
     _updatePropertyValues() {
@@ -2322,7 +2322,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Nesne doÃ„Å¸rudan metin mi?
+     * Nesne doÄŸrudan metin mi?
      * @private
      * @param {Object|null} obj
      * @returns {boolean}
@@ -2334,7 +2334,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Group/selection iÃƒÂ§indeki child nesneleri al
+     * Group/selection iÃ§indeki child nesneleri al
      * @private
      * @param {Object} obj
      * @returns {Array}
@@ -2351,7 +2351,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * SeÃƒÂ§ili nesnede dÃƒÂ¼zenlenebilir metin hedeflerini al
+     * SeÃ§ili nesnede dÃ¼zenlenebilir metin hedeflerini al
      * @private
      * @returns {Array}
      */
@@ -2530,7 +2530,7 @@ export class PropertyPanel extends PanelBase {
 
         let text = String(this._readObjectProp(target, 'text', '') ?? '');
         if (!text || /\{\{\s*[^}]+\s*\}\}/.test(text)) {
-            text = '24,89 â‚º';
+            text = '24,89 ?';
         }
 
         const digitsRaw = Number(this._readObjectProp(target, CUSTOM_PROPS.PRICE_FRACTION_DIGITS, -1));
@@ -2590,7 +2590,7 @@ export class PropertyPanel extends PanelBase {
         target.set('offsets', priceMidlineOffsets);
         target.offsets = priceMidlineOffsets;
         // Fabric.js v7 formula: textDecorationThickness * scaleY / 10
-        // So multiply by 10 to get actual pixel values (1-8 â†’ 10-80)
+        // So multiply by 10 to get actual pixel values (1-8 › 10-80)
         const fabricThickness = midlineThickness * 6;
         target.set('textDecorationThickness', fabricThickness);
         target.textDecorationThickness = fabricThickness;
@@ -2742,7 +2742,7 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Nesne ÅŸekil mi?
+     * Nesne þekil mi?
      * @private
      * @returns {boolean}
      */
@@ -2761,11 +2761,11 @@ export class PropertyPanel extends PanelBase {
     }
 
     /**
-     * Canvas referansÄ±nÄ± ayarla
+     * Canvas referansýný ayarla
      * @param {Object} canvas - Fabric.js Canvas
      */
     setCanvas(canvas) {
-        // Eski event'leri kaldÄ±r
+        // Eski event'leri kaldýr
         if (this.canvas) {
             this.canvas.off('selection:created', this._canvasHandlers.selectionCreated);
             this.canvas.off('selection:updated', this._canvasHandlers.selectionUpdated);
@@ -2776,7 +2776,7 @@ export class PropertyPanel extends PanelBase {
         this.canvas = canvas;
         this._selectedObject = null;
 
-        // Yeni event'leri baÄŸla
+        // Yeni event'leri baðla
         this._bindCanvasEvents();
         this.refresh();
     }
@@ -2792,7 +2792,7 @@ export class PropertyPanel extends PanelBase {
             clearTimeout(this._updateTimer);
         }
 
-        // Canvas event'lerini kaldÄ±r
+        // Canvas event'lerini kaldýr
         if (this.canvas) {
             this.canvas.off('selection:created', this._canvasHandlers.selectionCreated);
             this.canvas.off('selection:updated', this._canvasHandlers.selectionUpdated);

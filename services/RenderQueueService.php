@@ -12,6 +12,7 @@
  */
 
 require_once __DIR__ . '/../core/Database.php';
+require_once __DIR__ . '/NotificationService.php';
 
 class RenderQueueService
 {
@@ -216,6 +217,7 @@ class RenderQueueService
                     $job['status'] = 'processing';
                     $job['device_ids'] = json_decode($job['device_ids'] ?? '[]', true) ?: [];
                     $job['render_params'] = json_decode($job['render_params'] ?? '{}', true) ?: [];
+                    $this->notifyQueueStarted($job);
                     return $job;
                 }
 
@@ -337,6 +339,15 @@ class RenderQueueService
      */
     public function updateQueueProgress(string $queueId): array
     {
+        $queueMeta = $this->db->fetch(
+            "SELECT status, created_by, batch_id, company_id FROM render_queue WHERE id = ?",
+            [$queueId]
+        );
+        $previousStatus = (string)($queueMeta['status'] ?? '');
+        $createdBy = $queueMeta['created_by'] ?? null;
+        $batchId = $queueMeta['batch_id'] ?? null;
+        $companyId = $queueMeta['company_id'] ?? null;
+
         // Item istatistiklerini hesapla
         $stats = $this->db->fetch(
             "SELECT
@@ -382,6 +393,23 @@ class RenderQueueService
         }
 
         $this->db->update('render_queue', $updateData, 'id = ?', [$queueId]);
+
+        if (
+            in_array($status, ['completed', 'failed'], true)
+            && in_array($previousStatus, ['pending', 'processing'], true)
+        ) {
+            $this->notifyQueueCompleted(
+                $queueId,
+                $status,
+                $total,
+                $completed,
+                $failed,
+                $skipped,
+                $createdBy,
+                $batchId,
+                $companyId
+            );
+        }
 
         return [
             'queue_id' => $queueId,
@@ -711,6 +739,15 @@ class RenderQueueService
      */
     public function completeQueue(string $queueId): bool
     {
+        $queueMeta = $this->db->fetch(
+            "SELECT status, created_by, batch_id, company_id FROM render_queue WHERE id = ?",
+            [$queueId]
+        );
+        $previousStatus = (string)($queueMeta['status'] ?? '');
+        $createdBy = $queueMeta['created_by'] ?? null;
+        $batchId = $queueMeta['batch_id'] ?? null;
+        $companyId = $queueMeta['company_id'] ?? null;
+
         // Item istatistiklerini hesapla
         $stats = $this->db->fetch(
             "SELECT
@@ -768,8 +805,310 @@ class RenderQueueService
 
         $this->db->update('render_queue', $updateData, 'id = ?', [$queueId]);
 
+        if (
+            in_array($status, ['completed', 'failed'], true)
+            && in_array($previousStatus, ['pending', 'processing'], true)
+        ) {
+            $this->notifyQueueCompleted(
+                $queueId,
+                $status,
+                $total,
+                $completed,
+                $failed,
+                $skipped,
+                $createdBy,
+                $batchId,
+                $companyId
+            );
+        }
+
         return true;
     }
+
+    private function cleanupOldDeviceNotifications(?string $companyId): void
+    {
+        $companyId = trim((string)$companyId);
+        if ($companyId === '') {
+            return;
+        }
+
+        try {
+            $notificationService = NotificationService::getInstance();
+            $retentionDays = $notificationService->getDeviceNotificationRetentionDays($companyId, 30);
+            $notificationService->cleanupDeviceSendNotifications($companyId, $retentionDays);
+        } catch (Exception $e) {
+            Logger::warning('RenderQueueService device notification cleanup failed', [
+                'company_id' => $companyId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function notifyQueueStarted(array $job): void
+    {
+        try {
+            $userId = trim((string)($job['created_by'] ?? ''));
+            if ($userId === '') {
+                return;
+            }
+            $this->cleanupOldDeviceNotifications($job['company_id'] ?? null);
+
+            $batchId = trim((string)($job['batch_id'] ?? ''));
+            $priority = strtolower((string)($job['priority'] ?? 'normal'));
+            $deviceCount = (int)($job['device_count'] ?? 0);
+            $scheduledAtRaw = trim((string)($job['scheduled_at'] ?? ''));
+            $scheduledTs = $scheduledAtRaw !== '' ? strtotime(str_replace('T', ' ', $scheduledAtRaw)) : false;
+            $nowTs = time();
+
+            $modeText = 'Anlik';
+            if ($scheduledTs !== false && $scheduledTs > ($nowTs + 30)) {
+                $modeText = 'Ileri tarihli';
+            } elseif ($priority === 'urgent') {
+                $modeText = 'Acil';
+            } elseif ($priority === 'high') {
+                $modeText = 'Hemen';
+            }
+
+            $scheduleText = '';
+            if ($scheduledTs !== false && $scheduledTs > ($nowTs + 30)) {
+                $scheduleText = ' Planlanan zaman: ' . date('d.m.Y H:i', $scheduledTs) . '.';
+            }
+
+            if ($batchId !== '') {
+                $processedInBatch = (int)$this->db->fetchColumn(
+                    "SELECT COUNT(*)
+                     FROM render_queue
+                     WHERE batch_id = ?
+                       AND status IN ('processing', 'completed', 'failed', 'cancelled')",
+                    [$batchId]
+                );
+                if ($processedInBatch > 1) {
+                    return;
+                }
+
+                $batchStats = $this->db->fetch(
+                    "SELECT COUNT(*) AS jobs_total,
+                            COALESCE(SUM(device_count), 0) AS total_devices
+                     FROM render_queue
+                     WHERE batch_id = ?",
+                    [$batchId]
+                ) ?: ['jobs_total' => 0, 'total_devices' => $deviceCount];
+
+                $title = 'Toplu Cihaz Gonderimi Basladi';
+                $link = '#/admin/queue?batch=' . $batchId;
+                if ($this->hasRecentNotification($userId, $title, $link)) {
+                    return;
+                }
+
+                $jobsTotal = (int)($batchStats['jobs_total'] ?? 0);
+                $devicesTotal = (int)($batchStats['total_devices'] ?? $deviceCount);
+                $message = "{$modeText} toplu gonderim basladi. Toplam is: {$jobsTotal}, Toplam cihaz: {$devicesTotal}.{$scheduleText}";
+
+                NotificationService::getInstance()->sendToUser(
+                    $userId,
+                    $title,
+                    $message,
+                    [
+                        'type' => NotificationService::TYPE_INFO,
+                        'icon' => 'ti-player-play',
+                        'link' => $link,
+                        'priority' => $priority === 'urgent'
+                            ? NotificationService::PRIORITY_HIGH
+                            : NotificationService::PRIORITY_NORMAL,
+                        'channels' => ['web', 'toast']
+                    ]
+                );
+                return;
+            }
+
+            $title = 'Cihaz Gonderimi Basladi';
+            $link = '#/admin/queue?job=' . ($job['id'] ?? '');
+            if ($this->hasRecentNotification($userId, $title, $link)) {
+                return;
+            }
+
+            NotificationService::getInstance()->sendToUser(
+                $userId,
+                $title,
+                "{$modeText} cihaz gonderimi basladi. Toplam cihaz: {$deviceCount}.{$scheduleText}",
+                [
+                    'type' => NotificationService::TYPE_INFO,
+                    'icon' => 'ti-player-play',
+                    'link' => $link,
+                    'priority' => $priority === 'urgent'
+                        ? NotificationService::PRIORITY_HIGH
+                        : NotificationService::PRIORITY_NORMAL,
+                    'channels' => ['web', 'toast']
+                ]
+            );
+        } catch (Exception $e) {
+            Logger::warning('RenderQueueService start notification failed', [
+                'queue_id' => $job['id'] ?? null,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function notifyQueueCompleted(
+        string $queueId,
+        string $status,
+        int $total,
+        int $completed,
+        int $failed,
+        int $skipped,
+        $createdBy,
+        $batchId = null,
+        $companyId = null
+    ): void {
+        try {
+            $userId = trim((string)$createdBy);
+            if ($userId === '') {
+                return;
+            }
+            $this->cleanupOldDeviceNotifications($companyId);
+
+            $batchId = trim((string)$batchId);
+            if ($batchId !== '') {
+                $remaining = (int)$this->db->fetchColumn(
+                    "SELECT COUNT(*)
+                     FROM render_queue
+                     WHERE batch_id = ?
+                       AND status IN ('pending', 'processing')",
+                    [$batchId]
+                );
+                if ($remaining > 0) {
+                    return;
+                }
+
+                $summary = $this->db->fetch(
+                    "SELECT
+                        COUNT(*) AS jobs_total,
+                        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS jobs_failed,
+                        COALESCE(SUM(devices_total), 0) AS total_devices,
+                        COALESCE(SUM(devices_completed), 0) AS completed_devices,
+                        COALESCE(SUM(devices_failed), 0) AS failed_devices,
+                        COALESCE(SUM(devices_skipped), 0) AS skipped_devices
+                     FROM render_queue
+                     WHERE batch_id = ?",
+                    [$batchId]
+                ) ?: [];
+
+                $jobsFailed = (int)($summary['jobs_failed'] ?? 0);
+                $totalDevices = (int)($summary['total_devices'] ?? $total);
+                $completedDevices = (int)($summary['completed_devices'] ?? $completed);
+                $failedDevices = (int)($summary['failed_devices'] ?? $failed);
+                $skippedDevices = (int)($summary['skipped_devices'] ?? $skipped);
+                $jobsTotal = (int)($summary['jobs_total'] ?? 0);
+                $hasFailure = $jobsFailed > 0 || $failedDevices > 0;
+
+                $title = $hasFailure
+                    ? 'Toplu Cihaz Gonderimi Tamamlandi (Hatali)'
+                    : 'Toplu Cihaz Gonderimi Tamamlandi';
+                $link = '#/admin/queue?batch=' . $batchId;
+                $startTitle = 'Toplu Cihaz Gonderimi Basladi';
+                if (!$this->hasRecentNotification($userId, $startTitle, $link)) {
+                    NotificationService::getInstance()->sendToUser(
+                        $userId,
+                        $startTitle,
+                        "Toplu gonderim basladi. Toplam is: {$jobsTotal}, Toplam cihaz: {$totalDevices}.",
+                        [
+                            'type' => NotificationService::TYPE_INFO,
+                            'icon' => 'ti-player-play',
+                            'link' => $link,
+                            'priority' => NotificationService::PRIORITY_NORMAL,
+                            'channels' => ['web', 'toast']
+                        ]
+                    );
+                }
+                if ($this->hasRecentNotification($userId, $title, $link)) {
+                    return;
+                }
+
+                $message = "Toplu gonderim tamamlandi. Basarili: {$completedDevices}, Basarisiz: {$failedDevices}, Toplam cihaz: {$totalDevices}, Toplam is: {$jobsTotal}";
+                if ($skippedDevices > 0) {
+                    $message .= ", Atlanan: {$skippedDevices}";
+                }
+
+                NotificationService::getInstance()->sendToUser(
+                    $userId,
+                    $title,
+                    $message,
+                    [
+                        'type' => $hasFailure ? NotificationService::TYPE_WARNING : NotificationService::TYPE_SUCCESS,
+                        'icon' => $hasFailure ? 'ti-alert-triangle' : 'ti-circle-check',
+                        'link' => $link,
+                        'priority' => $hasFailure ? NotificationService::PRIORITY_HIGH : NotificationService::PRIORITY_NORMAL,
+                        'channels' => ['web', 'toast']
+                    ]
+                );
+                return;
+            }
+
+            $hasFailure = $status === 'failed' || $failed > 0;
+            $title = $hasFailure
+                ? 'Cihaz Gonderimi Tamamlandi (Hatali)'
+                : 'Cihaz Gonderimi Tamamlandi';
+            $message = "Gonderim tamamlandi. Basarili: {$completed}, Basarisiz: {$failed}, Toplam cihaz: {$total}";
+            if ($skipped > 0) {
+                $message .= ", Atlanan: {$skipped}";
+            }
+            $link = '#/admin/queue?job=' . $queueId;
+            $startTitle = 'Cihaz Gonderimi Basladi';
+            if (!$this->hasRecentNotification($userId, $startTitle, $link)) {
+                NotificationService::getInstance()->sendToUser(
+                    $userId,
+                    $startTitle,
+                    "Cihaz gonderimi basladi. Toplam cihaz: {$total}.",
+                    [
+                        'type' => NotificationService::TYPE_INFO,
+                        'icon' => 'ti-player-play',
+                        'link' => $link,
+                        'priority' => NotificationService::PRIORITY_NORMAL,
+                        'channels' => ['web', 'toast']
+                    ]
+                );
+            }
+            if ($this->hasRecentNotification($userId, $title, $link)) {
+                return;
+            }
+
+            NotificationService::getInstance()->sendToUser(
+                $userId,
+                $title,
+                $message,
+                [
+                    'type' => $hasFailure ? NotificationService::TYPE_WARNING : NotificationService::TYPE_SUCCESS,
+                    'icon' => $hasFailure ? 'ti-alert-triangle' : 'ti-circle-check',
+                    'link' => $link,
+                    'priority' => $hasFailure ? NotificationService::PRIORITY_HIGH : NotificationService::PRIORITY_NORMAL,
+                    'channels' => ['web', 'toast']
+                ]
+            );
+        } catch (Exception $e) {
+            Logger::warning('RenderQueueService completion notification failed', [
+                'queue_id' => $queueId,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function hasRecentNotification(string $userId, string $title, string $link): bool
+    {
+        $since = date('Y-m-d H:i:s', time() - 3600);
+        $count = (int)$this->db->fetchColumn(
+            "SELECT COUNT(*)
+             FROM notifications n
+             INNER JOIN notification_recipients nr ON nr.notification_id = n.id
+             WHERE nr.user_id = ?
+               AND n.title = ?
+               AND n.link = ?
+               AND n.created_at >= ?",
+            [$userId, $title, $link, $since]
+        );
+
+        return $count > 0;
+    }
+
 
     /**
      * Queue'yu iptal et

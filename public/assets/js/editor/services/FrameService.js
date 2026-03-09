@@ -441,7 +441,7 @@ export class FrameService {
         // Apply frame's default tint on first add/change when defined.
         // If no defaultColor exists, keep original frame design (no tint).
         const defaultColorRaw = String(frameDef.defaultColor || '').trim();
-        const frameColor = /^#[0-9a-fA-F]{6}$/.test(defaultColorRaw) ? defaultColorRaw : '#000000';
+        const frameColor = /^#[0-9a-fA-F]{6}$/.test(defaultColorRaw) ? defaultColorRaw : '';
 
         // Render the 9-slice frame
         const dataURL = await this.renderFrame(frameDef, frameW, frameH, {

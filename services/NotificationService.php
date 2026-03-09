@@ -1203,6 +1203,81 @@ class NotificationService
     }
 
     /**
+     * Get company-level retention setting for device send notifications.
+     */
+    public function getDeviceNotificationRetentionDays(?string $companyId, int $default = 30): int
+    {
+        if (empty($companyId)) {
+            return max(1, min(365, $default));
+        }
+
+        try {
+            $row = $this->db->fetch(
+                "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
+                [$companyId]
+            );
+
+            if (!$row || empty($row['data'])) {
+                return max(1, min(365, $default));
+            }
+
+            $settings = json_decode($row['data'], true) ?? [];
+            $value = (int)($settings['device_notification_retention_days'] ?? $default);
+            return max(1, min(365, $value));
+        } catch (Exception $e) {
+            Logger::warning("NotificationService: Failed to read device notification retention", [
+                'company_id' => $companyId,
+                'error' => $e->getMessage()
+            ]);
+            return max(1, min(365, $default));
+        }
+    }
+
+    /**
+     * Cleanup old device-send notifications by retention window.
+     *
+     * Device-send notifications are identified by queue links:
+     * - #/admin/queue...
+     * - #/queue...
+     */
+    public function cleanupDeviceSendNotifications(string $companyId, int $daysOld = 30): int
+    {
+        $daysOld = max(1, min(365, $daysOld));
+
+        try {
+            $cutoffDate = date('Y-m-d H:i:s', strtotime("-{$daysOld} days"));
+
+            $this->db->query(
+                "DELETE FROM notification_recipients
+                 WHERE notification_id IN (
+                     SELECT id FROM notifications
+                     WHERE company_id = ?
+                       AND created_at < ?
+                       AND (link LIKE '#/admin/queue%' OR link LIKE '#/queue%')
+                 )",
+                [$companyId, $cutoffDate]
+            );
+
+            $deletedNotifications = $this->db->query(
+                "DELETE FROM notifications
+                 WHERE company_id = ?
+                   AND created_at < ?
+                   AND (link LIKE '#/admin/queue%' OR link LIKE '#/queue%')",
+                [$companyId, $cutoffDate]
+            )->rowCount();
+
+            return $deletedNotifications;
+        } catch (Exception $e) {
+            Logger::error("NotificationService: Failed to cleanup device send notifications", [
+                'company_id' => $companyId,
+                'days_old' => $daysOld,
+                'error' => $e->getMessage()
+            ]);
+            return 0;
+        }
+    }
+
+    /**
      * Prevent cloning
      */
     private function __clone() {}
@@ -1215,4 +1290,3 @@ class NotificationService
         throw new Exception("Cannot unserialize singleton");
     }
 }
-

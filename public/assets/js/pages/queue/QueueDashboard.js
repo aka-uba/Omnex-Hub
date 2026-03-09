@@ -33,6 +33,8 @@ export class QueueDashboardPage {
         this._queueAnalytics = null;
         this._autoSendWizard = null;
         this._jobStatusTable = null;
+        this._linkedDetailHandledKey = null;
+        this._processingModalOpenedAt = 0;
     }
 
     /**
@@ -325,6 +327,7 @@ export class QueueDashboardPage {
 
         this.bindEvents();
         await this.loadData();
+        this._openLinkedDetailFromRoute();
         this.startAutoRefresh();
     }
 
@@ -688,10 +691,35 @@ export class QueueDashboardPage {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('queue-content').style.display = 'block';
             document.getElementById('last-update-time').textContent = new Date().toLocaleTimeString('tr-TR');
+            this._openLinkedDetailFromRoute();
 
         } catch (error) {
             console.error('Failed to load queue data:', error);
             Toast.error(this.__('toast.loadError'));
+        }
+    }
+
+    _openLinkedDetailFromRoute() {
+        if (!this._jobStatusTable || typeof this._jobStatusTable.openLinkedDetail !== 'function') {
+            return;
+        }
+
+        const query = this.app?.router?.getQuery?.() || {};
+        const job = query.job ? String(query.job).trim() : '';
+        const batch = query.batch ? String(query.batch).trim() : '';
+
+        if (!job && !batch) {
+            return;
+        }
+
+        const key = job ? `job:${job}` : `batch:${batch}`;
+        if (this._linkedDetailHandledKey === key) {
+            return;
+        }
+
+        const opened = this._jobStatusTable.openLinkedDetail({ job, batch });
+        if (opened) {
+            this._linkedDetailHandledKey = key;
         }
     }
 
@@ -707,64 +735,14 @@ export class QueueDashboardPage {
         this._emptyProcessCount = this._emptyProcessCount || 0;
         this._stalledProcessingCount = this._stalledProcessingCount || 0;
 
-        console.log('DEBUG triggerProcessing - Starting... (empty count:', this._emptyProcessCount, ')');
-
         try {
             // Her seferinde 1 iş işle (modal anlık güncelleme için)
             const response = await this.app.api.post('/render-queue/process', {
                 max_jobs: 5
             });
 
-            console.log('DEBUG triggerProcessing - Full Response:', JSON.stringify(response, null, 2));
-
             if (response.success) {
                 const data = response.data || {};
-
-                // Debug bilgilerini konsola yaz
-                console.log('DEBUG - jobs_processed:', data.jobs_processed);
-                console.log('DEBUG - devices_sent:', data.devices_sent);
-                console.log('DEBUG - devices_failed:', data.devices_failed);
-                console.log('DEBUG - devices_skipped:', data.devices_skipped);
-                console.log('DEBUG - has_more:', data.has_more);
-                console.log('DEBUG - pending_count:', data.pending_count);
-
-                if (data.results && data.results.length > 0) {
-                    console.log('DEBUG - Job Results:', JSON.stringify(data.results, null, 2));
-                }
-
-                if (data.debug) {
-                    console.log('DEBUG - Server Debug Info:', JSON.stringify(data.debug, null, 2));
-
-                    // Job processing detaylarını göster
-                    if (data.debug.job_processing_details && data.debug.job_processing_details.length > 0) {
-                        console.group('=== JOB PROCESSING DETAILS ===');
-                        data.debug.job_processing_details.forEach((jobDebug, idx) => {
-                            console.group(`Job #${idx + 1}: ${jobDebug.job_id}`);
-                            console.log('Raw items count:', jobDebug.raw_items_count);
-                            console.log('Pending items (after JOIN):', jobDebug.pending_items_count);
-                            console.log('Item status counts:', jobDebug.item_status_counts);
-                            console.log('Result:', jobDebug.result);
-                            if (jobDebug.reason) {
-                                console.warn('Reason:', jobDebug.reason);
-                            }
-                            if (jobDebug.raw_items && jobDebug.raw_items.length > 0) {
-                                console.table(jobDebug.raw_items);
-                            }
-                            if (Object.keys(jobDebug.device_checks || {}).length > 0) {
-                                console.log('Device checks:');
-                                Object.entries(jobDebug.device_checks).forEach(([deviceId, check]) => {
-                                    if (check.found) {
-                                        console.log(`  ✓ ${deviceId}: Found - ${check.name} (${check.type})`);
-                                    } else {
-                                        console.error(`  ✗ ${deviceId}: NOT FOUND IN DEVICES TABLE!`);
-                                    }
-                                });
-                            }
-                            console.groupEnd();
-                        });
-                        console.groupEnd();
-                    }
-                }
 
                 const processedDeviceOps = (data.devices_sent || 0) + (data.devices_failed || 0) + (data.devices_skipped || 0);
 
@@ -784,7 +762,6 @@ export class QueueDashboardPage {
                 if (data.jobs_processed > 0 && processedDeviceOps === 0) {
                     this._emptyProcessCount++;
                     this._stalledProcessingCount = 0;
-                    console.warn('DEBUG - Jobs processed but no devices sent! Count:', this._emptyProcessCount);
 
                     // Debug bilgisinden sorunu tespit et
                     let issueFound = '';
@@ -797,8 +774,6 @@ export class QueueDashboardPage {
                                 .map(([id]) => id);
                             if (failedDevices.length > 0) {
                                 issueFound = `device_id eşleşmiyor: ${failedDevices.join(', ')}`;
-                                console.error('CRITICAL: device_id in render_queue_items does not match devices.id!');
-                                console.error('Failed device IDs:', failedDevices);
                             } else if (detail.item_status_counts?.pending === 0) {
                                 issueFound = this.__('toast.allItemsProcessed');
                             }
@@ -809,7 +784,6 @@ export class QueueDashboardPage {
 
                     // 3 kez üst üste boş sonuç gelirse dur
                     if (this._emptyProcessCount >= 3) {
-                        console.error('DEBUG - Stopping worker: Too many empty process cycles.');
                         const msg = issueFound
                             ? this.__('toast.processingIssue', { issue: issueFound })
                             : this.__('toast.processingStuck');
@@ -822,8 +796,8 @@ export class QueueDashboardPage {
                     this._emptyProcessCount = 0;
                 }
 
-                // Stalled guard: backend "processing_count" var ama hiç iş ilerlemiyor.
-                if ((data.jobs_processed || 0) === 0 && (data.pending_count || 0) === 0 && (data.processing_count || 0) > 0) {
+                // Stalled guard: gerçekten iş kuyruğu devam ederken ilerleme yoksa uyar
+                if ((data.has_more === true) && (data.jobs_processed || 0) === 0 && (data.pending_count || 0) === 0 && (data.processing_count || 0) > 0) {
                     this._stalledProcessingCount++;
                     if (this._stalledProcessingCount >= 12) { // ~12s
                         Toast.warning(this.__('toast.processingStuck'));
@@ -838,13 +812,11 @@ export class QueueDashboardPage {
                 // Hala bekleyen iş varsa devam et
                 if (data.has_more && this._workerRunning) {
                     setTimeout(() => this.triggerProcessing(), 300); // 300ms bekle (hızlı işlem)
-                } else if ((data.processing_count || 0) > 0 && this._workerRunning) {
-                    // Başka işleyen job varsa modalı açık tut, tamamlanmayı bekle
-                    setTimeout(() => this.triggerProcessing(), 1000);
                 } else {
                     // İşlem tamamlandı
                     this._emptyProcessCount = 0;
-                    this.stopWorker(true);
+                    const hasProcessedWork = (data.jobs_processed || 0) > 0 || processedDeviceOps > 0;
+                    this.stopWorker(true, hasProcessedWork);
                     await this.loadData();
                 }
             }
@@ -892,7 +864,7 @@ export class QueueDashboardPage {
     /**
      * Worker'ı durdur
      */
-    stopWorker(autoStop = false) {
+    stopWorker(autoStop = false, showToast = true) {
         if (!this._workerRunning && !autoStop) return;
 
         this._workerRunning = false;
@@ -901,14 +873,26 @@ export class QueueDashboardPage {
         // UI güncelle - Use QueueAnalytics module if available (Faz 2)
         this._updateWorkerUI();
 
-        if (!autoStop) {
-            Toast.info(this.__('toast.workerStopped'));
-        } else {
-            Toast.success(this.__('toast.processingComplete'));
+        if (showToast) {
+            if (!autoStop) {
+                Toast.info(this.__('toast.workerStopped'));
+            } else {
+                Toast.success(this.__('toast.processingComplete'));
+            }
         }
 
-        // Modal'ı kapat
-        this.closeProcessingModal();
+        const closeModal = () => this.closeProcessingModal();
+        if (autoStop && this._processingModalOpenedAt > 0) {
+            const elapsed = Date.now() - this._processingModalOpenedAt;
+            const minVisibleMs = 1200;
+            if (elapsed < minVisibleMs) {
+                setTimeout(closeModal, minVisibleMs - elapsed);
+            } else {
+                closeModal();
+            }
+        } else {
+            closeModal();
+        }
     }
 
     /**
@@ -956,6 +940,7 @@ export class QueueDashboardPage {
                 this.stopWorker();
             }
         });
+        this._processingModalOpenedAt = Date.now();
 
         // Modal stats update interval
         this._modalUpdateInterval = setInterval(() => {
@@ -988,6 +973,7 @@ export class QueueDashboardPage {
             Modal.close(this._processingModal.id);
             this._processingModal = null;
         }
+        this._processingModalOpenedAt = 0;
     }
 
     /**

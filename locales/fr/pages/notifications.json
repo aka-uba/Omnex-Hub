@@ -8,7 +8,9 @@
         "all": "Toutes",
         "unread": "Non lues",
         "system": "Système",
-        "archived": "Archivées"
+        "archived": "Archivées",
+        "deviceSend": "Envois appareil",
+        "read": "Lu"
     },
     "actions": {
         "markAllRead": "Tout marquer comme lu",
@@ -172,6 +174,9 @@
         "desktopBlocked": "Notifications de bureau bloquées. Veuillez autoriser depuis les paramètres du navigateur.",
         "desktopTestMessage": "Notifications de bureau activées avec succès !",
         "desktopPermissionDenied": "Permission refusée pour les notifications de bureau",
-        "desktopPermissionError": "Échec de l'obtention de la permission de notification"
+        "desktopPermissionError": "Échec de l'obtention de la permission de notification",
+        "deviceNotificationsTitle": "Notifications denvoi vers appareil",
+        "deviceRetentionDaysLabel": "Duree de conservation (jours)",
+        "deviceRetentionDaysHelp": "Les notifications creees par les envois file/appareil sont supprimees automatiquement apres ce delai. Visible uniquement pour SuperAdmin."
     }
 }

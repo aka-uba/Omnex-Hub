@@ -1459,6 +1459,7 @@
     color: var(--text-muted);
     font-size: var(--text-sm);
     z-index: 1;
+    pointer-events: none;
 }
 
 .product-search-input-group .form-input {
@@ -1641,6 +1642,7 @@
     transform: translateY(-50%);
     color: var(--text-muted);
     font-size: var(--text-sm);
+    pointer-events: none;
 }
 
 .field-search .form-input {
@@ -4760,6 +4762,7 @@
     transform: translateY(-50%);
     color: var(--text-muted);
     font-size: 14px;
+    pointer-events: none;
 }
 
 .shape-picker-search input {
@@ -4996,6 +4999,7 @@
     transform: translateY(-50%);
     color: var(--text-muted);
     font-size: 14px;
+    pointer-events: none;
 }
 
 .frame-picker-search input {
@@ -5191,6 +5195,24 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-secondary);
+}
+
+.line-picker-search .input-icon-wrapper {
+    position: relative;
+}
+
+.line-picker-search .input-icon-wrapper i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.line-picker-search .input-icon-wrapper input {
+    padding-left: 32px;
 }
 
 .line-picker-control {

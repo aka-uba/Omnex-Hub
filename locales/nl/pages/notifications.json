@@ -8,7 +8,9 @@
         "all": "Alle",
         "unread": "Ongelezen",
         "system": "Systeem",
-        "archived": "Gearchiveerd"
+        "archived": "Gearchiveerd",
+        "deviceSend": "Apparaatverzendingen",
+        "read": "Lezen"
     },
     "actions": {
         "markAllRead": "Markeer alles als gelezen",
@@ -172,6 +174,9 @@
         "desktopBlocked": "Bureaubladmeldingen geblokkeerd. Sta dit toe via de browserinstellingen.",
         "desktopTestMessage": "Bureaubladmeldingen succesvol ingeschakeld!",
         "desktopPermissionDenied": "Toestemming geweigerd voor bureaubladmeldingen",
-        "desktopPermissionError": "Kan geen toestemming voor meldingen krijgen"
+        "desktopPermissionError": "Kan geen toestemming voor meldingen krijgen",
+        "deviceNotificationsTitle": "Meldingen voor apparaatverzendingen",
+        "deviceRetentionDaysLabel": "Bewaartermijn (dagen)",
+        "deviceRetentionDaysHelp": "Meldingen die ontstaan door wachtrij/apparaatverzendingen worden na deze periode automatisch verwijderd. Alleen zichtbaar voor SuperAdmin."
     }
 }

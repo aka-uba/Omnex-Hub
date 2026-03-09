@@ -500,21 +500,8 @@ export class RenderWorker {
             Toast.error(msg.replace('{product}', productName).replace('{error}', errorMessage), { duration: 4000 });
         }
 
-        // Browser notification (izin varsa)
-        if ('Notification' in window && Notification.permission === 'granted') {
-            const title = type === 'success'
-                ? (__('render.worker.completeTitle') || 'Render Tamamlandı')
-                : (__('render.worker.errorTitle') || 'Render Hatası');
-            const body = type === 'success'
-                ? (__('render.worker.completeBody') || `"${productName}" başarıyla render edildi`).replace('{product}', productName)
-                : (__('render.worker.errorBody') || `"${productName}" render edilemedi: ${errorMessage}`).replace('{product}', productName).replace('{error}', errorMessage);
-
-            new Notification(title, {
-                body,
-                icon: '/assets/images/logo-light.png',
-                tag: 'render-worker'
-            });
-        }
+        // Browser-level desktop notifications are centralized in NotificationManager
+        // to avoid duplicate system notifications.
     }
 
     /**

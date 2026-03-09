@@ -34,6 +34,16 @@ const getBasePath = () => {
 };
 
 const BASE_PATH = getBasePath();
+const SW_PUSH_DEDUP_MS = 120000;
+const SW_PUSH_SIGNATURES = new Map();
+
+const resolveSwAssetUrl = (assetPath) => {
+    const path = String(assetPath || '').trim();
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    if (path.startsWith('/')) return path;
+    return BASE_PATH + '/' + path.replace(/^\.?\//, '');
+};
 
 // Assets to cache only in production
 const STATIC_ASSETS = [
@@ -341,26 +351,71 @@ self.addEventListener('message', event => {
 self.addEventListener('push', event => {
     if (!event.data) return;
 
-    try {
-        const data = event.data.json();
+    event.waitUntil((async () => {
+        try {
+            const data = event.data.json();
+            const targetUrl = data.url || BASE_PATH + '/';
+            const title = data.title || 'Omnex Display Hub';
+            const body = data.body || '';
+            const signature = [title, body, targetUrl].join('|');
+            const nowTs = Date.now();
 
-        const options = {
-            body: data.body || '',
-            icon: BASE_PATH + '/branding/icon-192.png',
-            badge: BASE_PATH + '/branding/favicon.png',
-            vibrate: [100, 50, 100],
-            data: {
-                url: data.url || BASE_PATH + '/'
-            },
-            actions: data.actions || []
-        };
+            for (const [key, ts] of SW_PUSH_SIGNATURES.entries()) {
+                if ((nowTs - ts) >= SW_PUSH_DEDUP_MS) {
+                    SW_PUSH_SIGNATURES.delete(key);
+                }
+            }
 
-        event.waitUntil(
-            self.registration.showNotification(data.title || 'Omnex Display Hub', options)
-        );
-    } catch (e) {
-        console.error('[SW] Push notification error:', e);
-    }
+            const lastSeen = Number(SW_PUSH_SIGNATURES.get(signature) || 0);
+            if (signature && (nowTs - lastSeen) < SW_PUSH_DEDUP_MS) {
+                return;
+            }
+            if (signature) {
+                SW_PUSH_SIGNATURES.set(signature, nowTs);
+            }
+
+            const options = {
+                body,
+                icon: resolveSwAssetUrl(data.icon || (BASE_PATH + '/branding/icon-192.png')),
+                badge: resolveSwAssetUrl(data.badge || (BASE_PATH + '/branding/favicon.png')),
+                vibrate: [100, 50, 100],
+                data: {
+                    url: targetUrl
+                },
+                actions: data.actions || [],
+                tag: data.tag || data.id || signature || ('push-' + nowTs)
+            };
+
+            const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+            const hasVisibleAppWindow = windowClients.some(client => {
+                const sameApp = typeof client.url === 'string' && client.url.includes(BASE_PATH);
+                const isVisible = client.visibilityState === 'visible';
+                const isFocused = client.focused === true;
+                return sameApp && (isVisible || isFocused);
+            });
+            if (hasVisibleAppWindow) {
+                // Uygulama acikken ikinci bir OS-level bildirim olusturma.
+                windowClients.forEach(client => {
+                    if (typeof client.url === 'string' && client.url.includes(BASE_PATH)) {
+                        client.postMessage({
+                            type: 'push_received_while_visible',
+                            payload: {
+                                title: data.title || 'Omnex Display Hub',
+                                body: data.body || '',
+                                url: targetUrl
+                            }
+                        });
+                    }
+                });
+                return;
+            }
+
+            // Open-app only mode: never show OS-level notification from SW.
+            // Desktop notifications are handled centrally by NotificationManager.
+        } catch (e) {
+            console.error('[SW] Push notification error:', e);
+        }
+    })());
 });
 
 // Notification click handling

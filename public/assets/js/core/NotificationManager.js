@@ -9,7 +9,7 @@ export class NotificationManager {
     constructor(app) {
         this.app = app;
         this.pollingInterval = null;
-        this.pollDelay = 30000; // 30 seconds
+        this.pollDelay = 5000; // 5 seconds for open-app reliability
         this.state = {
             unreadCount: 0,
             notifications: [],
@@ -17,6 +17,12 @@ export class NotificationManager {
         };
         this.listeners = new Map();
         this.isInitialized = false;
+        this.shownNotificationIds = new Set();
+        this.recentVisualSignatures = new Map();
+        this.visualDedupMs = 120000;
+        this.boundVisibilityHandler = this.handleVisibilityChange.bind(this);
+        this.boundFocusHandler = this.handleWindowFocus.bind(this);
+        this.displayQueue = Promise.resolve();
     }
 
     /**
@@ -37,9 +43,16 @@ export class NotificationManager {
                 this.loadNotifications(),
                 this.loadUnreadCount()
             ]);
+            this.state.notifications.forEach(notification => {
+                if (notification?.id) {
+                    this.shownNotificationIds.add(notification.id);
+                }
+            });
 
             // Start polling
             this.startPolling();
+            document.addEventListener('visibilitychange', this.boundVisibilityHandler);
+            window.addEventListener('focus', this.boundFocusHandler);
             this.isInitialized = true;
 
             Logger.log('NotificationManager initialized successfully');
@@ -57,12 +70,15 @@ export class NotificationManager {
         Logger.log('NotificationManager destroying...');
 
         this.stopPolling();
+        document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
+        window.removeEventListener('focus', this.boundFocusHandler);
         this.listeners.clear();
         this.state = {
             unreadCount: 0,
             notifications: [],
             isDropdownOpen: false
         };
+        this.shownNotificationIds.clear();
         this.isInitialized = false;
 
         Logger.log('NotificationManager destroyed');
@@ -81,6 +97,16 @@ export class NotificationManager {
         this.pollingInterval = setInterval(async () => {
             await this.poll();
         }, this.pollDelay);
+    }
+
+    async handleVisibilityChange() {
+        if (document.visibilityState === 'visible') {
+            await this.poll();
+        }
+    }
+
+    async handleWindowFocus() {
+        await this.poll();
     }
 
     /**
@@ -104,7 +130,6 @@ export class NotificationManager {
         }
 
         try {
-            const previousCount = this.state.unreadCount;
             const previousNotifications = [...this.state.notifications];
 
             await Promise.all([
@@ -113,21 +138,22 @@ export class NotificationManager {
             ]);
 
             // Check for new notifications
-            if (this.state.notifications.length > 0 && previousNotifications.length > 0) {
+            if (this.state.notifications.length > 0) {
+                const previousIds = new Set(previousNotifications.map(notification => notification.id));
                 const newNotifications = this.state.notifications.filter(
-                    notification => !previousNotifications.find(prev => prev.id === notification.id)
+                    notification => !previousIds.has(notification.id)
                 );
-
+                const orderedNewNotifications = [...newNotifications].sort((a, b) => {
+                    const aTs = this.getNotificationTimestamp(a);
+                    const bTs = this.getNotificationTimestamp(b);
+                    if (aTs !== bTs) {
+                        return aTs - bTs; // oldest first
+                    }
+                    return this.getNotificationPhaseRank(a) - this.getNotificationPhaseRank(b);
+                });
                 // Show toast for each new notification and dispatch event
-                newNotifications.forEach(notification => {
-                    // Dispatch event first
-                    this.dispatchEvent('newNotification', notification);
-
-                    // Show toast notification
-                    Toast.showNotification(notification);
-
-                    // Show desktop notification if enabled
-                    this.showDesktopNotification(notification);
+                orderedNewNotifications.forEach(notification => {
+                    this.enqueueNotificationDisplay(notification);
                 });
             }
         } catch (error) {
@@ -136,13 +162,55 @@ export class NotificationManager {
         }
     }
 
+    enqueueNotificationDisplay(notification) {
+        this.displayQueue = this.displayQueue
+            .then(async () => {
+                if (notification?.id && this.shownNotificationIds.has(notification.id)) {
+                    return;
+                }
+                if (notification?.id) {
+                    this.shownNotificationIds.add(notification.id);
+                }
+
+                const visualDecision = this.shouldDisplayVisualNotification(notification);
+                if (!visualDecision.show) {
+                    return;
+                }
+
+                // Dispatch first for listeners (dropdown/list update)
+                this.dispatchEvent('newNotification', notification);
+
+                // Toast + desktop
+                Toast.showNotification({
+                    ...notification,
+                    action_url: notification.link || null
+                });
+                this.showDesktopNotification(notification);
+
+                // Keep order stable in OS popup queue (start before complete)
+                await this.sleep(180);
+            })
+            .catch((error) => {
+                Logger.error('Notification display queue error:', error);
+            });
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     /**
      * Load notifications from the API
      * @returns {Promise<Array>} Array of notifications
      */
     async loadNotifications() {
         try {
-            const response = await this.app.api.get('/notifications', { limit: 10, status: 'active' });
+            const response = await this.app.api.get('/notifications', {
+                limit: 10,
+                status: 'active',
+                sort_by: 'created_at',
+                sort_dir: 'DESC'
+            });
 
             if (response.success && Array.isArray(response.data)) {
                 const previousNotifications = this.state.notifications;
@@ -154,7 +222,7 @@ export class NotificationManager {
                     read: n.status === 'read' || n.read_at !== null,
                     read_at: n.read_at,
                     created_at: n.created_at,
-                    link: n.link
+                    link: this.normalizeNotificationLink(n.link)
                 }));
 
                 // Check if notifications changed
@@ -175,6 +243,107 @@ export class NotificationManager {
             Logger.error('Failed to load notifications:', error);
             return [];
         }
+    }
+
+    normalizeNotificationLink(link) {
+        if (!link || typeof link !== 'string') {
+            return link;
+        }
+        const trimmed = link.trim();
+        if (trimmed.startsWith('#/queue')) {
+            return trimmed.replace('#/queue', '#/admin/queue');
+        }
+        return trimmed;
+    }
+
+    shouldDisplayVisualNotification(notification) {
+        const signature = [
+            String(notification?.type || ''),
+            String(notification?.title || ''),
+            String(notification?.message || ''),
+            String(notification?.link || '')
+        ].join('|');
+
+        if (!signature.trim()) {
+            return { show: true, reason: 'empty_signature', signature: '', lastSeenAgoMs: 0 };
+        }
+
+        const now = Date.now();
+        this.pruneVisualDedupState(now);
+
+        const inMemoryTs = this.recentVisualSignatures.get(signature) || 0;
+        if (now - inMemoryTs < this.visualDedupMs) {
+            return {
+                show: false,
+                reason: 'in_memory_window',
+                signature,
+                lastSeenAgoMs: now - inMemoryTs
+            };
+        }
+
+        const store = this.readVisualDedupStore();
+        const storedTs = Number(store[signature] || 0);
+        if (storedTs > 0 && now - storedTs < this.visualDedupMs) {
+            // Another tab already showed this visual notification.
+            this.recentVisualSignatures.set(signature, storedTs);
+            return {
+                show: false,
+                reason: 'local_storage_window',
+                signature,
+                lastSeenAgoMs: now - storedTs
+            };
+        }
+
+        this.recentVisualSignatures.set(signature, now);
+        store[signature] = now;
+        this.writeVisualDedupStore(store);
+        return { show: true, reason: 'fresh', signature, lastSeenAgoMs: 0 };
+    }
+
+    pruneVisualDedupState(now = Date.now()) {
+        for (const [signature, ts] of this.recentVisualSignatures.entries()) {
+            if (now - ts >= this.visualDedupMs) {
+                this.recentVisualSignatures.delete(signature);
+            }
+        }
+    }
+
+    readVisualDedupStore() {
+        try {
+            const raw = localStorage.getItem('omnex_notification_visual_dedupe');
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    writeVisualDedupStore(store) {
+        try {
+            const now = Date.now();
+            Object.keys(store).forEach(signature => {
+                const ts = Number(store[signature] || 0);
+                if (now - ts >= this.visualDedupMs) {
+                    delete store[signature];
+                }
+            });
+            localStorage.setItem('omnex_notification_visual_dedupe', JSON.stringify(store));
+        } catch (_) {
+            // localStorage errors should not block notification flow
+        }
+    }
+
+    getNotificationTimestamp(notification) {
+        const raw = notification?.created_at || '';
+        const ts = raw ? Date.parse(raw) : NaN;
+        return Number.isFinite(ts) ? ts : 0;
+    }
+
+    getNotificationPhaseRank(notification) {
+        const title = String(notification?.title || '').toLowerCase();
+        if (title.includes('basladi')) return 0;
+        if (title.includes('tamamlandi')) return 1;
+        return 2;
     }
 
     /**
@@ -515,6 +684,23 @@ export class NotificationManager {
         }
 
         try {
+            const signature = [
+                String(notification?.title || ''),
+                String(notification?.message || ''),
+                String(notification?.link || '')
+            ].join('|');
+            const dedupeWindowMs = 120000;
+            const globalStore = window.__omnexDesktopNotifDedupe || new Map();
+            const nowTs = Date.now();
+            const lastTs = Number(globalStore.get(signature) || 0);
+            if (signature && (nowTs - lastTs) < dedupeWindowMs) {
+                return;
+            }
+            if (signature) {
+                globalStore.set(signature, nowTs);
+            }
+            window.__omnexDesktopNotifDedupe = globalStore;
+
             // Get notification icon based on type
             const iconMap = {
                 info: 'info-circle',
@@ -524,8 +710,7 @@ export class NotificationManager {
                 system: 'settings'
             };
 
-            const basePath = window.OmnexConfig?.basePath || '';
-            const iconUrl = `${basePath}/branding/favicon.svg`;
+            const iconUrl = this.getBrandingAssetUrl('favicon.png');
 
             // Create desktop notification
             const desktopNotification = new Notification(notification.title || 'Omnex Display Hub', {
@@ -543,8 +728,9 @@ export class NotificationManager {
                 window.focus();
 
                 // Navigate to link if exists
-                if (notification.link) {
-                    window.location.hash = notification.link;
+                const normalizedLink = this.normalizeNotificationLink(notification.link);
+                if (normalizedLink) {
+                    window.location.hash = normalizedLink;
                 } else {
                     // Navigate to notifications page
                     window.location.hash = '#/notifications';
@@ -563,6 +749,20 @@ export class NotificationManager {
         } catch (error) {
             Logger.error('Error showing desktop notification:', error);
         }
+    }
+
+    getBrandingAssetUrl(fileName) {
+        const cleanFile = String(fileName || '').replace(/^\/+/, '');
+        const configuredBase = String(window.OmnexConfig?.basePath || '').trim().replace(/\/$/, '');
+        if (configuredBase) {
+            return `${configuredBase}/branding/${cleanFile}`;
+        }
+
+        // Fallback: infer app root from first pathname segment (e.g. /market-etiket-sistemi)
+        const pathname = String(window.location?.pathname || '/');
+        const parts = pathname.split('/').filter(Boolean);
+        const inferredBase = parts.length > 0 ? `/${parts[0]}` : '';
+        return `${inferredBase}/branding/${cleanFile}`;
     }
 
     /**

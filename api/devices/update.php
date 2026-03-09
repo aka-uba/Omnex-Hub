@@ -19,7 +19,7 @@ if (!$device) {
     Response::notFound('Cihaz bulunamadı');
 }
 
-// Map frontend type to database type (SQLite CHECK constraint: esl, android_tv, panel, web_display)
+// Map frontend type to database type (allowed: esl, android_tv, panel, web_display)
 $typeMap = [
     'tv' => 'android_tv',
     'esl' => 'esl',
@@ -253,4 +253,3 @@ if (!empty($metadata['original_type'])) {
 Logger::audit('update', 'devices', ['device_id' => $id]);
 
 Response::success($device, 'Cihaz güncellendi');
-

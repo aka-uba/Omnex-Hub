@@ -31,6 +31,10 @@ export class MediaLibraryPage {
         this.hoverPopup = null;
         this.lazyVideoThumbObserver = null;
         this.tableVideoMutationObserver = null;
+        this._hoverPopupHandlersBound = false;
+        this._hoverPopupMouseOverHandler = null;
+        this._hoverPopupMouseMoveHandler = null;
+        this._hoverPopupMouseOutHandler = null;
 
         // Pagination state
         this.currentPage = 1;
@@ -808,7 +812,11 @@ export class MediaLibraryPage {
 
         const popupImg = this.hoverPopup.querySelector('img');
 
-        document.addEventListener('mouseover', (e) => {
+        if (this._hoverPopupHandlersBound) {
+            return;
+        }
+
+        this._hoverPopupMouseOverHandler = (e) => {
             const trigger = e.target.closest('.image-hover-trigger');
             if (!trigger) return;
 
@@ -823,20 +831,25 @@ export class MediaLibraryPage {
                 this.hoverPopup.classList.add('visible');
                 this.positionPopup(e);
             }
-        });
+        };
 
-        document.addEventListener('mousemove', (e) => {
+        this._hoverPopupMouseMoveHandler = (e) => {
             if (this.hoverPopup.classList.contains('visible')) {
                 this.positionPopup(e);
             }
-        });
+        };
 
-        document.addEventListener('mouseout', (e) => {
+        this._hoverPopupMouseOutHandler = (e) => {
             const trigger = e.target.closest('.image-hover-trigger');
             if (trigger) {
                 this.hoverPopup.classList.remove('visible');
             }
-        });
+        };
+
+        document.addEventListener('mouseover', this._hoverPopupMouseOverHandler);
+        document.addEventListener('mousemove', this._hoverPopupMouseMoveHandler);
+        document.addEventListener('mouseout', this._hoverPopupMouseOutHandler);
+        this._hoverPopupHandlersBound = true;
     }
 
     positionPopup(e) {
@@ -2071,6 +2084,12 @@ export class MediaLibraryPage {
 
     destroy() {
         window.mediaPage = null;
+        if (this._hoverPopupHandlersBound) {
+            document.removeEventListener('mouseover', this._hoverPopupMouseOverHandler);
+            document.removeEventListener('mousemove', this._hoverPopupMouseMoveHandler);
+            document.removeEventListener('mouseout', this._hoverPopupMouseOutHandler);
+            this._hoverPopupHandlersBound = false;
+        }
         if (this.dataTable) {
             this.dataTable.destroy();
         }

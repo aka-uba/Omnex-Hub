@@ -2739,6 +2739,7 @@ export class ProductListPage {
 
             if (response.success) {
                 Toast.success(this.__('sendToDevice.queueSuccess', { count: productIdsToSend.length }));
+                await this._refreshNotificationsAfterQueueAction();
 
                 // Worker'ı başlat
                 this._triggerQueueProcessing();
@@ -2818,6 +2819,7 @@ export class ProductListPage {
 
         if (response.success) {
             Toast.success(this.__('sendToDevice.queueSuccess', { count: productIds.length }));
+            await this._refreshNotificationsAfterQueueAction();
             this._triggerQueueProcessing();
         } else {
             Toast.error(response.message || this.__('sendToDevice.failed'));
@@ -3238,6 +3240,7 @@ export class ProductListPage {
 
             if (response.success) {
                 Toast.success(this.__('sendToDevice.queueSuccess', { count: productIds.length }));
+                await this._refreshNotificationsAfterQueueAction();
                 this._triggerQueueProcessing();
             } else {
                 Toast.error(response.message || this.__('sendToDevice.failed'));
@@ -3310,6 +3313,7 @@ export class ProductListPage {
 
             if (response.success) {
                 Toast.success(this.__('sendToDevice.queueSuccess', { count: productIds.length }));
+                await this._refreshNotificationsAfterQueueAction();
                 this._triggerQueueProcessing();
             } else {
                 Toast.error(response.message || this.__('sendToDevice.failed'));
@@ -5357,6 +5361,7 @@ export class ProductListPage {
 
             if (response.success) {
                 Toast.success(this.__('multiProductSend.success'));
+                await this._refreshNotificationsAfterQueueAction();
 
                 // Trigger queue processing
                 try {
@@ -5371,6 +5376,17 @@ export class ProductListPage {
         } catch (error) {
             Logger.error('_executeMultiProductSend error:', error);
             Toast.error(this.__('multiProductSend.failed'));
+        }
+    }
+
+    async _refreshNotificationsAfterQueueAction() {
+        try {
+            const manager = this.app?.layout?.notificationManager;
+            if (manager && typeof manager.refresh === 'function') {
+                await manager.refresh();
+            }
+        } catch (error) {
+            Logger.debug('Notification refresh skipped:', error);
         }
     }
 

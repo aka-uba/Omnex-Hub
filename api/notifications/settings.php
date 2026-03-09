@@ -23,12 +23,28 @@ if (!$user) {
 }
 
 $userId = $user['id'];
+$companyId = Auth::getActiveCompanyId();
+$role = strtolower((string)($user['role'] ?? ''));
+$isSuperAdmin = $role === 'superadmin';
 $method = $request->getMethod();
 
 // Use user_notification_preferences table (separate from company notification_settings)
 $tableName = 'user_notification_preferences';
 
 if ($method === 'GET') {
+    $companyRetentionDays = 30;
+    if ($isSuperAdmin && !empty($companyId)) {
+        $companySettings = $db->fetch(
+            "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
+            [$companyId]
+        );
+        if (!empty($companySettings['data'])) {
+            $companyData = json_decode($companySettings['data'], true) ?? [];
+            $configuredRetention = (int)($companyData['device_notification_retention_days'] ?? 30);
+            $companyRetentionDays = max(1, min(365, $configuredRetention));
+        }
+    }
+
     // Get user's notification settings
     $settings = $db->fetch(
         "SELECT * FROM $tableName WHERE user_id = ?",
@@ -57,7 +73,8 @@ if ($method === 'GET') {
             'email_digest' => 'never',
             'dnd_enabled' => !empty($settings['quiet_start']) && !empty($settings['quiet_end']),
             'dnd_start' => $settings['quiet_start'] ?? '22:00',
-            'dnd_end' => $settings['quiet_end'] ?? '08:00'
+            'dnd_end' => $settings['quiet_end'] ?? '08:00',
+            'device_notification_retention_days' => $companyRetentionDays
         ];
 
         // Check if there's email_digest stored in type_preferences
@@ -84,7 +101,8 @@ if ($method === 'GET') {
             'email_digest' => 'never',
             'dnd_enabled' => false,
             'dnd_start' => '22:00',
-            'dnd_end' => '08:00'
+            'dnd_end' => '08:00',
+            'device_notification_retention_days' => $companyRetentionDays
         ];
     }
 
@@ -98,6 +116,44 @@ if ($method === 'GET') {
     $updateData = [
         'updated_at' => date('Y-m-d H:i:s')
     ];
+
+    if (array_key_exists('device_notification_retention_days', $data)) {
+        if (!$isSuperAdmin) {
+            Response::forbidden('Bu ayari guncellemek icin SuperAdmin yetkisi gerekli');
+        }
+
+        if (empty($companyId)) {
+            Response::badRequest('Aktif firma bulunamadi');
+        }
+
+        $retentionDays = max(1, min(365, (int)$data['device_notification_retention_days']));
+        $companySettingsRow = $db->fetch(
+            "SELECT id, data FROM settings WHERE company_id = ? AND user_id IS NULL",
+            [$companyId]
+        );
+
+        $companySettingsData = [];
+        if (!empty($companySettingsRow['data'])) {
+            $companySettingsData = json_decode($companySettingsRow['data'], true) ?? [];
+        }
+        $companySettingsData['device_notification_retention_days'] = $retentionDays;
+
+        if ($companySettingsRow) {
+            $db->update('settings', [
+                'data' => json_encode($companySettingsData),
+                'updated_at' => date('Y-m-d H:i:s')
+            ], 'id = ?', [$companySettingsRow['id']]);
+        } else {
+            $db->insert('settings', [
+                'id' => $db->generateUuid(),
+                'company_id' => $companyId,
+                'user_id' => null,
+                'data' => json_encode($companySettingsData),
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+    }
 
     // Master switch -> web_enabled
     if (isset($data['enabled'])) {
@@ -203,6 +259,20 @@ if ($method === 'GET') {
         'dnd_start' => $settings['quiet_start'] ?? '22:00',
         'dnd_end' => $settings['quiet_end'] ?? '08:00'
     ];
+
+    if ($isSuperAdmin && !empty($companyId)) {
+        $companySettings = $db->fetch(
+            "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
+            [$companyId]
+        );
+        $companyData = !empty($companySettings['data'])
+            ? (json_decode($companySettings['data'], true) ?? [])
+            : [];
+        $response['device_notification_retention_days'] = max(
+            1,
+            min(365, (int)($companyData['device_notification_retention_days'] ?? 30))
+        );
+    }
 
     Response::success($response, 'Bildirim ayarlari kaydedildi');
 

@@ -89,9 +89,17 @@ export class NotificationListPage {
                             <i class="ti ti-mail"></i>
                             <span>${this.__('filters.unread')}</span>
                         </button>
+                        <button class="btn btn-sm filter-tab" data-filter="read">
+                            <i class="ti ti-mail-opened"></i>
+                            <span>${this.__('filters.read')}</span>
+                        </button>
                         <button class="btn btn-sm filter-tab" data-filter="system">
                             <i class="ti ti-settings"></i>
                             <span>${this.__('filters.system')}</span>
+                        </button>
+                        <button class="btn btn-sm filter-tab" data-filter="device_send">
+                            <i class="ti ti-send"></i>
+                            <span>${this.__('filters.deviceSend')}</span>
                         </button>
                         <button class="btn btn-sm filter-tab" data-filter="archived">
                             <i class="ti ti-archive"></i>
@@ -249,7 +257,11 @@ export class NotificationListPage {
                 exports: true
             },
             exportFilename: 'notifications',
-            exportTitle: this.__('list.title')
+            exportTitle: this.__('list.title'),
+            defaultSort: {
+                key: 'created_at',
+                direction: 'desc'
+            }
         });
     }
 
@@ -259,13 +271,19 @@ export class NotificationListPage {
     async fetchNotifications(params) {
         try {
             const queryParams = {
-                ...params
+                ...params,
+                sort_by: params.sort_by || 'created_at',
+                sort_dir: params.sort_dir || 'DESC'
             };
 
             if (this.activeFilter === 'unread') {
                 queryParams.status = 'unread';
+            } else if (this.activeFilter === 'read') {
+                queryParams.status = 'read';
             } else if (this.activeFilter === 'system') {
                 queryParams.type = 'system';
+            } else if (this.activeFilter === 'device_send') {
+                queryParams.category = 'device_send';
             } else if (this.activeFilter === 'archived') {
                 queryParams.status = 'archived';
             } else if (this.activeFilter === 'all') {
@@ -285,7 +303,7 @@ export class NotificationListPage {
                 is_archived: n.status === 'archived',
                 created_at: n.created_at,
                 sender: n.created_by_name || this.__('common.system'),
-                action_url: n.link
+                action_url: this.normalizeNotificationLink(n.link)
             }));
 
             return {
@@ -300,6 +318,15 @@ export class NotificationListPage {
                 total: 0
             };
         }
+    }
+
+    normalizeNotificationLink(link) {
+        if (!link || typeof link !== 'string') return link;
+        const trimmed = link.trim();
+        if (trimmed.startsWith('#/queue')) {
+            return trimmed.replace('#/queue', '#/admin/queue');
+        }
+        return trimmed;
     }
 
     /**
@@ -444,10 +471,10 @@ export class NotificationListPage {
 
                 ${notification.action_url && isValidURL(notification.action_url) ? `
                     <div class="pt-2">
-                        <a href="${escapeHTML(notification.action_url)}" class="btn btn-outline btn-sm">
+                        <button type="button" class="btn btn-outline btn-sm" id="modal-view-action">
                             <i class="ti ti-external-link"></i>
                             <span>${this.__('modal.viewDetails')}</span>
-                        </a>
+                        </button>
                     </div>
                 ` : ''}
             </div>
@@ -511,7 +538,195 @@ export class NotificationListPage {
                 Modal.close(modal.id);
                 this.deleteNotification(notification.id);
             });
+
+            document.getElementById('modal-view-action')?.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const openedInline = await this.openQueueDetailInline(notification.action_url);
+                if (!openedInline && notification.action_url) {
+                    window.location.hash = notification.action_url;
+                }
+            });
         }, 100);
+    }
+
+    parseQueueDeepLink(actionUrl) {
+        if (!actionUrl || typeof actionUrl !== 'string') return null;
+        const trimmed = actionUrl.trim();
+        let queryString = '';
+        if (trimmed.startsWith('#/admin/queue?')) {
+            queryString = trimmed.slice('#/admin/queue?'.length);
+        } else if (trimmed.startsWith('#/queue?')) {
+            queryString = trimmed.slice('#/queue?'.length);
+        } else {
+            return null;
+        }
+        const params = new URLSearchParams(queryString);
+        const job = params.get('job') || '';
+        const batch = params.get('batch') || '';
+
+        if (!job && !batch) return null;
+        return { job: job.trim(), batch: batch.trim() };
+    }
+
+    async openQueueDetailInline(actionUrl) {
+        const deepLink = this.parseQueueDeepLink(actionUrl);
+        if (!deepLink) return false;
+
+        if (deepLink.job) {
+            return await this.showQueueJobDetailModal(deepLink.job);
+        }
+
+        if (deepLink.batch) {
+            return await this.showQueueBatchDetailModal(deepLink.batch);
+        }
+
+        return false;
+    }
+
+    async showQueueJobDetailModal(jobId) {
+        try {
+            const response = await this.app.api.get(`/render-queue/${encodeURIComponent(jobId)}/status`);
+            if (!response.success || !response.data) {
+                Toast.error(this.__('toast.loadError'));
+                return false;
+            }
+
+            const job = response.data;
+            const items = Array.isArray(job.items) ? job.items : [];
+            const progressPercent = Number(job.progress ?? job.progress_percent ?? 0);
+
+            const content = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><p class="text-muted">${this.__('jobs.id')}</p><p class="font-medium"><code>${escapeHTML(job.id || '')}</code></p></div>
+                        <div><p class="text-muted">${this.__('jobs.status')}</p><p class="font-medium">${escapeHTML(job.status || '-')}</p></div>
+                        <div><p class="text-muted">${this.__('jobs.progress')}</p><p class="font-medium">${progressPercent}%</p></div>
+                        <div><p class="text-muted">${this.__('jobs.devices')}</p><p class="font-medium">${Number(job.devices_completed || 0)} / ${Number(job.devices_total || 0)}</p></div>
+                    </div>
+                    <div>
+                        <p class="text-muted text-sm mb-2">${this.__('modal.deviceProgress')}</p>
+                        <div class="space-y-2" style="max-height: 280px; overflow:auto;">
+                            ${items.map(item => `
+                                <div class="flex items-center justify-between text-sm p-2 border rounded">
+                                    <span>${escapeHTML(item.device_name || item.device_id || 'Cihaz')}</span>
+                                    <span class="badge ${item.status === 'completed' ? 'badge-success' : item.status === 'failed' ? 'badge-danger' : 'badge-secondary'}">${escapeHTML(item.status || '-')}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            Modal.show({
+                title: this.__('modal.viewDetails'),
+                icon: 'ti-list-details',
+                content,
+                size: 'lg',
+                showFooter: true,
+                showConfirm: false,
+                cancelText: this.__('modal.close')
+            });
+            return true;
+        } catch (error) {
+            Logger.error('Failed to load queue job detail inline:', error);
+            Toast.error(this.__('toast.loadError'));
+            return false;
+        }
+    }
+
+    async loadBatchJobs(batchId) {
+        const maxPages = 30;
+        const limit = 100;
+        let offset = 0;
+        const allRows = [];
+
+        for (let page = 0; page < maxPages; page += 1) {
+            const response = await this.app.api.get('/render-queue', {
+                status: 'all',
+                limit,
+                offset
+            });
+            const rows = response.success ? (response.data?.queues || []) : [];
+            allRows.push(...rows);
+
+            const pagination = response.data?.pagination || {};
+            const hasMore = Boolean(pagination.has_more);
+            if (!hasMore || rows.length === 0) {
+                break;
+            }
+            offset += limit;
+        }
+
+        return allRows.filter(job => String(job.batch_id || '') === String(batchId));
+    }
+
+    async showQueueBatchDetailModal(batchId) {
+        try {
+            const batchJobs = await this.loadBatchJobs(batchId);
+
+            if (batchJobs.length === 0) {
+                Toast.warning(this.__('empty.noData'));
+                return false;
+            }
+
+            if (batchJobs.length === 1) {
+                return await this.showQueueJobDetailModal(batchJobs[0].id);
+            }
+
+            const totalDevices = batchJobs.reduce((sum, job) => sum + Number(job.devices_total || 0), 0);
+            const completedDevices = batchJobs.reduce((sum, job) => sum + Number(job.devices_completed || 0), 0);
+            const failedDevices = batchJobs.reduce((sum, job) => sum + Number(job.devices_failed || 0), 0);
+
+            const content = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div><p class="text-muted">${this.__('batch.totalProducts')}</p><p class="font-medium">${batchJobs.length}</p></div>
+                        <div><p class="text-muted">${this.__('jobs.devices')}</p><p class="font-medium">${completedDevices} / ${totalDevices}</p></div>
+                        <div><p class="text-muted">${this.__('status.failed')}</p><p class="font-medium">${failedDevices}</p></div>
+                    </div>
+                    <div class="space-y-2" style="max-height: 320px; overflow:auto;">
+                        ${batchJobs.map(job => `
+                            <div class="flex items-center justify-between p-2 border rounded">
+                                <div>
+                                    <p class="font-medium text-sm">${escapeHTML(job.product_name || '-')}</p>
+                                    <p class="text-xs text-muted"><code>${escapeHTML(job.id || '')}</code></p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline inline-open-job" data-job-id="${escapeHTML(job.id || '')}">
+                                    <i class="ti ti-eye"></i>
+                                    <span>${this.__('modal.viewDetails')}</span>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            const modal = Modal.show({
+                title: this.__('batch.detailTitle'),
+                icon: 'ti-stack-2',
+                content,
+                size: 'lg',
+                showFooter: true,
+                showConfirm: false,
+                cancelText: this.__('modal.close')
+            });
+
+            setTimeout(() => {
+                const modalEl = document.getElementById(modal.id);
+                modalEl?.querySelectorAll('.inline-open-job')?.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const selectedJobId = btn.getAttribute('data-job-id') || '';
+                        if (!selectedJobId) return;
+                        this.showQueueJobDetailModal(selectedJobId);
+                    });
+                });
+            }, 50);
+            return true;
+        } catch (error) {
+            Logger.error('Failed to load queue batch detail inline:', error);
+            Toast.error(this.__('toast.loadError'));
+            return false;
+        }
     }
 
     /**

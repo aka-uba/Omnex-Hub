@@ -284,6 +284,36 @@ class JobStatusTable {
     }
 
     /**
+     * Open detail modal from deep-link query (job or batch)
+     * @param {{job?: string, batch?: string}} query
+     * @returns {boolean}
+     */
+    openLinkedDetail(query = {}) {
+        const jobId = query.job ? String(query.job).trim() : '';
+        const batchId = query.batch ? String(query.batch).trim() : '';
+
+        if (jobId) {
+            this._showJobDetails(jobId);
+            return true;
+        }
+
+        if (batchId) {
+            const batchJobs = (this._jobs || []).filter(job => String(job.batch_id || '') === batchId);
+            if (batchJobs.length <= 1) {
+                const single = batchJobs[0];
+                if (single?.id) {
+                    this._showJobDetails(single.id);
+                    return true;
+                }
+            }
+            this._showBatchDetails(batchId);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Tabloyu render et
      * @private
      */

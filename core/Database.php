@@ -51,9 +51,9 @@ class Database
 
     private function __construct()
     {
-        $configuredDriver = strtolower(trim((string)(defined('DB_DRIVER') ? DB_DRIVER : (getenv('OMNEX_DB_DRIVER') ?: 'pgsql'))));
+        $configuredDriver = strtolower(trim((string)(defined('DB_DRIVER') ? DB_DRIVER : 'pgsql')));
         if (!in_array($configuredDriver, ['pgsql', 'postgres', 'postgresql'], true)) {
-            throw new Exception('Only PostgreSQL is supported. Set OMNEX_DB_DRIVER=pgsql.');
+            throw new Exception('Only PostgreSQL is supported.');
         }
 
         $this->driver = 'pgsql';
@@ -81,11 +81,6 @@ class Database
     public function isPostgres(): bool
     {
         return $this->driver === 'pgsql';
-    }
-
-    public function isSqlite(): bool
-    {
-        return false;
     }
 
     /**

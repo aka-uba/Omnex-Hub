@@ -89,10 +89,9 @@ define('LOCALES_PATH', BASE_PATH . '/locales');
 define('TEMPLATES_PATH', BASE_PATH . '/templates');
 
 // Database
-define('DB_DRIVER', strtolower((string)(getenv('OMNEX_DB_DRIVER') ?: 'pgsql')));
+define('DB_DRIVER', 'pgsql');
 define('DB_PROFILE', strtolower((string)(getenv('OMNEX_DB_PROFILE') ?: 'local'))); // local|docker|server
 define('DB_URL', (string)(getenv('DATABASE_URL') ?: getenv('OMNEX_DB_URL') ?: ''));
-define('DB_PATH', DATABASE_PATH . '/omnex.db');
 
 $dbPgHostDefault = match (DB_PROFILE) {
     'docker' => 'postgres',

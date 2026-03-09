@@ -950,12 +950,16 @@ export class TemplateEditorV7 {
      * @returns {Promise<fabric.Rect>}
      */
     async addBorderFrame(options = {}) {
+        const fallbackStrokeWidth = Number(options?.strokeWidth);
+        const resolvedStrokeWidth = Number.isFinite(fallbackStrokeWidth) && fallbackStrokeWidth > 0
+            ? fallbackStrokeWidth
+            : 1;
         const obj = await this.objectFactory.createRect({
             width: 220,
             height: 140,
             fill: 'rgba(0,0,0,0)',
             stroke: '#111827',
-            strokeWidth: 0,
+            strokeWidth: resolvedStrokeWidth,
             rx: 0,
             ry: 0,
             [CUSTOM_PROPS.OBJECT_NAME]: this.__('editor.tools.borderFrame') || 'Çerçeve',
@@ -1033,9 +1037,21 @@ export class TemplateEditorV7 {
         const width = Math.max(1, Number(style.strokeWidth || 4));
         const pathByType = {
             wave: 'M 20 40 Q 40 16 60 40 T 100 40 T 140 40 T 180 40 T 220 40 T 260 40',
+            pulseWave: 'M 20 40 Q 32 24 44 40 T 68 40 T 92 40 T 116 40 T 140 40 T 164 40 T 188 40 T 212 40 T 236 40 T 260 40',
+            scallop: 'M 20 40 Q 30 24 40 40 Q 50 56 60 40 Q 70 24 80 40 Q 90 56 100 40 Q 110 24 120 40 Q 130 56 140 40 Q 150 24 160 40 Q 170 56 180 40 Q 190 24 200 40 Q 210 56 220 40 Q 230 24 240 40 Q 250 50 260 40',
             zigzag: 'M 20 40 L 36 24 L 52 40 L 68 24 L 84 40 L 100 24 L 116 40 L 132 24 L 148 40 L 164 24 L 180 40 L 196 24 L 212 40 L 228 24 L 244 40 L 260 24 L 276 40',
+            chevron: 'M 20 40 L 34 28 L 48 40 L 62 28 L 76 40 L 90 28 L 104 40 L 118 28 L 132 40 L 146 28 L 160 40 L 174 28 L 188 40 L 202 28 L 216 40 L 230 28 L 244 40 L 260 28',
             step: 'M 20 46 L 44 46 L 44 30 L 68 30 L 68 46 L 92 46 L 92 30 L 116 30 L 116 46 L 140 46 L 140 30 L 164 30 L 164 46 L 188 46 L 188 30 L 212 30 L 212 46 L 236 46 L 236 30 L 260 30 L 260 46',
-            bracket: 'M 20 52 Q 20 36 34 36 L 246 36 Q 260 36 260 52 M 34 36 L 34 20 M 246 36 L 246 20'
+            notch: 'M 20 40 L 48 40 L 56 28 L 64 40 L 96 40 L 104 28 L 112 40 L 144 40 L 152 28 L 160 40 L 192 40 L 200 28 L 208 40 L 260 40',
+            bracket: 'M 20 52 Q 20 36 34 36 L 246 36 Q 260 36 260 52 M 34 36 L 34 20 M 246 36 L 246 20',
+            arc: 'M 20 42 Q 80 18 140 32 Q 200 46 260 22',
+            chain: 'M 20 40 H 260 M 36 40 A 8 8 0 1 0 52 40 A 8 8 0 1 0 36 40 M 78 40 A 8 8 0 1 0 94 40 A 8 8 0 1 0 78 40 M 120 40 A 8 8 0 1 0 136 40 A 8 8 0 1 0 120 40 M 162 40 A 8 8 0 1 0 178 40 A 8 8 0 1 0 162 40 M 204 40 A 8 8 0 1 0 220 40 A 8 8 0 1 0 204 40',
+            ribbon: 'M 20 40 L 36 28 L 52 40 L 68 52 L 84 40 L 100 28 L 116 40 L 132 52 L 148 40 L 164 28 L 180 40 L 196 52 L 212 40 L 228 28 L 244 40 L 260 52',
+            stitch: 'M 20 40 H 260 M 28 32 L 36 48 M 52 32 L 60 48 M 76 32 L 84 48 M 100 32 L 108 48 M 124 32 L 132 48 M 148 32 L 156 48 M 172 32 L 180 48 M 196 32 L 204 48 M 220 32 L 228 48',
+            skyline: 'M 20 44 L 36 44 L 36 28 L 48 28 L 48 38 L 62 38 L 62 22 L 76 22 L 76 40 L 90 40 L 90 18 L 106 18 L 106 34 L 122 34 L 122 26 L 136 26 L 136 42 L 152 42 L 152 20 L 170 20 L 170 38 L 188 38 L 188 30 L 202 30 L 202 44 L 260 44',
+            ticket: 'M 20 40 H 260 M 36 40 A 2 2 0 1 0 40 40 A 2 2 0 1 0 36 40 M 76 40 A 2 2 0 1 0 80 40 A 2 2 0 1 0 76 40 M 116 40 A 2 2 0 1 0 120 40 A 2 2 0 1 0 116 40 M 156 40 A 2 2 0 1 0 160 40 A 2 2 0 1 0 156 40 M 196 40 A 2 2 0 1 0 200 40 A 2 2 0 1 0 196 40',
+            hook: 'M 20 40 H 72 Q 86 40 86 54 Q 86 62 94 62 H 140 Q 154 62 154 48 Q 154 40 162 40 H 260',
+            twinline: 'M 20 32 H 260 M 20 46 H 260'
         };
         const pathData = pathByType[renderType] || pathByType.wave;
         const pathObj = new Path(pathData, {

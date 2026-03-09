@@ -769,6 +769,37 @@
     gap: 0.75rem;
 }
 
+.device-category-pricing-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 1rem 0.125rem;
+}
+
+.device-category-pricing-head-label {
+    min-width: 180px;
+}
+
+.device-category-pricing-head-cols {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.device-category-pricing-head-cols span {
+    width: 120px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.device-category-pricing-head-cols span:last-child {
+    width: 80px;
+}
+
 .device-category-row {
     display: flex;
     align-items: center;
@@ -950,6 +981,10 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+.dark .device-category-pricing-head-cols span {
+    color: var(--text-muted);
+}
+
 .dark .device-category-row:hover {
     background: rgba(34, 139, 230, 0.08);
     border-color: rgba(34, 139, 230, 0.4);
@@ -970,6 +1005,10 @@
 }
 
 @media (max-width: 640px) {
+    .device-category-pricing-head {
+        display: none;
+    }
+
     .device-category-row {
         flex-direction: column;
         align-items: flex-start;

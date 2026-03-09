@@ -10,7 +10,7 @@ $companyId = Auth::getActiveCompanyId();
 // Valid device types
 $validTypes = ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl', 'android_tv', 'panel', 'web_display', 'tablet', 'mobile', 'tv', 'stream_player'];
 
-// Map frontend type to database type (SQLite CHECK constraint: esl, android_tv, panel, web_display)
+// Map frontend type to database type (allowed: esl, android_tv, panel, web_display)
 $typeMap = [
     'tv' => 'android_tv',
     'esl_android' => 'esl',      // PavoDisplay Android ESL devices
