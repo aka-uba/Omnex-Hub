@@ -275,3 +275,34 @@ Format:
 - Files: public/assets/js/pages/admin/LicensePlanForm.js
 - Checks: node --check public/assets/js/pages/admin/LicensePlanForm.js
 - Risk/Follow-up: Summary block is now more verbose; if needed we can collapse per-currency detail behind a toggle.
+## 2026-03-09 - products table header sorting fix (server-side)
+- Request: `#/products` header sorting was inconsistent (e.g., group column seemed random each click); fix this page first.
+- Changes: Updated products list API sort handling to use a safe sort-key map with all visible sortable columns (`sku`, `name`, `barcode`, `group`, `category`, `current_price`, `stock`, `status`, `created_at`, `updated_at`). Added SQL expression mapping including quoted `"group"` and case-insensitive text sorting via `LOWER(...)`. Added deterministic tiebreaker `id ASC`.
+- Files: api/products/index.php
+- Checks: php -l api/products/index.php
+- Risk/Follow-up: If you want locale-aware Turkish sorting (`?/?`) beyond ASCII-lower behavior, DB collation/ICU-based sort can be added later.
+## 2026-03-09 - products sorting refinement (null handling + stable ordering)
+- Request: On products table, group sorting still looked wrong (same categories appearing on top).
+- Changes: Refined ORDER BY in products API to `NULLS LAST` and added secondary stable sort by `LOWER(name), id` to avoid misleading top rows when many records share same group or null values.
+- Files: api/products/index.php
+- Checks: php -l api/products/index.php
+- Risk/Follow-up: If active branch dataset truly contains only few group values, top rows can still repeat by design; then issue is data scope, not sort logic.
+## 2026-03-09 - product group assignment audit + edit-form group selector compatibility fix
+- Request: Verify whether all products have group assigned and why group selector appears unselected in product edit.
+- Changes: Audited live product groups for active company via DB query; all products have non-empty group values. Found many tenant-specific/localized group values not present in static edit-form options. Updated ProductForm `populateForm()` to set group with case-insensitive option match and append dynamic option when no static match exists, then select it.
+- Files: public/assets/js/pages/products/ProductForm.js
+- Checks: node --check public/assets/js/pages/products/ProductForm.js; runtime DB audit script (group distribution).
+- Risk/Follow-up: Static default group option list is narrow; if strict canonical groups are desired, add dedicated mapping/migration rules before normalization.
+## 2026-03-09 - product form category/group separation hardening
+- Request: Investigate category field behavior where group-level values appear in category context; category should represent subgroup hierarchy.
+- Changes: In ProductForm, added `/products/groups` preload and normalized group-name set; filtered category dropdown root options that collide with product group names; preserved backward compatibility by dynamically appending product's existing category when it is not present in filtered dropdown.
+- Files: public/assets/js/pages/products/ProductForm.js
+- Checks: node --check public/assets/js/pages/products/ProductForm.js
+- Risk/Follow-up: If a tenant intentionally uses the same label for both group and category in new product creation, that category is now hidden from default dropdown; existing records still load via dynamic option.
+
+## 2026-03-09 - add product descriptions to demo seed data (products.json)
+- Request: Merge the 1064 product descriptions generated earlier into the TR products.json seed file so the setup wizard seeds products with descriptions.
+- Changes: Added `description` field to all 1064 product entries in `database/seeders/data/tr/products.json`. ProductSeeder.php already handled `$product['description'] ?? null` (line 93), so no backend code change was needed. Verified all 1064 SKUs matched, 0 unmatched.
+- Files: database/seeders/data/tr/products.json
+- Checks: JSON parse validation, field count verification (18 fields per product), 1064/1064 description coverage confirmed.
+- Risk/Follow-up: EN products.json (20 items) does not have descriptions yet; can be added if needed. Backup at products.json.bak.

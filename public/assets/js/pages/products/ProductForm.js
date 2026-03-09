@@ -21,6 +21,8 @@ export class ProductFormPage {
         this.product = null;
         this.categories = [];
         this.productionTypes = [];
+        this.productGroups = [];
+        this.productGroupNameSet = new Set();
         this.categoryModalId = null;
         this.productionTypeModalId = null;
         this.editingCategoryId = null;
@@ -595,6 +597,7 @@ export class ProductFormPage {
         setTranslator((key, params) => this.__(key, params));
 
         await Promise.all([
+            this.loadProductGroups(),
             this.loadCategories(),
             this.loadProductionTypes(),
             this.loadWeighingSettings()
@@ -1139,6 +1142,26 @@ export class ProductFormPage {
         }
     }
 
+    async loadProductGroups() {
+        try {
+            const response = await this.app.api.get('/products/groups');
+            this.productGroups = response.data || [];
+            this.productGroupNameSet = new Set(
+                this.productGroups
+                    .map((item) => this._normalizeText(item?.name))
+                    .filter(Boolean)
+            );
+        } catch (error) {
+            this.productGroups = [];
+            this.productGroupNameSet = new Set();
+            Logger.error('Product groups load error:', error);
+        }
+    }
+
+    _normalizeText(value) {
+        return String(value || '').trim().toLocaleLowerCase('tr-TR');
+    }
+
     async loadProductionTypes() {
         try {
             const response = await this.app.api.get('/production-types');
@@ -1183,6 +1206,7 @@ export class ProductFormPage {
                 // Check if this parent has any children
                 return this.categories.some(child => child.parent_id === cat.id);
             })
+            .filter(cat => !this.productGroupNameSet.has(this._normalizeText(cat.name)))
             .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
         parentCategoriesWithChildren.forEach(cat => {
@@ -1334,7 +1358,22 @@ export class ProductFormPage {
         // Handle group field separately (product_group in HTML, group in DB)
         const groupEl = document.getElementById('product_group');
         if (groupEl && this.product.group) {
-            groupEl.value = this.product.group;
+            const productGroup = String(this.product.group).trim();
+            const match = Array.from(groupEl.options).find((opt) =>
+                String(opt.value || '').trim().toLowerCase() === productGroup.toLowerCase()
+            );
+
+            if (match) {
+                groupEl.value = match.value;
+            } else {
+                // Some tenants use custom/localized group values not present in static defaults.
+                const dynamicOpt = document.createElement('option');
+                dynamicOpt.value = productGroup;
+                dynamicOpt.textContent = productGroup;
+                dynamicOpt.dataset.dynamic = '1';
+                groupEl.appendChild(dynamicOpt);
+                groupEl.value = productGroup;
+            }
         }
 
         // Handle category and subcategory specially with case-insensitive matching
@@ -1348,6 +1387,13 @@ export class ProductFormPage {
             );
             if (matchingOption) {
                 categoryEl.value = matchingOption.value;
+            } else {
+                const dynamicCategoryOption = document.createElement('option');
+                dynamicCategoryOption.value = this.product.category;
+                dynamicCategoryOption.textContent = this.product.category;
+                dynamicCategoryOption.dataset.dynamic = '1';
+                categoryEl.appendChild(dynamicCategoryOption);
+                categoryEl.value = this.product.category;
             }
             // Update subcategories dropdown based on selected category
             this.updateSubcategories(categoryEl.value || this.product.category);

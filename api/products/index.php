@@ -83,11 +83,23 @@ if ($hasDevice === 'assigned') {
 
 $whereClause = implode(' AND ', $where);
 
-// Allowed sort columns
-$allowedSort = ['name', 'sku', 'current_price', 'category', 'created_at', 'updated_at'];
-if (!in_array($sortBy, $allowedSort)) {
+// Allowed sort columns (request key -> safe SQL expression)
+$allowedSortMap = [
+    'name' => 'LOWER(name)',
+    'sku' => 'LOWER(sku)',
+    'barcode' => 'LOWER(barcode)',
+    'group' => 'LOWER("group")',
+    'category' => 'LOWER(category)',
+    'current_price' => 'current_price',
+    'stock' => 'stock',
+    'status' => 'LOWER(status)',
+    'created_at' => 'created_at',
+    'updated_at' => 'updated_at'
+];
+if (!isset($allowedSortMap[$sortBy])) {
     $sortBy = 'updated_at';
 }
+$sortExpr = $allowedSortMap[$sortBy];
 $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
 
 // Count total
@@ -104,7 +116,7 @@ $products = $db->fetchAll(
             created_at, updated_at
      FROM products
      WHERE $whereClause
-     ORDER BY $sortBy $sortDir
+     ORDER BY $sortExpr $sortDir NULLS LAST, LOWER(name) ASC, id ASC
      LIMIT ? OFFSET ?",
     array_merge($params, [$limit, $offset])
 );
