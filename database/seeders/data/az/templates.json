@@ -1,14 +1,14 @@
 {
     "schema_version": "1.0",
-    "data_version": "2026.03.en",
-    "locale": "en",
-    "description": "Demo label templates - English",
+    "data_version": "2026.03.az",
+    "locale": "az",
+    "description": "Demo etiket şablonları - Azərbaycan",
     "generated_at": "2026-03-09",
     "data": [
         {
             "key": "demo.template.manav-basic",
-            "name": "Produce Basic Label",
-            "description": "Basic price label for produce items",
+            "name": "Əsas məhsul etiketi",
+            "description": "Məhsullar üçün əsas qiymət etiketi",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -77,8 +77,8 @@
         },
         {
             "key": "demo.template.manav-kampanya",
-            "name": "Produce Sale Label",
-            "description": "Promotional label for discounted items",
+            "name": "Kampaniya etiketi",
+            "description": "Endirimli məhsullar üçün kampaniya etiketi",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -90,7 +90,7 @@
                 "elements": [
                     {
                         "type": "text",
-                        "content": "SALE",
+                        "content": "KAMPANİYA",
                         "x": 20,
                         "y": 10,
                         "width": 360,
@@ -164,8 +164,8 @@
         },
         {
             "key": "demo.template.bakliyat-basic",
-            "name": "Grocery Basic Label",
-            "description": "Standard label for grocery items",
+            "name": "Əsas baqqal etiketi",
+            "description": "Baqqal məhsulları üçün standart etiket",
             "type": "label",
             "category": "grocery",
             "width": 400,
@@ -225,8 +225,8 @@
         },
         {
             "key": "demo.template.esl-2.9-bw",
-            "name": "ESL 2.9\" Black-White",
-            "description": "Black and white design for 2.9 inch e-ink labels",
+            "name": "ESL 2.9\" Ağ-Qara",
+            "description": "2.9 düym e-ink etiketlər üçün ağ-qara dizayn",
             "type": "label",
             "category": "esl",
             "width": 296,

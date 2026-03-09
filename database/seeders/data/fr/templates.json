@@ -1,14 +1,14 @@
 {
     "schema_version": "1.0",
-    "data_version": "2026.03.en",
-    "locale": "en",
-    "description": "Demo label templates - English",
+    "data_version": "2026.03.fr",
+    "locale": "fr",
+    "description": "Modèles d'étiquettes de démonstration - Français",
     "generated_at": "2026-03-09",
     "data": [
         {
             "key": "demo.template.manav-basic",
-            "name": "Produce Basic Label",
-            "description": "Basic price label for produce items",
+            "name": "Étiquette produit de base",
+            "description": "Étiquette de prix standard pour les produits frais",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -77,8 +77,8 @@
         },
         {
             "key": "demo.template.manav-kampanya",
-            "name": "Produce Sale Label",
-            "description": "Promotional label for discounted items",
+            "name": "Étiquette promotionnelle",
+            "description": "Étiquette pour les articles en promotion",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -90,7 +90,7 @@
                 "elements": [
                     {
                         "type": "text",
-                        "content": "SALE",
+                        "content": "PROMO",
                         "x": 20,
                         "y": 10,
                         "width": 360,
@@ -164,8 +164,8 @@
         },
         {
             "key": "demo.template.bakliyat-basic",
-            "name": "Grocery Basic Label",
-            "description": "Standard label for grocery items",
+            "name": "Étiquette épicerie de base",
+            "description": "Étiquette standard pour les produits d'épicerie",
             "type": "label",
             "category": "grocery",
             "width": 400,
@@ -225,8 +225,8 @@
         },
         {
             "key": "demo.template.esl-2.9-bw",
-            "name": "ESL 2.9\" Black-White",
-            "description": "Black and white design for 2.9 inch e-ink labels",
+            "name": "ESL 2.9\" Noir et Blanc",
+            "description": "Design noir et blanc pour étiquettes e-ink 2,9 pouces",
             "type": "label",
             "category": "esl",
             "width": 296,

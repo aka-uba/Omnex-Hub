@@ -78,6 +78,7 @@ export class DataTable {
                 extra: null,
                 onFilterClick: null // Filter button callback
             },
+            onSortChange: null,
             exportFilename: 'export', // Export filename prefix
             responsive: true, // Mobilde card görünümü
             striped: false,
@@ -804,11 +805,27 @@ export class DataTable {
             const sortBtn = e.target.closest('[data-table-sort]');
             if (sortBtn) {
                 const key = sortBtn.dataset.tableSort;
+                const prevSortBy = this.state.sortBy;
+                const prevSortDir = this.state.sortDir;
                 if (this.state.sortBy === key) {
                     this.state.sortDir = this.state.sortDir === 'ASC' ? 'DESC' : 'ASC';
                 } else {
                     this.state.sortBy = key;
                     this.state.sortDir = 'ASC';
+                }
+                // Always return to first page when sort changes to avoid stale page confusion.
+                this.state.page = 1;
+                if (typeof this.options.onSortChange === 'function') {
+                    try {
+                        this.options.onSortChange({
+                            sortBy: this.state.sortBy,
+                            sortDir: this.state.sortDir,
+                            prevSortBy,
+                            prevSortDir
+                        });
+                    } catch (err) {
+                        Logger.error('DataTable onSortChange error:', err);
+                    }
                 }
                 this.renderHeader();
                 this.loadData();

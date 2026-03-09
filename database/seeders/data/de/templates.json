@@ -1,14 +1,14 @@
 {
     "schema_version": "1.0",
-    "data_version": "2026.03.en",
-    "locale": "en",
-    "description": "Demo label templates - English",
+    "data_version": "2026.03.de",
+    "locale": "de",
+    "description": "Demo-Etikettenvorlagen - Deutsch",
     "generated_at": "2026-03-09",
     "data": [
         {
             "key": "demo.template.manav-basic",
-            "name": "Produce Basic Label",
-            "description": "Basic price label for produce items",
+            "name": "Basis-Produktetikett",
+            "description": "Standard-Preisetikett für Frischprodukte",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -77,8 +77,8 @@
         },
         {
             "key": "demo.template.manav-kampanya",
-            "name": "Produce Sale Label",
-            "description": "Promotional label for discounted items",
+            "name": "Aktionsetikett",
+            "description": "Werbeetikett für reduzierte Artikel",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -90,7 +90,7 @@
                 "elements": [
                     {
                         "type": "text",
-                        "content": "SALE",
+                        "content": "AKTION",
                         "x": 20,
                         "y": 10,
                         "width": 360,
@@ -164,8 +164,8 @@
         },
         {
             "key": "demo.template.bakliyat-basic",
-            "name": "Grocery Basic Label",
-            "description": "Standard label for grocery items",
+            "name": "Basis-Lebensmitteletikett",
+            "description": "Standardetikett für Lebensmittel",
             "type": "label",
             "category": "grocery",
             "width": 400,
@@ -225,8 +225,8 @@
         },
         {
             "key": "demo.template.esl-2.9-bw",
-            "name": "ESL 2.9\" Black-White",
-            "description": "Black and white design for 2.9 inch e-ink labels",
+            "name": "ESL 2.9\" Schwarz-Weiß",
+            "description": "Schwarz-Weiß-Design für 2,9 Zoll E-Ink-Etiketten",
             "type": "label",
             "category": "esl",
             "width": 296,

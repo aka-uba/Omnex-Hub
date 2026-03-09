@@ -1,0 +1,719 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.03.ar",
+    "description": "Default label sizes for setup wizard",
+    "generated_at": "2026-02-26 00:00:00",
+    "data": [
+        {
+            "id": "ls-001",
+            "name": "94x14 mm",
+            "width": 94,
+            "height": 14,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 1
+        },
+        {
+            "id": "ls-002",
+            "name": "100x100 mm",
+            "width": 100,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": false,
+            "sort_order": 2
+        },
+        {
+            "id": "ls-003",
+            "name": "50x30 mm",
+            "width": 50,
+            "height": 30,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 3
+        },
+        {
+            "id": "ls-004",
+            "name": "80x40 mm",
+            "width": 80,
+            "height": 40,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 4
+        },
+        {
+            "id": "ls-005",
+            "name": "40x80 mm",
+            "width": 40,
+            "height": 80,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 5
+        },
+        {
+            "id": "ls-006",
+            "name": "20x100 mm",
+            "width": 20,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 6
+        },
+        {
+            "id": "ls-007",
+            "name": "80x58 mm",
+            "width": 80,
+            "height": 58,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 7
+        },
+        {
+            "id": "ls-008",
+            "name": "35x75 mm",
+            "width": 35,
+            "height": 75,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 8
+        },
+        {
+            "id": "ls-009",
+            "name": "75x35 mm",
+            "width": 75,
+            "height": 35,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 9
+        },
+        {
+            "id": "ls-010",
+            "name": "60x30 mm",
+            "width": 60,
+            "height": 30,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 10
+        },
+        {
+            "id": "ls-011",
+            "name": "60x150 mm",
+            "width": 60,
+            "height": 150,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 11
+        },
+        {
+            "id": "ls-012",
+            "name": "35x55 mm",
+            "width": 35,
+            "height": 55,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 12
+        },
+        {
+            "id": "ls-013",
+            "name": "150x150 mm",
+            "width": 150,
+            "height": 150,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 13
+        },
+        {
+            "id": "ls-014",
+            "name": "120x160 mm",
+            "width": 120,
+            "height": 160,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 14
+        },
+        {
+            "id": "ls-015",
+            "name": "80x130 mm",
+            "width": 80,
+            "height": 130,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 15
+        },
+        {
+            "id": "ls-016",
+            "name": "35x45 mm",
+            "width": 35,
+            "height": 45,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 16
+        },
+        {
+            "id": "ls-017",
+            "name": "50x100 mm",
+            "width": 50,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 17
+        },
+        {
+            "id": "ls-018",
+            "name": "38x100 mm",
+            "width": 38,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 18
+        },
+        {
+            "id": "ls-019",
+            "name": "38x70 mm",
+            "width": 38,
+            "height": 70,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 19
+        },
+        {
+            "id": "ls-020",
+            "name": "30x20 mm",
+            "width": 30,
+            "height": 20,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 20
+        },
+        {
+            "id": "ls-021",
+            "name": "30x50 mm",
+            "width": 30,
+            "height": 50,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 21
+        },
+        {
+            "id": "ls-022",
+            "name": "34x54 mm",
+            "width": 34,
+            "height": 54,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 22
+        },
+        {
+            "id": "ls-023",
+            "name": "60x327 mm",
+            "width": 60,
+            "height": 327,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 23
+        },
+        {
+            "id": "ls-024",
+            "name": "150x210 mm",
+            "width": 150,
+            "height": 210,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 24
+        },
+        {
+            "id": "ls-025",
+            "name": "39x60 mm",
+            "width": 39,
+            "height": 60,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 25
+        },
+        {
+            "id": "ls-026",
+            "name": "12x45 mm",
+            "width": 12,
+            "height": 45,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 26
+        },
+        {
+            "id": "ls-027",
+            "name": "70x90 mm",
+            "width": 70,
+            "height": 90,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 27
+        },
+        {
+            "id": "ls-028",
+            "name": "72x25 mm",
+            "width": 72,
+            "height": 25,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 28
+        },
+        {
+            "id": "ls-029",
+            "name": "100x37 mm",
+            "width": 100,
+            "height": 37,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 29
+        },
+        {
+            "id": "ls-030",
+            "name": "58x40 mm",
+            "width": 58,
+            "height": 40,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 30
+        },
+        {
+            "id": "ls-031",
+            "name": "20x40 mm",
+            "width": 20,
+            "height": 40,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 31
+        },
+        {
+            "id": "ls-032",
+            "name": "40x15 mm",
+            "width": 40,
+            "height": 15,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 32
+        },
+        {
+            "id": "ls-033",
+            "name": "40x20 mm",
+            "width": 40,
+            "height": 20,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 33
+        },
+        {
+            "id": "ls-034",
+            "name": "90x153 mm",
+            "width": 90,
+            "height": 153,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 34
+        },
+        {
+            "id": "ls-035",
+            "name": "58x65 mm",
+            "width": 58,
+            "height": 65,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 35
+        },
+        {
+            "id": "ls-036",
+            "name": "70x55 mm",
+            "width": 70,
+            "height": 55,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 36
+        },
+        {
+            "id": "ls-037",
+            "name": "40x66 mm",
+            "width": 40,
+            "height": 66,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 37
+        },
+        {
+            "id": "ls-038",
+            "name": "60x15 mm",
+            "width": 60,
+            "height": 15,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 38
+        },
+        {
+            "id": "ls-039",
+            "name": "40x30 mm",
+            "width": 40,
+            "height": 30,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 39
+        },
+        {
+            "id": "ls-040",
+            "name": "30x15 mm",
+            "width": 30,
+            "height": 15,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 40
+        },
+        {
+            "id": "ls-041",
+            "name": "100x140 mm",
+            "width": 100,
+            "height": 140,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 41
+        },
+        {
+            "id": "ls-042",
+            "name": "50x75 mm",
+            "width": 50,
+            "height": 75,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 42
+        },
+        {
+            "id": "ls-043",
+            "name": "100x75 mm",
+            "width": 100,
+            "height": 75,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 43
+        },
+        {
+            "id": "ls-044",
+            "name": "100x120 mm",
+            "width": 100,
+            "height": 120,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 44
+        },
+        {
+            "id": "ls-045",
+            "name": "35x70 mm",
+            "width": 35,
+            "height": 70,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 45
+        },
+        {
+            "id": "ls-046",
+            "name": "80x100 mm",
+            "width": 80,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 46
+        },
+        {
+            "id": "ls-047",
+            "name": "60x80 mm",
+            "width": 60,
+            "height": 80,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 47
+        },
+        {
+            "id": "ls-048",
+            "name": "133x100 mm",
+            "width": 133,
+            "height": 100,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 48
+        },
+        {
+            "id": "ls-049",
+            "name": "100x150 mm",
+            "width": 100,
+            "height": 150,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 49
+        },
+        {
+            "id": "ls-050",
+            "name": "57x70 mm",
+            "width": 57,
+            "height": 70,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 50
+        },
+        {
+            "id": "ls-051",
+            "name": "38x65 mm",
+            "width": 38,
+            "height": 65,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 51
+        },
+        {
+            "id": "ls-052",
+            "name": "30x30 mm",
+            "width": 30,
+            "height": 30,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 52
+        },
+        {
+            "id": "ls-053",
+            "name": "55x300 mm",
+            "width": 55,
+            "height": 300,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 53
+        },
+        {
+            "id": "ls-054",
+            "name": "100x76 mm",
+            "width": 100,
+            "height": 76,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 54
+        },
+        {
+            "id": "ls-055",
+            "name": "30x70 mm",
+            "width": 30,
+            "height": 70,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 55
+        },
+        {
+            "id": "ls-056",
+            "name": "84x12 mm",
+            "width": 84,
+            "height": 12,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 56
+        },
+        {
+            "id": "ls-057",
+            "name": "75x50 mm",
+            "width": 75,
+            "height": 50,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 57
+        },
+        {
+            "id": "ls-058",
+            "name": "99x139 mm",
+            "width": 99,
+            "height": 139,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 58
+        },
+        {
+            "id": "ls-059",
+            "name": "25x50 mm",
+            "width": 25,
+            "height": 50,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 59
+        },
+        {
+            "id": "ls-060",
+            "name": "57x90 mm",
+            "width": 57,
+            "height": 90,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 60
+        },
+        {
+            "id": "ls-061",
+            "name": "45x57 mm",
+            "width": 45,
+            "height": 57,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 61
+        },
+        {
+            "id": "ls-062",
+            "name": "A4 Dikey (210x297 mm)",
+            "width": 210,
+            "height": 297,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 62
+        },
+        {
+            "id": "ls-063",
+            "name": "A4 Yatay (297x210 mm)",
+            "width": 297,
+            "height": 210,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 63
+        },
+        {
+            "id": "ls-064",
+            "name": "A5 Dikey (148x210 mm)",
+            "width": 148,
+            "height": 210,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 64
+        },
+        {
+            "id": "ls-065",
+            "name": "A5 Yatay (210x148 mm)",
+            "width": 210,
+            "height": 148,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 65
+        },
+        {
+            "id": "ls-066",
+            "name": "A3 Dikey (297x420 mm)",
+            "width": 297,
+            "height": 420,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 66
+        },
+        {
+            "id": "ls-067",
+            "name": "A3 Yatay (420x297 mm)",
+            "width": 420,
+            "height": 297,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 67
+        },
+        {
+            "id": "ls-068",
+            "name": "Letter Dikey (216x279 mm)",
+            "width": 216,
+            "height": 279,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 68
+        },
+        {
+            "id": "ls-069",
+            "name": "Letter Yatay (279x216 mm)",
+            "width": 279,
+            "height": 216,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 69
+        },
+        {
+            "id": "ls-070",
+            "name": "Legal Dikey (216x356 mm)",
+            "width": 216,
+            "height": 356,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 70
+        },
+        {
+            "id": "ls-071",
+            "name": "Legal Yatay (356x216 mm)",
+            "width": 356,
+            "height": 216,
+            "unit": "mm",
+            "is_default": false,
+            "is_active": true,
+            "sort_order": 71
+        }
+    ],
+    "locale": "ar"
+}

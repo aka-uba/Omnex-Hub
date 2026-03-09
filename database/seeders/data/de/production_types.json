@@ -1,0 +1,39 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.03.de",
+    "locale": "de",
+    "description": "Deutsch üretim tipi verileri",
+    "generated_at": "2026-03-09 02:56:19",
+    "data": [
+        {
+            "key": "demo.production_type.konvansiyonel",
+            "name": "Konventionell",
+            "slug": "konventionell",
+            "color": "#9E9E9E",
+            "sort_order": 0,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.production_type.organik",
+            "name": "Biologisch",
+            "slug": "biologisch",
+            "color": "#4CAF50",
+            "sort_order": 1,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        },
+        {
+            "key": "demo.production_type.geleneksel",
+            "name": "Traditionell",
+            "slug": "traditionell",
+            "color": "#8BC34A",
+            "sort_order": 2,
+            "is_demo": true,
+            "is_default": true,
+            "status": "active"
+        }
+    ]
+}

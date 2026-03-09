@@ -90,6 +90,7 @@ export class SetupWizard {
                                 <option value="de">${this.__('languages.de')}</option>
                                 <option value="nl">${this.__('languages.nl')}</option>
                                 <option value="fr">${this.__('languages.fr')}</option>
+                                <option value="ar">${this.__('languages.ar')}</option>
                             </select>
                             <small class="form-hint">${this.__('setupWizard.languageHint')}</small>
                         </div>

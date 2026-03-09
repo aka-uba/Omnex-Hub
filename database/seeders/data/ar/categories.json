@@ -1,14 +1,14 @@
 {
     "schema_version": "1.0",
-    "data_version": "2026.03.en",
-    "locale": "en",
-    "description": "English category data - Hierarchical structure",
+    "data_version": "2026.03.ar",
+    "locale": "ar",
+    "description": "بيانات التصنيفات العربية - هيكل هرمي",
     "generated_at": "2026-03-09 02:59:28",
     "data": [
         {
             "key": "demo.category.meyve",
-            "name": "Fruit",
-            "slug": "fruit",
+            "name": "فواكه",
+            "slug": "fruits",
             "parent_key": null,
             "sort_order": 0,
             "is_demo": true,
@@ -17,7 +17,7 @@
         },
         {
             "key": "demo.category.orman-meyvesi",
-            "name": "Forest Fruit",
+            "name": "فواكه الغابة",
             "slug": "forest-fruit",
             "parent_key": "demo.category.meyve",
             "sort_order": 1,
@@ -27,7 +27,7 @@
         },
         {
             "key": "demo.category.sert-meyve",
-            "name": "Hard Fruit",
+            "name": "فواكه صلبة",
             "slug": "hard-fruit",
             "parent_key": "demo.category.meyve",
             "sort_order": 2,
@@ -37,7 +37,7 @@
         },
         {
             "key": "demo.category.tropikal",
-            "name": "Tropical",
+            "name": "استوائي",
             "slug": "tropical",
             "parent_key": "demo.category.meyve",
             "sort_order": 3,
@@ -47,7 +47,7 @@
         },
         {
             "key": "demo.category.tropikal-yerli",
-            "name": "Tropical (Local)",
+            "name": "استوائي (محلي)",
             "slug": "tropical-local",
             "parent_key": "demo.category.meyve",
             "sort_order": 4,
@@ -57,7 +57,7 @@
         },
         {
             "key": "demo.category.turuncgil",
-            "name": "Citrus",
+            "name": "حمضيات",
             "slug": "citrus",
             "parent_key": "demo.category.meyve",
             "sort_order": 5,
@@ -67,7 +67,7 @@
         },
         {
             "key": "demo.category.yaz-meyvesi",
-            "name": "Summer Fruit",
+            "name": "فواكه صيفية",
             "slug": "summer-fruit",
             "parent_key": "demo.category.meyve",
             "sort_order": 6,
@@ -77,7 +77,7 @@
         },
         {
             "key": "demo.category.yumusak-meyve",
-            "name": "Soft Fruit",
+            "name": "فواكه طرية",
             "slug": "soft-fruit",
             "parent_key": "demo.category.meyve",
             "sort_order": 7,
@@ -87,7 +87,7 @@
         },
         {
             "key": "demo.category.cekirdekli",
-            "name": "Stone Fruit",
+            "name": "فواكه ذات نواة",
             "slug": "stone-fruit",
             "parent_key": "demo.category.meyve",
             "sort_order": 8,
@@ -97,7 +97,7 @@
         },
         {
             "key": "demo.category.sebze",
-            "name": "Vegetables",
+            "name": "خضروات",
             "slug": "vegetables",
             "parent_key": null,
             "sort_order": 10,
@@ -107,7 +107,7 @@
         },
         {
             "key": "demo.category.aci-biber",
-            "name": "Hot Pepper",
+            "name": "فلفل حار",
             "slug": "hot-pepper",
             "parent_key": "demo.category.sebze",
             "sort_order": 11,
@@ -117,7 +117,7 @@
         },
         {
             "key": "demo.category.baklagil",
-            "name": "Legume",
+            "name": "بقوليات",
             "slug": "legume",
             "parent_key": "demo.category.sebze",
             "sort_order": 12,
@@ -127,7 +127,7 @@
         },
         {
             "key": "demo.category.biber",
-            "name": "Pepper",
+            "name": "فلفل",
             "slug": "pepper",
             "parent_key": "demo.category.sebze",
             "sort_order": 13,
@@ -137,7 +137,7 @@
         },
         {
             "key": "demo.category.brassica",
-            "name": "Brassica",
+            "name": "الصليبيات",
             "slug": "brassica",
             "parent_key": "demo.category.sebze",
             "sort_order": 14,
@@ -147,7 +147,7 @@
         },
         {
             "key": "demo.category.domates",
-            "name": "Tomato",
+            "name": "طماطم",
             "slug": "tomato",
             "parent_key": "demo.category.sebze",
             "sort_order": 15,
@@ -157,7 +157,7 @@
         },
         {
             "key": "demo.category.govde-sebze",
-            "name": "Stem Vegetable",
+            "name": "خضروات ساقية",
             "slug": "stem-vegetable",
             "parent_key": "demo.category.sebze",
             "sort_order": 16,
@@ -167,7 +167,7 @@
         },
         {
             "key": "demo.category.kabak",
-            "name": "Squash",
+            "name": "قرع",
             "slug": "squash",
             "parent_key": "demo.category.sebze",
             "sort_order": 17,
@@ -177,7 +177,7 @@
         },
         {
             "key": "demo.category.kok-sebze",
-            "name": "Root Vegetable",
+            "name": "خضروات جذرية",
             "slug": "root-vegetable",
             "parent_key": "demo.category.sebze",
             "sort_order": 18,
@@ -187,7 +187,7 @@
         },
         {
             "key": "demo.category.lahana",
-            "name": "Cabbage",
+            "name": "ملفوف",
             "slug": "cabbage",
             "parent_key": "demo.category.sebze",
             "sort_order": 19,
@@ -197,7 +197,7 @@
         },
         {
             "key": "demo.category.mantar",
-            "name": "Mushroom",
+            "name": "فطر",
             "slug": "mushroom",
             "parent_key": "demo.category.sebze",
             "sort_order": 20,
@@ -207,7 +207,7 @@
         },
         {
             "key": "demo.category.misir",
-            "name": "Corn",
+            "name": "ذرة",
             "slug": "corn",
             "parent_key": "demo.category.sebze",
             "sort_order": 21,
@@ -217,7 +217,7 @@
         },
         {
             "key": "demo.category.patlican",
-            "name": "Eggplant",
+            "name": "باذنجان",
             "slug": "eggplant",
             "parent_key": "demo.category.sebze",
             "sort_order": 22,
@@ -227,7 +227,7 @@
         },
         {
             "key": "demo.category.salatalik",
-            "name": "Cucumber",
+            "name": "خيار",
             "slug": "cucumber",
             "parent_key": "demo.category.sebze",
             "sort_order": 23,
@@ -237,7 +237,7 @@
         },
         {
             "key": "demo.category.sap-sebze",
-            "name": "Stalk Vegetable",
+            "name": "خضروات عنقودية",
             "slug": "stalk-vegetable",
             "parent_key": "demo.category.sebze",
             "sort_order": 24,
@@ -247,7 +247,7 @@
         },
         {
             "key": "demo.category.sogan",
-            "name": "Onion",
+            "name": "بصل",
             "slug": "onion",
             "parent_key": "demo.category.sebze",
             "sort_order": 25,
@@ -257,7 +257,7 @@
         },
         {
             "key": "demo.category.yaprakli",
-            "name": "Leafy",
+            "name": "ورقيات",
             "slug": "leafy",
             "parent_key": "demo.category.sebze",
             "sort_order": 26,
@@ -267,7 +267,7 @@
         },
         {
             "key": "demo.category.yesillik",
-            "name": "Herbs",
+            "name": "أعشاب",
             "slug": "herbs",
             "parent_key": "demo.category.sebze",
             "sort_order": 27,
@@ -277,7 +277,7 @@
         },
         {
             "key": "demo.category.cicek-sebze",
-            "name": "Flower Vegetable",
+            "name": "خضروات زهرية",
             "slug": "flower-vegetable",
             "parent_key": "demo.category.sebze",
             "sort_order": 28,
@@ -287,7 +287,7 @@
         },
         {
             "key": "demo.category.bakliyat",
-            "name": "Pulses",
+            "name": "بقوليات وحبوب",
             "slug": "pulses",
             "parent_key": null,
             "sort_order": 30,
@@ -297,7 +297,7 @@
         },
         {
             "key": "demo.category.yerli-bakliyat",
-            "name": "Domestic",
+            "name": "محلي",
             "slug": "domestic",
             "parent_key": "demo.category.bakliyat",
             "sort_order": 31,
@@ -307,7 +307,7 @@
         },
         {
             "key": "demo.category.ithal-bakliyat",
-            "name": "Imported",
+            "name": "مستورد",
             "slug": "imported",
             "parent_key": "demo.category.bakliyat",
             "sort_order": 32,
@@ -317,7 +317,7 @@
         },
         {
             "key": "demo.category.pirinc",
-            "name": "Rice",
+            "name": "أرز",
             "slug": "rice",
             "parent_key": "demo.category.bakliyat",
             "sort_order": 33,
@@ -327,7 +327,7 @@
         },
         {
             "key": "demo.category.tahil",
-            "name": "Grain",
+            "name": "حبوب",
             "slug": "grain",
             "parent_key": "demo.category.bakliyat",
             "sort_order": 34,
@@ -337,7 +337,7 @@
         },
         {
             "key": "demo.category.un",
-            "name": "Flour",
+            "name": "دقيق",
             "slug": "flour",
             "parent_key": "demo.category.bakliyat",
             "sort_order": 35,
@@ -347,7 +347,7 @@
         },
         {
             "key": "demo.category.et-urunleri",
-            "name": "Meat Products",
+            "name": "منتجات اللحوم",
             "slug": "meat-products",
             "parent_key": null,
             "sort_order": 40,
@@ -357,7 +357,7 @@
         },
         {
             "key": "demo.category.kirmizi-et",
-            "name": "Red Meat",
+            "name": "لحم أحمر",
             "slug": "red-meat",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 41,
@@ -367,7 +367,7 @@
         },
         {
             "key": "demo.category.beyaz-et",
-            "name": "White Meat",
+            "name": "لحم أبيض",
             "slug": "white-meat",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 42,
@@ -377,7 +377,7 @@
         },
         {
             "key": "demo.category.kuzu",
-            "name": "Lamb",
+            "name": "لحم خروف",
             "slug": "lamb",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 43,
@@ -387,7 +387,7 @@
         },
         {
             "key": "demo.category.kemikli-et",
-            "name": "Bone-in Meat",
+            "name": "لحم بالعظم",
             "slug": "bone-in-meat",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 44,
@@ -397,7 +397,7 @@
         },
         {
             "key": "demo.category.sakatat",
-            "name": "Offal",
+            "name": "أحشاء",
             "slug": "offal",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 45,
@@ -407,7 +407,7 @@
         },
         {
             "key": "demo.category.kumes-hayvani",
-            "name": "Poultry",
+            "name": "دواجن",
             "slug": "poultry",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 46,
@@ -417,7 +417,7 @@
         },
         {
             "key": "demo.category.islenmis-et",
-            "name": "Processed Meat",
+            "name": "لحم مصنع",
             "slug": "processed-meat",
             "parent_key": "demo.category.et-urunleri",
             "sort_order": 47,
@@ -427,7 +427,7 @@
         },
         {
             "key": "demo.category.deniz-urunleri",
-            "name": "Seafood",
+            "name": "مأكولات بحرية",
             "slug": "seafood",
             "parent_key": null,
             "sort_order": 50,
@@ -437,7 +437,7 @@
         },
         {
             "key": "demo.category.balik",
-            "name": "Fish",
+            "name": "سمك",
             "slug": "fish",
             "parent_key": "demo.category.deniz-urunleri",
             "sort_order": 51,
@@ -447,7 +447,7 @@
         },
         {
             "key": "demo.category.kabuklu",
-            "name": "Shellfish",
+            "name": "قشريات",
             "slug": "shellfish",
             "parent_key": "demo.category.deniz-urunleri",
             "sort_order": 52,
@@ -457,7 +457,7 @@
         },
         {
             "key": "demo.category.yumusakca",
-            "name": "Mollusk",
+            "name": "رخويات",
             "slug": "mollusk",
             "parent_key": "demo.category.deniz-urunleri",
             "sort_order": 53,
@@ -467,7 +467,7 @@
         },
         {
             "key": "demo.category.sut-urunleri",
-            "name": "Dairy Products",
+            "name": "منتجات الألبان",
             "slug": "dairy-products",
             "parent_key": null,
             "sort_order": 60,
@@ -477,7 +477,7 @@
         },
         {
             "key": "demo.category.sut",
-            "name": "Milk",
+            "name": "حليب",
             "slug": "milk",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 61,
@@ -487,7 +487,7 @@
         },
         {
             "key": "demo.category.peynir",
-            "name": "Cheese",
+            "name": "جبن",
             "slug": "cheese",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 62,
@@ -497,7 +497,7 @@
         },
         {
             "key": "demo.category.yogurt",
-            "name": "Yogurt",
+            "name": "زبادي",
             "slug": "yogurt",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 63,
@@ -507,7 +507,7 @@
         },
         {
             "key": "demo.category.krema",
-            "name": "Cream",
+            "name": "كريمة",
             "slug": "cream",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 64,
@@ -517,7 +517,7 @@
         },
         {
             "key": "demo.category.yumurta",
-            "name": "Eggs",
+            "name": "بيض",
             "slug": "eggs",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 65,
@@ -527,7 +527,7 @@
         },
         {
             "key": "demo.category.tereyagi",
-            "name": "Butter",
+            "name": "زبدة",
             "slug": "butter",
             "parent_key": "demo.category.sut-urunleri",
             "sort_order": 66,
@@ -537,7 +537,7 @@
         },
         {
             "key": "demo.category.sarkuteri",
-            "name": "Deli",
+            "name": "مقبلات ولحوم باردة",
             "slug": "deli",
             "parent_key": null,
             "sort_order": 70,
@@ -547,7 +547,7 @@
         },
         {
             "key": "demo.category.zeytin",
-            "name": "Olives",
+            "name": "زيتون",
             "slug": "olives",
             "parent_key": "demo.category.sarkuteri",
             "sort_order": 71,
@@ -557,7 +557,7 @@
         },
         {
             "key": "demo.category.sosis-sucuk",
-            "name": "Sausage",
+            "name": "نقانق وسجق",
             "slug": "sausage",
             "parent_key": "demo.category.sarkuteri",
             "sort_order": 72,
@@ -567,7 +567,7 @@
         },
         {
             "key": "demo.category.salami",
-            "name": "Salami",
+            "name": "سلامي",
             "slug": "salami",
             "parent_key": "demo.category.sarkuteri",
             "sort_order": 73,
@@ -577,7 +577,7 @@
         },
         {
             "key": "demo.category.pastirma",
-            "name": "Pastrami",
+            "name": "بسطرمة",
             "slug": "pastrami",
             "parent_key": "demo.category.sarkuteri",
             "sort_order": 74,
@@ -587,7 +587,7 @@
         },
         {
             "key": "demo.category.firin-urunleri",
-            "name": "Bakery Products",
+            "name": "مخبوزات",
             "slug": "bakery-products",
             "parent_key": null,
             "sort_order": 80,
@@ -597,7 +597,7 @@
         },
         {
             "key": "demo.category.ekmek",
-            "name": "Bread",
+            "name": "خبز",
             "slug": "bread",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 81,
@@ -607,7 +607,7 @@
         },
         {
             "key": "demo.category.pogaca",
-            "name": "Pastry",
+            "name": "معجنات",
             "slug": "pastry",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 82,
@@ -617,7 +617,7 @@
         },
         {
             "key": "demo.category.borek",
-            "name": "Börek",
+            "name": "بوريك",
             "slug": "borek",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 83,
@@ -627,7 +627,7 @@
         },
         {
             "key": "demo.category.pasta",
-            "name": "Cake",
+            "name": "كعك",
             "slug": "cake",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 84,
@@ -637,7 +637,7 @@
         },
         {
             "key": "demo.category.kek",
-            "name": "Cake (Loaf)",
+            "name": "كيك",
             "slug": "cake-loaf",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 85,
@@ -647,7 +647,7 @@
         },
         {
             "key": "demo.category.kurabiye",
-            "name": "Cookie",
+            "name": "بسكويت",
             "slug": "cookie",
             "parent_key": "demo.category.firin-urunleri",
             "sort_order": 86,
@@ -657,7 +657,7 @@
         },
         {
             "key": "demo.category.baharat",
-            "name": "Spices",
+            "name": "بهارات",
             "slug": "spices",
             "parent_key": null,
             "sort_order": 90,
@@ -667,7 +667,7 @@
         },
         {
             "key": "demo.category.toz-baharat",
-            "name": "Ground Spice",
+            "name": "بهارات مطحونة",
             "slug": "ground-spice",
             "parent_key": "demo.category.baharat",
             "sort_order": 91,
@@ -677,7 +677,7 @@
         },
         {
             "key": "demo.category.tane-baharat",
-            "name": "Whole Spice",
+            "name": "بهارات حبوب",
             "slug": "whole-spice",
             "parent_key": "demo.category.baharat",
             "sort_order": 92,
@@ -687,7 +687,7 @@
         },
         {
             "key": "demo.category.baharat-karisimi",
-            "name": "Spice Mix",
+            "name": "خلطة بهارات",
             "slug": "spice-mix",
             "parent_key": "demo.category.baharat",
             "sort_order": 93,
@@ -697,7 +697,7 @@
         },
         {
             "key": "demo.category.tuz",
-            "name": "Salt",
+            "name": "ملح",
             "slug": "salt",
             "parent_key": "demo.category.baharat",
             "sort_order": 94,
@@ -707,7 +707,7 @@
         },
         {
             "key": "demo.category.kuruyemis",
-            "name": "Nuts & Dried Fruits",
+            "name": "مكسرات وفواكه مجففة",
             "slug": "nuts-dried-fruits",
             "parent_key": null,
             "sort_order": 100,
@@ -717,7 +717,7 @@
         },
         {
             "key": "demo.category.cig-kuruyemis",
-            "name": "Raw",
+            "name": "نيء",
             "slug": "raw",
             "parent_key": "demo.category.kuruyemis",
             "sort_order": 101,
@@ -727,7 +727,7 @@
         },
         {
             "key": "demo.category.kavrulmus-kuruyemis",
-            "name": "Roasted",
+            "name": "محمص",
             "slug": "roasted",
             "parent_key": "demo.category.kuruyemis",
             "sort_order": 102,
@@ -737,7 +737,7 @@
         },
         {
             "key": "demo.category.kuru-meyve",
-            "name": "Dried Fruit",
+            "name": "فواكه مجففة",
             "slug": "dried-fruit",
             "parent_key": "demo.category.kuruyemis",
             "sort_order": 103,
@@ -747,7 +747,7 @@
         },
         {
             "key": "demo.category.cerez",
-            "name": "Snack Nuts",
+            "name": "مقرمشات",
             "slug": "snack-nuts",
             "parent_key": "demo.category.kuruyemis",
             "sort_order": 104,
@@ -757,7 +757,7 @@
         },
         {
             "key": "demo.category.tatli",
-            "name": "Desserts",
+            "name": "حلويات",
             "slug": "desserts",
             "parent_key": null,
             "sort_order": 110,
@@ -767,7 +767,7 @@
         },
         {
             "key": "demo.category.serbetli-tatli",
-            "name": "Syrup Dessert",
+            "name": "حلويات بالشربات",
             "slug": "syrup-dessert",
             "parent_key": "demo.category.tatli",
             "sort_order": 111,
@@ -777,7 +777,7 @@
         },
         {
             "key": "demo.category.sutlu-tatli",
-            "name": "Milk Dessert",
+            "name": "حلويات بالحليب",
             "slug": "milk-dessert",
             "parent_key": "demo.category.tatli",
             "sort_order": 112,
@@ -787,7 +787,7 @@
         },
         {
             "key": "demo.category.helva",
-            "name": "Halva",
+            "name": "حلاوة",
             "slug": "halva",
             "parent_key": "demo.category.tatli",
             "sort_order": 113,
@@ -797,8 +797,8 @@
         },
         {
             "key": "demo.category.lokum",
-            "name": "Turkish Delight",
-            "slug": "turkish-delight",
+            "name": "لقم القاضي",
+            "slug": "lokum",
             "parent_key": "demo.category.tatli",
             "sort_order": 114,
             "is_demo": true,
@@ -807,7 +807,7 @@
         },
         {
             "key": "demo.category.cikolata",
-            "name": "Chocolate",
+            "name": "شوكولاتة",
             "slug": "chocolate",
             "parent_key": "demo.category.tatli",
             "sort_order": 115,
@@ -817,7 +817,7 @@
         },
         {
             "key": "demo.category.dondurma",
-            "name": "Ice Cream",
+            "name": "آيس كريم",
             "slug": "ice-cream",
             "parent_key": "demo.category.tatli",
             "sort_order": 116,
@@ -827,7 +827,7 @@
         },
         {
             "key": "demo.category.icecek",
-            "name": "Beverages",
+            "name": "مشروبات",
             "slug": "beverages",
             "parent_key": null,
             "sort_order": 120,
@@ -837,7 +837,7 @@
         },
         {
             "key": "demo.category.su-soda",
-            "name": "Water & Soda",
+            "name": "ماء وصودا",
             "slug": "water-soda",
             "parent_key": "demo.category.icecek",
             "sort_order": 121,
@@ -847,7 +847,7 @@
         },
         {
             "key": "demo.category.meyve-suyu",
-            "name": "Fruit Juice",
+            "name": "عصير فواكه",
             "slug": "fruit-juice",
             "parent_key": "demo.category.icecek",
             "sort_order": 122,
@@ -857,7 +857,7 @@
         },
         {
             "key": "demo.category.gazli-icecek",
-            "name": "Soft Drink",
+            "name": "مشروب غازي",
             "slug": "soft-drink",
             "parent_key": "demo.category.icecek",
             "sort_order": 123,
@@ -867,7 +867,7 @@
         },
         {
             "key": "demo.category.cay",
-            "name": "Tea",
+            "name": "شاي",
             "slug": "tea",
             "parent_key": "demo.category.icecek",
             "sort_order": 124,
@@ -877,7 +877,7 @@
         },
         {
             "key": "demo.category.kahve",
-            "name": "Coffee",
+            "name": "قهوة",
             "slug": "coffee",
             "parent_key": "demo.category.icecek",
             "sort_order": 125,
@@ -887,7 +887,7 @@
         },
         {
             "key": "demo.category.kahvaltilik",
-            "name": "Breakfast",
+            "name": "إفطار",
             "slug": "breakfast",
             "parent_key": null,
             "sort_order": 130,
@@ -897,7 +897,7 @@
         },
         {
             "key": "demo.category.bal",
-            "name": "Honey",
+            "name": "عسل",
             "slug": "honey",
             "parent_key": "demo.category.kahvaltilik",
             "sort_order": 131,
@@ -907,7 +907,7 @@
         },
         {
             "key": "demo.category.recel",
-            "name": "Jam",
+            "name": "مربى",
             "slug": "jam",
             "parent_key": "demo.category.kahvaltilik",
             "sort_order": 132,
@@ -917,7 +917,7 @@
         },
         {
             "key": "demo.category.pekmez",
-            "name": "Molasses",
+            "name": "دبس",
             "slug": "molasses",
             "parent_key": "demo.category.kahvaltilik",
             "sort_order": 133,
@@ -927,7 +927,7 @@
         },
         {
             "key": "demo.category.tahin",
-            "name": "Tahini",
+            "name": "طحينة",
             "slug": "tahini",
             "parent_key": "demo.category.kahvaltilik",
             "sort_order": 134,
@@ -937,7 +937,7 @@
         },
         {
             "key": "demo.category.sos-cesni",
-            "name": "Sauces & Condiments",
+            "name": "صلصات وتوابل",
             "slug": "sauces-condiments",
             "parent_key": null,
             "sort_order": 140,
@@ -947,7 +947,7 @@
         },
         {
             "key": "demo.category.ketcap-mayonez",
-            "name": "Ketchup & Mayonnaise",
+            "name": "كاتشب ومايونيز",
             "slug": "ketchup-mayonnaise",
             "parent_key": "demo.category.sos-cesni",
             "sort_order": 141,
@@ -957,7 +957,7 @@
         },
         {
             "key": "demo.category.salca",
-            "name": "Paste",
+            "name": "معجون",
             "slug": "paste",
             "parent_key": "demo.category.sos-cesni",
             "sort_order": 142,
@@ -967,7 +967,7 @@
         },
         {
             "key": "demo.category.sirke",
-            "name": "Vinegar",
+            "name": "خل",
             "slug": "vinegar",
             "parent_key": "demo.category.sos-cesni",
             "sort_order": 143,
@@ -977,7 +977,7 @@
         },
         {
             "key": "demo.category.yag",
-            "name": "Oil",
+            "name": "زيت",
             "slug": "oil",
             "parent_key": "demo.category.sos-cesni",
             "sort_order": 144,
@@ -987,7 +987,7 @@
         },
         {
             "key": "demo.category.hazir-yemek",
-            "name": "Ready Meals",
+            "name": "وجبات جاهزة",
             "slug": "ready-meals",
             "parent_key": null,
             "sort_order": 150,
@@ -997,7 +997,7 @@
         },
         {
             "key": "demo.category.geleneksel-yemek",
-            "name": "Traditional",
+            "name": "تقليدي",
             "slug": "traditional",
             "parent_key": "demo.category.hazir-yemek",
             "sort_order": 151,
@@ -1007,7 +1007,7 @@
         },
         {
             "key": "demo.category.dunya-mutfagi",
-            "name": "World Cuisine",
+            "name": "مطبخ عالمي",
             "slug": "world-cuisine",
             "parent_key": "demo.category.hazir-yemek",
             "sort_order": 152,
@@ -1017,7 +1017,7 @@
         },
         {
             "key": "demo.category.salata",
-            "name": "Salad",
+            "name": "سلطة",
             "slug": "salad",
             "parent_key": "demo.category.hazir-yemek",
             "sort_order": 153,
@@ -1027,7 +1027,7 @@
         },
         {
             "key": "demo.category.meze",
-            "name": "Appetizer",
+            "name": "مقبلات",
             "slug": "appetizer",
             "parent_key": "demo.category.hazir-yemek",
             "sort_order": 154,
@@ -1037,7 +1037,7 @@
         },
         {
             "key": "demo.category.donuk",
-            "name": "Frozen",
+            "name": "مجمدات",
             "slug": "frozen",
             "parent_key": null,
             "sort_order": 160,
@@ -1047,7 +1047,7 @@
         },
         {
             "key": "demo.category.donuk-sebze",
-            "name": "Frozen Vegetables",
+            "name": "خضروات مجمدة",
             "slug": "frozen-vegetables",
             "parent_key": "demo.category.donuk",
             "sort_order": 161,
@@ -1057,7 +1057,7 @@
         },
         {
             "key": "demo.category.donuk-meyve",
-            "name": "Frozen Fruit",
+            "name": "فواكه مجمدة",
             "slug": "frozen-fruit",
             "parent_key": "demo.category.donuk",
             "sort_order": 162,
@@ -1067,7 +1067,7 @@
         },
         {
             "key": "demo.category.donuk-et",
-            "name": "Frozen Meat",
+            "name": "لحم مجمد",
             "slug": "frozen-meat",
             "parent_key": "demo.category.donuk",
             "sort_order": 163,
@@ -1077,7 +1077,7 @@
         },
         {
             "key": "demo.category.donuk-hamur",
-            "name": "Frozen Dough",
+            "name": "عجين مجمد",
             "slug": "frozen-dough",
             "parent_key": "demo.category.donuk",
             "sort_order": 164,

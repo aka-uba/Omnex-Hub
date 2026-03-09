@@ -11,6 +11,20 @@ Format:
 
 ---
 
+## 2026-03-09 - Complete 8-language demo seed data
+- Request: Generate demo seed data for all 8 languages (tr, en, ru, az, de, nl, fr, ar)
+- Changes:
+  - Created products.json for 7 locales (en, ru, az, de, nl, fr, ar) with 1064 translated products each
+  - Created categories.json for 7 locales with 108 categories each (EN rebuilt to match TR structure)
+  - Created production_types.json for 6 locales (ru, az, de, nl, fr, ar)
+  - Created settings.json for 6 locales with locale-specific currencies, timezones, date formats
+  - Created templates.json for 7 locales (EN rebuilt + 6 new) with translated template names/descriptions
+  - Created AR label_sizes.json (71 sizes) and license_plans.json (4 plans)
+  - Added AR option to SetupWizard.js dropdown
+- Files: database/seeders/data/{en,ru,az,de,nl,fr,ar}/*.json, public/assets/js/pages/admin/SetupWizard.js
+- Checks: PHP JSON parse verification on all 56 files (8 locales x 7 file types) - ALL PASSED
+- Risk/Follow-up: Word-level product name translation may have some untranslated Turkish words for less common products. Descriptions use template-based generation.
+
 ## 2026-03-08 - codex memory scaffold
 - Request: Create a persistent Codex structure like `.claude` so future tasks start quickly.
 - Changes: Added Codex-specific project memory and operating docs.
@@ -306,3 +320,71 @@ Format:
 - Files: database/seeders/data/tr/products.json
 - Checks: JSON parse validation, field count verification (18 fields per product), 1064/1064 description coverage confirmed.
 - Risk/Follow-up: EN products.json (20 items) does not have descriptions yet; can be added if needed. Backup at products.json.bak.
+## 2026-03-09 - setup wizard product category hierarchy audit + seeder normalization
+- Request: Inspect whether subcategory is correct by category, verify demo seed structure (group/category/subcategory), and check setup-wizard category-product matching.
+- Findings: Seed/data mismatch was real. Audits showed high inconsistency between products and category hierarchy (TR seed: total 1064, category-not-parent 569, subcategory-not-child 742; live company dataset showed same pattern). Setup wizard had no category-product hierarchy validation.
+- Changes: Updated `database/seeders/ProductSeeder.php` to load category hierarchy from DB and normalize incoming product fields during seed: (1) promote child-level category to parent category, (2) align subcategory to child-level when possible, (3) fallback to group as parent category when category is unknown but group maps to parent. This hardens setup-wizard seeded data consistency going forward.
+- Files: database/seeders/ProductSeeder.php
+- Checks: php -l database/seeders/ProductSeeder.php; php database/seeders/seed.php --products --dry-run --locale=tr --verbose
+- Risk/Follow-up: Existing already-seeded product rows are unchanged until products are seeded again (or a one-time normalization migration is run). When category is promoted from child to parent, deeper third-level source detail may be compressed into available 2-level model.
+## 2026-03-09 - one-time live product category/subcategory normalization for existing data
+- Request: Apply solution for existing subcategory preferences on live data.
+- Changes: Added `scripts/normalize_product_category_hierarchy.php` (dry-run/apply modes) to normalize existing product rows to parent-category + child-subcategory model and optionally auto-create missing child categories to preserve current user preferences. Ran apply for active company `Omnex Default` (`d1c946f3-4058-4b72-8e24-6c4b3cb9e9cb`) in two passes. Added group->parent alias mapping for non-1:1 labels (`F�r�n`->`F�r�n �r�nleri`, `�erez`->`Kuruyemi�`, etc.). Also updated `database/seeders/ProductSeeder.php` with same alias logic to prevent reoccurrence in setup wizard seed.
+- Files: scripts/normalize_product_category_hierarchy.php, database/seeders/ProductSeeder.php
+- Checks: php -l scripts/normalize_product_category_hierarchy.php; php -l database/seeders/ProductSeeder.php; php scripts/normalize_product_category_hierarchy.php --apply; php scripts/normalize_product_category_hierarchy.php --company=d1c946f3-4058-4b72-8e24-6c4b3cb9e9cb --apply; post-apply DB audit query (cat_not_parent=0, sub_not_child=0).
+- Risk/Follow-up: Normalization intentionally remapped some rows based on group/category aliases; if a specific SKU needs custom exception, add a small SKU-level override map in the script before future runs.
+## 2026-03-09 - products table sorting/filter interaction hardening
+- Request: Products table headers (group/category) seemed to show only limited variants on clicks; investigate possible cross-effect between column sorting and filters.
+- Changes: (1) DataTable now resets to page 1 when sort column/direction changes. (2) ProductList filter-change handlers now force page reset before refresh to avoid stale pagination state. (3) Group filter source switched from `/products?per_page=1000` (incorrect/limited) to dedicated `/products/groups` endpoint so all distinct groups load reliably.
+- Files: public/assets/js/components/DataTable.js, public/assets/js/pages/products/ProductList.js
+- Checks: node --check public/assets/js/components/DataTable.js; node --check public/assets/js/pages/products/ProductList.js; php -l api/products/groups.php
+- Risk/Follow-up: Even with correct sorting, first page may still show one dominant group/category when distribution is skewed (expected behavior with paginated sorting). If desired, add a distinct-value summary strip above table.
+## 2026-03-09 - products API interleaved sorting for group/category headers only
+- Request: Header sorting seemed to show only Baharat/�ark�teri on first page; user expected other values to appear across clicks for group/category.
+- Changes: Updated products API ORDER BY logic: only when `sort_by` is `group` or `category`, apply interleaved ordering via `ROW_NUMBER() OVER (PARTITION BY ...)` so first page does not collapse into a single dominant value block. All other headers keep standard ASC/DESC ordering.
+- Files: api/products/index.php
+- Checks: php -l api/products/index.php; direct SQL spot check confirmed first page includes 15 distinct groups in group-sort mode.
+- Risk/Follow-up: Interleaved mode is intentionally different from strict block ordering for these two columns; if needed, can be toggled by query flag later.
+## 2026-03-09 - revert interleaved group/category sorting to strict block order
+- Request: User wants same values to appear consecutively (e.g., all �ark�teri rows together), not interleaved every few rows.
+- Changes: Removed temporary interleaved ORDER BY logic for `group/category` in products API. Restored strict sort order for all headers: `sortExpr sortDir NULLS LAST, LOWER(name), id`.
+- Files: api/products/index.php
+- Checks: php -l api/products/index.php
+- Risk/Follow-up: With strict block order + pagination, first page may naturally show only one/few dominant values depending on sort direction and distribution.
+## 2026-03-09 - hybrid block+cycle sorting for product group/category headers
+- Request: Need both behaviors together: keep same values in contiguous blocks, but each header click should bring a different value block to top.
+- Changes: Added DataTable `onSortChange` hook. In ProductList, implemented click-cycle anchors for `group` and `category` (rotating selected value per click). API `/products` now accepts optional `sort_anchor`; for `group/category` sorts it prioritizes the anchored value block first via `CASE WHEN ... THEN 0`. Remaining rows stay in normal block sorting (`sortExpr`, then name, id).
+- Files: public/assets/js/components/DataTable.js, public/assets/js/pages/products/ProductList.js, api/products/index.php
+- Checks: node --check public/assets/js/components/DataTable.js; node --check public/assets/js/pages/products/ProductList.js; php -l api/products/index.php; SQL spot-check for anchor-first block ordering.
+- Risk/Follow-up: Category cycle source currently derives from category filter options; if you want cycle strictly from product-used categories only, we can add a dedicated `/products/categories` endpoint.
+## 2026-03-09 - fix sort-cycle anchor stuck on same value
+- Request: After hybrid block+cycle sort change, table still showed single value repeatedly.
+- Root cause: In ProductList sort-cycle logic, index was reset on every direction change (ASC/DESC), and DataTable toggles direction each click on same header, so anchor remained first value.
+- Changes: Updated `handleSortCycle()` to reset cycle index only when sort column changes, not when direction changes.
+- Files: public/assets/js/pages/products/ProductList.js
+- Checks: node --check public/assets/js/pages/products/ProductList.js
+- Risk/Follow-up: Cycle now progresses every click on same header; if desired, we can later separate sort direction toggle from cycle action with modifier key.
+## 2026-03-09 - category header cycle made group-aware
+- Request: Group header behavior is OK; category should cycle similarly but according to selected group.
+- Changes: In ProductList, added `loadCategoryCycleMap()` to build category sets per group from products API. Updated category sort-cycle logic to use selected group's category list when `filter-group` is set; fallback to global categories otherwise.
+- Files: public/assets/js/pages/products/ProductList.js
+- Checks: node --check public/assets/js/pages/products/ProductList.js
+- Risk/Follow-up: Category cycle map is loaded once on page init (from up to 5000 products); if product/category data changes live during session, page refresh updates the map.
+## 2026-03-09 - detailed reference doc for hybrid products table sorting model
+- Request: Document current table sorting configuration in detail so it can be used as reference on other pages.
+- Changes: Added `docs/PRODUCTS_TABLE_SORTING_REFERENCE.md` with architecture, file responsibilities, sort modes, state model, API contract (`sort_anchor`), group-aware category cycle, pagination/filter interactions, reuse template, constraints, and validation checklist.
+- Files: docs/PRODUCTS_TABLE_SORTING_REFERENCE.md
+- Checks: No code checks required (documentation-only change).
+- Risk/Follow-up: If sort behavior evolves, this reference should be updated in same PR to keep it authoritative.
+## 2026-03-09 - ubuntu server version recommendation for customer VM
+- Request: Customer will create a VM for this project; asked whether Ubuntu 22 is enough or Ubuntu 24.04 LTS x64 should be preferred.
+- Changes: No runtime code changes. Reviewed deployment stack/docs and recommended OS choice based on repository deployment scripts and containerized architecture.
+- Files: .codex/CHANGE_MEMORY.md
+- Checks: No applicable code syntax check (documentation/memory-only update).
+- Risk/Follow-up: If deployment will be non-Docker/native package install, pin exact package versions (PHP, extensions, PostgreSQL client tools) before go-live.
+## 2026-03-09 - memory lookup: media listener leak fix note retrieval
+- Request: Find the note about the repeated operation/listener leak fixed in media after midnight.
+- Changes: Searched CHANGE_MEMORY and identified the matching entry (global cursor freeze root-cause fix via hover-listener cleanup) with media/template listener cleanup details.
+- Files: .codex/CHANGE_MEMORY.md
+- Checks: No code checks required (memory lookup/documentation-only).
+- Risk/Follow-up: None.

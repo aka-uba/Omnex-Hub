@@ -1,0 +1,51 @@
+{
+    "schema_version": "1.0",
+    "data_version": "2026.03.fr",
+    "locale": "fr",
+    "description": "Paramètres par défaut de l'entreprise - Français",
+    "generated_at": "2026-03-09",
+    "data": {
+        "general": {
+            "language": "fr",
+            "timezone": "Europe/Paris",
+            "date_format": "DD/MM/YYYY",
+            "time_format": "HH:mm",
+            "currency": "EUR",
+            "currency_symbol": "€",
+            "currency_position": "after",
+            "decimal_separator": ",",
+            "thousand_separator": " "
+        },
+        "products": {
+            "default_unit": "kg",
+            "default_vat_rate": 10,
+            "barcode_format": "EAN13",
+            "sku_prefix": "",
+            "auto_generate_sku": true,
+            "price_decimal_places": 2
+        },
+        "labels": {
+            "default_size": "58x40",
+            "default_template": null,
+            "print_copies": 1,
+            "auto_print": false
+        },
+        "display": {
+            "items_per_page": 25,
+            "theme": "light",
+            "compact_mode": false,
+            "show_thumbnails": true
+        },
+        "notifications": {
+            "email_enabled": true,
+            "push_enabled": true,
+            "low_stock_alert": true,
+            "price_change_alert": true
+        }
+    },
+    "metadata": {
+        "is_demo": false,
+        "is_default": true,
+        "key": "default.settings.company"
+    }
+}

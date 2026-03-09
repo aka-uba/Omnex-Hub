@@ -21,6 +21,7 @@ $hasLabel = $request->query('has_label');
 $hasDevice = $request->query('has_device');
 $sortBy = $request->query('sort_by', 'updated_at');
 $sortDir = $request->query('sort_dir', 'DESC');
+$sortAnchor = trim((string)$request->query('sort_anchor', ''));
 
 // Build query
 $where = ["company_id = ?"];
@@ -101,6 +102,14 @@ if (!isset($allowedSortMap[$sortBy])) {
 }
 $sortExpr = $allowedSortMap[$sortBy];
 $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+$orderBySql = "$sortExpr $sortDir NULLS LAST, LOWER(name) ASC, id ASC";
+$orderByParams = [];
+
+if (($sortBy === 'group' || $sortBy === 'category') && $sortAnchor !== '') {
+    $anchorExpr = $sortBy === 'group' ? 'LOWER("group")' : 'LOWER(category)';
+    $orderBySql = "CASE WHEN $anchorExpr = LOWER(?) THEN 0 ELSE 1 END ASC, $orderBySql";
+    $orderByParams[] = $sortAnchor;
+}
 
 // Count total
 $total = $db->fetch(
@@ -116,9 +125,9 @@ $products = $db->fetchAll(
             created_at, updated_at
      FROM products
      WHERE $whereClause
-     ORDER BY $sortExpr $sortDir NULLS LAST, LOWER(name) ASC, id ASC
+     ORDER BY $orderBySql
      LIMIT ? OFFSET ?",
-    array_merge($params, [$limit, $offset])
+    array_merge($params, $orderByParams, [$limit, $offset])
 );
 
 // Check if with_labels parameter is set for auto-send wizard

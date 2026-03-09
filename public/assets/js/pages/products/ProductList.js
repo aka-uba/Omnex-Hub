@@ -19,6 +19,19 @@ export class ProductListPage {
         this.table = null;
         this.selectedProducts = [];
         this.mappingDefaults = this.loadMappingDefaults();
+        this.sortCycleValues = {
+            group: [],
+            category: []
+        };
+        this.categoryCycleByGroup = {};
+        this.sortCycleIndex = {
+            group: -1,
+            category: -1
+        };
+        this.sortAnchor = {
+            group: '',
+            category: ''
+        };
     }
 
     _getRenderOptions(template) {
@@ -417,6 +430,7 @@ export class ProductListPage {
             fetchData: (params) => this.fetchProducts(params),
             selectable: true,
             defaultSort: { key: 'updated_at', direction: 'desc' },
+            onSortChange: (state) => this.handleSortCycle(state),
             onSelectionChange: (rows) => this.onSelectionChange(rows)
         });
 
@@ -475,13 +489,24 @@ export class ProductListPage {
             const hasLabel = document.getElementById('filter-label')?.value;
             const hasDevice = document.getElementById('filter-device')?.value;
 
-            const response = await this.app.api.get('/products', {
+            const requestParams = {
                 ...params,
                 group,
                 category,
                 status,
                 has_label: hasLabel,
                 has_device: hasDevice
+            };
+
+            if ((params?.sort_by === 'group' || params?.sort_by === 'category')) {
+                const anchor = this.sortAnchor[params.sort_by];
+                if (anchor) {
+                    requestParams.sort_anchor = anchor;
+                }
+            }
+
+            const response = await this.app.api.get('/products', {
+                ...requestParams
             });
 
             return {
@@ -513,6 +538,7 @@ export class ProductListPage {
 
             // Load unique groups from products
             await this.loadGroupFilter();
+            await this.loadCategoryCycleMap();
 
         } catch (error) {
             Logger.error('Error loading filters:', error);
@@ -524,12 +550,11 @@ export class ProductListPage {
      */
     async loadGroupFilter() {
         try {
-            const response = await this.app.api.get('/products?per_page=1000');
-            // API returns { products: [], pagination: {} } structure
-            const products = response.data?.products || response.data || [];
-
-            // Get unique groups
-            const groups = [...new Set(products.map(p => p.group).filter(g => g))].sort();
+            const response = await this.app.api.get('/products/groups');
+            const groups = (response.data || [])
+                .map((item) => item?.name)
+                .filter(Boolean);
+            this.sortCycleValues.group = [...groups];
 
             const select = document.getElementById('filter-group');
             if (!select) return;
@@ -542,6 +567,38 @@ export class ProductListPage {
             });
         } catch (error) {
             Logger.error('Error loading groups:', error);
+        }
+    }
+
+    async loadCategoryCycleMap() {
+        try {
+            const response = await this.app.api.get('/products', {
+                page: 1,
+                limit: 5000,
+                sort_by: 'category',
+                sort_dir: 'ASC'
+            });
+            const products = response.data?.products || [];
+            const byGroup = {};
+            const all = new Set();
+
+            products.forEach((p) => {
+                const group = (p?.group || '').trim();
+                const category = (p?.category || '').trim();
+                if (!category) return;
+                all.add(category);
+                if (!group) return;
+                if (!byGroup[group]) byGroup[group] = new Set();
+                byGroup[group].add(category);
+            });
+
+            this.categoryCycleByGroup = Object.fromEntries(
+                Object.entries(byGroup).map(([group, values]) => [group, Array.from(values).sort()])
+            );
+            this.sortCycleValues.category = Array.from(all).sort();
+        } catch (error) {
+            Logger.error('Error loading category cycle map:', error);
+            this.categoryCycleByGroup = {};
         }
     }
 
@@ -577,6 +634,39 @@ export class ProductListPage {
                 this.renderCategoryFilterOptions(select, cat.children, level + 1);
             }
         });
+    }
+
+    handleSortCycle({ sortBy, sortDir, prevSortBy, prevSortDir }) {
+        if (sortBy !== 'group' && sortBy !== 'category') {
+            return;
+        }
+
+        if (sortBy === 'category' && this.sortCycleValues.category.length === 0) {
+            const categoryOptions = Array.from(document.querySelectorAll('#filter-category option'))
+                .map((opt) => (opt.value || '').trim())
+                .filter(Boolean);
+            this.sortCycleValues.category = [...new Set(categoryOptions)];
+        }
+
+        let values = this.sortCycleValues[sortBy] || [];
+        if (sortBy === 'category') {
+            const selectedGroup = document.getElementById('filter-group')?.value?.trim() || '';
+            if (selectedGroup && Array.isArray(this.categoryCycleByGroup[selectedGroup]) && this.categoryCycleByGroup[selectedGroup].length > 0) {
+                values = this.categoryCycleByGroup[selectedGroup];
+            }
+        }
+        if (values.length === 0) {
+            this.sortAnchor[sortBy] = '';
+            return;
+        }
+
+        const changedColumn = prevSortBy !== sortBy;
+        if (changedColumn) {
+            this.sortCycleIndex[sortBy] = -1;
+        }
+
+        this.sortCycleIndex[sortBy] = (this.sortCycleIndex[sortBy] + 1) % values.length;
+        this.sortAnchor[sortBy] = values[this.sortCycleIndex[sortBy]];
     }
 
     /**
@@ -641,22 +731,27 @@ export class ProductListPage {
 
         // Filter changes
         document.getElementById('filter-group')?.addEventListener('change', () => {
+            this.table.state.page = 1;
             this.table.refresh();
         });
 
         document.getElementById('filter-category')?.addEventListener('change', () => {
+            this.table.state.page = 1;
             this.table.refresh();
         });
 
         document.getElementById('filter-status')?.addEventListener('change', () => {
+            this.table.state.page = 1;
             this.table.refresh();
         });
 
         document.getElementById('filter-label')?.addEventListener('change', () => {
+            this.table.state.page = 1;
             this.table.refresh();
         });
 
         document.getElementById('filter-device')?.addEventListener('change', () => {
+            this.table.state.page = 1;
             this.table.refresh();
         });
 
@@ -667,6 +762,7 @@ export class ProductListPage {
             document.getElementById('filter-status').value = '';
             document.getElementById('filter-label').value = '';
             document.getElementById('filter-device').value = '';
+            this.table.state.page = 1;
             this.table.refresh();
         });
 

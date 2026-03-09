@@ -1,14 +1,14 @@
 {
     "schema_version": "1.0",
-    "data_version": "2026.03.en",
-    "locale": "en",
-    "description": "Demo label templates - English",
+    "data_version": "2026.03.ru",
+    "locale": "ru",
+    "description": "Демо шаблоны этикеток - Русский",
     "generated_at": "2026-03-09",
     "data": [
         {
             "key": "demo.template.manav-basic",
-            "name": "Produce Basic Label",
-            "description": "Basic price label for produce items",
+            "name": "Базовая этикетка продуктов",
+            "description": "Стандартная ценовая этикетка для продуктовых товаров",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -77,8 +77,8 @@
         },
         {
             "key": "demo.template.manav-kampanya",
-            "name": "Produce Sale Label",
-            "description": "Promotional label for discounted items",
+            "name": "Акционная этикетка",
+            "description": "Этикетка для товаров со скидкой",
             "type": "label",
             "category": "produce",
             "width": 400,
@@ -90,7 +90,7 @@
                 "elements": [
                     {
                         "type": "text",
-                        "content": "SALE",
+                        "content": "АКЦИЯ",
                         "x": 20,
                         "y": 10,
                         "width": 360,
@@ -164,8 +164,8 @@
         },
         {
             "key": "demo.template.bakliyat-basic",
-            "name": "Grocery Basic Label",
-            "description": "Standard label for grocery items",
+            "name": "Базовая этикетка бакалеи",
+            "description": "Стандартная этикетка для бакалейных товаров",
             "type": "label",
             "category": "grocery",
             "width": 400,
@@ -225,8 +225,8 @@
         },
         {
             "key": "demo.template.esl-2.9-bw",
-            "name": "ESL 2.9\" Black-White",
-            "description": "Black and white design for 2.9 inch e-ink labels",
+            "name": "ESL 2.9\" Чёрно-белый",
+            "description": "Чёрно-белый дизайн для 2.9 дюймовых e-ink этикеток",
             "type": "label",
             "category": "esl",
             "width": 296,
