@@ -52,7 +52,7 @@ services:
       OMNEX_DB_PASS: omnex_test_pass
       OMNEX_PRODUCTION: "false"
       OMNEX_JWT_SECRET: local-test-jwt-secret-do-not-use-in-production-1234567890
-      OMNEX_ADMIN_EMAIL: admin@omnex.local
+      OMNEX_ADMIN_EMAIL: admin@omnexcore.com
       OMNEX_ADMIN_PASSWORD: OmnexAdmin2024!
       OMNEX_FORCE_HTTPS: "false"
       OMNEX_SKIP_CSRF: "true"

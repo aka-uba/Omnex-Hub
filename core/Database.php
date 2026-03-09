@@ -46,6 +46,7 @@ class Database
         '40_indexes.sql',
         '41_perf_indexes.sql',
         '42_devices_branch_indexes.sql',
+        '43_api_perf_indexes.sql',
         '70_rls.sql',
     ];
 

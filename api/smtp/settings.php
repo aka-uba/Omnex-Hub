@@ -47,7 +47,7 @@ if ($method === 'GET') {
             Response::error('Sistem ayarlarına erişim yetkiniz yok', 403);
         }
 
-        $effective = $resolver->getEffectiveSettings('smtp', null);
+        $effective = hydrateSmtpSettingsIfNeeded($resolver, $db, null, $user['id'] ?? null, true);
 
         Response::success([
             'scope' => 'system',
@@ -57,7 +57,7 @@ if ($method === 'GET') {
     }
 
     // Normal akış: Efektif ayarları getir (company -> system fallback)
-    $effective = $resolver->getEffectiveSettings('smtp', $companyId);
+    $effective = hydrateSmtpSettingsIfNeeded($resolver, $db, $companyId, $user['id'] ?? null, false);
     $smtpSettings = $effective['settings'];
 
     Response::success([
@@ -196,4 +196,94 @@ function mergeSettings(array $current, array $input): array
     }
 
     return $current;
+}
+
+/**
+ * Ensure SMTP settings are available in integration_settings.
+ * If missing in new model, hydrate once from legacy settings JSON.
+ */
+function hydrateSmtpSettingsIfNeeded(SettingsResolver $resolver, Database $db, ?string $companyId, ?string $userId, bool $systemScope): array
+{
+    $effective = $resolver->getEffectiveSettings('smtp', $systemScope ? null : $companyId);
+    if (!empty($effective['settings']['host'])) {
+        return $effective;
+    }
+
+    $legacy = findLegacySmtpConfig($db, $companyId, $userId, $systemScope);
+    if (!$legacy || empty($legacy['host']) || empty($legacy['from_email'])) {
+        return $effective;
+    }
+
+    $isActive = array_key_exists('enabled', $legacy) ? (bool)$legacy['enabled'] : true;
+    if ($systemScope || empty($companyId)) {
+        $resolver->saveSystemSettings('smtp', $legacy, $isActive);
+        return $resolver->getEffectiveSettings('smtp', null);
+    }
+
+    $resolver->saveCompanySettings('smtp', $companyId, $legacy, $isActive);
+    return $resolver->getEffectiveSettings('smtp', $companyId);
+}
+
+/**
+ * Find legacy smtp_* config from settings table and normalize to new keys.
+ */
+function findLegacySmtpConfig(Database $db, ?string $companyId, ?string $userId, bool $systemScope): ?array
+{
+    $queries = [];
+
+    if ($systemScope) {
+        $queries[] = ["SELECT data FROM settings WHERE company_id IS NULL AND user_id IS NULL ORDER BY updated_at DESC LIMIT 1", []];
+        if (!empty($userId)) {
+            $queries[] = ["SELECT data FROM settings WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1", [$userId]];
+        }
+    } else {
+        if (!empty($companyId)) {
+            $queries[] = ["SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL ORDER BY updated_at DESC LIMIT 1", [$companyId]];
+            if (!empty($userId)) {
+                $queries[] = ["SELECT data FROM settings WHERE company_id = ? AND user_id = ? ORDER BY updated_at DESC LIMIT 1", [$companyId, $userId]];
+            }
+        }
+    }
+
+    foreach ($queries as $q) {
+        $row = $db->fetch($q[0], $q[1]);
+        if (!$row || empty($row['data'])) {
+            continue;
+        }
+        $legacy = normalizeLegacySmtpConfig(json_decode((string)$row['data'], true) ?: []);
+        if ($legacy) {
+            return $legacy;
+        }
+    }
+
+    // Last resort: any settings row carrying smtp_host/smtp_from_email.
+    $rows = $db->fetchAll("SELECT data FROM settings WHERE data IS NOT NULL ORDER BY updated_at DESC");
+    foreach ($rows as $row) {
+        $legacy = normalizeLegacySmtpConfig(json_decode((string)($row['data'] ?? ''), true) ?: []);
+        if ($legacy) {
+            return $legacy;
+        }
+    }
+
+    return null;
+}
+
+function normalizeLegacySmtpConfig(array $legacy): ?array
+{
+    $host = trim((string)($legacy['smtp_host'] ?? ''));
+    $fromEmail = trim((string)($legacy['smtp_from_email'] ?? ''));
+    if ($host === '' || $fromEmail === '') {
+        return null;
+    }
+
+    return [
+        'host' => $host,
+        'port' => (int)($legacy['smtp_port'] ?? 587),
+        'username' => trim((string)($legacy['smtp_username'] ?? '')),
+        'password' => (string)($legacy['smtp_password'] ?? ''),
+        'encryption' => (string)($legacy['smtp_encryption'] ?? 'tls'),
+        'from_email' => $fromEmail,
+        'from_name' => trim((string)($legacy['smtp_from_name'] ?? 'Omnex Display Hub')),
+        'enabled' => array_key_exists('smtp_enabled', $legacy) ? (bool)$legacy['smtp_enabled'] : true,
+    ];
 }

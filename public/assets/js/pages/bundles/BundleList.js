@@ -25,6 +25,7 @@ export class BundleListPage {
         this.table = null;
         this.selectedBundles = [];
         this.stats = { total: 0, active: 0, draft: 0, total_items: 0 };
+        this._exportOutsideClickHandler = null;
     }
 
     __(key, params = {}) {
@@ -423,10 +424,14 @@ export class BundleListPage {
             container.classList.toggle('open');
         });
 
-        document.addEventListener('click', () => {
+        if (this._exportOutsideClickHandler) {
+            document.removeEventListener('click', this._exportOutsideClickHandler);
+        }
+        this._exportOutsideClickHandler = () => {
             menu?.classList.remove('show');
             container?.classList.remove('open');
-        });
+        };
+        document.addEventListener('click', this._exportOutsideClickHandler);
 
         container.querySelectorAll('.export-dropdown-item').forEach(item => {
             item.addEventListener('click', () => {
@@ -1668,6 +1673,10 @@ export class BundleListPage {
     }
 
     destroy() {
+        if (this._exportOutsideClickHandler) {
+            document.removeEventListener('click', this._exportOutsideClickHandler);
+            this._exportOutsideClickHandler = null;
+        }
         const popup = document.getElementById('bundle-image-preview-popup');
         if (popup) popup.remove();
         this.app.i18n.clearPageTranslations();

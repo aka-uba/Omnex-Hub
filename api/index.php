@@ -94,9 +94,8 @@ if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
 // Initialize database and run migrations if needed
 try {
     $db = Database::getInstance();
-    $db->migrate();
-    // Note: Seeds are NOT auto-executed anymore
-    // Run seeds manually via: php database/seeds/manual/manav_products_seed.php
+    // Runtime requests should not run schema migrations.
+    // Apply migrations explicitly via deployment/maintenance workflow.
 } catch (Exception $e) {
     Logger::error('Database initialization failed', ['error' => $e->getMessage()]);
 }
@@ -105,6 +104,28 @@ try {
 $router = new Router();
 $request = new Request();
 $GLOBALS['request'] = $request;  // Global request for API files that use route params
+
+// Keep Docker/monitoring health checks independent from global middleware.
+if ($request->getPath() === '/api/health') {
+    require API_PATH . '/health.php';
+}
+
+// Measure API request duration even when Response::json exits early.
+$apiRequestStart = microtime(true);
+$apiRequestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$apiRequestUri = $_SERVER['REQUEST_URI'] ?? '/';
+register_shutdown_function(function() use ($apiRequestStart, $apiRequestMethod, $apiRequestUri, $request) {
+    if (!class_exists('Logger')) {
+        return;
+    }
+
+    $duration = microtime(true) - $apiRequestStart;
+    $path = $request instanceof Request
+        ? $request->getPath()
+        : (parse_url($apiRequestUri, PHP_URL_PATH) ?: $apiRequestUri);
+
+    Logger::api($apiRequestMethod, $path, http_response_code(), $duration);
+});
 
 // Register middleware
 $router->registerMiddleware('auth', 'AuthMiddleware');
@@ -1943,14 +1964,7 @@ $router->group(['prefix' => '/api/import', 'middleware' => ['auth']], function($
 
 // Dispatch request
 try {
-    $startTime = microtime(true);
-
     $router->dispatch($request);
-
-    $duration = microtime(true) - $startTime;
-    if (class_exists('Logger')) {
-        Logger::api($request->getMethod(), $request->getPath(), http_response_code(), $duration);
-    }
 
 } catch (Exception $e) {
     if (class_exists('Logger')) {

@@ -100,6 +100,12 @@ export class DataTable {
             loading: false
         };
 
+        this._outsideClickHandler = null;
+        this._closeOnScrollHandler = null;
+        this._windowScrollHandler = null;
+        this._documentScrollHandler = null;
+        this._externalScrollTargets = [];
+
         this.init();
     }
 
@@ -775,6 +781,8 @@ export class DataTable {
     bindEvents() {
         if (!this.container) return;
 
+        this._unbindGlobalListeners();
+
         // Search
         const searchInput = this.container.querySelector('[data-table-search]');
         if (searchInput) {
@@ -891,47 +899,56 @@ export class DataTable {
         });
 
         // Close dropdown on outside click
-        document.addEventListener('click', (e) => {
+        this._outsideClickHandler = (e) => {
             if (!e.target.closest('.data-table-action-dropdown')) {
                 this.closeAllDropdowns();
             }
-        });
+        };
+        document.addEventListener('click', this._outsideClickHandler);
 
         // Close dropdown on scroll (since it uses fixed positioning)
         // Listen to multiple scroll containers
         const closeOnScroll = () => {
             this.closeAllDropdowns();
         };
+        this._closeOnScrollHandler = closeOnScroll;
+        this._externalScrollTargets = [];
 
         // Table scroll container
         const scrollContainer = this.container.querySelector('.data-table-container');
         if (scrollContainer) {
             scrollContainer.addEventListener('scroll', closeOnScroll, { passive: true });
+            this._externalScrollTargets.push(scrollContainer);
         }
 
         // Data table wrapper
         const wrapperContainer = this.container.querySelector('.data-table-wrapper');
         if (wrapperContainer) {
             wrapperContainer.addEventListener('scroll', closeOnScroll, { passive: true });
+            this._externalScrollTargets.push(wrapperContainer);
         }
 
         // Main content area (page scroll)
         const mainContent = document.querySelector('.main-content');
         if (mainContent) {
             mainContent.addEventListener('scroll', closeOnScroll, { passive: true });
+            this._externalScrollTargets.push(mainContent);
         }
 
         // Page container
         const pageContainer = document.querySelector('.page-container');
         if (pageContainer) {
             pageContainer.addEventListener('scroll', closeOnScroll, { passive: true });
+            this._externalScrollTargets.push(pageContainer);
         }
 
         // Window scroll
-        window.addEventListener('scroll', closeOnScroll, { passive: true });
+        this._windowScrollHandler = closeOnScroll;
+        window.addEventListener('scroll', this._windowScrollHandler, { passive: true });
 
         // Also listen to document scroll (covers most cases)
-        document.addEventListener('scroll', closeOnScroll, { passive: true, capture: true });
+        this._documentScrollHandler = closeOnScroll;
+        document.addEventListener('scroll', this._documentScrollHandler, { passive: true, capture: true });
 
         // Selection
         if (this.options.selectable) {
@@ -961,6 +978,30 @@ export class DataTable {
                 }
             }
         });
+    }
+
+    _unbindGlobalListeners() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+            this._outsideClickHandler = null;
+        }
+        if (this._windowScrollHandler) {
+            window.removeEventListener('scroll', this._windowScrollHandler);
+            this._windowScrollHandler = null;
+        }
+        if (this._documentScrollHandler) {
+            document.removeEventListener('scroll', this._documentScrollHandler, true);
+            this._documentScrollHandler = null;
+        }
+        if (this._closeOnScrollHandler && this._externalScrollTargets.length) {
+            this._externalScrollTargets.forEach((target) => {
+                try {
+                    target.removeEventListener('scroll', this._closeOnScrollHandler);
+                } catch (e) {}
+            });
+        }
+        this._closeOnScrollHandler = null;
+        this._externalScrollTargets = [];
     }
 
     /**
@@ -1398,6 +1439,7 @@ export class DataTable {
      * Destroy table
      */
     destroy() {
+        this._unbindGlobalListeners();
         if (this.container) {
             this.container.innerHTML = '';
         }

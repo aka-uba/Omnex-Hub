@@ -11,6 +11,7 @@ export class GeneralSettingsPage {
     constructor(app) {
         this.app = app;
         this.settings = {};
+        this.smtpSettings = {};
         this.activeTab = 'general';
     }
 
@@ -503,9 +504,25 @@ export class GeneralSettingsPage {
             this.settings = response.data || {};
             this.app?.state?.set('settings', this.settings, true);
             localStorage.setItem('omnex_settings', JSON.stringify(this.settings));
+            await this.loadSmtpSettings();
             this.populateForm();
         } catch (error) {
             Logger.error('Settings load error:', error);
+        }
+    }
+
+    getSmtpScopeQuery() {
+        const role = (this.app.auth?.getUser?.()?.role || '').toLowerCase();
+        return role === 'superadmin' ? '?scope=system' : '';
+    }
+
+    async loadSmtpSettings() {
+        try {
+            const response = await this.app.api.get('/smtp/settings' + this.getSmtpScopeQuery());
+            this.smtpSettings = response.data?.settings || {};
+        } catch (error) {
+            Logger.warn('SMTP settings load error:', error);
+            this.smtpSettings = {};
         }
     }
 
@@ -515,8 +532,6 @@ export class GeneralSettingsPage {
             'company_name', 'company_phone', 'company_address',
             'language', 'timezone', 'date_format', 'currency',
             'session_timeout_minutes',
-            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
-            'smtp_encryption', 'smtp_from_name', 'smtp_from_email',
             'weighing_flag_code', 'weighing_barcode_format'
         ];
 
@@ -541,6 +556,23 @@ export class GeneralSettingsPage {
             const sessionTimeoutEl = document.getElementById('session_timeout_minutes');
             if (sessionTimeoutEl) sessionTimeoutEl.value = '43200';
         }
+
+        const smtpMap = {
+            smtp_host: this.smtpSettings.host || '',
+            smtp_port: this.smtpSettings.port || 587,
+            smtp_username: this.smtpSettings.username || '',
+            smtp_password: this.smtpSettings.password === '********' ? '' : (this.smtpSettings.password || ''),
+            smtp_encryption: this.smtpSettings.encryption || 'tls',
+            smtp_from_name: this.smtpSettings.from_name || 'Omnex Display Hub',
+            smtp_from_email: this.smtpSettings.from_email || ''
+        };
+
+        Object.entries(smtpMap).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el != null) {
+                el.value = value;
+            }
+        });
 
         // Update barcode preview
         this.updateBarcodePreview();
@@ -646,18 +678,12 @@ export class GeneralSettingsPage {
             date_format: document.getElementById('date_format')?.value,
             currency: document.getElementById('currency')?.value,
             session_timeout_minutes: sessionTimeoutMinutes,
-            smtp_host: document.getElementById('smtp_host')?.value,
-            smtp_port: document.getElementById('smtp_port')?.value,
-            smtp_username: document.getElementById('smtp_username')?.value,
-            smtp_password: document.getElementById('smtp_password')?.value,
-            smtp_encryption: document.getElementById('smtp_encryption')?.value,
-            smtp_from_name: document.getElementById('smtp_from_name')?.value,
-            smtp_from_email: document.getElementById('smtp_from_email')?.value,
             weighing_flag_code: document.getElementById('weighing_flag_code')?.value,
             weighing_barcode_format: document.getElementById('weighing_barcode_format')?.value
         };
 
         try {
+            await this.saveSmtpSettings();
             await this.app.api.put('/settings', data);
             this.app?.state?.set('settings', data, true);
             localStorage.setItem('omnex_settings', JSON.stringify(data));
@@ -665,6 +691,34 @@ export class GeneralSettingsPage {
         } catch (error) {
             Toast.error(this.__('toast.saveFailed'));
         }
+    }
+
+    collectSmtpFormData() {
+        const host = (document.getElementById('smtp_host')?.value || '').trim();
+        const fromEmail = (document.getElementById('smtp_from_email')?.value || '').trim();
+        const payload = {
+            host,
+            port: parseInt(document.getElementById('smtp_port')?.value || '587', 10) || 587,
+            username: (document.getElementById('smtp_username')?.value || '').trim(),
+            password: document.getElementById('smtp_password')?.value || '',
+            encryption: document.getElementById('smtp_encryption')?.value || 'tls',
+            from_name: (document.getElementById('smtp_from_name')?.value || '').trim(),
+            from_email: fromEmail,
+            enabled: host !== '' && fromEmail !== ''
+        };
+        if (!payload.password) {
+            delete payload.password;
+        }
+        return payload;
+    }
+
+    async saveSmtpSettings() {
+        const payload = this.collectSmtpFormData();
+        await this.app.api.put('/smtp/settings' + this.getSmtpScopeQuery(), payload);
+        this.smtpSettings = {
+            ...payload,
+            password: payload.password ? '********' : (this.smtpSettings.password || '')
+        };
     }
 
     /**

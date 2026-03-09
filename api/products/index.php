@@ -136,45 +136,54 @@ $withLabels = $request->query('with_labels');
 // Get all device assignments for products in this batch
 $productIds = array_column($products, 'id');
 if (!empty($productIds)) {
-    // Query all devices with product assignments including template info
-    $allDevices = $db->fetchAll(
-        "SELECT id, name, location, ip_address, current_content, current_template_id, status
-         FROM devices
-         WHERE company_id = ?
-         AND current_content IS NOT NULL",
-        [$companyId]
-    );
+    $assignedDeviceIds = [];
+    $assignedTemplateIds = [];
+    foreach ($products as $p) {
+        if (!empty($p['assigned_device_id']) && !empty($p['assigned_template_id'])) {
+            $assignedDeviceIds[] = $p['assigned_device_id'];
+            $assignedTemplateIds[] = $p['assigned_template_id'];
+        }
+    }
+    $assignedDeviceIds = array_values(array_unique($assignedDeviceIds));
+    $assignedTemplateIds = array_values(array_unique($assignedTemplateIds));
 
-    // Get all templates for lookup (include draft - user assigned them to devices)
+    // Build device and template lookup maps only for assigned records in current page.
+    $deviceLookup = [];
     $templateLookup = [];
-    if ($withLabels) {
-        $allTemplates = $db->fetchAll(
-            "SELECT id, name FROM templates WHERE (company_id = ? OR scope = 'system' OR company_id IS NULL)",
-            [$companyId]
+
+    if (!empty($assignedDeviceIds)) {
+        $devicePlaceholders = implode(', ', array_fill(0, count($assignedDeviceIds), '?'));
+        $deviceRows = $db->fetchAll(
+            "SELECT id, name, location, ip_address, status
+             FROM devices
+             WHERE company_id = ?
+               AND id IN ($devicePlaceholders)",
+            array_merge([$companyId], $assignedDeviceIds)
         );
-        foreach ($allTemplates as $t) {
-            $templateLookup[$t['id']] = $t['name'];
+
+        foreach ($deviceRows as $device) {
+            $deviceLookup[$device['id']] = [
+                'name' => $device['name'],
+                'location' => $device['location'],
+                'ip_address' => $device['ip_address'],
+                'status' => $device['status']
+            ];
         }
     }
 
-    // Build device and template lookup maps
-    $deviceLookup = [];
-    foreach ($allDevices as $device) {
-        $deviceLookup[$device['id']] = [
-            'name' => $device['name'],
-            'location' => $device['location'],
-            'ip_address' => $device['ip_address'],
-            'status' => $device['status']
-        ];
-    }
+    if (!empty($assignedTemplateIds)) {
+        $templatePlaceholders = implode(', ', array_fill(0, count($assignedTemplateIds), '?'));
+        $templateRows = $db->fetchAll(
+            "SELECT id, name
+             FROM templates
+             WHERE id IN ($templatePlaceholders)
+               AND (company_id = ? OR scope = 'system' OR company_id IS NULL)",
+            array_merge($assignedTemplateIds, [$companyId])
+        );
 
-    // Get all templates for lookup
-    $allTemplates = $db->fetchAll(
-        "SELECT id, name FROM templates WHERE (company_id = ? OR scope = 'system' OR company_id IS NULL)",
-        [$companyId]
-    );
-    foreach ($allTemplates as $t) {
-        $templateLookup[$t['id']] = $t['name'];
+        foreach ($templateRows as $templateRow) {
+            $templateLookup[$templateRow['id']] = $templateRow['name'];
+        }
     }
 
     // Build labels from products.assigned_device_id and assigned_template_id

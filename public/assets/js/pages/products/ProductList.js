@@ -32,6 +32,7 @@ export class ProductListPage {
             group: '',
             category: ''
         };
+        this._exportOutsideClickHandler = null;
     }
 
     _getRenderOptions(template) {
@@ -1615,10 +1616,14 @@ export class ProductListPage {
         });
 
         // Close on outside click
-        document.addEventListener('click', () => {
+        if (this._exportOutsideClickHandler) {
+            document.removeEventListener('click', this._exportOutsideClickHandler);
+        }
+        this._exportOutsideClickHandler = () => {
             menu?.classList.remove('show');
             container?.classList.remove('open');
-        });
+        };
+        document.addEventListener('click', this._exportOutsideClickHandler);
 
         // Export item click
         container.querySelectorAll('.export-dropdown-item').forEach(item => {
@@ -5490,6 +5495,10 @@ export class ProductListPage {
      * Cleanup
      */
     destroy() {
+        if (this._exportOutsideClickHandler) {
+            document.removeEventListener('click', this._exportOutsideClickHandler);
+            this._exportOutsideClickHandler = null;
+        }
         this.table?.destroy();
         // Remove preview popup
         const popup = document.getElementById('image-preview-popup');

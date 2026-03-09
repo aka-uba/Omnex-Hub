@@ -40,6 +40,15 @@ export class LayoutManager {
         this.branchSelector = null;
         this.notificationManager = null;
         this.notificationDropdown = null;
+        this._hashChangeHandler = null;
+        this._themePrefMediaQuery = null;
+        this._themePrefChangeHandler = null;
+        this._mobileQuery = null;
+        this._mobileQueryChangeHandler = null;
+        this._windowResizeHandler = null;
+        this._userDropdownOutsideClickHandler = null;
+        this._topNavOutsideClickHandler = null;
+        this._topNavEscapeHandler = null;
 
         // Debounced API sync
         this.debouncedApiSync = debounce(this.syncToApi.bind(this), 2000);
@@ -1561,13 +1570,17 @@ export class LayoutManager {
         });
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
+        if (this._userDropdownOutsideClickHandler) {
+            document.removeEventListener('click', this._userDropdownOutsideClickHandler);
+        }
+        this._userDropdownOutsideClickHandler = (e) => {
             const dropdown = document.getElementById('user-dropdown');
             const userMenu = document.getElementById('header-user-menu');
             if (dropdown && !dropdown.contains(e.target) && !userMenu?.contains(e.target)) {
                 dropdown.classList.remove('open');
             }
-        });
+        };
+        document.addEventListener('click', this._userDropdownOutsideClickHandler);
 
         // Logout button
         document.getElementById('header-logout-btn')?.addEventListener('click', () => {
@@ -1724,18 +1737,26 @@ export class LayoutManager {
         });
 
         // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
+        if (this._topNavOutsideClickHandler) {
+            document.removeEventListener('click', this._topNavOutsideClickHandler);
+        }
+        this._topNavOutsideClickHandler = (e) => {
             if (!e.target.closest('.top-nav-dropdown')) {
                 dropdowns.forEach(d => d.classList.remove('open'));
             }
-        });
+        };
+        document.addEventListener('click', this._topNavOutsideClickHandler);
 
         // Close dropdowns when pressing Escape
-        document.addEventListener('keydown', (e) => {
+        if (this._topNavEscapeHandler) {
+            document.removeEventListener('keydown', this._topNavEscapeHandler);
+        }
+        this._topNavEscapeHandler = (e) => {
             if (e.key === 'Escape') {
                 dropdowns.forEach(d => d.classList.remove('open'));
             }
-        });
+        };
+        document.addEventListener('keydown', this._topNavEscapeHandler);
     }
 
     /**
@@ -1933,27 +1954,44 @@ export class LayoutManager {
      */
     setupEventListeners() {
         // Listen for route changes
-        window.addEventListener('hashchange', () => {
+        if (this._hashChangeHandler) {
+            window.removeEventListener('hashchange', this._hashChangeHandler);
+        }
+        this._hashChangeHandler = () => {
             if (this.isLayoutVisible) {
                 this.updateActiveMenu();
                 this.closeMobileMenu();
             }
-        });
+        };
+        window.addEventListener('hashchange', this._hashChangeHandler);
 
         // Listen for theme preference changes (for auto mode)
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (this._themePrefMediaQuery && this._themePrefChangeHandler) {
+            this._themePrefMediaQuery.removeEventListener('change', this._themePrefChangeHandler);
+        }
+        this._themePrefMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        this._themePrefChangeHandler = () => {
             if (this.config.themeMode === ThemeMode.AUTO) {
                 this.applyTheme();
                 this.updateThemeIcon();
             }
-        });
+        };
+        this._themePrefMediaQuery.addEventListener('change', this._themePrefChangeHandler);
     }
 
     /**
      * Setup media queries for responsive behavior
      */
     setupMediaQueries() {
+        if (this._mobileQuery && this._mobileQueryChangeHandler) {
+            this._mobileQuery.removeEventListener('change', this._mobileQueryChangeHandler);
+        }
+        if (this._windowResizeHandler) {
+            window.removeEventListener('resize', this._windowResizeHandler);
+        }
+
         const mobileQuery = window.matchMedia('(max-width: 1024px)');
+        this._mobileQuery = mobileQuery;
 
         const handleMobileChange = (e) => {
             if (e.matches) {
@@ -1963,20 +2001,59 @@ export class LayoutManager {
             // Update header height variable when breakpoint changes
             this.updateMobileHeaderHeight();
         };
+        this._mobileQueryChangeHandler = handleMobileChange;
 
         mobileQuery.addEventListener('change', handleMobileChange);
         handleMobileChange(mobileQuery);
 
         // Also update on resize for two-row header height changes
-        window.addEventListener('resize', () => {
+        this._windowResizeHandler = () => {
             this.updateMobileHeaderHeight();
-        });
+        };
+        window.addEventListener('resize', this._windowResizeHandler);
     }
 
     /**
      * Destroy layout manager
      */
     destroy() {
+        if (this._hashChangeHandler) {
+            window.removeEventListener('hashchange', this._hashChangeHandler);
+            this._hashChangeHandler = null;
+        }
+        if (this._themePrefMediaQuery && this._themePrefChangeHandler) {
+            this._themePrefMediaQuery.removeEventListener('change', this._themePrefChangeHandler);
+            this._themePrefChangeHandler = null;
+            this._themePrefMediaQuery = null;
+        }
+        if (this._mobileQuery && this._mobileQueryChangeHandler) {
+            this._mobileQuery.removeEventListener('change', this._mobileQueryChangeHandler);
+            this._mobileQueryChangeHandler = null;
+            this._mobileQuery = null;
+        }
+        if (this._windowResizeHandler) {
+            window.removeEventListener('resize', this._windowResizeHandler);
+            this._windowResizeHandler = null;
+        }
+        if (this._userDropdownOutsideClickHandler) {
+            document.removeEventListener('click', this._userDropdownOutsideClickHandler);
+            this._userDropdownOutsideClickHandler = null;
+        }
+        if (this._topNavOutsideClickHandler) {
+            document.removeEventListener('click', this._topNavOutsideClickHandler);
+            this._topNavOutsideClickHandler = null;
+        }
+        if (this._topNavEscapeHandler) {
+            document.removeEventListener('keydown', this._topNavEscapeHandler);
+            this._topNavEscapeHandler = null;
+        }
+        if (this._scrollHandler) {
+            window.removeEventListener('scroll', this._scrollHandler);
+            this._scrollHandler = null;
+        }
+        this.companySelector?.destroy?.();
+        this.languageSelector?.destroy?.();
+        this.branchSelector?.destroy?.();
         if (this.configurator) {
             this.configurator.destroy();
         }

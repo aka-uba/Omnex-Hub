@@ -17,6 +17,7 @@ export class BranchSelector {
         this.hierarchy = null;
         this.isOpen = false;
         this.storageKey = 'omnex_active_branch';
+        this._outsideClickHandler = null;
     }
 
     /**
@@ -276,12 +277,16 @@ export class BranchSelector {
         });
 
         // Close on outside click
-        document.addEventListener('click', (e) => {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+        }
+        this._outsideClickHandler = (e) => {
             if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
                 this.isOpen = false;
                 dropdown.classList.remove('open');
             }
-        });
+        };
+        document.addEventListener('click', this._outsideClickHandler);
 
         // Handle branch selection
         dropdown.querySelectorAll('.branch-dropdown-item').forEach(item => {
@@ -324,6 +329,13 @@ export class BranchSelector {
                 item.insertAdjacentHTML('beforeend', '<i class="ti ti-check text-primary"></i>');
             });
         });
+    }
+
+    destroy() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+            this._outsideClickHandler = null;
+        }
     }
 }
 

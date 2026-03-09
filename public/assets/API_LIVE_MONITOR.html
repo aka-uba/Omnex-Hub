@@ -1,0 +1,412 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Omnex API Live Monitor</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 16px; background:#0f172a; color:#e2e8f0; }
+    h1 { margin: 0 0 12px; font-size: 20px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .card { background:#111827; border:1px solid #334155; border-radius:10px; padding:12px; }
+    .grow { flex:1 1 320px; }
+    label { font-size:12px; color:#94a3b8; display:block; margin-bottom:4px; }
+    input, textarea, button, select { width:100%; box-sizing:border-box; border-radius:8px; border:1px solid #475569; background:#0b1220; color:#e2e8f0; padding:8px; }
+    textarea { min-height:120px; font-family:Consolas, monospace; }
+    .btns { display:flex; gap:8px; flex-wrap:wrap; }
+    .btns button { width:auto; padding:8px 12px; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th, td { border-bottom:1px solid #334155; padding:6px; text-align:left; }
+    .ok { color:#22c55e; }
+    .bad { color:#f43f5e; }
+    .muted { color:#94a3b8; }
+    .mono { font-family:Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Omnex API Live Monitor</h1>
+
+  <div class="row">
+    <div class="card grow">
+      <label>Base URL</label>
+      <input id="baseUrl" value="http://localhost/market-etiket-sistemi/api" />
+
+      <label style="margin-top:8px;">Bearer Token (optional)</label>
+      <input id="token" placeholder="Paste token if cookie auth is not available" />
+
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1 1 220px;">
+          <label>Login Email</label>
+          <input id="loginEmail" placeholder="admin@omnex.local" />
+        </div>
+        <div style="flex:1 1 180px;">
+          <label>Login Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" />
+        </div>
+      </div>
+
+      <label style="margin-top:8px;">Poll interval (ms)</label>
+      <input id="intervalMs" type="number" value="3000" min="500" step="500" />
+
+      <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+        <input id="stopOn401" type="checkbox" checked style="width:auto;" />
+        <label for="stopOn401" style="margin:0;">Stop monitor if all endpoints return 401 in a cycle</label>
+      </div>
+
+      <label style="margin-top:8px;">Endpoints (one per line)</label>
+      <textarea id="endpoints">GET /system/status?live_only=1
+GET /system/status
+GET /products?page=1&limit=25
+GET /devices?page=1&per_page=20
+GET /media?page=1&per_page=20&skip_validation=1
+GET /templates?page=1&per_page=20
+GET /bundles?page=1&limit=25
+GET /notifications?page=1&limit=20</textarea>
+
+      <div class="btns" style="margin-top:10px;">
+        <button id="startBtn">Start</button>
+        <button id="stopBtn">Stop</button>
+        <button id="loadTokenBtn">Load `omnex_token`</button>
+        <button id="loginBtn">Login & Use Token</button>
+        <button id="clearBtn">Clear Logs</button>
+        <button id="exportJsonBtn">Export JSON</button>
+        <button id="exportCsvBtn">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="card grow">
+      <div id="status" class="muted">Idle</div>
+      <div style="margin-top:10px;" id="summary"></div>
+      <div style="margin-top:10px;" id="sanity"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th><th>Endpoint</th><th>Status</th><th>Duration (ms)</th><th>Result</th><th>Error</th>
+        </tr>
+      </thead>
+      <tbody id="logBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const LS_KEY = 'omnex_api_monitor_logs_v1';
+    const LS_CFG = 'omnex_api_monitor_cfg_v1';
+    const LOG_LIMIT = 10000;
+    const STATS_WINDOW = 3000;
+
+    let timer = null;
+    let inFlight = false;
+    let logs = loadLogs();
+
+    const els = {
+      baseUrl: document.getElementById('baseUrl'),
+      token: document.getElementById('token'),
+      loginEmail: document.getElementById('loginEmail'),
+      loginPassword: document.getElementById('loginPassword'),
+      intervalMs: document.getElementById('intervalMs'),
+      stopOn401: document.getElementById('stopOn401'),
+      endpoints: document.getElementById('endpoints'),
+      status: document.getElementById('status'),
+      summary: document.getElementById('summary'),
+      sanity: document.getElementById('sanity'),
+      logBody: document.getElementById('logBody')
+    };
+
+    logs = trimLogs(logs);
+    restoreCfg();
+    render();
+    showStartupHint();
+
+    document.getElementById('startBtn').onclick = start;
+    document.getElementById('stopBtn').onclick = stop;
+    document.getElementById('loadTokenBtn').onclick = loadTokenFromStorage;
+    document.getElementById('loginBtn').onclick = loginAndUseToken;
+    document.getElementById('clearBtn').onclick = () => { logs = []; persistLogs(); render(); };
+    document.getElementById('exportJsonBtn').onclick = exportJson;
+    document.getElementById('exportCsvBtn').onclick = exportCsv;
+
+    ['baseUrl','token','loginEmail','loginPassword','intervalMs','endpoints','stopOn401'].forEach(id => {
+      els[id].addEventListener('change', persistCfg);
+      els[id].addEventListener('keyup', persistCfg);
+    });
+
+    function nowIso() { return new Date().toISOString(); }
+
+    function parseEndpoints() {
+      return els.endpoints.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean).map(line => {
+        const m = line.match(/^(GET|POST|PUT|PATCH|DELETE)\s+(.+)$/i);
+        if (!m) return null;
+        return { method: m[1].toUpperCase(), path: m[2] };
+      }).filter(Boolean);
+    }
+
+    function headers() {
+      const h = { 'Accept': 'application/json' };
+      const token = els.token.value.trim();
+      if (token) h['Authorization'] = token.startsWith('Bearer ') ? token : ('Bearer ' + token);
+      return h;
+    }
+
+    async function hit(ep) {
+      const url = els.baseUrl.value.replace(/\/$/, '') + ep.path;
+      const started = performance.now();
+      try {
+        const res = await fetch(url, {
+          method: ep.method,
+          credentials: 'include',
+          headers: headers()
+        });
+        const text = await res.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch (_) {}
+        const durationMs = +(performance.now() - started).toFixed(2);
+        return { ts: nowIso(), endpoint: ep.method + ' ' + ep.path, status: res.status, durationMs, ok: res.ok, data, err: '' };
+      } catch (e) {
+        return { ts: nowIso(), endpoint: ep.method + ' ' + ep.path, status: 0, durationMs: +(performance.now() - started).toFixed(2), ok: false, data: null, err: String(e) };
+      }
+    }
+
+    async function loginAndUseToken() {
+      const baseApi = els.baseUrl.value.replace(/\/$/, '');
+      const email = els.loginEmail.value.trim();
+      const password = els.loginPassword.value;
+
+      if (!email || !password) {
+        els.status.textContent = 'Login email/password required';
+        return;
+      }
+
+      els.status.textContent = 'Logging in...';
+      try {
+        const res = await fetch(baseApi + '/auth/login', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        const token = data && data.success && data.data ? data.data.access_token : '';
+        if (!token) {
+          els.status.textContent = 'Login failed: token not returned';
+          return;
+        }
+        els.token.value = token;
+        localStorage.setItem('omnex_token', token);
+        if (data.data && data.data.refresh_token) {
+          localStorage.setItem('omnex_refresh_token', data.data.refresh_token);
+        }
+        persistCfg();
+        els.status.textContent = 'Token updated from login';
+      } catch (e) {
+        els.status.textContent = 'Login error: ' + String(e);
+      }
+    }
+
+    function loadTokenFromStorage() {
+      const token = localStorage.getItem('omnex_token') || '';
+      els.token.value = token;
+      persistCfg();
+      els.status.textContent = token ? 'Loaded token from localStorage' : 'No `omnex_token` in localStorage';
+    }
+
+    async function pollOnce() {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const eps = parseEndpoints();
+        if (!eps.length) {
+          els.status.textContent = 'No endpoints configured';
+          return;
+        }
+
+        els.status.textContent = 'Polling ' + eps.length + ' endpoints...';
+        const batch = [];
+        for (const ep of eps) {
+          batch.push(await hit(ep));
+        }
+
+        logs.push(...batch);
+        logs = trimLogs(logs);
+        persistLogs();
+        render();
+        runSanity(batch);
+
+        const all401 = batch.length > 0 && batch.every(x => x.status === 401);
+        if (els.stopOn401.checked && all401) {
+          stop();
+          els.status.textContent = 'Stopped: all endpoints returned 401 (auth token missing/expired)';
+          return;
+        }
+
+        els.status.textContent = 'Last poll: ' + new Date().toLocaleTimeString();
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    function start() {
+      stop();
+      const interval = Math.max(500, parseInt(els.intervalMs.value || '3000', 10));
+      els.status.textContent = 'Starting...';
+      pollOnce();
+      timer = setInterval(pollOnce, interval);
+      persistCfg();
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    function percentile(sorted, p) {
+      if (!sorted.length) return 0;
+      const idx = Math.max(0, Math.min(sorted.length - 1, Math.ceil(sorted.length * p) - 1));
+      return sorted[idx];
+    }
+
+    function endpointStats(sourceLogs = logs) {
+      const map = new Map();
+      for (const row of sourceLogs) {
+        if (!map.has(row.endpoint)) map.set(row.endpoint, []);
+        map.get(row.endpoint).push(row);
+      }
+
+      const out = [];
+      for (const [endpoint, arr] of map.entries()) {
+        const d = arr.map(x => x.durationMs).sort((a,b)=>a-b);
+        const ok = arr.filter(x => x.ok).length;
+        const err = arr.length - ok;
+        const e4xx = arr.filter(x => x.status >= 400 && x.status < 500).length;
+        const e5xx = arr.filter(x => x.status >= 500).length;
+        out.push({
+          endpoint,
+          count: arr.length,
+          ok,
+          err,
+          errRate: arr.length ? +(err * 100 / arr.length).toFixed(2) : 0,
+          e4xxRate: arr.length ? +(e4xx * 100 / arr.length).toFixed(2) : 0,
+          e5xxRate: arr.length ? +(e5xx * 100 / arr.length).toFixed(2) : 0,
+          avg: d.length ? +(d.reduce((s,v)=>s+v,0)/d.length).toFixed(2) : 0,
+          p50: +percentile(d, 0.50).toFixed(2),
+          p95: +percentile(d, 0.95).toFixed(2),
+          p99: +percentile(d, 0.99).toFixed(2)
+        });
+      }
+      return out.sort((a,b)=>b.p95-a.p95);
+    }
+
+    function runSanity(lastBatch) {
+      const row = lastBatch.find(x => x.endpoint === 'GET /system/status?live_only=1' && x.ok && x.data && x.data.data && x.data.data.api_stats && x.data.data.api_stats.live);
+      if (!row) {
+        els.sanity.innerHTML = '<div class="muted">Sanity: /system/status?live_only=1 not available in last poll.</div>';
+        return;
+      }
+      const serverMs = Number(row.data.data.api_stats.live.response_time_ms || 0);
+      const clientMs = Number(row.durationMs || 0);
+      const diff = Math.abs(serverMs - clientMs).toFixed(2);
+      const ok = diff <= 100;
+      els.sanity.innerHTML = '<b>Live metric sanity</b><br>' +
+        'client=' + clientMs.toFixed(2) + 'ms, server=' + serverMs.toFixed(2) + 'ms, diff=' + diff + 'ms ' +
+        (ok ? '<span class="ok">OK</span>' : '<span class="bad">Check</span>');
+    }
+
+    function render() {
+      const visibleLogs = logs.slice(-STATS_WINDOW);
+      const stats = endpointStats(visibleLogs);
+      const uniqueCycles = stats.length ? Math.round(logs.length / stats.length) : 0;
+      const totalErr = logs.filter(x => !x.ok).length;
+      const total4xx = logs.filter(x => x.status >= 400 && x.status < 500).length;
+      const total5xx = logs.filter(x => x.status >= 500).length;
+      let html = '<table><thead><tr><th>Endpoint</th><th>Count</th><th>Err%</th><th>4xx%</th><th>5xx%</th><th>AVG</th><th>P50</th><th>P95</th><th>P99</th></tr></thead><tbody>';
+      for (const s of stats) {
+        const cls = s.p95 > 200 || s.errRate > 1 ? 'bad' : 'ok';
+        html += `<tr><td class="mono">${escapeHtml(s.endpoint)}</td><td>${s.count}</td><td class="${s.errRate>1?'bad':'ok'}">${s.errRate}</td><td>${s.e4xxRate}</td><td class="${s.e5xxRate>1?'bad':'ok'}">${s.e5xxRate}</td><td>${s.avg}</td><td>${s.p50}</td><td class="${cls}">${s.p95}</td><td>${s.p99}</td></tr>`;
+      }
+      html += '</tbody></table>';
+      els.summary.innerHTML =
+        `<div class="muted" style="margin-bottom:8px;">Total requests=${logs.length}, endpoints=${stats.length}, poll cycles≈${uniqueCycles}, fail=${totalErr}, 4xx=${total4xx}, 5xx=${total5xx}</div>` +
+        html;
+
+      const rows = logs.slice(-300).reverse();
+      els.logBody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${new Date(r.ts).toLocaleTimeString()}</td>
+          <td class="mono">${escapeHtml(r.endpoint)}</td>
+          <td>${r.status}</td>
+          <td>${r.durationMs}</td>
+          <td class="${r.ok?'ok':'bad'}">${r.ok?'OK':'FAIL'}</td>
+          <td class="mono">${escapeHtml((r.err||'').slice(0,120))}</td>
+        </tr>`).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function persistLogs() { localStorage.setItem(LS_KEY, JSON.stringify(trimLogs(logs))); }
+    function loadLogs() {
+      try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+    }
+    function trimLogs(arr) {
+      if (!Array.isArray(arr)) return [];
+      return arr.length > LOG_LIMIT ? arr.slice(-LOG_LIMIT) : arr;
+    }
+    function showStartupHint() {
+      if (location.protocol === 'file:') {
+        els.status.textContent = 'file:// modu: Base URL dogru olmali (onerilen: http://127.0.0.1:3000/api)';
+      }
+    }
+    function persistCfg() {
+      localStorage.setItem(LS_CFG, JSON.stringify({
+        baseUrl: els.baseUrl.value,
+        token: els.token.value,
+        loginEmail: els.loginEmail.value,
+        intervalMs: els.intervalMs.value,
+        stopOn401: !!els.stopOn401.checked,
+        endpoints: els.endpoints.value
+      }));
+    }
+    function restoreCfg() {
+      try {
+        const cfg = JSON.parse(localStorage.getItem(LS_CFG) || '{}');
+        if (cfg.baseUrl) els.baseUrl.value = cfg.baseUrl;
+        if (cfg.token) els.token.value = cfg.token;
+        if (cfg.loginEmail) els.loginEmail.value = cfg.loginEmail;
+        if (cfg.intervalMs) els.intervalMs.value = cfg.intervalMs;
+        if (typeof cfg.stopOn401 === 'boolean') els.stopOn401.checked = cfg.stopOn401;
+        if (cfg.endpoints) els.endpoints.value = cfg.endpoints;
+      } catch {}
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+      downloadBlob(blob, 'api-monitor-log-' + Date.now() + '.json');
+    }
+
+    function exportCsv() {
+      const cols = ['ts','endpoint','status','durationMs','ok','err'];
+      const lines = [cols.join(',')];
+      for (const r of logs) {
+        lines.push(cols.map(c => {
+          const v = r[c] == null ? '' : String(r[c]).replace(/"/g, '""');
+          return '"' + v + '"';
+        }).join(','));
+      }
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      downloadBlob(blob, 'api-monitor-log-' + Date.now() + '.csv');
+    }
+
+    function downloadBlob(blob, name) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>

@@ -49,6 +49,8 @@ export class BundleFormPage {
         this.editingCategoryId = null;
         this.categoryModalId = null;
         this.priceHistorySection = null;
+        this._itemClickHandler = null;
+        this._itemInputHandler = null;
     }
 
     __(key, params = {}) {
@@ -936,8 +938,16 @@ export class BundleFormPage {
         });
 
         // Delegate events for item controls
-        document.addEventListener('click', (e) => this._handleItemClick(e));
-        document.addEventListener('input', (e) => this._handleItemInput(e));
+        if (this._itemClickHandler) {
+            document.removeEventListener('click', this._itemClickHandler);
+        }
+        if (this._itemInputHandler) {
+            document.removeEventListener('input', this._itemInputHandler);
+        }
+        this._itemClickHandler = (e) => this._handleItemClick(e);
+        this._itemInputHandler = (e) => this._handleItemInput(e);
+        document.addEventListener('click', this._itemClickHandler);
+        document.addEventListener('input', this._itemInputHandler);
     }
 
     _handleItemClick(e) {
@@ -1803,6 +1813,14 @@ export class BundleFormPage {
     }
 
     destroy() {
+        if (this._itemClickHandler) {
+            document.removeEventListener('click', this._itemClickHandler);
+            this._itemClickHandler = null;
+        }
+        if (this._itemInputHandler) {
+            document.removeEventListener('input', this._itemInputHandler);
+            this._itemInputHandler = null;
+        }
         if (this.priceHistorySection) {
             this.priceHistorySection.destroy();
             this.priceHistorySection = null;

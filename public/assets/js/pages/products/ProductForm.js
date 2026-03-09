@@ -3118,6 +3118,18 @@ export class ProductFormPage {
 
 
     destroy() {
+        this.mediaPicker?.destroy?.();
+        this.mediaPicker = null;
+
+        this.barcodeSection?.destroy?.();
+        this.barcodeSection = null;
+
+        this.halKunyeSection?.destroy?.();
+        this.halKunyeSection = null;
+
+        this.priceHistorySection?.destroy?.();
+        this.priceHistorySection = null;
+
         this.app.i18n.clearPageTranslations();
     }
 }

@@ -23,77 +23,23 @@ if (!in_array($user['role'], ['SuperAdmin', 'Admin'])) {
 $liveOnly = isset($_GET['live_only']) && $_GET['live_only'] === '1';
 
 if ($liveOnly) {
-    // Return only live API metrics for fast refresh
-    // Start time for response time calculation
-    $apiStartTime = defined('API_START_TIME') ? API_START_TIME : ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
-
-    try {
-        // Requests in last minute
-        $oneMinuteAgo = date('Y-m-d H:i:s', time() - 60);
-        $recentRequests = $db->fetch(
-            "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ?",
-            [$oneMinuteAgo]
-        );
-        $requestsLastMinute = $recentRequests['count'] ?? 0;
-        $requestsPerSecond = round($requestsLastMinute / 60, 2);
-
-        // Actual response time of this request (will vary with each call)
-        $responseTime = round((microtime(true) - $apiStartTime) * 1000, 2);
-        // Add small random variation to make it more realistic if too fast
-        if ($responseTime < 5) {
-            $responseTime = round(mt_rand(8, 25) + (mt_rand(0, 99) / 100), 2);
-        }
-
-        // Active users in last 5 minutes
-        $fiveMinutesAgo = date('Y-m-d H:i:s', time() - 300);
-        $activeUsers = $db->fetch(
-            "SELECT COUNT(DISTINCT user_id) as count FROM audit_logs WHERE created_at >= ? AND user_id IS NOT NULL",
-            [$fiveMinutesAgo]
-        );
-        $activeConnections = $activeUsers['count'] ?? 0;
-        // Include current user
-        if ($activeConnections === 0) {
-            $activeConnections = 1;
-        }
-
-        // Error rate in last hour
-        $oneHourAgo = date('Y-m-d H:i:s', time() - 3600);
-        $totalLastHour = $db->fetch(
-            "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ?",
-            [$oneHourAgo]
-        );
-        $errorsLastHour = $db->fetch(
-            "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ? AND (action LIKE '%error%' OR action LIKE '%fail%')",
-            [$oneHourAgo]
-        );
-        $errorRate = ($totalLastHour['count'] ?? 0) > 0
-            ? round(($errorsLastHour['count'] ?? 0) / $totalLastHour['count'] * 100, 2)
-            : 0;
-
-        Response::success([
-            'api_stats' => [
-                'live' => [
-                    'requests_per_second' => $requestsPerSecond,
-                    'response_time_ms' => $responseTime,
-                    'active_connections' => $activeConnections,
-                    'error_rate' => $errorRate,
-                    'last_updated' => date('Y-m-d H:i:s')
-                ]
+    // Return only live API metrics for fast refresh (based on real api.log timings)
+    $liveMetrics = collectApiLogMetrics();
+    $quickStats = collectQuickStatsForLiveCards();
+    Response::success([
+        'api_stats' => [
+            'live' => [
+                'requests_per_second' => $liveMetrics['requests_per_second'],
+                'response_time_ms' => $liveMetrics['response_time_ms'],
+                'active_connections' => $liveMetrics['active_connections'],
+                'error_rate' => $liveMetrics['error_rate'],
+                'client_error_rate' => $liveMetrics['client_error_rate'],
+                'requests_per_minute' => $liveMetrics['requests_per_minute'],
+                'last_updated' => date('Y-m-d H:i:s')
             ]
-        ]);
-    } catch (Exception $e) {
-        Response::success([
-            'api_stats' => [
-                'live' => [
-                    'requests_per_second' => 0,
-                    'response_time_ms' => round(mt_rand(10, 30) + (mt_rand(0, 99) / 100), 2),
-                    'active_connections' => 1,
-                    'error_rate' => 0,
-                    'last_updated' => date('Y-m-d H:i:s')
-                ]
-            ]
-        ]);
-    }
+        ],
+        'quick_stats' => $quickStats
+    ]);
     exit;
 }
 
@@ -276,50 +222,8 @@ try {
         [$today]
     );
 
-    // Live API Metrics - Calculate requests per second (last minute)
-    $oneMinuteAgo = date('Y-m-d H:i:s', time() - 60);
-    $recentRequests = $db->fetch(
-        "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ?",
-        [$oneMinuteAgo]
-    );
-    $requestsPerSecond = round(($recentRequests['count'] ?? 0) / 60, 2);
-
-    // Average response time simulation (we don't have actual response times logged)
-    // This shows the time taken for this API call as a baseline
-    $apiStartTime = defined('API_START_TIME') ? API_START_TIME : microtime(true);
-    $currentResponseTime = round((microtime(true) - $apiStartTime) * 1000, 2); // ms
-
-    // Active connections - count unique users active in last 5 minutes
-    $fiveMinutesAgo = date('Y-m-d H:i:s', time() - 300);
-    $activeUsers = $db->fetch(
-        "SELECT COUNT(DISTINCT user_id) as count FROM audit_logs WHERE created_at >= ? AND user_id IS NOT NULL",
-        [$fiveMinutesAgo]
-    );
-
-    // Requests per minute (last 5 minutes breakdown)
-    $requestsPerMinute = $db->fetchAll(
-        "SELECT $minuteExpr as minute, COUNT(*) as count
-         FROM audit_logs
-         WHERE created_at >= ?
-         GROUP BY minute
-         ORDER BY minute DESC
-         LIMIT 5",
-        [$fiveMinutesAgo]
-    );
-
-    // Error rate (last hour)
-    $oneHourAgo = date('Y-m-d H:i:s', time() - 3600);
-    $totalLastHour = $db->fetch(
-        "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ?",
-        [$oneHourAgo]
-    );
-    $errorsLastHour = $db->fetch(
-        "SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ? AND (action LIKE '%error%' OR action LIKE '%fail%')",
-        [$oneHourAgo]
-    );
-    $errorRate = ($totalLastHour['count'] ?? 0) > 0
-        ? round(($errorsLastHour['count'] ?? 0) / $totalLastHour['count'] * 100, 2)
-        : 0;
+    // Live API metrics from real API log
+    $liveMetrics = collectApiLogMetrics();
 
     $metrics['api_stats'] = [
         'today' => $todayStats['count'] ?? 0,
@@ -329,11 +233,12 @@ try {
         'hourly' => $hourlyActivity,
         // Live metrics
         'live' => [
-            'requests_per_second' => $requestsPerSecond,
-            'response_time_ms' => $currentResponseTime,
-            'active_connections' => $activeUsers['count'] ?? 0,
-            'requests_per_minute' => $requestsPerMinute,
-            'error_rate' => $errorRate,
+            'requests_per_second' => $liveMetrics['requests_per_second'],
+            'response_time_ms' => $liveMetrics['response_time_ms'],
+            'active_connections' => $liveMetrics['active_connections'],
+            'requests_per_minute' => $liveMetrics['requests_per_minute'],
+            'error_rate' => $liveMetrics['error_rate'],
+            'client_error_rate' => $liveMetrics['client_error_rate'],
             'last_updated' => date('Y-m-d H:i:s')
         ]
     ];
@@ -350,6 +255,7 @@ try {
             'active_connections' => 0,
             'requests_per_minute' => [],
             'error_rate' => 0,
+            'client_error_rate' => 0,
             'last_updated' => date('Y-m-d H:i:s')
         ]
     ];
@@ -610,6 +516,261 @@ function getCpuUsage() {
     }
 
     return $cpu;
+}
+
+/**
+ * Collect live API metrics from storage/logs/api.log.
+ * Uses recent entries so polling remains lightweight.
+ */
+function collectApiLogMetrics(int $tailLines = 1200, int $maxTailBytes = 262144, int $cacheTtlSeconds = 2): array
+{
+    $default = [
+        'requests_per_second' => 0,
+        'response_time_ms' => 0,
+        'active_connections' => 0,
+        'error_rate' => 0,
+        'client_error_rate' => 0,
+        'requests_per_minute' => []
+    ];
+
+    $logFile = STORAGE_PATH . '/logs/api.log';
+    if (!is_file($logFile) || !is_readable($logFile)) {
+        return $default;
+    }
+
+    $cacheFile = STORAGE_PATH . '/cache/system_status_live_metrics.json';
+    $logMtime = @filemtime($logFile);
+    if ($logMtime === false) {
+        $logMtime = 0;
+    }
+
+    if ($cacheTtlSeconds > 0) {
+        $cached = readJsonCache($cacheFile, $cacheTtlSeconds);
+        if (
+            is_array($cached)
+            && isset($cached['log_mtime'], $cached['payload'])
+            && (int)$cached['log_mtime'] === (int)$logMtime
+            && is_array($cached['payload'])
+        ) {
+            return $cached['payload'];
+        }
+    }
+
+    $lines = readTailLines($logFile, $tailLines, $maxTailBytes);
+    if (empty($lines)) {
+        return $default;
+    }
+
+    $now = time();
+    $oneMinuteAgo = $now - 60;
+    $fiveMinutesAgo = $now - 300;
+    $oneHourAgo = $now - 3600;
+
+    $lastMinuteCount = 0;
+    $lastMinuteDurations = [];
+    $activeIps = [];
+    $hourTotal = 0;
+    $hourServerErrors = 0;
+    $hourClientErrors = 0;
+    $perMinuteBuckets = [];
+
+    foreach ($lines as $line) {
+        if (!preg_match('/^\[(.*?)\]\s+[A-Z]+\s+\S+\s+-\s+(\d+)\s+\(([0-9.]+)ms\)\s+-\s+(.+)$/', $line, $m)) {
+            continue;
+        }
+
+        $ts = strtotime($m[1]);
+        if ($ts === false) {
+            continue;
+        }
+
+        $status = (int)$m[2];
+        $duration = (float)$m[3];
+        $ip = trim((string)$m[4]);
+
+        if ($ts >= $oneHourAgo) {
+            $hourTotal++;
+            if ($status >= 500) {
+                $hourServerErrors++;
+            } elseif ($status >= 400) {
+                $hourClientErrors++;
+            }
+        }
+
+        if ($ts >= $oneMinuteAgo) {
+            $lastMinuteCount++;
+            $lastMinuteDurations[] = $duration;
+        }
+
+        if ($ts >= $fiveMinutesAgo) {
+            if ($ip !== '' && $ip !== '-') {
+                $activeIps[$ip] = true;
+            }
+            $minuteKey = date('H:i', $ts);
+            if (!isset($perMinuteBuckets[$minuteKey])) {
+                $perMinuteBuckets[$minuteKey] = 0;
+            }
+            $perMinuteBuckets[$minuteKey]++;
+        }
+    }
+
+    $avgResponseMs = 0;
+    if (!empty($lastMinuteDurations)) {
+        $avgResponseMs = round(array_sum($lastMinuteDurations) / count($lastMinuteDurations), 2);
+    }
+
+    ksort($perMinuteBuckets);
+    $requestsPerMinute = [];
+    foreach ($perMinuteBuckets as $minute => $count) {
+        $requestsPerMinute[] = ['minute' => $minute, 'count' => $count];
+    }
+
+    // keep only latest 5 buckets
+    if (count($requestsPerMinute) > 5) {
+        $requestsPerMinute = array_slice($requestsPerMinute, -5);
+    }
+
+    $result = [
+        'requests_per_second' => round($lastMinuteCount / 60, 2),
+        'response_time_ms' => $avgResponseMs,
+        'active_connections' => count($activeIps),
+        // Keep error_rate focused on server-side failures for operational clarity.
+        'error_rate' => $hourTotal > 0 ? round(($hourServerErrors / $hourTotal) * 100, 2) : 0,
+        'client_error_rate' => $hourTotal > 0 ? round(($hourClientErrors / $hourTotal) * 100, 2) : 0,
+        'requests_per_minute' => array_reverse($requestsPerMinute)
+    ];
+
+    writeJsonCache($cacheFile, [
+        'log_mtime' => (int)$logMtime,
+        'payload' => $result
+    ]);
+
+    return $result;
+}
+
+/**
+ * Lightweight quick stats for 3s live card refresh.
+ */
+function collectQuickStatsForLiveCards(int $cacheTtlSeconds = 5): array
+{
+    $cacheFile = STORAGE_PATH . '/cache/system_status_quick_stats.json';
+    if ($cacheTtlSeconds > 0) {
+        $cached = readJsonCache($cacheFile, $cacheTtlSeconds);
+        if (is_array($cached)) {
+            return $cached;
+        }
+    }
+
+    $cpu = getCpuUsage();
+    $memoryLimitBytes = convertToBytes((string)ini_get('memory_limit'));
+    $memoryUsage = memory_get_usage(true);
+
+    $result = [
+        'uptime' => [
+            'formatted' => (string)(getSystemUptime()['formatted'] ?? 'N/A')
+        ],
+        'cpu' => [
+            'usage_percent' => $cpu['usage_percent'] ?? null,
+            'load_average' => $cpu['load_average'] ?? null
+        ],
+        'memory' => [
+            'usage_percent' => $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 2) : 0
+        ]
+    ];
+
+    writeJsonCache($cacheFile, $result);
+    return $result;
+}
+
+/**
+ * Read only the recent tail chunk from a potentially large log file.
+ */
+function readTailLines(string $filePath, int $maxLines = 1200, int $maxBytes = 262144): array
+{
+    if (!is_file($filePath) || !is_readable($filePath)) {
+        return [];
+    }
+
+    $size = @filesize($filePath);
+    if ($size === false || $size <= 0) {
+        return [];
+    }
+
+    $readBytes = (int)min($size, max(4096, $maxBytes));
+    $fp = @fopen($filePath, 'rb');
+    if ($fp === false) {
+        return [];
+    }
+
+    try {
+        if ($size > $readBytes) {
+            @fseek($fp, -$readBytes, SEEK_END);
+        } else {
+            @rewind($fp);
+        }
+        $chunk = (string)@fread($fp, $readBytes);
+    } finally {
+        @fclose($fp);
+    }
+
+    if ($chunk === '') {
+        return [];
+    }
+
+    // If we started from middle of file, first line might be partial.
+    if ($size > $readBytes) {
+        $firstNewlinePos = strpos($chunk, "\n");
+        if ($firstNewlinePos !== false) {
+            $chunk = substr($chunk, $firstNewlinePos + 1);
+        }
+    }
+
+    $lines = preg_split('/\R/', $chunk) ?: [];
+    $lines = array_values(array_filter($lines, static fn($line): bool => trim((string)$line) !== ''));
+    if (count($lines) > $maxLines) {
+        $lines = array_slice($lines, -$maxLines);
+    }
+    return $lines;
+}
+
+function readJsonCache(string $cacheFile, int $ttlSeconds): ?array
+{
+    if ($ttlSeconds <= 0 || !is_file($cacheFile) || !is_readable($cacheFile)) {
+        return null;
+    }
+
+    $mtime = @filemtime($cacheFile);
+    if ($mtime === false || (time() - $mtime) > $ttlSeconds) {
+        return null;
+    }
+
+    $raw = @file_get_contents($cacheFile);
+    if (!is_string($raw) || $raw === '') {
+        return null;
+    }
+
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : null;
+}
+
+function writeJsonCache(string $cacheFile, array $payload): void
+{
+    $dir = dirname($cacheFile);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0775, true);
+    }
+
+    $tmp = $cacheFile . '.tmp';
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if (!is_string($json)) {
+        return;
+    }
+
+    if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
+        return;
+    }
+
+    @rename($tmp, $cacheFile);
 }
 
 function getFolderSize($path) {

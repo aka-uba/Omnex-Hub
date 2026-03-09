@@ -192,7 +192,7 @@ $normalizedStoragePath = rtrim($normalizedStoragePath, DIRECTORY_SEPARATOR);
 
 // Filter and format media
 $validMedia = [];
-$skipValidation = $request->query('skip_validation', '0') === '1';
+$skipValidation = $request->query('skip_validation', '1') === '1';
 
 foreach ($media as &$file) {
     $filePath = $file['file_path'] ?? '';

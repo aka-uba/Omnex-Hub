@@ -14,6 +14,7 @@ export class LanguageSelector {
         this.app = app;
         this.isOpen = false;
         this.storageKey = 'omnex_language';
+        this._outsideClickHandler = null;
 
         // Available languages (nativeName = always in that language's own script)
         this.languages = [
@@ -159,12 +160,16 @@ export class LanguageSelector {
         });
 
         // Close on outside click
-        document.addEventListener('click', (e) => {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+        }
+        this._outsideClickHandler = (e) => {
             if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
                 this.isOpen = false;
                 dropdown.classList.remove('open');
             }
-        });
+        };
+        document.addEventListener('click', this._outsideClickHandler);
 
         // Handle language selection
         dropdown.querySelectorAll('.language-dropdown-item').forEach(item => {
@@ -173,6 +178,13 @@ export class LanguageSelector {
                 await this.setLanguage(langCode);
             });
         });
+    }
+
+    destroy() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+            this._outsideClickHandler = null;
+        }
     }
 }
 

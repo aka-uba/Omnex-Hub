@@ -64,7 +64,7 @@ services:
       OMNEX_DB_PASS: ${OMNEX_DB_PASS:?Database password is required}
       OMNEX_PRODUCTION: "true"
       OMNEX_JWT_SECRET: ${OMNEX_JWT_SECRET:?JWT secret is required}
-      OMNEX_ADMIN_EMAIL: ${OMNEX_ADMIN_EMAIL:-admin@example.com}
+      OMNEX_ADMIN_EMAIL: ${OMNEX_ADMIN_EMAIL:-admin@omnexcore.com}
       OMNEX_ADMIN_PASSWORD: ${OMNEX_ADMIN_PASSWORD:-}
       OMNEX_FORCE_HTTPS: ${OMNEX_FORCE_HTTPS:-false}
       OMNEX_SKIP_CSRF: ${OMNEX_SKIP_CSRF:-false}

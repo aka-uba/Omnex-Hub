@@ -20,6 +20,7 @@ export class NotificationListPage {
         this.showArchived = false;
         this.userSearchTimeout = null;
         this.userSearchResults = [];
+        this._createModalOutsideClickHandler = null;
     }
 
     /**
@@ -1199,13 +1200,17 @@ export class NotificationListPage {
         });
 
         // Close search results when clicking outside
-        document.addEventListener('click', (e) => {
+        if (this._createModalOutsideClickHandler) {
+            document.removeEventListener('click', this._createModalOutsideClickHandler);
+        }
+        this._createModalOutsideClickHandler = (e) => {
             const searchGroup = document.getElementById('user-search-group');
             const resultsEl = document.getElementById('user-search-results');
             if (searchGroup && resultsEl && !searchGroup.contains(e.target)) {
                 resultsEl.classList.add('hidden');
             }
-        });
+        };
+        document.addEventListener('click', this._createModalOutsideClickHandler);
     }
 
     /**
@@ -1423,6 +1428,10 @@ export class NotificationListPage {
      * Cleanup
      */
     destroy() {
+        if (this._createModalOutsideClickHandler) {
+            document.removeEventListener('click', this._createModalOutsideClickHandler);
+            this._createModalOutsideClickHandler = null;
+        }
         if (this.userSearchTimeout) {
             clearTimeout(this.userSearchTimeout);
         }

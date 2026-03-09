@@ -94,6 +94,7 @@ COPY database/seeds/ ./database/seeds/
 COPY database/seeders/ ./database/seeders/
 COPY tools/postgresql/ ./tools/postgresql/
 COPY web-build/ ./web-build/
+COPY deploy/scripts/docker-app-entrypoint.sh /usr/local/bin/omnex-app-entrypoint
 COPY config.php ./
 COPY index.php ./
 COPY .htaccess ./
@@ -106,7 +107,8 @@ RUN mkdir -p storage/cache storage/companies storage/avatars storage/renders \
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/storage
+    && chmod -R 775 /var/www/html/storage \
+    && chmod +x /usr/local/bin/omnex-app-entrypoint
 
 # Expose port
 EXPOSE 80
@@ -115,4 +117,4 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:80/api/health || exit 1
 
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/omnex-app-entrypoint"]

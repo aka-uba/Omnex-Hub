@@ -49,6 +49,7 @@ class PriceHistorySection {
 
         // Export Manager
         this._exportManager = null;
+        this._outsideClickHandler = null;
     }
 
     /**
@@ -274,11 +275,15 @@ class PriceHistorySection {
         });
 
         // Close dropdown on outside click
-        document.addEventListener('click', (e) => {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+        }
+        this._outsideClickHandler = (e) => {
             if (!exportDropdownWrapper?.contains(e.target)) {
                 exportDropdownWrapper?.classList.remove('active');
             }
-        });
+        };
+        document.addEventListener('click', this._outsideClickHandler);
     }
 
     /**
@@ -850,6 +855,10 @@ class PriceHistorySection {
      * Destroy - cleanup
      */
     destroy() {
+        if (this._outsideClickHandler) {
+            document.removeEventListener('click', this._outsideClickHandler);
+            this._outsideClickHandler = null;
+        }
         this._priceHistory = [];
         this._isExpanded = false;
         this._exportManager = null;

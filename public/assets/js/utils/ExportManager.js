@@ -575,9 +575,13 @@ export class ExportManager {
         });
 
         // Close on outside click
-        document.addEventListener('click', () => {
+        if (container.__exportOutsideClickHandler) {
+            document.removeEventListener('click', container.__exportOutsideClickHandler);
+        }
+        container.__exportOutsideClickHandler = () => {
             menu?.classList.remove('show');
-        });
+        };
+        document.addEventListener('click', container.__exportOutsideClickHandler);
 
         // Export item click
         container.querySelectorAll('.export-dropdown-item').forEach(item => {
@@ -587,6 +591,13 @@ export class ExportManager {
                 callback(type);
             });
         });
+
+        return () => {
+            if (container.__exportOutsideClickHandler) {
+                document.removeEventListener('click', container.__exportOutsideClickHandler);
+                container.__exportOutsideClickHandler = null;
+            }
+        };
     }
 
     // ==========================================

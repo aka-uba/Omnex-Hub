@@ -162,41 +162,95 @@ foreach ($devices as $d) {
     }
 }
 if ($hasHanshowDevices) {
-    try {
-        $hanshowSettings = $db->fetch(
-            "SELECT eslworking_url FROM hanshow_settings WHERE company_id = ? LIMIT 1",
-            [$companyId]
-        );
-        if ($hanshowSettings && !empty($hanshowSettings['eslworking_url'])) {
-            $eslUrl = rtrim($hanshowSettings['eslworking_url'], '/') . '/api2/esls?page=0&size=200';
-            $ch = curl_init($eslUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-            $eslResp = curl_exec($ch);
-            curl_close($ch);
-            $eslData = json_decode($eslResp, true);
-            $eslList = $eslData['result']['esl_list'] ?? [];
-            foreach ($eslList as $esl) {
-                $eslId = $esl['esl_id'] ?? '';
-                if (!$eslId) continue;
-                // CR2450 voltage to percentage
-                $voltage = (float)($esl['battery'] ?? 0);
-                $batteryPct = 0;
-                if ($voltage >= 3.0) $batteryPct = 100;
-                elseif ($voltage >= 2.8) $batteryPct = 70 + ($voltage - 2.8) / 0.2 * 30;
-                elseif ($voltage >= 2.6) $batteryPct = 40 + ($voltage - 2.6) / 0.2 * 30;
-                elseif ($voltage >= 2.4) $batteryPct = 15 + ($voltage - 2.4) / 0.2 * 25;
-                elseif ($voltage >= 2.0) $batteryPct = ($voltage - 2.0) / 0.4 * 15;
+    $cacheDir = STORAGE_PATH . '/cache/api';
+    if (!is_dir($cacheDir)) {
+        @mkdir($cacheDir, 0755, true);
+    }
 
-                $hanshowBatteryMap[$eslId] = [
-                    'battery_level' => (int)round($batteryPct),
-                    'battery_voltage' => $voltage,
-                    'esl_status' => (int)$esl['status'] === 1 ? 'online' : 'offline'
-                ];
+    $cacheCompanyKey = preg_replace('/[^a-zA-Z0-9_-]/', '_', (string)$companyId);
+    $hanshowCacheFile = $cacheDir . '/hanshow_esl_status_' . $cacheCompanyKey . '.json';
+    $hanshowCacheTtlSec = 30;
+
+    $loadHanshowCache = static function(string $cacheFile): array {
+        if (!is_file($cacheFile)) {
+            return [];
+        }
+        $raw = @file_get_contents($cacheFile);
+        if ($raw === false || $raw === '') {
+            return [];
+        }
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded) || !isset($decoded['map']) || !is_array($decoded['map'])) {
+            return [];
+        }
+        return $decoded['map'];
+    };
+
+    $saveHanshowCache = static function(string $cacheFile, array $map): void {
+        if (empty($map)) {
+            return;
+        }
+        $payload = json_encode([
+            'generated_at' => time(),
+            'map' => $map
+        ], JSON_UNESCAPED_UNICODE);
+        if ($payload !== false) {
+            @file_put_contents($cacheFile, $payload, LOCK_EX);
+        }
+    };
+
+    $cacheIsFresh = is_file($hanshowCacheFile) && ((time() - (int)@filemtime($hanshowCacheFile)) <= $hanshowCacheTtlSec);
+    if ($cacheIsFresh) {
+        $hanshowBatteryMap = $loadHanshowCache($hanshowCacheFile);
+    }
+
+    $fetchedFromRemote = false;
+    try {
+        if (empty($hanshowBatteryMap)) {
+            $hanshowSettings = $db->fetch(
+                "SELECT eslworking_url FROM hanshow_settings WHERE company_id = ? LIMIT 1",
+                [$companyId]
+            );
+            if ($hanshowSettings && !empty($hanshowSettings['eslworking_url'])) {
+                $eslUrl = rtrim($hanshowSettings['eslworking_url'], '/') . '/api2/esls?page=0&size=200';
+                $ch = curl_init($eslUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+                $eslResp = curl_exec($ch);
+                curl_close($ch);
+                $eslData = json_decode($eslResp, true);
+                $eslList = $eslData['result']['esl_list'] ?? [];
+                foreach ($eslList as $esl) {
+                    $eslId = $esl['esl_id'] ?? '';
+                    if (!$eslId) continue;
+                    // CR2450 voltage to percentage
+                    $voltage = (float)($esl['battery'] ?? 0);
+                    $batteryPct = 0;
+                    if ($voltage >= 3.0) $batteryPct = 100;
+                    elseif ($voltage >= 2.8) $batteryPct = 70 + ($voltage - 2.8) / 0.2 * 30;
+                    elseif ($voltage >= 2.6) $batteryPct = 40 + ($voltage - 2.6) / 0.2 * 30;
+                    elseif ($voltage >= 2.4) $batteryPct = 15 + ($voltage - 2.4) / 0.2 * 25;
+                    elseif ($voltage >= 2.0) $batteryPct = ($voltage - 2.0) / 0.4 * 15;
+
+                    $hanshowBatteryMap[$eslId] = [
+                        'battery_level' => (int)round($batteryPct),
+                        'battery_voltage' => $voltage,
+                        'esl_status' => (int)$esl['status'] === 1 ? 'online' : 'offline'
+                    ];
+                }
+                $fetchedFromRemote = true;
             }
         }
     } catch (\Exception $e) {
         // ESL-Working unreachable - skip enrichment
+    }
+
+    if ($fetchedFromRemote) {
+        $saveHanshowCache($hanshowCacheFile, $hanshowBatteryMap);
+    } elseif (empty($hanshowBatteryMap)) {
+        // Fallback to stale cache if remote fetch failed.
+        $hanshowBatteryMap = $loadHanshowCache($hanshowCacheFile);
     }
 }
 

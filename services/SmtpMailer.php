@@ -58,6 +58,20 @@ class SmtpMailer
         }
 
         try {
+            // 1) Preferred source: integration_settings via SettingsResolver (system/company hierarchy)
+            if (class_exists('SettingsResolver')) {
+                $resolver = new SettingsResolver();
+                $companyId = Auth::getActiveCompanyId();
+                $effective = $resolver->getEffectiveSettings('smtp', $companyId);
+                $normalized = self::normalizeConfig($effective['settings'] ?? []);
+                $enabled = array_key_exists('enabled', $normalized) ? (bool)$normalized['enabled'] : true;
+
+                if ($enabled && !empty($normalized['smtp_host']) && !empty($normalized['smtp_from_email'])) {
+                    self::$cachedConfig = $normalized;
+                    return self::$cachedConfig;
+                }
+            }
+
             $db = Database::getInstance();
             $row = null;
 
@@ -91,14 +105,54 @@ class SmtpMailer
             }
 
             if ($row && !empty($row['data'])) {
-                self::$cachedConfig = json_decode($row['data'], true) ?: [];
+                self::$cachedConfig = self::normalizeConfig(json_decode($row['data'], true) ?: []);
                 return self::$cachedConfig;
             }
         } catch (Exception $e) {
             Logger::error('SmtpMailer: Failed to load config', ['error' => $e->getMessage()]);
         }
 
+        // 3) Env fallback (deployment-friendly)
+        $envConfig = [
+            'smtp_host' => getenv('OMNEX_SMTP_HOST') ?: getenv('SMTP_HOST') ?: '',
+            'smtp_port' => getenv('OMNEX_SMTP_PORT') ?: getenv('SMTP_PORT') ?: 587,
+            'smtp_username' => getenv('OMNEX_SMTP_USERNAME') ?: getenv('SMTP_USERNAME') ?: '',
+            'smtp_password' => getenv('OMNEX_SMTP_PASSWORD') ?: getenv('SMTP_PASSWORD') ?: '',
+            'smtp_encryption' => getenv('OMNEX_SMTP_ENCRYPTION') ?: getenv('SMTP_ENCRYPTION') ?: 'tls',
+            'smtp_from_name' => getenv('OMNEX_SMTP_FROM_NAME') ?: getenv('SMTP_FROM_NAME') ?: 'Omnex Display Hub',
+            'smtp_from_email' => getenv('OMNEX_SMTP_FROM_EMAIL') ?: getenv('SMTP_FROM_EMAIL') ?: '',
+            'enabled' => getenv('OMNEX_SMTP_ENABLED') !== false ? filter_var(getenv('OMNEX_SMTP_ENABLED'), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE) : true,
+        ];
+        $envConfig = self::normalizeConfig($envConfig);
+        $enabled = array_key_exists('enabled', $envConfig) ? (bool)$envConfig['enabled'] : true;
+        if ($enabled && !empty($envConfig['smtp_host']) && !empty($envConfig['smtp_from_email'])) {
+            self::$cachedConfig = $envConfig;
+            return self::$cachedConfig;
+        }
+
         return null;
+    }
+
+    /**
+     * Normalize mixed SMTP config keys from legacy/settings resolver/env sources.
+     */
+    private static function normalizeConfig(array $raw): array
+    {
+        $norm = [
+            'smtp_host' => (string)($raw['smtp_host'] ?? $raw['host'] ?? ''),
+            'smtp_port' => (int)($raw['smtp_port'] ?? $raw['port'] ?? 587),
+            'smtp_username' => (string)($raw['smtp_username'] ?? $raw['username'] ?? ''),
+            'smtp_password' => (string)($raw['smtp_password'] ?? $raw['password'] ?? ''),
+            'smtp_encryption' => (string)($raw['smtp_encryption'] ?? $raw['encryption'] ?? 'tls'),
+            'smtp_from_name' => (string)($raw['smtp_from_name'] ?? $raw['from_name'] ?? 'Omnex Display Hub'),
+            'smtp_from_email' => (string)($raw['smtp_from_email'] ?? $raw['from_email'] ?? ''),
+        ];
+
+        if (array_key_exists('enabled', $raw)) {
+            $norm['enabled'] = (bool)$raw['enabled'];
+        }
+
+        return $norm;
     }
 
     /**
@@ -138,9 +192,22 @@ class SmtpMailer
                 $prefix = 'ssl://';
             }
 
-            $socket = @fsockopen($prefix . $this->host, $this->port, $errno, $errstr, $this->timeout);
+            $socketWarning = null;
+            set_error_handler(function ($severity, $message) use (&$socketWarning) {
+                $socketWarning = $message;
+                return true;
+            });
+            try {
+                $socket = fsockopen($prefix . $this->host, $this->port, $errno, $errstr, $this->timeout);
+            } finally {
+                restore_error_handler();
+            }
             if (!$socket) {
-                Logger::error('SmtpMailer: Connection failed', ['host' => $this->host, 'error' => "$errstr ($errno)"]);
+                Logger::error('SmtpMailer: Connection failed', [
+                    'host' => $this->host,
+                    'error' => "$errstr ($errno)",
+                    'warning' => $socketWarning
+                ]);
                 return false;
             }
 
@@ -148,25 +215,34 @@ class SmtpMailer
 
             // Read greeting
             $greeting = fgets($socket, 515);
-            if (substr($greeting, 0, 3) !== '220') {
+            if (!is_string($greeting) || substr($greeting, 0, 3) !== '220') {
                 fclose($socket);
-                Logger::error('SmtpMailer: Bad greeting', ['response' => trim($greeting)]);
+                Logger::error('SmtpMailer: Bad greeting', ['response' => is_string($greeting) ? trim($greeting) : null]);
                 return false;
             }
 
             // EHLO
             fwrite($socket, "EHLO localhost\r\n");
-            while ($line = fgets($socket, 515)) {
-                if (substr($line, 3, 1) === ' ') break;
+            $ehloComplete = false;
+            while (($line = fgets($socket, 515)) !== false) {
+                if (substr($line, 3, 1) === ' ') {
+                    $ehloComplete = true;
+                    break;
+                }
+            }
+            if (!$ehloComplete) {
+                fclose($socket);
+                Logger::error('SmtpMailer: EHLO failed (no completion response)');
+                return false;
             }
 
             // STARTTLS
             if ($this->encryption === 'tls') {
                 fwrite($socket, "STARTTLS\r\n");
                 $tlsResponse = fgets($socket, 515);
-                if (substr($tlsResponse, 0, 3) !== '220') {
+                if (!is_string($tlsResponse) || substr($tlsResponse, 0, 3) !== '220') {
                     fclose($socket);
-                    Logger::error('SmtpMailer: STARTTLS failed', ['response' => trim($tlsResponse)]);
+                    Logger::error('SmtpMailer: STARTTLS failed', ['response' => is_string($tlsResponse) ? trim($tlsResponse) : null]);
                     return false;
                 }
 
@@ -179,8 +255,17 @@ class SmtpMailer
 
                 // EHLO again after TLS
                 fwrite($socket, "EHLO localhost\r\n");
-                while ($line = fgets($socket, 515)) {
-                    if (substr($line, 3, 1) === ' ') break;
+                $ehloTlsComplete = false;
+                while (($line = fgets($socket, 515)) !== false) {
+                    if (substr($line, 3, 1) === ' ') {
+                        $ehloTlsComplete = true;
+                        break;
+                    }
+                }
+                if (!$ehloTlsComplete) {
+                    fclose($socket);
+                    Logger::error('SmtpMailer: EHLO after TLS failed (no completion response)');
+                    return false;
                 }
             }
 
@@ -189,47 +274,55 @@ class SmtpMailer
                 fwrite($socket, "AUTH LOGIN\r\n");
                 $authResponse = fgets($socket, 515);
 
-                if (substr($authResponse, 0, 3) === '334') {
+                if (is_string($authResponse) && substr($authResponse, 0, 3) === '334') {
                     fwrite($socket, base64_encode($this->username) . "\r\n");
                     $userResponse = fgets($socket, 515);
 
-                    if (substr($userResponse, 0, 3) === '334') {
+                    if (is_string($userResponse) && substr($userResponse, 0, 3) === '334') {
                         fwrite($socket, base64_encode($this->password) . "\r\n");
                         $passResponse = fgets($socket, 515);
 
-                        if (substr($passResponse, 0, 3) !== '235') {
+                        if (!is_string($passResponse) || substr($passResponse, 0, 3) !== '235') {
                             fclose($socket);
-                            Logger::error('SmtpMailer: Auth failed', ['response' => trim($passResponse)]);
+                            Logger::error('SmtpMailer: Auth failed', ['response' => is_string($passResponse) ? trim($passResponse) : null]);
                             return false;
                         }
+                    } else {
+                        fclose($socket);
+                        Logger::error('SmtpMailer: Username step failed', ['response' => is_string($userResponse) ? trim($userResponse) : null]);
+                        return false;
                     }
+                } else {
+                    fclose($socket);
+                    Logger::error('SmtpMailer: AUTH LOGIN rejected', ['response' => is_string($authResponse) ? trim($authResponse) : null]);
+                    return false;
                 }
             }
 
             // MAIL FROM
             fwrite($socket, "MAIL FROM:<{$this->fromEmail}>\r\n");
             $mailFromResponse = fgets($socket, 515);
-            if (substr($mailFromResponse, 0, 3) !== '250') {
+            if (!is_string($mailFromResponse) || substr($mailFromResponse, 0, 3) !== '250') {
                 fclose($socket);
-                Logger::error('SmtpMailer: MAIL FROM failed', ['response' => trim($mailFromResponse)]);
+                Logger::error('SmtpMailer: MAIL FROM failed', ['response' => is_string($mailFromResponse) ? trim($mailFromResponse) : null]);
                 return false;
             }
 
             // RCPT TO
             fwrite($socket, "RCPT TO:<$toEmail>\r\n");
             $rcptToResponse = fgets($socket, 515);
-            if (substr($rcptToResponse, 0, 3) !== '250' && substr($rcptToResponse, 0, 3) !== '251') {
+            if (!is_string($rcptToResponse) || (substr($rcptToResponse, 0, 3) !== '250' && substr($rcptToResponse, 0, 3) !== '251')) {
                 fclose($socket);
-                Logger::error('SmtpMailer: RCPT TO failed', ['response' => trim($rcptToResponse)]);
+                Logger::error('SmtpMailer: RCPT TO failed', ['response' => is_string($rcptToResponse) ? trim($rcptToResponse) : null]);
                 return false;
             }
 
             // DATA
             fwrite($socket, "DATA\r\n");
             $dataResponse = fgets($socket, 515);
-            if (substr($dataResponse, 0, 3) !== '354') {
+            if (!is_string($dataResponse) || substr($dataResponse, 0, 3) !== '354') {
                 fclose($socket);
-                Logger::error('SmtpMailer: DATA failed', ['response' => trim($dataResponse)]);
+                Logger::error('SmtpMailer: DATA failed', ['response' => is_string($dataResponse) ? trim($dataResponse) : null]);
                 return false;
             }
 
@@ -267,15 +360,15 @@ class SmtpMailer
             fwrite($socket, "QUIT\r\n");
             fclose($socket);
 
-            if (substr($sendResponse, 0, 3) !== '250') {
-                Logger::error('SmtpMailer: Send failed', ['response' => trim($sendResponse)]);
+            if (!is_string($sendResponse) || substr($sendResponse, 0, 3) !== '250') {
+                Logger::error('SmtpMailer: Send failed', ['response' => is_string($sendResponse) ? trim($sendResponse) : null]);
                 return false;
             }
 
             Logger::info('SmtpMailer: Email sent', ['to' => $toEmail, 'subject' => $subject]);
             return true;
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             Logger::error('SmtpMailer: Exception', ['error' => $e->getMessage(), 'to' => $toEmail]);
             return false;
         }

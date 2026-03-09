@@ -371,6 +371,35 @@ export class SystemStatusPage {
     }
 
     /**
+     * Update quick stat cards from lightweight live payload.
+     * Keeps disk value unchanged to avoid expensive disk scans on each 3s poll.
+     */
+    renderQuickStatsFromLive(liveQuick) {
+        if (!liveQuick) return;
+
+        const uptimeEl = document.getElementById('uptime-value');
+        if (uptimeEl && liveQuick?.uptime?.formatted) {
+            uptimeEl.textContent = liveQuick.uptime.formatted;
+        }
+
+        const cpuValue = liveQuick?.cpu?.usage_percent !== null && liveQuick?.cpu?.usage_percent !== undefined
+            ? `${liveQuick.cpu.usage_percent}%`
+            : (liveQuick?.cpu?.load_average ? `${liveQuick.cpu.load_average['1min']}` : null);
+        const cpuEl = document.getElementById('cpu-value');
+        if (cpuEl && cpuValue !== null) {
+            cpuEl.textContent = cpuValue;
+        }
+
+        const memoryEl = document.getElementById('memory-value');
+        if (memoryEl && liveQuick?.memory?.usage_percent !== undefined) {
+            memoryEl.textContent = `${liveQuick.memory.usage_percent || 0}%`;
+        }
+
+        this.updateStatCardColor('stat-cpu', liveQuick?.cpu?.usage_percent || 0);
+        this.updateStatCardColor('stat-memory', liveQuick?.memory?.usage_percent || 0);
+    }
+
+    /**
      * Update stat card color based on value
      */
     updateStatCardColor(cardId, value) {
@@ -798,6 +827,7 @@ export class SystemStatusPage {
 
             if (response.success && response.data?.api_stats?.live) {
                 this.renderLiveApiMetrics(response.data.api_stats.live);
+                this.renderQuickStatsFromLive(response.data?.quick_stats);
             }
         } catch (error) {
             // Silent fail for live metrics - don't interrupt user
