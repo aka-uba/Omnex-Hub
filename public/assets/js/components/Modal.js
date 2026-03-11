@@ -120,13 +120,13 @@ export class Modal {
                         </button>
                     `;
                 }
-                if (showConfirm && onConfirm) {
+                if (showConfirm && onConfirm && confirmText != null) {
                     footerContent += `
                         <button type="button" class="btn ${confirmClass}" data-modal-confirm>
                             ${confirmText}
                         </button>
                     `;
-                } else if (showConfirm && !onConfirm) {
+                } else if (showConfirm && !onConfirm && confirmText != null) {
                     // Sadece kapat butonu goster (onConfirm yok ama showConfirm true)
                     footerContent += `
                         <button type="button" class="btn ${confirmClass}" data-modal-close>
