@@ -140,6 +140,13 @@ export class DataTable {
             Logger.error('DataTable: Container not found');
             return;
         }
+
+        // Auto-destroy previous DataTable instance on same container
+        if (this.container._dataTableInstance && this.container._dataTableInstance !== this) {
+            this.container._dataTableInstance.destroy();
+        }
+        this.container._dataTableInstance = this;
+
         this.render();
         this.bindEvents();
 
@@ -867,6 +874,12 @@ export class DataTable {
         if (!this.container) return;
 
         this._unbindGlobalListeners();
+
+        // Remove previous container click handler to prevent listener accumulation
+        if (this._containerClickHandler) {
+            this.container.removeEventListener('click', this._containerClickHandler);
+            this._containerClickHandler = null;
+        }
 
         // Search
         const searchInput = this.container.querySelector('[data-table-search]');
@@ -1842,6 +1855,9 @@ export class DataTable {
             if (this._containerClickHandler) {
                 this.container.removeEventListener('click', this._containerClickHandler);
                 this._containerClickHandler = null;
+            }
+            if (this.container._dataTableInstance === this) {
+                this.container._dataTableInstance = null;
             }
             this.container.innerHTML = '';
         }
