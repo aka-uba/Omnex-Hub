@@ -55,7 +55,7 @@ export function waitForFabric(timeout = 15000) {
         const existingScript = document.querySelector('script[src*="fabric"]');
         if (!existingScript) {
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/fabric@7.1.0/dist/index.min.js';
+            script.src = 'assets/vendor/fabric/fabric.min.js';
             script.async = true;
             document.head.appendChild(script);
         }
