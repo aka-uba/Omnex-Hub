@@ -3458,19 +3458,20 @@ export class IntegrationSettingsPage {
         setVal('mqtt-report-server-url', reportUrlToUse);
         setVal('mqtt-status', settings.status);
 
-        // Broker URL: DB'deki adres farkli bir LAN/ortam ise uyari goster
+        // Broker URL: Sadece localhost/127.0.0.1 gibi kesinlikle yanlis degerleri duzelt.
+        // Kullanici IP adresi veya farkli domain girdiyse dokunma (cihaz IP ile baglanabilir).
         const currentHostname = window.location.hostname;
         const dbBrokerUrl = settings.broker_url || '';
-        if (dbBrokerUrl && dbBrokerUrl !== currentHostname && dbBrokerUrl !== 'localhost' && dbBrokerUrl !== '127.0.0.1') {
-            const isCurrentLocal = (currentHostname === 'localhost' || currentHostname === '127.0.0.1');
-            if (!isCurrentLocal && dbBrokerUrl !== currentHostname) {
-                // Sunucuda acildi ama broker eski IP'ye isaret ediyor
-                const el = document.getElementById('mqtt-broker-url');
-                if (el) {
-                    el.value = currentHostname;
-                    el.style.borderColor = 'var(--color-warning)';
-                    el.title = `${this.__('integrations.mqtt.brokerUrlAutoUpdated') || 'Otomatik guncellendi'}: ${dbBrokerUrl} → ${currentHostname}`;
-                }
+        const isCurrentLocal = (currentHostname === 'localhost' || currentHostname === '127.0.0.1');
+        const isDbLocal = (dbBrokerUrl === 'localhost' || dbBrokerUrl === '127.0.0.1');
+
+        if (!isCurrentLocal && isDbLocal) {
+            // Sunucuda acildi ama DB'de localhost var - otomatik duzelt
+            const el = document.getElementById('mqtt-broker-url');
+            if (el) {
+                el.value = currentHostname;
+                el.style.borderColor = 'var(--color-warning)';
+                el.title = `${this.__('integrations.mqtt.brokerUrlAutoUpdated') || 'Otomatik guncellendi'}: ${dbBrokerUrl} → ${currentHostname}`;
             }
         }
 

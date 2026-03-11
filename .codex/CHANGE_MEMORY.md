@@ -1704,3 +1704,14 @@ Format:
   - `node --check FabricExports.js` pass; CDN fabric grep: 0 match; lokal versiyon: 7.1.0
 - Risk/Follow-up:
   - Fabric güncelleme: `curl -sL "https://cdn.jsdelivr.net/npm/fabric@X.Y.Z/dist/index.min.js" -o public/assets/vendor/fabric/fabric.min.js`
+
+## 2026-03-12 - MQTT Broker URL override fix (IP → domain dönüşüm sorunu)
+- Request: Admin panelde MQTT Broker URL alanına IP adresi girildiğinde sayfa yenilenince otomatik domain'e dönüşüyordu.
+- Root cause: `_populateMqttForm()` satır 3464-3470, DB'deki broker_url mevcut hostname'den farklıysa otomatik `window.location.hostname` ile değiştiriyordu. Cihaz DNS çözemiyorsa IP ile bağlanması gerektiğinden bu yanlış.
+- Changes:
+  - `public/assets/js/pages/settings/IntegrationSettings.js` — Broker URL override mantığı değiştirildi: Artık sadece `localhost`/`127.0.0.1` gibi kesinlikle yanlış değerler otomatik düzeltilir. IP adresi veya farklı domain girilmişse dokunulmaz.
+- Checks:
+  - JS module syntax: OK (node vm.createScript)
+- Risk/Follow-up:
+  - Sunucuda rebuild gerekli: `docker compose build app && docker compose up -d app && docker compose restart nginx`
+  - Cihaz Bluetooth ile tekrar yapılandırılmalı (sunucu üzerinden, doğru IP/URL ile)
