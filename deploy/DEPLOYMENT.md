@@ -39,8 +39,8 @@ This script will:
 - Create `deploy` user with Docker access
 - Create `/opt/omnex-hub` and `/opt/omnex-backups` directories
 - Create shared Docker network `omnex-proxy` (for multi-project)
-- Harden SSH (port 2222, key-only auth)
-- Configure UFW firewall (80, 443, 2222)
+- Harden SSH (port 2299, key-only auth, AllowUsers: deploy + camlicayazilim)
+- Configure UFW firewall (22 transition, 2299, 80, 443)
 - Set up Fail2Ban
 - Apply kernel security parameters
 - Create 4GB swap
@@ -48,16 +48,21 @@ This script will:
 ### 1.2 SSH Key Setup
 
 ```bash
-# Add your SSH public key for the deploy user
-echo 'ssh-rsa YOUR_PUBLIC_KEY' >> /home/deploy/.ssh/authorized_keys
+# Add SSH public keys for BOTH allowed users
+echo 'ssh-ed25519 YOUR_DEPLOY_KEY' >> /home/deploy/.ssh/authorized_keys
 chown deploy:deploy /home/deploy/.ssh/authorized_keys
 chmod 600 /home/deploy/.ssh/authorized_keys
 
-# Restart SSH and test new port
-systemctl restart sshd
-ssh -p 2222 deploy@YOUR_SERVER_IP
+echo 'ssh-ed25519 YOUR_CAMLICA_KEY' >> /home/camlicayazilim/.ssh/authorized_keys
+chown camlicayazilim:camlicayazilim /home/camlicayazilim/.ssh/authorized_keys
+chmod 600 /home/camlicayazilim/.ssh/authorized_keys
 
-# Once confirmed, remove old SSH port
+# Restart SSH and test new port for BOTH users
+systemctl restart sshd
+ssh -p 2299 -i ~/.ssh/key deploy@YOUR_SERVER_IP
+ssh -p 2299 -i ~/.ssh/key camlicayazilim@YOUR_SERVER_IP
+
+# Once BOTH users confirmed on port 2299, remove old SSH port
 ufw delete allow 22/tcp
 ```
 
@@ -71,7 +76,7 @@ Go to your GitHub repository > Settings > Secrets and variables > Actions, and a
 |--------|-------|
 | `SERVER_HOST` | Your server IP address |
 | `SSH_PRIVATE_KEY` | Contents of deploy user's private key |
-| `SSH_PORT` | `2222` |
+| `SSH_PORT` | `2299` |
 
 ### Generate SSH key pair for deploy:
 
@@ -505,8 +510,8 @@ bash deploy/scripts/02-deploy-app.sh
 
 ### Security Features
 
-- SSH: Key-only auth, port 2222, max 3 retries
-- Firewall: UFW deny-all + allow 80/443/2222
+- SSH: Key-only auth, port 2299, max 3 retries
+- Firewall: UFW deny-all + allow 80/443/2299
 - Fail2Ban: SSH + Nginx brute force protection
 - Nginx/Traefik: Rate limiting, security headers, HSTS
 - App: OPcache, error hiding, CSRF/XSS protection

@@ -97,7 +97,7 @@ cp "$SSH_CONFIG" "${SSH_CONFIG}.backup.$(date +%Y%m%d)"
 # Custom SSH config
 cat > /etc/ssh/sshd_config.d/omnex-hardening.conf <<'SSHEOF'
 # Omnex SSH Hardening
-Port 2222
+Port 2299
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -107,22 +107,25 @@ ClientAliveInterval 300
 ClientAliveCountMax 2
 X11Forwarding no
 AllowTcpForwarding no
-AllowUsers deploy
+AllowUsers deploy camlicayazilim
 SSHEOF
 
-warn "SSH port will change to 2222. Make sure you add your SSH key to /home/deploy/.ssh/authorized_keys BEFORE restarting SSH!"
-warn "Run: echo 'YOUR_PUBLIC_KEY' >> /home/deploy/.ssh/authorized_keys"
+warn "SSH port will change to 2299. Make sure you add SSH keys BEFORE restarting SSH!"
+warn "Required for BOTH users:"
+warn "  echo 'YOUR_KEY' >> /home/deploy/.ssh/authorized_keys"
+warn "  echo 'YOUR_KEY' >> /home/camlicayazilim/.ssh/authorized_keys"
+warn "PasswordAuthentication is DISABLED - key-based auth only!"
 
 # ---- UFW Firewall ----
 log "Configuring UFW firewall..."
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow 22/tcp comment 'SSH (temporary, remove after 2222 confirmed)'
-ufw allow 2222/tcp comment 'SSH (new port)'
+ufw allow 22/tcp comment 'SSH (keep during transition, remove after 2299 confirmed)'
+ufw allow 2299/tcp comment 'SSH (hardened port)'
 ufw allow 80/tcp comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
 echo "y" | ufw enable
-log "UFW enabled: ports 22, 2222, 80, 443 open"
+log "UFW enabled: ports 22 (transition), 2299, 80, 443 open"
 
 # ---- Fail2Ban ----
 log "Configuring Fail2Ban..."
@@ -135,7 +138,7 @@ backend = systemd
 
 [sshd]
 enabled = true
-port = 2222
+port = 22,2299
 maxretry = 3
 bantime = 7200
 
@@ -230,16 +233,21 @@ echo "  Initial setup complete!"
 echo "================================================"
 echo ""
 echo "Next steps:"
-echo "  1. Add your SSH public key:"
-echo "     echo 'YOUR_KEY' >> /home/deploy/.ssh/authorized_keys"
+echo "  1. Add SSH public keys for BOTH users:"
+echo "     echo 'DEPLOY_KEY' >> /home/deploy/.ssh/authorized_keys"
 echo "     chown deploy:deploy /home/deploy/.ssh/authorized_keys"
 echo "     chmod 600 /home/deploy/.ssh/authorized_keys"
 echo ""
-echo "  2. Test SSH on new port before restarting:"
-echo "     systemctl restart sshd"
-echo "     ssh -p 2222 deploy@$(hostname -I | awk '{print $1}')"
+echo "     echo 'CAMLICA_KEY' >> /home/camlicayazilim/.ssh/authorized_keys"
+echo "     chown camlicayazilim:camlicayazilim /home/camlicayazilim/.ssh/authorized_keys"
+echo "     chmod 600 /home/camlicayazilim/.ssh/authorized_keys"
 echo ""
-echo "  3. Once confirmed, remove old SSH port:"
+echo "  2. Test SSH on new port BEFORE restarting SSH:"
+echo "     systemctl restart sshd"
+echo "     ssh -p 2299 -i ~/.ssh/key deploy@\$(hostname -I | awk '{print \$1}')"
+echo "     ssh -p 2299 -i ~/.ssh/key camlicayazilim@\$(hostname -I | awk '{print \$1}')"
+echo ""
+echo "  3. Once BOTH users confirmed on port 2299, remove old SSH port:"
 echo "     ufw delete allow 22/tcp"
 echo ""
 echo "  4. Clone the repo and run 02-deploy-app.sh"
