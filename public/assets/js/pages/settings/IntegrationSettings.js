@@ -3440,9 +3440,39 @@ export class IntegrationSettingsPage {
         setVal('mqtt-provider', settings.provider);
         setVal('mqtt-app-id', settings.app_id);
         setValSkipMasked('mqtt-app-secret', settings.app_secret);
-        setVal('mqtt-content-server-url', settings.content_server_url);
-        setVal('mqtt-report-server-url', settings.report_server_url);
+
+        // Content/Report URL'leri: Mevcut origin'den dinamik olustur
+        // DB'deki eski deger farkli bir host'a isaret ediyorsa guncel origin ile degistir
+        const basePath = window.OmnexConfig?.basePath || '';
+        const origin = window.location.origin;
+        const currentContentUrl = `${origin}${basePath}/api/esl/mqtt/content`;
+        const currentReportUrl = `${origin}${basePath}/api/esl/mqtt/report`;
+
+        // DB'deki URL farkli bir host iceriyorsa mevcut sunucunun URL'ini kullan
+        const dbContentUrl = settings.content_server_url || '';
+        const dbReportUrl = settings.report_server_url || '';
+        const contentUrlToUse = this._shouldUseCurrentOriginUrl(dbContentUrl, currentContentUrl) ? currentContentUrl : dbContentUrl;
+        const reportUrlToUse = this._shouldUseCurrentOriginUrl(dbReportUrl, currentReportUrl) ? currentReportUrl : dbReportUrl;
+
+        setVal('mqtt-content-server-url', contentUrlToUse);
+        setVal('mqtt-report-server-url', reportUrlToUse);
         setVal('mqtt-status', settings.status);
+
+        // Broker URL: DB'deki adres farkli bir LAN/ortam ise uyari goster
+        const currentHostname = window.location.hostname;
+        const dbBrokerUrl = settings.broker_url || '';
+        if (dbBrokerUrl && dbBrokerUrl !== currentHostname && dbBrokerUrl !== 'localhost' && dbBrokerUrl !== '127.0.0.1') {
+            const isCurrentLocal = (currentHostname === 'localhost' || currentHostname === '127.0.0.1');
+            if (!isCurrentLocal && dbBrokerUrl !== currentHostname) {
+                // Sunucuda acildi ama broker eski IP'ye isaret ediyor
+                const el = document.getElementById('mqtt-broker-url');
+                if (el) {
+                    el.value = currentHostname;
+                    el.style.borderColor = 'var(--color-warning)';
+                    el.title = `${this.__('integrations.mqtt.brokerUrlAutoUpdated') || 'Otomatik guncellendi'}: ${dbBrokerUrl} → ${currentHostname}`;
+                }
+            }
+        }
 
         const tlsCheckbox = document.getElementById('mqtt-use-tls');
         if (tlsCheckbox) tlsCheckbox.checked = !!settings.use_tls;
@@ -3459,6 +3489,25 @@ export class IntegrationSettingsPage {
         const lastConnected = document.getElementById('mqtt-last-connected');
         if (lastConnected && settings.last_connected) {
             lastConnected.textContent = new Date(settings.last_connected).toLocaleString();
+        }
+    }
+
+    /**
+     * DB'deki URL farkli bir host'a isaret ediyorsa true doner.
+     * Ornek: DB'de 192.168.1.23, mevcut sunucu hub.omnexcore.com -> true (guncelle)
+     * DB'de hub.omnexcore.com, mevcut sunucu hub.omnexcore.com -> false (ayni, degistirme)
+     */
+    _shouldUseCurrentOriginUrl(dbUrl, currentUrl) {
+        if (!dbUrl) return true; // DB'de yok, mevcut origin kullan
+        try {
+            const dbHost = new URL(dbUrl).hostname;
+            const currentHost = new URL(currentUrl).hostname;
+            // Ayni host ise degistirme (kullanici ozel path yazmis olabilir)
+            if (dbHost === currentHost) return false;
+            // Farkli host: mevcut origin'i kullan
+            return true;
+        } catch {
+            return true; // URL parse edilemezse guncel origin kullan
         }
     }
 
