@@ -285,7 +285,7 @@ CREATE INDEX IF NOT EXISTS "idx_web_templates_slug" ON "signage"."web_templates"
 CREATE INDEX IF NOT EXISTS "idx_web_templates_status" ON "signage"."web_templates" ("status");
 CREATE INDEX IF NOT EXISTS "idx_web_templates_type" ON "signage"."web_templates" ("template_type");
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_bundle_items_unique" ON "catalog"."bundle_items" ("bundle_id", "product_id");
-CREATE UNIQUE INDEX IF NOT EXISTS "idx_dca_one_active_playlist_per_device" ON "devices"."device_content_assignments" ("device_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_dca_one_active_playlist_per_device" ON "devices"."device_content_assignments" ("device_id") WHERE status = 'active';
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_devices_stream_token" ON "devices"."devices" ("stream_token") WHERE stream_token IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_permissions_role_resource" ON "core"."permissions" ("role", "resource");
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_products_company_sku" ON "catalog"."products" ("company_id", "sku");

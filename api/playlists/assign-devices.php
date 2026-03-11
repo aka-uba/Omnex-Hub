@@ -69,25 +69,23 @@ if (!empty($deviceIds)) {
 try {
     $db->beginTransaction();
 
-    // Enforce single active playlist per device:
-    // - clear this playlist assignments
-    // - clear selected devices from any other active playlist assignments
-    $deactivateSql = "
-        UPDATE device_content_assignments
-        SET status = 'inactive'
-        WHERE content_type = 'playlist'
-          AND status = 'active'
-          AND (content_id = ?
+    // Enforce single active assignment per device:
+    // The unique index on device_id covers ALL rows (not just active),
+    // so we must DELETE old rows before inserting new ones.
+    // - delete this playlist's assignments
+    // - delete ALL assignments for selected devices (regardless of content_type)
+    $deleteSql = "
+        DELETE FROM device_content_assignments
+        WHERE (content_id = ? AND content_type = 'playlist')
     ";
-    $deactivateParams = [$playlistId];
+    $deleteParams = [$playlistId];
 
     if (!empty($deviceIds)) {
         $placeholders = implode(',', array_fill(0, count($deviceIds), '?'));
-        $deactivateSql .= " OR device_id IN ($placeholders)";
-        $deactivateParams = array_merge($deactivateParams, $deviceIds);
+        $deleteSql .= " OR device_id IN ($placeholders)";
+        $deleteParams = array_merge($deleteParams, $deviceIds);
     }
-    $deactivateSql .= ")";
-    $db->query($deactivateSql, $deactivateParams);
+    $db->query($deleteSql, $deleteParams);
 
     // Create active assignments for selected devices
     $created = 0;
