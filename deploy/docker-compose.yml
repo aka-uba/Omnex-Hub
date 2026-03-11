@@ -66,7 +66,7 @@ services:
       - "${MQTT_PORT:-1883}:1883"
       - "${MQTT_WS_PORT:-9001}:9001"
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -u ${MQTT_SERVER_USER:-omnex_server} -P ${MQTT_SERVER_PASS:-omnex_mqtt_2026} -t '$$SYS/broker/version' -C 1 -W 3 || exit 1"]
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -u ${MQTT_SERVER_USER:-omnex_server} -P ${MQTT_SERVER_PASS:-omnex_mqtt_2026} -t 'omnex/healthcheck' -m 'ping' -q 0 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

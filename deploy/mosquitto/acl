@@ -5,6 +5,7 @@
 # ---- omnex_server: Full access (app container) ----
 user omnex_server
 topic readwrite #
+topic read $SYS/#
 
 # ---- omnex_device: Device access pattern ----
 # Devices can only access their own topic subtree
