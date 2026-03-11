@@ -85,9 +85,11 @@ media_debug.log
 translate_*.log
 
 # ---- Debug & Test Scripts (root level) ----
-_*.php
-temp_*.php
-test_*.php
+/_*.php
+/temp_*.php
+/test_*.php
+# Allow underscore-prefixed PHP helpers in api subdirectories
+!api/**/_*.php
 tools/bg-remover*.html
 tools/check_template_obj.php
 tools/test-product.png
