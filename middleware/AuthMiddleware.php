@@ -101,6 +101,16 @@ class AuthMiddleware
         // Set authenticated user globally
         Auth::setUser($user);
 
+        // Set RLS context for PostgreSQL Row Level Security
+        try {
+            $activeCompanyId = Auth::getActiveCompanyId();
+            $db->setAppContext($activeCompanyId, $user['id'], $user['role']);
+        } catch (Exception $e) {
+            Logger::warning('AuthMiddleware: Failed to set RLS context', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
         // Apply timezone from settings (user overrides company)
         try {
             $timezone = null;

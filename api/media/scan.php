@@ -5,7 +5,13 @@
 
 require_once __DIR__ . '/_thumbnail_utils.php';
 
-error_reporting(0);
+// Suppress PHP warnings/errors during scan to prevent set_error_handler from aborting.
+// Encoding issues in filenames can trigger warnings that the global error handler
+// catches and exits on. We restore the original handler after scan completes.
+$_prevErrorHandler = set_error_handler(function($errno, $errstr) {
+    // Silently ignore warnings during scan - errors are collected in $errors array
+    return true; // Returning true prevents the default PHP error handler
+});
 ob_start();
 
 try {
@@ -363,6 +369,7 @@ try {
     }
 
     ob_end_clean();
+    restore_error_handler(); // Restore global error handler
     Response::success([
         'imported' => $imported,
         'skipped' => $skipped,
@@ -373,5 +380,6 @@ try {
     ]);
 } catch (Exception $e) {
     ob_end_clean();
+    restore_error_handler(); // Restore global error handler
     Response::error('Tarama hatasi: ' . $e->getMessage(), 500);
 }
