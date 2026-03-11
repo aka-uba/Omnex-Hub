@@ -3494,19 +3494,22 @@ export class IntegrationSettingsPage {
     }
 
     /**
-     * DB'deki URL farkli bir host'a isaret ediyorsa true doner.
-     * Ornek: DB'de 192.168.1.23, mevcut sunucu hub.omnexcore.com -> true (guncelle)
-     * DB'de hub.omnexcore.com, mevcut sunucu hub.omnexcore.com -> false (ayni, degistirme)
+     * DB'deki URL sadece localhost/127.0.0.1 ise true doner (guncel origin ile degistir).
+     * Kullanici IP adresi veya farkli domain girmisse dokunma.
      */
     _shouldUseCurrentOriginUrl(dbUrl, currentUrl) {
         if (!dbUrl) return true; // DB'de yok, mevcut origin kullan
         try {
             const dbHost = new URL(dbUrl).hostname;
             const currentHost = new URL(currentUrl).hostname;
-            // Ayni host ise degistirme (kullanici ozel path yazmis olabilir)
+            // Ayni host ise degistirme
             if (dbHost === currentHost) return false;
-            // Farkli host: mevcut origin'i kullan
-            return true;
+            // DB'de localhost/127.0.0.1 varsa ve sunucudaysak duzelt
+            const isDbLocal = (dbHost === 'localhost' || dbHost === '127.0.0.1');
+            const isCurrentLocal = (currentHost === 'localhost' || currentHost === '127.0.0.1');
+            if (isDbLocal && !isCurrentLocal) return true;
+            // Farkli host ama kullanici bilerek IP veya baska domain girmis, dokunma
+            return false;
         } catch {
             return true; // URL parse edilemezse guncel origin kullan
         }
