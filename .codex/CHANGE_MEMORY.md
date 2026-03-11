@@ -11,6 +11,29 @@ Format:
 
 ---
 
+## 2026-03-12 - MQTT Broker (Mosquitto) Docker deployment
+- Request: Sunucuya MQTT Broker kur, Docker icinde, sistemle uyumlu, guncel surum
+- Changes:
+  - Eclipse Mosquitto 2.x Docker servisi eklendi (docker-compose.yml)
+  - Mosquitto config dosyalari olusturuldu (mosquitto.conf, acl, docker-entrypoint.sh)
+  - Dockerfile'a mosquitto-clients eklendi (app container icinde mosquitto_pub CLI)
+  - MqttBrokerService.php: OMNEX_MQTT_HOST/PORT/USER/PASS env var destegi eklendi
+    - Docker: internal hostname `mqtt` kullanir (env var)
+    - Non-Docker: DB `mqtt_settings.broker_url` kullanir (fallback)
+  - .env.example'a MQTT degiskenleri eklendi
+  - Health check: mosquitto_pub ile (sub timeout sorunu duzeltildi)
+  - ACL: $SYS/# explicit read access eklendi (# wildcard $SYS icermez)
+  - UFW: 1883/tcp (MQTT) ve 9001/tcp (WS) portlari acildi
+  - SERVER_STATE.md: MQTT broker bolumu eklendi
+- Files: deploy/docker-compose.yml, deploy/Dockerfile, deploy/.env.example, deploy/mosquitto/mosquitto.conf, deploy/mosquitto/acl, deploy/mosquitto/docker-entrypoint.sh, services/MqttBrokerService.php, deploy/SERVER_STATE.md
+- Checks: PHP syntax OK, Docker build OK, tum 5 container healthy, app->mqtt publish testi basarili
+- Risk/Follow-up:
+  - Cihaz tarafinda MQTT broker adresi olarak 185.124.84.34:1883 ayarlanmali (Entegrasyon Ayarlari sayfasindan)
+  - WebSocket (9001) tarayici MQTT istemcileri icin test edilmeli
+  - Production'da MQTT sifreler .env dosyasinda, daha guclu sifreler tercih edilebilir
+
+---
+
 ## 2026-03-09 - Complete 8-language demo seed data
 - Request: Generate demo seed data for all 8 languages (tr, en, ru, az, de, nl, fr, ar)
 - Changes:

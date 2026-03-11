@@ -3244,6 +3244,8 @@ export class IntegrationSettingsPage {
     renderMqttTab() {
         const basePath = window.OmnexConfig?.basePath || '';
         const origin = window.location.origin;
+        const hostname = window.location.hostname;
+        const defaultBrokerUrl = (hostname === 'localhost' || hostname === '127.0.0.1') ? 'localhost' : hostname;
         const defaultContentUrl = `${origin}${basePath}/api/esl/mqtt/content`;
         const defaultReportUrl = `${origin}${basePath}/api/esl/mqtt/report`;
 
@@ -3268,7 +3270,7 @@ export class IntegrationSettingsPage {
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label class="form-label">${this.__('integrations.mqtt.brokerUrl')}</label>
-                                    <input type="text" id="mqtt-broker-url" class="form-input" value="localhost" placeholder="${this.__('integrations.mqtt.brokerUrlPlaceholder')}">
+                                    <input type="text" id="mqtt-broker-url" class="form-input" value="${this._escapeHtml(defaultBrokerUrl)}" placeholder="${this.__('integrations.mqtt.brokerUrlPlaceholder')}">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">${this.__('integrations.mqtt.brokerPort')}</label>
@@ -3462,7 +3464,7 @@ export class IntegrationSettingsPage {
 
     _getMqttFormData() {
         return {
-            broker_url: document.getElementById('mqtt-broker-url')?.value?.trim() || 'localhost',
+            broker_url: document.getElementById('mqtt-broker-url')?.value?.trim() || window.location.hostname,
             broker_port: parseInt(document.getElementById('mqtt-broker-port')?.value) || 1883,
             use_tls: document.getElementById('mqtt-use-tls')?.checked ? 1 : 0,
             username: document.getElementById('mqtt-username')?.value?.trim() || '',
