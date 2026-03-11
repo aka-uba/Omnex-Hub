@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p class="text-green-800 font-medium"><?= htmlspecialchars($message) ?></p>
                         <p class="text-green-600 text-sm mt-1">
                             Varsayılan giriş bilgileri:<br>
-                            E-posta: admin@omnex.local<br>
+                            E-posta: admin@omnexcore.com<br>
                             Şifre: Admin123!
                         </p>
                     </div>

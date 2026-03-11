@@ -1091,8 +1091,8 @@ $router->group(['prefix' => '/api/myresource', 'middleware' => ['auth']], functi
 
 | Rol | E-posta | Sifre |
 |-----|---------|-------|
-| SuperAdmin | admin@omnex.local | OmnexAdmin2024! |
-| Admin | company@omnex.local | CompanyAdmin2024! |
+| SuperAdmin | admin@omnexcore.com | OmnexAdmin2024! |
+| Admin | company@omnexcore.com | CompanyAdmin2024! |
 
 ---
 
@@ -1858,7 +1858,7 @@ const avatarUrl = `${basePath}/${user.avatar}`;
 | DATABASE_URL | PostgreSQL URL formati (alternatif) | - |
 | OMNEX_PRODUCTION | Production modu | false |
 | OMNEX_JWT_SECRET | JWT imza anahtari | Otomatik |
-| OMNEX_ADMIN_EMAIL | Admin email | admin@omnex.local |
+| OMNEX_ADMIN_EMAIL | Admin email | admin@omnexcore.com |
 | OMNEX_ADMIN_PASSWORD | Admin sifre | Otomatik |
 | OMNEX_FORCE_HTTPS | HTTPS zorla | Production'da true |
 | OMNEX_SKIP_CSRF | CSRF atla (dev) | false |

@@ -150,7 +150,7 @@ market-etiket-sistemi/
 4. "Kurulumu Baslat" butonuna tiklayin
 
 5. Kurulum tamamlandiginda varsayilan giris bilgileri:
-   - **E-posta**: admin@omnex.local
+   - **E-posta**: admin@omnexcore.com
    - **Sifre**: OmnexAdmin2024!
 
 ---

@@ -159,7 +159,7 @@ $COMPOSE_CMD up -d
 
 # ---- Let's Encrypt (Standalone Only) ----
 if [ "$DEPLOY_MODE" = "standalone" ] && [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
-    if [[ "${OMNEX_ADMIN_EMAIL:-}" == *"@omnex.local" ]] || [[ "${OMNEX_ADMIN_EMAIL:-}" == "admin@example.com" ]] || [[ "${OMNEX_ADMIN_EMAIL:-}" == "" ]]; then
+    if [[ "${OMNEX_ADMIN_EMAIL:-}" == "admin@example.com" ]] || [[ "${OMNEX_ADMIN_EMAIL:-}" == "" ]]; then
         warn "OMNEX_ADMIN_EMAIL appears to be placeholder; Let's Encrypt may reject notifications."
     fi
 

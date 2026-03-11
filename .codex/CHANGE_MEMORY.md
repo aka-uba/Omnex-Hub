@@ -561,7 +561,7 @@ Format:
 ## 2026-03-10 - Seed/admin email domain alignment to omnexcore.com
 - Request: Ensure SuperAdmin/initial user emails use `@omnexcore.com` domain.
 - Changes:
-  - Updated existing Docker DB SuperAdmin email from `admin@omnex.local` to `admin@omnexcore.com`.
+  - Updated existing Docker DB SuperAdmin email from `admin@omnexcore.com` to `admin@omnexcore.com`.
   - Updated Docker local compose seed env: `OMNEX_ADMIN_EMAIL=admin@omnexcore.com`.
   - Updated base compose default fallback: `OMNEX_ADMIN_EMAIL` default from `admin@example.com` to `admin@omnexcore.com`.
 - Files:

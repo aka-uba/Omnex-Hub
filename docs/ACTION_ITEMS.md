@@ -16,7 +16,7 @@ CLAUDE.md referans tarihi: 2026-01-31
 - **Aksiyon:** Production deploy oncesi `ssl_verify: true` yapilmali, gecerli SSL sertifikasi saglanmali.
 
 ### 1.2 Varsayilan Test Kullanici Sifrelerinin Degistirilmesi
-- **Aciklama:** CLAUDE.md'de acik metin olarak test kullanici bilgileri yer aliyor (`admin@omnex.local / OmnexAdmin2024!`, `company@omnex.local / CompanyAdmin2024!`). Production veritabaninda bu hesaplarin silinmesi veya sifrelerinin degistirilmesi gerekli.
+- **Aciklama:** CLAUDE.md'de acik metin olarak test kullanici bilgileri yer aliyor (`admin@omnexcore.com / OmnexAdmin2024!`, `company@omnexcore.com / CompanyAdmin2024!`). Production veritabaninda bu hesaplarin silinmesi veya sifrelerinin degistirilmesi gerekli.
 - **Oncelik:** Kritik
 - **Efor:** Kucuk
 - **Ilgili dosyalar:** `database/seeds/`, `CLAUDE.md` (Test Kullanicilari bolumu)

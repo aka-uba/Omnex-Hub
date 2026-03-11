@@ -114,7 +114,7 @@ private static array $strictEndpoints = [
 ```php
 // Izin verilen origin'ler (config.php'de tanimlanabilir)
 define('ALLOWED_ORIGINS', [
-    'https://omnex.local',
+    'https://omnexcore.com',
     '*.omnex.com',  // Wildcard subdomain destegi
 ]);
 
@@ -128,7 +128,7 @@ define('ALLOWED_ORIGINS', [
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1705420800
-Access-Control-Allow-Origin: https://omnex.local
+Access-Control-Allow-Origin: https://omnexcore.com
 Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
 Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token
 ```
@@ -747,7 +747,7 @@ export OMNEX_PRODUCTION=true
 ## Iletisim ve Raporlama
 
 Guvenlik acigi bildirimi icin:
-- E-posta: security@omnex.local
+- E-posta: security@omnexcore.com
 - GitHub Issues (guvenlik etiketi ile)
 
 ---

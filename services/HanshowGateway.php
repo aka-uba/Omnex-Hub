@@ -444,7 +444,7 @@ class HanshowGateway
 
         // Absolute fallback - ESL-Working requires a valid URL format
         // but doesn't need to actually reach it for LED flash operations
-        return 'http://omnex.local/api/hanshow/callback';
+        return 'http://omnexcore.com/api/hanshow/callback';
     }
 
     /**

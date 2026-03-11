@@ -74,9 +74,22 @@ register_shutdown_function(function() {
 
 // HTTPS enforcement in production
 if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
-    $trustedProxies = ['127.0.0.1', '::1'];
+    $trustedProxyCsv = getenv('OMNEX_TRUSTED_PROXIES') ?: '127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16';
+    $trustedProxies = array_map('trim', explode(',', $trustedProxyCsv));
     $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
-    $isFromTrustedProxy = in_array($remoteAddr, $trustedProxies);
+    $isFromTrustedProxy = false;
+    foreach ($trustedProxies as $proxy) {
+        if ($proxy === $remoteAddr) { $isFromTrustedProxy = true; break; }
+        if (strpos($proxy, '/') !== false && @inet_pton($remoteAddr)) {
+            list($subnet, $bits) = explode('/', $proxy);
+            $subnetBin = inet_pton($subnet);
+            $addrBin = inet_pton($remoteAddr);
+            if ($subnetBin !== false && $addrBin !== false && strlen($subnetBin) === strlen($addrBin)) {
+                $mask = str_repeat("\xff", (int)($bits / 8)) . (($bits % 8) ? chr(0xff << (8 - ($bits % 8))) : '') . str_repeat("\x00", strlen($subnetBin) - ceil($bits / 8));
+                if (($addrBin & $mask) === ($subnetBin & $mask)) { $isFromTrustedProxy = true; break; }
+            }
+        }
+    }
 
     $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
 

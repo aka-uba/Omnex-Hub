@@ -1708,7 +1708,7 @@ http://localhost/market-etiket-sistemi/install.php
 #### 3. Varsayılan Giriş Bilgileri
 
 Kurulum sonrası:
-- **E-posta**: admin@omnex.local
+- **E-posta**: admin@omnexcore.com
 - **Şifre**: OmnexAdmin2024!
 
 **ÖNEMLİ:** Production'da ilk girişten sonra şifreyi değiştirin!

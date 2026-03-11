@@ -160,7 +160,7 @@ define('IS_HTTP', !IS_CLI);
 
 // Dynamic URL detection (CLI-safe)
 if (IS_HTTP) {
-    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') || getenv('OMNEX_FORCE_HTTPS') === 'true' ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
     // Normalize slashes for Windows compatibility
