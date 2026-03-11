@@ -45,6 +45,39 @@ services:
     networks:
       internal:
 
+  # ---- MQTT Broker (Mosquitto) ----
+  mqtt:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      MQTT_SERVER_USER: ${MQTT_SERVER_USER:-omnex_server}
+      MQTT_SERVER_PASS: ${MQTT_SERVER_PASS:-omnex_mqtt_2026}
+      MQTT_DEVICE_USER: ${MQTT_DEVICE_USER:-omnex_device}
+      MQTT_DEVICE_PASS: ${MQTT_DEVICE_PASS:-omnex_device_2026}
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/acl:/mosquitto/config/acl:ro
+      - ./mosquitto/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - mqtt_data:/mosquitto/data
+    entrypoint: /bin/sh
+    command: /docker-entrypoint.sh
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+      - "${MQTT_WS_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -p 1883 -u ${MQTT_SERVER_USER:-omnex_server} -P ${MQTT_SERVER_PASS:-omnex_mqtt_2026} -t '$$SYS/broker/version' -C 1 -W 3 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+      internal:
+
   # ---- PHP Application (Apache) ----
   app:
     build:
@@ -54,6 +87,8 @@ services:
     mem_limit: 4g
     depends_on:
       postgres:
+        condition: service_healthy
+      mqtt:
         condition: service_healthy
     environment:
       OMNEX_DB_DRIVER: pgsql
@@ -69,6 +104,11 @@ services:
       OMNEX_FORCE_HTTPS: ${OMNEX_FORCE_HTTPS:-false}
       OMNEX_SKIP_CSRF: ${OMNEX_SKIP_CSRF:-false}
       OMNEX_TRUSTED_PROXIES: ${OMNEX_TRUSTED_PROXIES:-127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      # MQTT Broker connection (internal Docker network)
+      OMNEX_MQTT_HOST: mqtt
+      OMNEX_MQTT_PORT: 1883
+      OMNEX_MQTT_USER: ${MQTT_SERVER_USER:-omnex_server}
+      OMNEX_MQTT_PASS: ${MQTT_SERVER_PASS:-omnex_mqtt_2026}
     volumes:
       - app_storage:/var/www/html/storage
     ports:
@@ -84,6 +124,8 @@ volumes:
   postgres_data:
     driver: local
   app_storage:
+    driver: local
+  mqtt_data:
     driver: local
 
 networks:

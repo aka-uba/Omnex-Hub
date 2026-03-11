@@ -412,11 +412,23 @@ class MqttBrokerService
                 return ['success' => false, 'error' => 'Cihaz MQTT topic bulunamadi'];
             }
 
-            $brokerHost = $settings['broker_url'] ?? '127.0.0.1';
-            // URL icerisindeki protokolu kaldir
-            $parsed = parse_url($brokerHost);
-            $brokerHost = $parsed['host'] ?? $brokerHost;
-            $brokerPort = (int)($settings['broker_port'] ?? 1883);
+            // Docker ortamında env var ile internal hostname kullan (mqtt),
+            // yoksa DB ayarlarından broker_url kullan (non-Docker / XAMPP)
+            $envHost = getenv('OMNEX_MQTT_HOST');
+            $envPort = getenv('OMNEX_MQTT_PORT');
+            $envUser = getenv('OMNEX_MQTT_USER');
+            $envPass = getenv('OMNEX_MQTT_PASS');
+
+            if ($envHost !== false && $envHost !== '') {
+                $brokerHost = $envHost;
+                $brokerPort = (int)($envPort ?: 1883);
+            } else {
+                $brokerHost = $settings['broker_url'] ?? '127.0.0.1';
+                // URL icerisindeki protokolu kaldir
+                $parsed = parse_url($brokerHost);
+                $brokerHost = $parsed['host'] ?? $brokerHost;
+                $brokerPort = (int)($settings['broker_port'] ?? 1883);
+            }
             $topic = (string)$device['mqtt_topic'];
 
             // Komut payload'ini olustur
@@ -522,11 +534,13 @@ class MqttBrokerService
                     escapeshellarg($payloadFile)
                 );
 
-                // Username/password varsa ekle
-                if (!empty($settings['username'])) {
-                    $cmd .= sprintf(' -u %s', escapeshellarg($settings['username']));
-                    if (!empty($settings['password'])) {
-                        $cmd .= sprintf(' -P %s', escapeshellarg($settings['password']));
+                // Username/password: env var oncelikli, yoksa DB ayarlari
+                $mqttUser = ($envUser !== false && $envUser !== '') ? $envUser : ($settings['username'] ?? '');
+                $mqttPass = ($envPass !== false && $envPass !== '') ? $envPass : ($settings['password'] ?? '');
+                if (!empty($mqttUser)) {
+                    $cmd .= sprintf(' -u %s', escapeshellarg($mqttUser));
+                    if (!empty($mqttPass)) {
+                        $cmd .= sprintf(' -P %s', escapeshellarg($mqttPass));
                     }
                 }
 
@@ -1529,11 +1543,19 @@ class MqttBrokerService
             return ['success' => false, 'error' => 'MQTT ayarları bulunamadı'];
         }
 
-        $host = $settings['broker_url'];
-        // URL'den host'u çıkar
-        $parsed = parse_url($host);
-        $host = $parsed['host'] ?? $host;
-        $port = (int)($settings['broker_port'] ?? 1883);
+        // Docker ortamında env var ile internal hostname kullan
+        $envHost = getenv('OMNEX_MQTT_HOST');
+        $envPort = getenv('OMNEX_MQTT_PORT');
+        if ($envHost !== false && $envHost !== '') {
+            $host = $envHost;
+            $port = (int)($envPort ?: 1883);
+        } else {
+            $host = $settings['broker_url'];
+            // URL'den host'u çıkar
+            $parsed = parse_url($host);
+            $host = $parsed['host'] ?? $host;
+            $port = (int)($settings['broker_port'] ?? 1883);
+        }
 
         $startTime = microtime(true);
         $errno = 0;

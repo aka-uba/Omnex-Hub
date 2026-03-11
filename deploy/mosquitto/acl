@@ -1,0 +1,13 @@
+# ========================================
+# Omnex MQTT Broker - Access Control List
+# ========================================
+
+# ---- omnex_server: Full access (app container) ----
+user omnex_server
+topic readwrite #
+
+# ---- omnex_device: Device access pattern ----
+# Devices can only access their own topic subtree
+user omnex_device
+topic readwrite omnex/esl/#
+topic read $SYS/broker/version

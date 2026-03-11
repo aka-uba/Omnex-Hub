@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     ffmpeg \
+    mosquitto-clients \
     cron \
     curl \
     unzip \
