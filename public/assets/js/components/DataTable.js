@@ -110,6 +110,7 @@ export class DataTable {
         };
 
         this._outsideClickHandler = null;
+        this._containerClickHandler = null;
         this._closeOnScrollHandler = null;
         this._windowScrollHandler = null;
         this._documentScrollHandler = null;
@@ -892,7 +893,7 @@ export class DataTable {
         }
 
         // Click events (sort, pagination, actions, row click, dropdown)
-        this.container.addEventListener('click', (e) => {
+        this._containerClickHandler = (e) => {
             const settingsOpenBtn = e.target.closest('[data-table-column-settings]');
             if (settingsOpenBtn) {
                 e.preventDefault();
@@ -1053,7 +1054,8 @@ export class DataTable {
                     }
                 }
             }
-        });
+        };
+        this.container.addEventListener('click', this._containerClickHandler);
 
         // Close dropdown on outside click
         this._outsideClickHandler = (e) => {
@@ -1837,6 +1839,10 @@ export class DataTable {
     destroy() {
         this._unbindGlobalListeners();
         if (this.container) {
+            if (this._containerClickHandler) {
+                this.container.removeEventListener('click', this._containerClickHandler);
+                this._containerClickHandler = null;
+            }
             this.container.innerHTML = '';
         }
     }
