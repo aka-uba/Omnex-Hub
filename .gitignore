@@ -109,11 +109,12 @@ market_etiket_sistemi_hata_temizleme_ve_cloud_uyum_plani.md
 # ---- VBS Scripts ----
 *.vbs
 
-# ---- Deploy (local build artifacts) ----
+# ---- Deploy (local build artifacts + secrets) ----
 # deploy/.env is excluded above in Environment & Secrets section
 deploy/assets/
 deploy/locales/
 deploy/yeni/
+deploy/SERVER_STATE.md
 
 # ---- Local Gateway Manager (separate project) ----
 local-gateway-manager/
