@@ -313,6 +313,8 @@ class CompanySeeder
             $basePath . '/companies/' . $this->companyId . '/renders',
             $basePath . '/companies/' . $this->companyId . '/exports',
             $basePath . '/companies/' . $this->companyId . '/imports',
+            $basePath . '/companies/' . $this->companyId . '/imports/processed',
+            $basePath . '/companies/' . $this->companyId . '/imports/failed',
             $basePath . '/companies/' . $this->companyId . '/temp',
         ];
 

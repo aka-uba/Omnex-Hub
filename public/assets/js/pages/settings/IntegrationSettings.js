@@ -27,6 +27,9 @@ export class IntegrationSettingsPage {
         this.mqttSettings = {};
         this.importSettings = {};
         this.importHistory = [];
+        this.importFiles = [];
+        this.importHistoryPagination = { page: 1, per_page: 10, total: 0, total_pages: 1 };
+        this.importFilesPagination = { page: 1, per_page: 10, total: 0, total_pages: 1 };
     }
 
     /**
@@ -504,13 +507,15 @@ export class IntegrationSettingsPage {
 
                                 <div class="integration-info-box">
                                     <h4>${this.__('integrations.types.api.docs.auth')}</h4>
-                                    <code class="text-sm">Authorization: Bearer {API_KEY}</code>
+                                    <code class="text-sm" data-import-api-key-template="Authorization: Bearer __API_KEY__">Authorization: Bearer YOUR_API_KEY_HERE</code>
                                 </div>
 
                                 <div class="integration-info-box">
                                     <h4>${this.__('integrations.types.api.docs.exampleRequest')}</h4>
-                                    <pre class="text-sm overflow-x-auto"><code>curl -X GET "${escapeHTML(window.location.origin)}${escapeHTML(window.OmnexConfig?.basePath || '')}/api/products" \\
-  -H "Authorization: Bearer {API_KEY}" \\
+                                    <pre class="text-sm overflow-x-auto"><code data-import-api-key-template="curl -X GET &quot;${escapeHTML(window.location.origin)}${escapeHTML(window.OmnexConfig?.basePath || '')}/api/products&quot; \\
+  -H &quot;Authorization: Bearer __API_KEY__&quot; \\
+  -H &quot;Content-Type: application/json&quot;">curl -X GET "${escapeHTML(window.location.origin)}${escapeHTML(window.OmnexConfig?.basePath || '')}/api/products" \\
+  -H "Authorization: Bearer YOUR_API_KEY_HERE" \\
   -H "Content-Type: application/json"</code></pre>
                                 </div>
                             </div>
@@ -557,9 +562,9 @@ export class IntegrationSettingsPage {
         await this.loadTamsoftSettings();
         await this.loadIntegrationSettings(); // Load ERP/POS/WMS/API settings
         this.generateApiKeyIfNeeded();
+        this.refreshImportApiDocumentation();
         await this.loadMqttSettings();
-        // Import settings API routes not yet implemented - skip to prevent 404 console errors
-        // await this.loadImportSettings();
+        await this.loadImportSettings();
 
         // Load payment settings if SuperAdmin
         if (this.isSuperAdmin) {
@@ -642,11 +647,15 @@ export class IntegrationSettingsPage {
         });
 
         document.getElementById('refresh-import-history-btn')?.addEventListener('click', () => {
-            this.loadImportHistory();
+            this.loadImportHistory(1, this.importHistoryPagination.per_page || 10);
         });
 
         document.getElementById('refresh-import-files-btn')?.addEventListener('click', () => {
-            this.loadImportFiles();
+            this.loadImportFiles(1, this.importFilesPagination.per_page || 10);
+        });
+
+        document.getElementById('clear-import-history-btn')?.addEventListener('click', () => {
+            this.clearImportHistory();
         });
 
         // Auto import toggle
@@ -1131,6 +1140,8 @@ export class IntegrationSettingsPage {
                     service_password_set: !!data.service_password || this.halSettings.service_password_set
                 };
                 this.updateHalStatus();
+                // HAL visibility affects role-based menu entries.
+                this.app.layout?.refreshLayout?.();
             } else {
                 throw new Error(response.message || this.__('integrations.hal.toast.saveFailed'));
             }
@@ -1232,6 +1243,7 @@ export class IntegrationSettingsPage {
                 if (document.getElementById('api_webhook_url')) {
                     document.getElementById('api_webhook_url').value = settings.webhook_url || '';
                 }
+                this.refreshImportApiDocumentation();
                 break;
         }
 
@@ -1248,6 +1260,24 @@ export class IntegrationSettingsPage {
         if (apiKeyInput && !apiKeyInput.value) {
             apiKeyInput.value = this.generateApiKey();
         }
+        this.refreshImportApiDocumentation();
+    }
+
+    getImportApiDocKey() {
+        const apiKeyInput = document.getElementById('api_key');
+        const key = (apiKeyInput?.value || '').trim();
+        if (!key || key === '********') {
+            return 'YOUR_API_KEY_HERE';
+        }
+        return key;
+    }
+
+    refreshImportApiDocumentation() {
+        const key = this.getImportApiDocKey();
+        document.querySelectorAll('[data-import-api-key-template]').forEach((el) => {
+            const template = el.getAttribute('data-import-api-key-template') || '';
+            el.textContent = template.split('__API_KEY__').join(key);
+        });
     }
 
     generateApiKey() {
@@ -1271,6 +1301,7 @@ export class IntegrationSettingsPage {
         const apiKeyInput = document.getElementById('api_key');
         if (apiKeyInput) {
             apiKeyInput.value = this.generateApiKey();
+            this.refreshImportApiDocumentation();
             Toast.info(this.__('integrations.messages.apiKeyGenerated'));
         }
     }
@@ -1847,7 +1878,7 @@ export class IntegrationSettingsPage {
         return `
             <!-- Import Settings Tab -->
             <div id="tab-import" class="settings-tab-content ${this.activeTab === 'import' ? 'active' : ''}">
-                <div class="settings-grid">
+                <div class="settings-grid import-grid-layout">
                     <!-- LEFT COLUMN: Settings + Pending Files -->
                     <div class="import-left-column">
                         <!-- Import Settings Card -->
@@ -2011,9 +2042,14 @@ export class IntegrationSettingsPage {
                                     <i class="ti ti-history"></i>
                                     ${this.__('integrations.import.historyTitle')}
                                 </h2>
-                                <button type="button" id="refresh-import-history-btn" class="btn btn-sm btn-outline" title="${this.__('actions.refresh')}">
-                                    <i class="ti ti-refresh"></i>
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="refresh-import-history-btn" class="btn btn-sm btn-outline" title="${this.__('actions.refresh')}">
+                                        <i class="ti ti-refresh"></i>
+                                    </button>
+                                    <button type="button" id="clear-import-history-btn" class="btn btn-sm btn-outline" title="${this.__('actions.clear')}">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="chart-card-body">
                                 <div id="import-history-container">
@@ -2049,9 +2085,9 @@ export class IntegrationSettingsPage {
                                     <h4><i class="ti ti-key"></i> ${this.__('integrations.import.apiAuth')}</h4>
                                     <p class="text-sm mb-2">${this.__('integrations.import.apiAuthHint')}</p>
                                     <div class="flex flex-col gap-1">
-                                        <code class="text-sm" style="user-select: all">Authorization: Bearer {API_KEY}</code>
+                                        <code class="text-sm" style="user-select: all" data-import-api-key-template="Authorization: Bearer __API_KEY__">Authorization: Bearer YOUR_API_KEY_HERE</code>
                                         <span class="text-muted text-xs">${this.__('integrations.import.apiAuthAlt')}</span>
-                                        <code class="text-sm" style="user-select: all">X-Api-Key: {API_KEY}</code>
+                                        <code class="text-sm" style="user-select: all" data-import-api-key-template="X-Api-Key: __API_KEY__">X-Api-Key: YOUR_API_KEY_HERE</code>
                                     </div>
                                 </div>
 
@@ -2060,17 +2096,24 @@ export class IntegrationSettingsPage {
                                     <h4><i class="ti ti-terminal-2"></i> ${this.__('integrations.import.apiExample')}</h4>
 
                                     <p class="text-muted text-sm mb-2">${this.__('integrations.import.apiExampleCsv')}</p>
-                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code>curl -X POST "${escapeHTML(uploadUrl)}" \\
+                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code data-import-api-key-template="curl -X POST &quot;${escapeHTML(uploadUrl)}&quot; \\
+  -H &quot;Authorization: Bearer __API_KEY__&quot; \\
+  -F &quot;file=@/path/to/products.csv&quot;">curl -X POST "${escapeHTML(uploadUrl)}" \\
   -H "Authorization: Bearer YOUR_API_KEY_HERE" \\
   -F "file=@/path/to/products.csv"</code></pre>
 
                                     <p class="text-muted text-sm mb-2">${this.__('integrations.import.apiExampleJson')}</p>
-                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code>curl -X POST "${escapeHTML(uploadUrl)}" \\
+                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code data-import-api-key-template="curl -X POST &quot;${escapeHTML(uploadUrl)}&quot; \\
+  -H &quot;X-Api-Key: __API_KEY__&quot; \\
+  -F &quot;file=@/path/to/products.json&quot;">curl -X POST "${escapeHTML(uploadUrl)}" \\
   -H "X-Api-Key: YOUR_API_KEY_HERE" \\
   -F "file=@/path/to/products.json"</code></pre>
 
                                     <p class="text-muted text-sm mb-2">${this.__('integrations.import.apiExamplePowershell')}</p>
-                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code>Invoke-RestMethod -Uri "${escapeHTML(uploadUrl)}" \\
+                                    <pre class="text-sm overflow-x-auto" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 12px"><code data-import-api-key-template="Invoke-RestMethod -Uri &quot;${escapeHTML(uploadUrl)}&quot; \\
+  -Method POST \\
+  -Headers @{ &quot;Authorization&quot; = &quot;Bearer __API_KEY__&quot; } \\
+  -Form @{ file = Get-Item &quot;C:\\path\\to\\products.xlsx&quot; }">Invoke-RestMethod -Uri "${escapeHTML(uploadUrl)}" \\
   -Method POST \\
   -Headers @{ "Authorization" = "Bearer YOUR_API_KEY_HERE" } \\
   -Form @{ file = Get-Item "C:\\path\\to\\products.xlsx" }</code></pre>
@@ -2204,9 +2247,14 @@ export class IntegrationSettingsPage {
 
         // Pending files
         const pendingBadge = document.getElementById('import-pending-count');
-        if (pendingBadge && data.pending_files > 0) {
-            pendingBadge.textContent = data.pending_files;
-            pendingBadge.style.display = '';
+        if (pendingBadge) {
+            if (data.pending_files > 0) {
+                pendingBadge.textContent = data.pending_files;
+                pendingBadge.style.display = '';
+            } else {
+                pendingBadge.textContent = '0';
+                pendingBadge.style.display = 'none';
+            }
         }
 
         // Allowed formats
@@ -2275,6 +2323,7 @@ export class IntegrationSettingsPage {
             enabled: document.getElementById('import-enabled')?.checked || false,
             auto_import_enabled: document.getElementById('import-auto-enabled')?.checked || false,
             check_interval: parseInt(document.getElementById('import-check-interval')?.value) || 30,
+            default_import_filename: null,
             max_file_size_mb: parseInt(document.getElementById('import-max-file-size')?.value) || 10,
             update_existing: document.getElementById('import-update-existing')?.checked || false,
             create_new: document.getElementById('import-create-new')?.checked || false,
@@ -2290,6 +2339,11 @@ export class IntegrationSettingsPage {
         if (data.allowed_formats.length === 0) {
             data.allowed_formats = ['csv'];
         }
+
+        const selectedDefaultFile = document.querySelector('.default-import-file-radio:checked')?.value
+            || this.importSettings.default_import_filename
+            || null;
+        data.default_import_filename = selectedDefaultFile || null;
 
         return data;
     }
@@ -2323,16 +2377,68 @@ export class IntegrationSettingsPage {
         }
     }
 
-    async loadImportHistory() {
+    getImportShowingText(pagination) {
+        const total = Number(pagination?.total || 0);
+        const page = Number(pagination?.page || 1);
+        const perPage = Number(pagination?.per_page || 10);
+        if (total <= 0) return '0 - 0 / 0';
+
+        const start = ((page - 1) * perPage) + 1;
+        const end = Math.min(total, start + perPage - 1);
+        const translated = this.__('table.showing', { start, end, total });
+        return translated === 'table.showing' ? `${start} - ${end} / ${total}` : translated;
+    }
+
+    renderImportPagination(kind, pagination) {
+        const page = Number(pagination?.page || 1);
+        const perPage = Number(pagination?.per_page || 10);
+        const totalPages = Math.max(1, Number(pagination?.total_pages || 1));
+        const showText = this.getImportShowingText(pagination);
+        const pageLabel = this.__('table.page');
+        const perPageLabelRaw = this.__('table.perPage');
+        const perPageLabel = String(perPageLabelRaw || '').replace(/[\s:：]+$/, '');
+        const prevLabel = this.__('table.prev') === 'table.prev' ? this.__('actions.previous') : this.__('table.prev');
+        const nextLabel = this.__('table.next') === 'table.next' ? this.__('actions.next') : this.__('table.next');
+
+        return `
+            <div class="import-table-footer">
+                <div class="import-table-footer-left">${escapeHTML(showText)}</div>
+                <div class="import-table-footer-right">
+                    <label class="import-table-per-page">
+                        <span>${escapeHTML(perPageLabel)}:</span>
+                        <select class="import-${kind}-per-page form-select form-select-sm">
+                            ${[10, 20, 50].map(size => `<option value="${size}" ${perPage === size ? 'selected' : ''}>${size}</option>`).join('')}
+                        </select>
+                    </label>
+                    <button type="button" class="btn btn-sm btn-outline import-${kind}-prev" ${page <= 1 ? 'disabled' : ''}>${escapeHTML(prevLabel)}</button>
+                    <span class="import-table-page">${escapeHTML(pageLabel)} ${page} / ${totalPages}</span>
+                    <button type="button" class="btn btn-sm btn-outline import-${kind}-next" ${page >= totalPages ? 'disabled' : ''}>${escapeHTML(nextLabel)}</button>
+                </div>
+            </div>
+        `;
+    }
+
+    async loadImportHistory(page = this.importHistoryPagination.page || 1, perPage = this.importHistoryPagination.per_page || 10) {
         const container = document.getElementById('import-history-container');
         if (!container) return;
 
         try {
-            const response = await this.app.api.get('/import/history?per_page=10');
+            const response = await this.app.api.get('/import/history', { page, per_page: perPage });
+            if (response.success) {
+                this.importHistory = response.data?.files || [];
+                this.importHistoryPagination = response.data?.pagination || {
+                    total: this.importHistory.length,
+                    page,
+                    per_page: perPage,
+                    total_pages: 1
+                };
 
-            if (response.success && response.data?.files?.length > 0) {
-                this.importHistory = response.data.files;
-                container.innerHTML = this.renderImportHistoryTable(response.data.files);
+                if (this.importHistory.length > 0) {
+                    container.innerHTML = this.renderImportHistoryTable(this.importHistory, this.importHistoryPagination);
+                    this.bindImportHistoryEvents();
+                } else {
+                    container.innerHTML = `<p class="text-muted text-center">${this.__('integrations.import.historyEmpty')}</p>`;
+                }
             } else {
                 container.innerHTML = `<p class="text-muted text-center">${this.__('integrations.import.historyEmpty')}</p>`;
             }
@@ -2342,7 +2448,7 @@ export class IntegrationSettingsPage {
         }
     }
 
-    renderImportHistoryTable(files) {
+    renderImportHistoryTable(files, pagination = this.importHistoryPagination) {
         const statusBadge = (status) => {
             const map = {
                 'pending': 'badge-warning',
@@ -2366,7 +2472,13 @@ export class IntegrationSettingsPage {
             return `<span class="badge badge-outline"><i class="ti ${s.icon}"></i> ${s.label}</span>`;
         };
 
-        const rows = files.map(f => `
+        const sortedFiles = [...files].sort((a, b) => {
+            const aDate = new Date(a?.created_at || a?.processed_at || 0).getTime();
+            const bDate = new Date(b?.created_at || b?.processed_at || 0).getTime();
+            return bDate - aDate;
+        });
+
+        const rows = sortedFiles.map(f => `
             <tr>
                 <td title="${escapeHTML(f.original_filename || f.filename)}">${escapeHTML(f.original_filename || f.filename)}</td>
                 <td>${sourceBadge(f.source)}</td>
@@ -2399,19 +2511,40 @@ export class IntegrationSettingsPage {
                     </tbody>
                 </table>
             </div>
+            ${this.renderImportPagination('history', pagination)}
         `;
     }
 
-    async loadImportFiles() {
+    async loadImportFiles(page = this.importFilesPagination.page || 1, perPage = this.importFilesPagination.per_page || 10) {
         const container = document.getElementById('import-files-container');
         if (!container) return;
 
         try {
-            const response = await this.app.api.get('/import/files');
+            const response = await this.app.api.get('/import/files', { page, per_page: perPage });
+            if (response.success) {
+                this.importFiles = response.data?.files || [];
+                this.importFilesPagination = response.data?.pagination || {
+                    total: this.importFiles.length,
+                    page,
+                    per_page: perPage,
+                    total_pages: 1
+                };
 
-            if (response.success && response.data?.files?.length > 0) {
-                container.innerHTML = this.renderImportFilesTable(response.data.files);
-                this.bindImportFileEvents();
+                if (response.data?.default_import_filename) {
+                    this.importSettings.default_import_filename = response.data.default_import_filename;
+                }
+
+                if (!this.importSettings.default_import_filename && this.importFiles.length > 0 && Number(page) === 1) {
+                    this.importSettings.default_import_filename = this.importFiles[0].filename;
+                    await this.persistDefaultImportFile(this.importSettings.default_import_filename, true);
+                }
+
+                if (this.importFiles.length > 0) {
+                    container.innerHTML = this.renderImportFilesTable(this.importFiles, this.importFilesPagination);
+                    this.bindImportFileEvents();
+                } else {
+                    container.innerHTML = `<p class="text-muted text-center">${this.__('integrations.import.pendingFilesEmpty')}</p>`;
+                }
             } else {
                 container.innerHTML = `<p class="text-muted text-center">${this.__('integrations.import.pendingFilesEmpty')}</p>`;
             }
@@ -2421,7 +2554,7 @@ export class IntegrationSettingsPage {
         }
     }
 
-    renderImportFilesTable(files) {
+    renderImportFilesTable(files, pagination = this.importFilesPagination) {
         const formatIcon = (ext) => {
             const map = {
                 'csv': 'ti-file-type-csv',
@@ -2435,9 +2568,26 @@ export class IntegrationSettingsPage {
             };
             return map[ext] || 'ti-file';
         };
+        const defaultFile = this.importSettings.default_import_filename || '';
+        let selectedDefaultFilename = defaultFile;
+        if (defaultFile && !files.some(f => f.filename === defaultFile)) {
+            const candidate = files.find(f => f.filename.endsWith(`_${defaultFile}`));
+            if (candidate) {
+                selectedDefaultFilename = candidate.filename;
+            }
+        }
 
         const rows = files.map(f => `
             <tr>
+                <td class="text-center">
+                    <input
+                        type="radio"
+                        class="default-import-file-radio"
+                        name="default-import-file"
+                        value="${escapeHTML(f.filename)}"
+                        ${selectedDefaultFilename === f.filename ? 'checked' : ''}
+                    >
+                </td>
                 <td>
                     <div class="flex items-center gap-2">
                         <i class="ti ${formatIcon(f.extension)} text-lg"></i>
@@ -2463,6 +2613,7 @@ export class IntegrationSettingsPage {
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th class="text-center"><i class="ti ti-star"></i></th>
                             <th>${this.__('integrations.import.historyFile')}</th>
                             <th>${this.__('integrations.import.fileFormat')}</th>
                             <th>${this.__('integrations.import.fileSize')}</th>
@@ -2475,6 +2626,7 @@ export class IntegrationSettingsPage {
                     </tbody>
                 </table>
             </div>
+            ${this.renderImportPagination('files', pagination)}
         `;
     }
 
@@ -2485,6 +2637,101 @@ export class IntegrationSettingsPage {
                 await this.importFileFromDirectory(filename, e.currentTarget);
             });
         });
+
+        document.querySelectorAll('.default-import-file-radio').forEach(radio => {
+            radio.addEventListener('change', async (e) => {
+                const selected = e.currentTarget.value || null;
+                await this.persistDefaultImportFile(selected, true);
+            });
+        });
+
+        document.querySelector('.import-files-prev')?.addEventListener('click', () => {
+            const nextPage = Math.max(1, (this.importFilesPagination.page || 1) - 1);
+            this.loadImportFiles(nextPage, this.importFilesPagination.per_page || 10);
+        });
+
+        document.querySelector('.import-files-next')?.addEventListener('click', () => {
+            const current = this.importFilesPagination.page || 1;
+            const totalPages = this.importFilesPagination.total_pages || 1;
+            const nextPage = Math.min(totalPages, current + 1);
+            this.loadImportFiles(nextPage, this.importFilesPagination.per_page || 10);
+        });
+
+        document.querySelector('.import-files-per-page')?.addEventListener('change', (e) => {
+            const perPage = parseInt(e.target.value, 10) || 10;
+            this.loadImportFiles(1, perPage);
+        });
+    }
+
+    bindImportHistoryEvents() {
+        document.querySelector('.import-history-prev')?.addEventListener('click', () => {
+            const nextPage = Math.max(1, (this.importHistoryPagination.page || 1) - 1);
+            this.loadImportHistory(nextPage, this.importHistoryPagination.per_page || 10);
+        });
+
+        document.querySelector('.import-history-next')?.addEventListener('click', () => {
+            const current = this.importHistoryPagination.page || 1;
+            const totalPages = this.importHistoryPagination.total_pages || 1;
+            const nextPage = Math.min(totalPages, current + 1);
+            this.loadImportHistory(nextPage, this.importHistoryPagination.per_page || 10);
+        });
+
+        document.querySelector('.import-history-per-page')?.addEventListener('change', (e) => {
+            const perPage = parseInt(e.target.value, 10) || 10;
+            this.loadImportHistory(1, perPage);
+        });
+    }
+
+    async clearImportHistory() {
+        Modal.confirm({
+            title: this.__('actions.delete'),
+            message: this.__('messages.deleteConfirm'),
+            type: 'danger',
+            confirmText: this.__('actions.delete'),
+            cancelText: this.__('actions.cancel'),
+            onConfirm: async () => {
+                try {
+                    const response = await this.app.api.delete('/import/history?mode=all');
+                    if (response.success) {
+                        Toast.success(response.message || this.__('messages.deleteSuccess'));
+                        await this.loadImportHistory(1, this.importHistoryPagination.per_page || 10);
+                    } else {
+                        Toast.error(response.message || this.__('messages.deleteFailed'));
+                    }
+                } catch (error) {
+                    Logger.error('Error clearing import history:', error);
+                    Toast.error(error.message || this.__('messages.deleteFailed'));
+                }
+            }
+        });
+    }
+
+    async persistDefaultImportFile(filename, silent = false) {
+        const selected = filename || null;
+        this.importSettings.default_import_filename = selected;
+
+        try {
+            const response = await this.app.api.put('/import/settings', {
+                default_import_filename: selected
+            });
+
+            if (response.success && response.data?.settings) {
+                this.importSettings = {
+                    ...this.importSettings,
+                    ...response.data.settings
+                };
+                if (!silent) {
+                    Toast.success(this.__('integrations.import.settingsSaved'));
+                }
+            } else if (!silent) {
+                Toast.error(response.message || this.__('integrations.import.settingsSaveError'));
+            }
+        } catch (error) {
+            Logger.error('Error saving default import file:', error);
+            if (!silent) {
+                Toast.error(error.message || this.__('integrations.import.settingsSaveError'));
+            }
+        }
     }
 
     async importFileFromDirectory(filename, btn) {
@@ -3110,30 +3357,34 @@ export class IntegrationSettingsPage {
                         <div class="chart-card-body">
                             <p class="text-muted mb-4">${this.__('integrations.mqtt.infoText')}</p>
 
-                            <h4 class="mb-2">${this.__('integrations.mqtt.setupSteps')}</h4>
-                            <div class="flex flex-col gap-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="badge badge-primary">1</span>
-                                    <span>${this.__('integrations.mqtt.step1')}</span>
+                            <div class="integration-info-list">
+                                <div class="integration-info-box">
+                                    <h4>${this.__('integrations.mqtt.setupSteps')}</h4>
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-primary">1</span>
+                                            <span class="text-sm">${this.__('integrations.mqtt.step1')}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-primary">2</span>
+                                            <span class="text-sm">${this.__('integrations.mqtt.step2')}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-primary">3</span>
+                                            <span class="text-sm">${this.__('integrations.mqtt.step3')}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="badge badge-primary">4</span>
+                                            <span class="text-sm">${this.__('integrations.mqtt.step4')}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="badge badge-primary">2</span>
-                                    <span>${this.__('integrations.mqtt.step2')}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="badge badge-primary">3</span>
-                                    <span>${this.__('integrations.mqtt.step3')}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="badge badge-primary">4</span>
-                                    <span>${this.__('integrations.mqtt.step4')}</span>
-                                </div>
-                            </div>
 
-                            <div class="alert alert-info mt-4">
-                                <div class="flex items-center gap-2">
-                                    <i class="ti ti-info-circle"></i>
-                                    <span><strong>${this.__('integrations.mqtt.lastConnected')}:</strong> <span id="mqtt-last-connected">${this.__('integrations.mqtt.never')}</span></span>
+                                <div class="integration-info-box">
+                                    <p>
+                                        <strong>${this.__('integrations.mqtt.lastConnected')}:</strong>
+                                        <span id="mqtt-last-connected">${this.__('integrations.mqtt.never')}</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>

@@ -47,8 +47,10 @@ export class LayoutManager {
         this._mobileQueryChangeHandler = null;
         this._windowResizeHandler = null;
         this._userDropdownOutsideClickHandler = null;
+        this._headerDropdownSyncHandler = null;
         this._topNavOutsideClickHandler = null;
         this._topNavEscapeHandler = null;
+        this.hasActiveHalIntegration = false;
 
         // Debounced API sync
         this.debouncedApiSync = debounce(this.syncToApi.bind(this), 2000);
@@ -784,6 +786,7 @@ export class LayoutManager {
         // before user logged in, so selectors might not have proper data
         if (this.app.auth?.isAuthenticated()) {
             await this.reinitializeSelectorsIfNeeded();
+            await this.loadHalIntegrationVisibility();
         }
 
         // Ensure icon font is loaded before rendering layout
@@ -840,6 +843,33 @@ export class LayoutManager {
 
         // Update mobile header height CSS variable for dropdown positioning
         this.updateMobileHeaderHeight();
+    }
+
+    /**
+     * Load HAL integration visibility for role-based menu rendering
+     * SuperAdmin always sees HAL menu entries.
+     */
+    async loadHalIntegrationVisibility() {
+        const user = this.app.auth?.getUser?.();
+        const role = user?.role || 'Viewer';
+
+        if (role === 'SuperAdmin') {
+            this.hasActiveHalIntegration = true;
+            return;
+        }
+
+        this.hasActiveHalIntegration = false;
+
+        try {
+            const response = await this.app.api.get('/hal/settings');
+            this.hasActiveHalIntegration = Boolean(
+                response?.success &&
+                response?.data?.meta?.is_active &&
+                response?.data?.configured
+            );
+        } catch (error) {
+            Logger.debug('HAL integration visibility could not be loaded:', error);
+        }
     }
 
     /**
@@ -986,6 +1016,7 @@ export class LayoutManager {
                             <button class="header-btn" id="fullscreen-btn" title="${this.__('layout.fullscreen')}">
                                 <i class="ti ti-maximize"></i>
                             </button>
+                            ${this.renderQuickLayoutSwitchButton()}
 
                             <button class="header-btn" id="pwa-install-header-btn" title="${this.__('layout.installApp')}" style="display: none;">
                                 <i class="ti ti-download"></i>
@@ -1195,6 +1226,7 @@ export class LayoutManager {
             <button class="header-btn" id="fullscreen-btn" title="${this.__('layout.fullscreen')}">
                 <i class="ti ti-maximize"></i>
             </button>
+            ${this.renderQuickLayoutSwitchButton()}
             <button class="header-btn" id="pwa-install-header-btn" title="${this.__('layout.installApp')}" style="display: none;">
                 <i class="ti ti-download"></i>
             </button>
@@ -1217,6 +1249,7 @@ export class LayoutManager {
                         <button class="header-btn" id="fullscreen-btn" title="${this.__('layout.fullscreen')}">
                             <i class="ti ti-maximize"></i>
                         </button>
+                        ${this.renderQuickLayoutSwitchButton()}
                         <button class="header-btn" id="theme-toggle" title="${this.__('layout.toggleTheme')}">
                             <i class="ti ti-${themeIcon}"></i>
                         </button>
@@ -1254,6 +1287,41 @@ export class LayoutManager {
                 </header>
             `;
         }
+    }
+
+    /**
+     * Get quick layout switch target and visual metadata.
+     */
+    getQuickLayoutSwitchMeta() {
+        const isTopLayout = this.config.layoutType === LayoutType.TOP;
+
+        return {
+            targetLayout: isTopLayout ? LayoutType.SIDEBAR : LayoutType.TOP,
+            icon: isTopLayout ? 'layout-sidebar-left-expand' : 'layout-navbar-expand',
+            title: isTopLayout
+                ? this.__('layout.quickSwitchToSidebar')
+                : this.__('layout.quickSwitchToTopNav')
+        };
+    }
+
+    /**
+     * Render desktop-only quick layout switch button.
+     */
+    renderQuickLayoutSwitchButton() {
+        const meta = this.getQuickLayoutSwitchMeta();
+        return `
+            <button class="header-btn header-btn-desktop-only" id="quick-layout-switch-btn" title="${meta.title}" aria-label="${meta.title}">
+                <i class="ti ti-${meta.icon}"></i>
+            </button>
+        `;
+    }
+
+    /**
+     * Toggle between sidebar and top navigation layout from header shortcut.
+     */
+    async handleQuickLayoutSwitch() {
+        const meta = this.getQuickLayoutSwitchMeta();
+        await this.applyConfig({ layoutType: meta.targetLayout });
     }
 
     /**
@@ -1410,6 +1478,7 @@ export class LayoutManager {
     getMenuItems() {
         const user = this.app.auth.getUser();
         const role = user?.role || 'Viewer';
+        const canSeeKunyeDistribution = role === 'SuperAdmin' || this.hasActiveHalIntegration;
 
         const items = [
             {
@@ -1424,7 +1493,7 @@ export class LayoutManager {
                 items: [
                     { label: this.__('layout.menu.products'), href: '/products', icon: 'package', roles: ['*'] },
                     { label: this.__('layout.menu.bundles'), href: '/bundles', icon: 'box-multiple', roles: ['*'] },
-                    { label: this.__('layout.menu.kunyeDistribution'), href: '/products/kunye-distribution', icon: 'leaf', roles: ['*'] },
+                    ...(canSeeKunyeDistribution ? [{ label: this.__('layout.menu.kunyeDistribution'), href: '/products/kunye-distribution', icon: 'leaf', roles: ['*'] }] : []),
                     { label: this.__('layout.menu.bulkSend'), href: '/admin/queue', icon: 'send', roles: ['*'] },
                     { label: this.__('layout.menu.templates'), href: '/templates', icon: 'layout', roles: ['*'] },
                     { label: this.__('layout.menu.webTemplates'), href: '/web-templates', icon: 'code', roles: ['*'] },
@@ -1563,6 +1632,11 @@ export class LayoutManager {
             this.toggleFullscreen();
         });
 
+        // Quick layout switch (desktop-only button)
+        document.getElementById('quick-layout-switch-btn')?.addEventListener('click', async () => {
+            await this.handleQuickLayoutSwitch();
+        });
+
         // User menu dropdown toggle
         document.getElementById('header-user-menu')?.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1581,6 +1655,18 @@ export class LayoutManager {
             }
         };
         document.addEventListener('click', this._userDropdownOutsideClickHandler);
+
+        // Close user dropdown when another header dropdown opens
+        if (this._headerDropdownSyncHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._headerDropdownSyncHandler);
+        }
+        this._headerDropdownSyncHandler = (e) => {
+            if (e?.detail?.source !== 'user') {
+                const dropdown = document.getElementById('user-dropdown');
+                if (dropdown) dropdown.classList.remove('open');
+            }
+        };
+        window.addEventListener('omnex:header-dropdown-open', this._headerDropdownSyncHandler);
 
         // Logout button
         document.getElementById('header-logout-btn')?.addEventListener('click', () => {
@@ -1876,7 +1962,13 @@ export class LayoutManager {
     toggleUserDropdown() {
         const dropdown = document.getElementById('user-dropdown');
         if (dropdown) {
-            dropdown.classList.toggle('open');
+            const willOpen = !dropdown.classList.contains('open');
+            if (willOpen) {
+                window.dispatchEvent(new CustomEvent('omnex:header-dropdown-open', {
+                    detail: { source: 'user' }
+                }));
+            }
+            dropdown.classList.toggle('open', willOpen);
         }
     }
 
@@ -2038,6 +2130,10 @@ export class LayoutManager {
         if (this._userDropdownOutsideClickHandler) {
             document.removeEventListener('click', this._userDropdownOutsideClickHandler);
             this._userDropdownOutsideClickHandler = null;
+        }
+        if (this._headerDropdownSyncHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._headerDropdownSyncHandler);
+            this._headerDropdownSyncHandler = null;
         }
         if (this._topNavOutsideClickHandler) {
             document.removeEventListener('click', this._topNavOutsideClickHandler);

@@ -37,11 +37,13 @@ if (empty($companyId)) {
             'categories' => 0,
             'production_types' => 0,
             'products' => 0,
+            'templates' => 0,
             'label_sizes' => 0,
             'license_plans' => 0,
         ],
         'categories' => ['total' => 0, 'demo' => 0, 'parents' => 0, 'children' => 0],
         'products' => ['total' => 0, 'demo' => 0, 'active' => 0],
+        'templates' => ['total' => 0, 'demo' => 0],
         'production_types' => ['total' => 0, 'demo' => 0],
         'label_sizes' => ['total' => 0, 'active' => 0, 'inactive' => 0],
         'license_plans' => ['total' => 0, 'active' => 0, 'inactive' => 0],
@@ -71,6 +73,15 @@ try {
             SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active
         FROM products
         WHERE company_id = ?",
+        [$companyId]
+    );
+
+    $templateStats = $db->fetch(
+        "SELECT
+            COUNT(*) as total,
+            SUM(CASE WHEN $isDemoCondition THEN 1 ELSE 0 END) as demo
+        FROM templates
+        WHERE company_id = ? OR scope = 'system' OR company_id IS NULL",
         [$companyId]
     );
 
@@ -150,6 +161,7 @@ try {
             'categories' => (int)($categoryStats['total'] ?? 0),
             'production_types' => (int)($productionTypeStats['total'] ?? 0),
             'products' => (int)($productStats['total'] ?? 0),
+            'templates' => (int)($templateStats['total'] ?? 0),
             'label_sizes' => (int)($labelSizeStats['total'] ?? 0),
             'license_plans' => (int)($licensePlanStats['total'] ?? 0),
         ],
@@ -163,6 +175,10 @@ try {
             'total' => (int)($productStats['total'] ?? 0),
             'demo' => (int)($productStats['demo'] ?? 0),
             'active' => (int)($productStats['active'] ?? 0),
+        ],
+        'templates' => [
+            'total' => (int)($templateStats['total'] ?? 0),
+            'demo' => (int)($templateStats['demo'] ?? 0),
         ],
         'production_types' => [
             'total' => (int)($productionTypeStats['total'] ?? 0),
@@ -181,6 +197,7 @@ try {
         'available_locales' => $localeList,
         'has_data' => ((int)($categoryStats['total'] ?? 0) > 0)
             || ((int)($productStats['total'] ?? 0) > 0)
+            || ((int)($templateStats['total'] ?? 0) > 0)
             || ((int)($labelSizeStats['total'] ?? 0) > 0)
             || ((int)($licensePlanStats['total'] ?? 0) > 0),
     ];

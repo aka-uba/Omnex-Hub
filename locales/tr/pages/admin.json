@@ -790,6 +790,8 @@
         "productionTypesDesc": "Konvansiyonel, organik, geleneksel vb.",
         "products": "Ürünler",
         "productsDesc": "Demo ürün verileri",
+        "templates": "Şablonlar",
+        "templatesDesc": "Demo şablon verileri",
         "options": "Seçenekler",
         "demoOnly": "Sadece demo veriler",
         "defaultOnly": "Sadece varsayılan veriler",

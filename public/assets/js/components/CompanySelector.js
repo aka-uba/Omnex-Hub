@@ -16,6 +16,7 @@ export class CompanySelector {
         this.isOpen = false;
         this.storageKey = 'omnex_active_company';
         this._outsideClickHandler = null;
+        this._syncDropdownHandler = null;
     }
 
     /**
@@ -127,7 +128,7 @@ export class CompanySelector {
         const basePath = window.OmnexConfig?.basePath || '';
         const t = (key, fallback) => (window.__ ? window.__(key, fallback) : fallback);
         const companyLabel = t('layout.header.company', 'Company');
-        const selectCompanyLabel = t('layout.header.selectCompany', 'Select Company');
+        const selectCompanyLabel = t('layout.selectCompany', t('layout.header.selectCompany', 'Select Company'));
         const activeCompanyLabel = t('layout.header.activeCompany', 'Active Company');
 
         // If not SuperAdmin, just show company name (no dropdown)
@@ -226,8 +227,14 @@ export class CompanySelector {
         // Toggle dropdown
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.isOpen = !this.isOpen;
-            dropdown.classList.toggle('open', this.isOpen);
+            const willOpen = !dropdown.classList.contains('open');
+            if (willOpen) {
+                window.dispatchEvent(new CustomEvent('omnex:header-dropdown-open', {
+                    detail: { source: 'company' }
+                }));
+            }
+            this.isOpen = willOpen;
+            dropdown.classList.toggle('open', willOpen);
         });
 
         // Close on outside click
@@ -241,6 +248,18 @@ export class CompanySelector {
             }
         };
         document.addEventListener('click', this._outsideClickHandler);
+
+        // Close when another header dropdown opens
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+        }
+        this._syncDropdownHandler = (e) => {
+            if (e?.detail?.source !== 'company') {
+                this.isOpen = false;
+                dropdown.classList.remove('open');
+            }
+        };
+        window.addEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
 
         // Handle company selection
         dropdown.querySelectorAll('.company-dropdown-item').forEach(item => {
@@ -283,6 +302,10 @@ export class CompanySelector {
         if (this._outsideClickHandler) {
             document.removeEventListener('click', this._outsideClickHandler);
             this._outsideClickHandler = null;
+        }
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+            this._syncDropdownHandler = null;
         }
     }
 }

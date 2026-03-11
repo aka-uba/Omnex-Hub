@@ -3,6 +3,7 @@
  * ERP Import File History API
  *
  * GET /api/import/history - List import file history for current company
+ * DELETE /api/import/history?mode=all|older - Manual cleanup
  *
  * @package OmnexDisplayHub
  */
@@ -14,12 +15,68 @@ if (!$user) {
 
 $db = Database::getInstance();
 $companyId = Auth::getActiveCompanyId();
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = min(50, max(1, (int) ($_GET['per_page'] ?? 20)));
 $offset = ($page - 1) * $perPage;
 $status = $_GET['status'] ?? null;
 $source = $_GET['source'] ?? null;
+$cleanupMode = $_GET['mode'] ?? 'all';
+$retentionDays = 30;
+$retentionCutoff = date('Y-m-d H:i:s', strtotime("-{$retentionDays} days"));
+
+// Auto-clean old history entries (keep latest 30 days)
+try {
+    $db->query(
+        "DELETE FROM erp_import_files
+         WHERE company_id = ?
+           AND status IN ('completed', 'failed', 'skipped')
+           AND created_at < ?",
+        [$companyId, $retentionCutoff]
+    );
+} catch (Exception $e) {
+    // Keep endpoint resilient if cleanup fails.
+}
+
+if ($method === 'DELETE') {
+    if (!in_array($user['role'], ['SuperAdmin', 'Admin', 'Manager'], true)) {
+        Response::forbidden('Import geçmişini temizleme yetkiniz yok');
+    }
+
+    try {
+        if ($cleanupMode === 'older') {
+            $stmt = $db->query(
+                "DELETE FROM erp_import_files
+                 WHERE company_id = ?
+                   AND status IN ('completed', 'failed', 'skipped')
+                   AND created_at < ?",
+                [$companyId, $retentionCutoff]
+            );
+        } else {
+            $stmt = $db->query(
+                "DELETE FROM erp_import_files
+                 WHERE company_id = ?
+                   AND status IN ('completed', 'failed', 'skipped')",
+                [$companyId]
+            );
+        }
+
+        $deleted = $stmt->rowCount();
+
+        Response::success([
+            'deleted' => $deleted,
+            'mode' => $cleanupMode,
+            'retention_days' => $retentionDays
+        ], 'Import geçmişi temizlendi');
+    } catch (Exception $e) {
+        Response::error('Import geçmişi temizlenemedi', 500);
+    }
+}
+
+if ($method !== 'GET') {
+    Response::methodNotAllowed('İzin verilmeyen method');
+}
 
 // Build query
 $where = ['company_id = ?'];
@@ -64,7 +121,8 @@ try {
             'page' => $page,
             'per_page' => $perPage,
             'total_pages' => ceil($totalCount / $perPage)
-        ]
+        ],
+        'retention_days' => $retentionDays
     ]);
 } catch (Exception $e) {
     Logger::error('Failed to fetch import history', ['error' => $e->getMessage()]);

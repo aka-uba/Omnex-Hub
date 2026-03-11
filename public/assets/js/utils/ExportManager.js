@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Omnex Display Hub - Export Manager
  * Merkezi export sistemi - Excel, CSV, HTML, JSON, MD, TXT, Print destekli
  *
@@ -14,7 +14,7 @@ export class ExportManager {
             filename: options.filename || 'export',
             title: options.title || (typeof window.__ === 'function' ? window.__('export.title') : 'Export'),
             subtitle: options.subtitle || '',
-            logo: options.logo || branding.logo || null,
+            logo: options.logo || branding.logo || `${window.OmnexConfig?.basePath || ''}/branding/logo-light.png`,
             companyName: options.companyName || branding.companyName || '',
             branchName: options.branchName || branding.branchName || '',
             author: options.author || branding.companyName || 'Omnex Display Hub',
@@ -54,7 +54,7 @@ export class ExportManager {
     }
 
     /**
-     * Export türlerini döndür
+     * Export tÃ¼rlerini dÃ¶ndÃ¼r
      */
     static getExportTypes() {
         return [
@@ -70,9 +70,9 @@ export class ExportManager {
 
     /**
      * Ana export metodu
-     * @param {string} type - Export türü (excel, csv, html, json, md, txt, print)
+     * @param {string} type - Export tÃ¼rÃ¼ (excel, csv, html, json, md, txt, print)
      * @param {Array} data - Export edilecek veri
-     * @param {Array} columns - Kolon tanımları [{key, label, render?}]
+     * @param {Array} columns - Kolon tanÄ±mlarÄ± [{key, label, render?}]
      */
     async export(type, data, columns) {
         switch (type) {
@@ -91,7 +91,7 @@ export class ExportManager {
             case 'print':
                 return this.print(data, columns);
             default:
-                throw new Error(`Desteklenmeyen export türü: ${type}`);
+                throw new Error(`Desteklenmeyen export tÃ¼rÃ¼: ${type}`);
         }
     }
 
@@ -99,7 +99,7 @@ export class ExportManager {
      * Excel export (XLSX)
      */
     async exportExcel(data, columns) {
-        // SheetJS (xlsx) kütüphanesini dinamik yükle (Local Vendor)
+        // SheetJS (xlsx) kÃ¼tÃ¼phanesini dinamik yÃ¼kle (Local Vendor)
         if (!window.XLSX) {
             const basePath = window.OmnexConfig?.basePath || '';
             await this._loadScript(`${basePath}/assets/vendor/xlsx/xlsx.full.min.js`);
@@ -108,17 +108,17 @@ export class ExportManager {
         const rows = this._prepareData(data, columns, 'excel');
         const headers = columns.map(c => c.label);
 
-        // Worksheet oluştur
+        // Worksheet oluÅŸtur
         const ws = window.XLSX.utils.aoa_to_sheet([headers, ...rows]);
 
-        // Kolon genişlikleri
+        // Kolon geniÅŸlikleri
         ws['!cols'] = columns.map(c => ({ wch: Math.max(c.label.length, 15) }));
 
-        // Workbook oluştur
+        // Workbook oluÅŸtur
         const wb = window.XLSX.utils.book_new();
         window.XLSX.utils.book_append_sheet(wb, ws, this.options.title.substring(0, 31));
 
-        // İndir
+        // Ä°ndir
         const filename = `${this.options.filename}_${this._getTimestamp()}.xlsx`;
         window.XLSX.writeFile(wb, filename);
 
@@ -146,7 +146,7 @@ export class ExportManager {
     }
 
     /**
-     * HTML export - Yeni sekmede açar
+     * HTML export - Yeni sekmede aÃ§ar
      */
     exportHTML(data, columns) {
         const rows = this._prepareData(data, columns, 'html');
@@ -166,21 +166,27 @@ export class ExportManager {
             padding: 2rem;
             color: #1a1a2e;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { width: 100%; max-width: 1360px; margin: 0 auto; }
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 2rem;
             padding-bottom: 1rem;
             border-bottom: 2px solid #e9ecef;
         }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-left { display: flex; align-items: center; min-width: 250px; max-width: 250px; }
         .header-center { text-align: center; flex: 1; }
         .company-name { font-size: 1.125rem; font-weight: 700; color: #1a1a2e; }
         .branch-name { font-size: 0.8125rem; color: #6c757d; margin-top: 0.125rem; }
-        .logo { width: 48px; height: 48px; }
-        .title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+        .logo {
+            width: 250px;
+            height: 100px;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+        }
+        .report-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; margin-top: 0.5rem; }
         .subtitle { font-size: 0.875rem; color: #6c757d; }
         .meta { font-size: 0.75rem; color: #6c757d; text-align: right; }
         table {
@@ -237,19 +243,16 @@ export class ExportManager {
         <div class="header">
             <div class="header-left">
                 ${this.options.logo ? `<img src="${this.options.logo}" alt="Logo" class="logo">` : ''}
-                <div>
-                    <h1 class="title">${this._escapeHTML(this.options.title)}</h1>
-                    ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
-                </div>
             </div>
-            ${this.options.companyName ? `
             <div class="header-center">
-                <div class="company-name">${this._escapeHTML(this.options.companyName)}</div>
+                <div class="company-name">${this._escapeHTML(this.options.companyName || 'Omnex Display Hub')}</div>
                 ${this.options.branchName ? `<div class="branch-name">${this._escapeHTML(this.options.branchName)}</div>` : ''}
-            </div>` : ''}
+                <div class="report-title">${this._escapeHTML(this.options.title)}</div>
+                ${this.options.subtitle ? `<div class="subtitle">${this._escapeHTML(this.options.subtitle)}</div>` : ''}
+            </div>
             <div class="meta">
-                <div>Oluşturulma: ${now}</div>
-                <div>Toplam: ${data.length} kayıt</div>
+                <div>Olu\u015Fturulma: ${now}</div>
+                <div>Toplam: ${data.length} kay\u0131t</div>
             </div>
         </div>
 
@@ -275,7 +278,7 @@ export class ExportManager {
 </body>
 </html>`;
 
-        // HTML export yeni sekmede açılır (indirmez)
+        // HTML export yeni sekmede aÃ§Ä±lÄ±r (indirmez)
         const htmlWindow = window.open('', '_blank');
         if (htmlWindow) {
             htmlWindow.document.write(html);
@@ -334,15 +337,15 @@ export class ExportManager {
             md += `> ${this.options.subtitle}\n\n`;
         }
 
-        md += `**Oluşturulma:** ${now}  \n`;
-        md += `**Toplam Kayıt:** ${data.length}\n\n`;
+        md += `**OluÅŸturulma:** ${now}  \n`;
+        md += `**Toplam KayÄ±t:** ${data.length}\n\n`;
         md += `---\n\n`;
 
-        // Tablo başlıkları
+        // Tablo baÅŸlÄ±klarÄ±
         md += '| ' + columns.map(c => c.label).join(' | ') + ' |\n';
         md += '| ' + columns.map(() => '---').join(' | ') + ' |\n';
 
-        // Tablo satırları
+        // Tablo satÄ±rlarÄ±
         rows.forEach(row => {
             md += '| ' + row.map(cell => this._escapeMarkdown(String(cell))).join(' | ') + ' |\n';
         });
@@ -363,7 +366,7 @@ export class ExportManager {
         const rows = this._prepareData(data, columns, 'txt');
         const now = new Date().toLocaleString(this.options.dateFormat);
 
-        // Kolon genişliklerini hesapla
+        // Kolon geniÅŸliklerini hesapla
         const widths = columns.map((col, i) => {
             const headerLen = col.label.length;
             const maxDataLen = Math.max(...rows.map(row => String(row[i]).length));
@@ -373,15 +376,15 @@ export class ExportManager {
         let txt = `${'='.repeat(widths.reduce((a, b) => a + b, 0) + columns.length * 3 + 1)}\n`;
         txt += `${this.options.title}\n`;
         if (this.options.subtitle) txt += `${this.options.subtitle}\n`;
-        txt += `Oluşturulma: ${now}\n`;
-        txt += `Toplam Kayıt: ${data.length}\n`;
+        txt += `OluÅŸturulma: ${now}\n`;
+        txt += `Toplam KayÄ±t: ${data.length}\n`;
         txt += `${'='.repeat(widths.reduce((a, b) => a + b, 0) + columns.length * 3 + 1)}\n\n`;
 
-        // Başlıklar
+        // BaÅŸlÄ±klar
         txt += '| ' + columns.map((c, i) => c.label.padEnd(widths[i])).join(' | ') + ' |\n';
         txt += '| ' + widths.map(w => '-'.repeat(w)).join(' | ') + ' |\n';
 
-        // Satırlar
+        // SatÄ±rlar
         rows.forEach(row => {
             txt += '| ' + row.map((cell, i) => String(cell).padEnd(widths[i])).join(' | ') + ' |\n';
         });
@@ -396,7 +399,7 @@ export class ExportManager {
     }
 
     /**
-     * Print - Yazdırma penceresi aç
+     * Print - YazdÄ±rma penceresi aÃ§
      */
     print(data, columns) {
         const rows = this._prepareData(data, columns, 'html');
@@ -408,7 +411,7 @@ export class ExportManager {
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>${this._escapeHTML(this.options.title)} - Yazdır</title>
+    <title>${this._escapeHTML(this.options.title)} - YazdÄ±r</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -424,12 +427,18 @@ export class ExportManager {
             padding-bottom: 1rem;
             border-bottom: 2px solid #1a1a2e;
         }
-        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-left { display: flex; align-items: center; min-width: 250px; max-width: 250px; }
         .header-center { text-align: center; flex: 1; }
         .company-name { font-size: 1rem; font-weight: 700; }
         .branch-name { font-size: 0.7rem; color: #6c757d; margin-top: 0.125rem; }
-        .logo { width: 40px; height: 40px; }
-        .title { font-size: 1.25rem; font-weight: 700; }
+        .logo {
+            width: 250px;
+            height: 100px;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+        }
+        .report-title { font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem; }
         .subtitle { font-size: 0.75rem; color: #6c757d; }
         .meta { font-size: 0.7rem; color: #6c757d; text-align: right; }
         table {
@@ -479,19 +488,16 @@ export class ExportManager {
     <div class="header">
         <div class="header-left">
             ${this.options.logo ? `<img src="${this.options.logo}" alt="Logo" class="logo">` : ''}
-            <div>
-                <h1 class="title">${this._escapeHTML(this.options.title)}</h1>
-                ${this.options.subtitle ? `<p class="subtitle">${this._escapeHTML(this.options.subtitle)}</p>` : ''}
-            </div>
         </div>
-        ${this.options.companyName ? `
         <div class="header-center">
-            <div class="company-name">${this._escapeHTML(this.options.companyName)}</div>
+            <div class="company-name">${this._escapeHTML(this.options.companyName || 'Omnex Display Hub')}</div>
             ${this.options.branchName ? `<div class="branch-name">${this._escapeHTML(this.options.branchName)}</div>` : ''}
-        </div>` : ''}
+            <div class="report-title">${this._escapeHTML(this.options.title)}</div>
+            ${this.options.subtitle ? `<div class="subtitle">${this._escapeHTML(this.options.subtitle)}</div>` : ''}
+        </div>
         <div class="meta">
             <div>${now}</div>
-            <div>${data.length} kayıt</div>
+            <div>${data.length} kay\u0131t</div>
         </div>
     </div>
 
@@ -517,10 +523,6 @@ export class ExportManager {
     <script>
         window.onload = function() {
             window.print();
-            // Yazdırma iptal edilirse pencereyi kapat
-            window.onafterprint = function() {
-                window.close();
-            };
         };
     </script>
 </body>
@@ -532,8 +534,8 @@ export class ExportManager {
     }
 
     /**
-     * Export menüsü HTML'i oluştur
-     * @param {string} containerId - Menünün ekleneceği container ID
+     * Export menÃ¼sÃ¼ HTML'i oluÅŸtur
+     * @param {string} containerId - MenÃ¼nÃ¼n ekleneceÄŸi container ID
      * @param {Function} onExport - Export fonksiyonu callback
      */
     static renderExportMenu(containerId, onExport) {
@@ -543,7 +545,7 @@ export class ExportManager {
             <div class="export-dropdown" id="${containerId}">
                 <button class="btn btn-outline export-dropdown-btn" type="button">
                     <i class="ti ti-download"></i>
-                    <span>Dışa Aktar</span>
+                    <span>D\u0131\u015Fa Aktar</span>
                     <i class="ti ti-chevron-down"></i>
                 </button>
                 <div class="export-dropdown-menu">
@@ -605,7 +607,7 @@ export class ExportManager {
     // ==========================================
 
     /**
-     * Veriyi export formatına hazırla
+     * Veriyi export formatÄ±na hazÄ±rla
      */
     _prepareData(data, columns, format) {
         return data.map(item => {
@@ -614,24 +616,24 @@ export class ExportManager {
     }
 
     /**
-     * Hücre değerini al
+     * HÃ¼cre deÄŸerini al
      */
     _getCellValue(item, column, format) {
         let value = item[column.key];
 
-        // Nested key desteği (örn: "user.name")
+        // Nested key desteÄŸi (Ã¶rn: "user.name")
         if (column.key.includes('.')) {
             value = column.key.split('.').reduce((obj, key) => obj?.[key], item);
         }
 
-        // Özel render fonksiyonu varsa
+        // Ã–zel render fonksiyonu varsa
         if (column.exportRender && typeof column.exportRender === 'function') {
             return column.exportRender(value, item, format);
         }
 
-        // Format-specific işlemler
+        // Format-specific iÅŸlemler
         if (format === 'html' || format === 'print') {
-            // HTML için badge ve icon desteği
+            // HTML iÃ§in badge ve icon desteÄŸi
             if (column.badge) {
                 const badgeConfig = typeof column.badge === 'function'
                     ? column.badge(value, item)
@@ -647,7 +649,7 @@ export class ExportManager {
             return this._escapeHTML(String(value ?? ''));
         }
 
-        // Diğer formatlar için düz değer
+        // DiÄŸer formatlar iÃ§in dÃ¼z deÄŸer
         if (value === null || value === undefined) return '';
         if (typeof value === 'boolean') return value ? (typeof window.__ === 'function' ? window.__('export.yes') : 'Yes') : (typeof window.__ === 'function' ? window.__('export.no') : 'No');
         if (value instanceof Date) return value.toLocaleString(this.options.dateFormat);
@@ -656,7 +658,7 @@ export class ExportManager {
     }
 
     /**
-     * CSV için escape
+     * CSV iÃ§in escape
      */
     _escapeCSV(value) {
         if (value === null || value === undefined) return '';
@@ -668,7 +670,7 @@ export class ExportManager {
     }
 
     /**
-     * HTML için escape
+     * HTML iÃ§in escape
      */
     _escapeHTML(str) {
         if (str === null || str === undefined) return '';
@@ -681,7 +683,7 @@ export class ExportManager {
     }
 
     /**
-     * Markdown için escape
+     * Markdown iÃ§in escape
      */
     _escapeMarkdown(str) {
         if (str === null || str === undefined) return '';
@@ -694,7 +696,7 @@ export class ExportManager {
      * Dosya indirme
      */
     _downloadFile(content, filename, mimeType) {
-        // Dosya adını sanitize et (Türkçe karakterleri ve özel karakterleri temizle)
+        // Dosya adÄ±nÄ± sanitize et (TÃ¼rkÃ§e karakterleri ve Ã¶zel karakterleri temizle)
         const sanitizedFilename = this._sanitizeFilename(filename);
 
         const blob = new Blob([content], { type: mimeType });
@@ -705,7 +707,7 @@ export class ExportManager {
         link.style.display = 'none';
         document.body.appendChild(link);
 
-        // Timeout ile indirme başlat (bazı tarayıcılarda gerekli)
+        // Timeout ile indirme baÅŸlat (bazÄ± tarayÄ±cÄ±larda gerekli)
         setTimeout(() => {
             link.click();
             document.body.removeChild(link);
@@ -714,14 +716,14 @@ export class ExportManager {
     }
 
     /**
-     * Dosya adını güvenli hale getir
+     * Dosya adÄ±nÄ± gÃ¼venli hale getir
      */
     _sanitizeFilename(filename) {
-        // Türkçe karakterleri değiştir
+        // TÃ¼rkÃ§e karakterleri deÄŸiÅŸtir
         const turkishMap = {
-            'ı': 'i', 'İ': 'I', 'ğ': 'g', 'Ğ': 'G',
-            'ü': 'u', 'Ü': 'U', 'ş': 's', 'Ş': 'S',
-            'ö': 'o', 'Ö': 'O', 'ç': 'c', 'Ç': 'C'
+            '\u0131': 'i', '\u0130': 'I', '\u011F': 'g', '\u011E': 'G',
+            '\u00FC': 'u', '\u00DC': 'U', '\u015F': 's', '\u015E': 'S',
+            '\u00F6': 'o', '\u00D6': 'O', '\u00E7': 'c', '\u00C7': 'C'
         };
 
         let safe = filename;
@@ -729,17 +731,17 @@ export class ExportManager {
             safe = safe.replace(new RegExp(from, 'g'), to);
         }
 
-        // Güvenli olmayan karakterleri kaldır
+        // GÃ¼venli olmayan karakterleri kaldÄ±r
         safe = safe.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-        // Çift alt çizgileri temizle
+        // Ã‡ift alt Ã§izgileri temizle
         safe = safe.replace(/_+/g, '_');
 
         return safe;
     }
 
     /**
-     * Dinamik script yükleme
+     * Dinamik script yÃ¼kleme
      */
     _loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -756,7 +758,7 @@ export class ExportManager {
     }
 
     /**
-     * Timestamp oluştur (dosya adı için)
+     * Timestamp oluÅŸtur (dosya adÄ± iÃ§in)
      */
     _getTimestamp() {
         const now = new Date();
@@ -764,5 +766,6 @@ export class ExportManager {
     }
 }
 
-// Global erişim için window'a ekle
+// Global eriÅŸim iÃ§in window'a ekle
 window.ExportManager = ExportManager;
+

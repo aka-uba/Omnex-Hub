@@ -53,7 +53,7 @@
 /* Dark Mode Overrides for Sidebar/Header */
 .dark,
 [data-theme="dark"] {
-    --sidebar-bg: #080c12;
+    --sidebar-bg: var(--card-bg, #161b22);
     --sidebar-text: #e6edf3;
     --sidebar-icon: #8b949e;
     --sidebar-hover: rgba(255, 255, 255, 0.06);

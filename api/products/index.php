@@ -24,7 +24,7 @@ $sortDir = $request->query('sort_dir', 'DESC');
 $sortAnchor = trim((string)$request->query('sort_anchor', ''));
 
 // Build query
-$where = ["company_id = ?"];
+$where = ["p.company_id = ?"];
 $params = [$companyId];
 
 if ($search) {
@@ -40,11 +40,11 @@ if ($search) {
     $searchTermNorm = "%$searchNorm%";
 
     // REPLACE chain for Turkish character normalization on DB fields
-    $normExpr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(name),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
-    $normExprSku = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(sku),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
-    $normExprBarcode = "LOWER(barcode)";
+    $normExpr = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(p.name),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
+    $normExprSku = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(p.sku),'ı','i'),'ğ','g'),'ü','u'),'ş','s'),'ö','o'),'ç','c'),'İ','i'),'Ğ','g'),'Ü','u'),'Ş','s'),'Ö','o'),'Ç','c'),'I','i')";
+    $normExprBarcode = "LOWER(p.barcode)";
 
-    $where[] = "(name LIKE ? OR sku LIKE ? OR barcode LIKE ? OR $normExpr LIKE ? OR $normExprSku LIKE ? OR $normExprBarcode LIKE ?)";
+    $where[] = "(p.name LIKE ? OR p.sku LIKE ? OR p.barcode LIKE ? OR $normExpr LIKE ? OR $normExprSku LIKE ? OR $normExprBarcode LIKE ?)";
     $params[] = $searchTerm;
     $params[] = $searchTerm;
     $params[] = $searchTerm;
@@ -54,76 +54,86 @@ if ($search) {
 }
 
 if ($group) {
-    $where[] = "\"group\" = ?";
+    $where[] = "p.\"group\" = ?";
     $params[] = $group;
 }
 
 if ($category) {
-    $where[] = "category = ?";
+    $where[] = "p.category = ?";
     $params[] = $category;
 }
 
 if ($status) {
-    $where[] = "status = ?";
+    $where[] = "p.status = ?";
     $params[] = $status;
 }
 
 // Filter by label assignment (both device and template assigned)
 if ($hasLabel === 'assigned') {
-    $where[] = "(assigned_device_id IS NOT NULL AND assigned_device_id != '' AND assigned_template_id IS NOT NULL AND assigned_template_id != '')";
+    $where[] = "(p.assigned_device_id IS NOT NULL AND p.assigned_device_id != '' AND p.assigned_template_id IS NOT NULL AND p.assigned_template_id != '')";
 } elseif ($hasLabel === 'unassigned') {
-    $where[] = "(assigned_device_id IS NULL OR assigned_device_id = '' OR assigned_template_id IS NULL OR assigned_template_id = '')";
+    $where[] = "(p.assigned_device_id IS NULL OR p.assigned_device_id = '' OR p.assigned_template_id IS NULL OR p.assigned_template_id = '')";
 }
 
 // Filter by device assignment
 if ($hasDevice === 'assigned') {
-    $where[] = "(assigned_device_id IS NOT NULL AND assigned_device_id != '')";
+    $where[] = "(p.assigned_device_id IS NOT NULL AND p.assigned_device_id != '')";
 } elseif ($hasDevice === 'unassigned') {
-    $where[] = "(assigned_device_id IS NULL OR assigned_device_id = '')";
+    $where[] = "(p.assigned_device_id IS NULL OR p.assigned_device_id = '')";
 }
 
 $whereClause = implode(' AND ', $where);
 
 // Allowed sort columns (request key -> safe SQL expression)
 $allowedSortMap = [
-    'name' => 'LOWER(name)',
-    'sku' => 'LOWER(sku)',
-    'barcode' => 'LOWER(barcode)',
-    'group' => 'LOWER("group")',
-    'category' => 'LOWER(category)',
-    'current_price' => 'current_price',
-    'stock' => 'stock',
-    'status' => 'LOWER(status)',
-    'created_at' => 'created_at',
-    'updated_at' => 'updated_at'
+    'name' => 'LOWER(p.name)',
+    'sku' => 'LOWER(p.sku)',
+    'barcode' => 'LOWER(p.barcode)',
+    'group' => 'LOWER(p."group")',
+    'category' => 'LOWER(p.category)',
+    'current_price' => 'p.current_price',
+    'stock' => 'p.stock',
+    'status' => 'LOWER(p.status)',
+    'assigned_device' => 'LOWER(d_sort.name)',
+    'assigned_template' => 'LOWER(t_sort.name)',
+    'created_at' => 'p.created_at',
+    'updated_at' => 'p.updated_at'
 ];
 if (!isset($allowedSortMap[$sortBy])) {
     $sortBy = 'updated_at';
 }
 $sortExpr = $allowedSortMap[$sortBy];
 $sortDir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
-$orderBySql = "$sortExpr $sortDir NULLS LAST, LOWER(name) ASC, id ASC";
+$orderBySql = "$sortExpr $sortDir NULLS LAST, LOWER(p.name) ASC, p.id ASC";
 $orderByParams = [];
 
 if (($sortBy === 'group' || $sortBy === 'category') && $sortAnchor !== '') {
-    $anchorExpr = $sortBy === 'group' ? 'LOWER("group")' : 'LOWER(category)';
+    $anchorExpr = $sortBy === 'group' ? 'LOWER(p."group")' : 'LOWER(p.category)';
     $orderBySql = "CASE WHEN $anchorExpr = LOWER(?) THEN 0 ELSE 1 END ASC, $orderBySql";
     $orderByParams[] = $sortAnchor;
 }
 
+$fromClause = "FROM products p";
+if ($sortBy === 'assigned_device') {
+    $fromClause .= "\nLEFT JOIN devices d_sort ON CAST(p.assigned_device_id AS TEXT) = CAST(d_sort.id AS TEXT) AND d_sort.company_id = p.company_id";
+}
+if ($sortBy === 'assigned_template') {
+    $fromClause .= "\nLEFT JOIN templates t_sort ON CAST(p.assigned_template_id AS TEXT) = CAST(t_sort.id AS TEXT) AND (t_sort.company_id = p.company_id OR t_sort.scope = 'system' OR t_sort.company_id IS NULL)";
+}
+
 // Count total
 $total = $db->fetch(
-    "SELECT COUNT(*) as count FROM products WHERE $whereClause",
+    "SELECT COUNT(*) as count FROM products p WHERE $whereClause",
     $params
 )['count'];
 
 // Get products
 $products = $db->fetchAll(
-    "SELECT id, sku, barcode, name, current_price, previous_price, unit,
-            \"group\", category, subcategory, brand, image_url, images, cover_image_index, stock, status, is_featured,
-            assigned_device_id, assigned_template_id,
-            created_at, updated_at
-     FROM products
+    "SELECT p.id, p.sku, p.barcode, p.name, p.current_price, p.previous_price, p.unit,
+            p.\"group\", p.category, p.subcategory, p.brand, p.image_url, p.images, p.cover_image_index, p.stock, p.status, p.is_featured,
+            p.assigned_device_id, p.assigned_template_id,
+            p.created_at, p.updated_at
+     $fromClause
      WHERE $whereClause
      ORDER BY $orderBySql
      LIMIT ? OFFSET ?",
@@ -231,7 +241,7 @@ if (!empty($productIds)) {
 
 // Get categories for filter
 $categories = $db->fetchAll(
-    "SELECT DISTINCT category FROM products WHERE company_id = ? AND category IS NOT NULL AND category != '' ORDER BY category",
+    "SELECT DISTINCT p.category FROM products p WHERE p.company_id = ? AND p.category IS NOT NULL AND p.category != '' ORDER BY p.category",
     [$companyId]
 );
 

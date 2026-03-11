@@ -21,7 +21,18 @@ require_once BASE_PATH . '/services/SettingsResolver.php';
 $apiKey = null;
 
 // Try Authorization: Bearer {key}
-$auth = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+$auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+if (!$auth && function_exists('apache_request_headers')) {
+    $headers = apache_request_headers();
+    if (is_array($headers)) {
+        foreach ($headers as $headerName => $headerValue) {
+            if (strcasecmp((string)$headerName, 'Authorization') === 0) {
+                $auth = (string)$headerValue;
+                break;
+            }
+        }
+    }
+}
 if (preg_match('/Bearer\s+(.+)$/i', $auth, $matches)) {
     $apiKey = trim($matches[1]);
 }

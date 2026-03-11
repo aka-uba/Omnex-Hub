@@ -130,6 +130,16 @@ export class SetupWizard {
                                     </div>
                                 </label>
                                 <label class="seed-type-card">
+                                    <input type="checkbox" id="seed-templates" checked>
+                                    <div class="seed-type-icon">
+                                        <i class="ti ti-layout"></i>
+                                    </div>
+                                    <div class="seed-type-info">
+                                        <span class="seed-type-name">${this.__('setupWizard.templates')}</span>
+                                        <span class="seed-type-desc">${this.__('setupWizard.templatesDesc')}</span>
+                                    </div>
+                                </label>
+                                <label class="seed-type-card">
                                     <input type="checkbox" id="seed-license-plans" checked>
                                     <div class="seed-type-icon">
                                         <i class="ti ti-certificate"></i>
@@ -262,6 +272,7 @@ export class SetupWizard {
             categories: this.status?.categories?.total || 0,
             production_types: this.status?.production_types?.total || 0,
             products: this.status?.products?.total || 0,
+            templates: this.status?.templates?.total || 0,
             label_sizes: this.status?.label_sizes?.total || 0,
             license_plans: this.status?.license_plans?.total || 0
         };
@@ -293,6 +304,15 @@ export class SetupWizard {
                 <div class="status-card-info">
                     <span class="status-card-value">${counts.products || 0}</span>
                     <span class="status-card-label">${this.__('setupWizard.products')}</span>
+                </div>
+            </div>
+            <div class="setup-status-card">
+                <div class="status-card-icon cyan">
+                    <i class="ti ti-layout"></i>
+                </div>
+                <div class="status-card-info">
+                    <span class="status-card-value">${counts.templates || 0}</span>
+                    <span class="status-card-label">${this.__('setupWizard.templates')}</span>
                 </div>
             </div>
             <div class="setup-status-card">
@@ -354,13 +374,14 @@ export class SetupWizard {
         const seedCategories = document.getElementById('seed-categories')?.checked;
         const seedProductionTypes = document.getElementById('seed-production-types')?.checked;
         const seedProducts = document.getElementById('seed-products')?.checked;
+        const seedTemplates = document.getElementById('seed-templates')?.checked;
         const seedLicensePlans = document.getElementById('seed-license-plans')?.checked;
         const seedLabelSizes = document.getElementById('seed-label-sizes')?.checked;
         const demoOnly = document.getElementById('seed-demo-only')?.checked;
         const defaultOnly = document.getElementById('seed-default-only')?.checked;
 
         // At least one type must be selected
-        if (!seedCategories && !seedProductionTypes && !seedProducts && !seedLicensePlans && !seedLabelSizes) {
+        if (!seedCategories && !seedProductionTypes && !seedProducts && !seedTemplates && !seedLicensePlans && !seedLabelSizes) {
             Toast.warning(this.__('setupWizard.selectAtLeastOne'));
             return;
         }
@@ -370,6 +391,7 @@ export class SetupWizard {
         if (seedCategories) seeders.push('categories');
         if (seedProductionTypes) seeders.push('production_types');
         if (seedProducts) seeders.push('products');
+        if (seedTemplates) seeders.push('templates');
         if (seedLicensePlans) seeders.push('license_plans');
         if (seedLabelSizes) seeders.push('label_sizes');
 
@@ -530,12 +552,14 @@ export class SetupWizard {
             'categories': this.__('setupWizard.categories'),
             'production_types': this.__('setupWizard.productionTypes'),
             'products': this.__('setupWizard.products'),
+            'templates': this.__('setupWizard.templates'),
             'license_plans': this.__('setupWizard.licensePlans'),
             'label_sizes': this.__('setupWizard.labelSizes'),
             // Geriye uyumluluk icin eski isimler
             'CategorySeeder': this.__('setupWizard.categories'),
             'ProductionTypeSeeder': this.__('setupWizard.productionTypes'),
             'ProductSeeder': this.__('setupWizard.products'),
+            'TemplateSeeder': this.__('setupWizard.templates'),
             'LicensePlanSeeder': this.__('setupWizard.licensePlans'),
             'LabelSizeSeeder': this.__('setupWizard.labelSizes')
         };

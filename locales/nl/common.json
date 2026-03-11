@@ -345,7 +345,17 @@
         "print": "Afdrukken",
         "bulkDelete": "Bulkverwijdering",
         "bulkDeleteConfirm": "Weet u zeker dat u {count} items wilt verwijderen?",
-        "exportError": "Er is een fout opgetreden tijdens het exporteren"
+        "exportError": "Er is een fout opgetreden tijdens het exporteren",
+        "columnSettings": {
+            "title": "Kolominstellingen",
+            "tableStyle": "Tabelstijl",
+            "verticalBorders": "Verticale randen",
+            "headerBackground": "Achtergrond koptekst",
+            "columns": "Kolommen",
+            "visible": "Zichtbaar",
+            "moveUp": "Omhoog",
+            "moveDown": "Omlaag"
+        }
     },
     "filter": {
         "title": "Filters",
@@ -538,6 +548,9 @@
         "fullscreen": "Volledig scherm",
         "installApp": "Installeer app",
         "toggleSidebar": "Schakelmenu",
+        "selectCompany": "Selecteer bedrijf",
+        "quickSwitchToSidebar": "Schakel naar zijbalklay-out",
+        "quickSwitchToTopNav": "Schakel naar bovenste navigatielay-out",
         "profile": "Profiel",
         "settings": "Instellingen",
         "logout": "Uitloggen",

@@ -1287,6 +1287,126 @@
     color: var(--header-dropdown-icon-color, var(--color-primary));
 }
 
+/* Top navigation (all modes): normalize right selector button heights */
+.layout-top .top-nav-right .language-selector-btn,
+.layout-top .top-nav-right .company-selector-btn,
+.layout-top .top-nav-right .branch-selector-btn,
+.layout-top .top-nav-right .user-menu {
+    min-height: 36px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.layout-top .top-nav-right .language-selector-icon,
+.layout-top .top-nav-right .company-selector-avatar,
+.layout-top .top-nav-right .branch-selector-avatar,
+.layout-top .top-nav-right .user-menu .user-avatar {
+    width: 28px;
+    height: 28px;
+}
+
+/* ===========================================
+   DARK MODE - TOP NAV MENU PARITY WITH SIDEBAR
+   Keep top navigation menu/submenu text and active states
+   aligned with sidebar style in dark mode only.
+   =========================================== */
+
+.dark .layout-top {
+    --header-active: var(--sidebar-active, rgba(255, 255, 255, 0.12));
+    --header-active-text: var(--sidebar-active-text, var(--sidebar-text, #e6edf3));
+    --header-dropdown-active: var(--sidebar-active, rgba(255, 255, 255, 0.12));
+    --header-dropdown-icon-color: var(--sidebar-text, #e6edf3);
+}
+
+.dark .layout-top .top-nav-item,
+.dark .layout-top .top-nav-dropdown-trigger {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 0.9;
+}
+
+.dark .layout-top .top-nav-item.active,
+.dark .layout-top .top-nav-dropdown-trigger.active,
+.dark .layout-top .top-nav-dropdown.has-active .top-nav-dropdown-trigger {
+    background: var(--sidebar-active, rgba(255, 255, 255, 0.12));
+    color: var(--sidebar-active-text, var(--sidebar-text, #e6edf3));
+}
+
+.dark .layout-top .top-nav-dropdown-item.active {
+    background: var(--sidebar-active, rgba(255, 255, 255, 0.12));
+    color: var(--sidebar-active-text, var(--sidebar-text, #e6edf3));
+}
+
+.dark .layout-top .top-nav-dropdown-item.active::before {
+    background: var(--sidebar-active-text, var(--sidebar-text, #e6edf3));
+}
+
+.dark .layout-top .top-nav-dropdown-item.active .top-nav-dropdown-item-icon {
+    background: var(--sidebar-active, rgba(255, 255, 255, 0.12));
+    color: var(--sidebar-active-text, var(--sidebar-text, #e6edf3));
+}
+
+/* Dark mode strict menu colors: all main/sub menu text + icons white */
+.dark .layout-top a.top-nav-item,
+.dark .layout-top a.top-nav-item i,
+.dark .layout-top .top-nav-dropdown-trigger,
+.dark .layout-top .top-nav-dropdown-trigger i,
+.dark .layout-top .top-nav-dropdown-header,
+.dark .layout-top .top-nav-dropdown-header i,
+.dark .layout-top a.top-nav-dropdown-item,
+.dark .layout-top a.top-nav-dropdown-item i,
+.dark .layout-top .top-nav-dropdown-item-icon {
+    color: #ffffff !important;
+}
+
+.dark .layout-top a.top-nav-item,
+.dark .layout-top .top-nav-dropdown-trigger,
+.dark .layout-top a.top-nav-dropdown-item {
+    opacity: 0.9;
+}
+
+.dark .layout-top a.top-nav-item:hover,
+.dark .layout-top .top-nav-dropdown-trigger:hover,
+.dark .layout-top a.top-nav-dropdown-item:hover,
+.dark .layout-top a.top-nav-item.active,
+.dark .layout-top .top-nav-dropdown-trigger.active,
+.dark .layout-top .top-nav-dropdown.has-active .top-nav-dropdown-trigger,
+.dark .layout-top a.top-nav-dropdown-item.active {
+    color: #ffffff !important;
+    opacity: 1;
+}
+
+.dark .layout-top .top-nav-dropdown-item-icon,
+.dark .layout-top a.top-nav-dropdown-item.active .top-nav-dropdown-item-icon {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff !important;
+}
+
+/* Dark mode top-right selector buttons: keep structure, equal height */
+.dark .layout-top .top-nav-right .language-selector-btn,
+.dark .layout-top .top-nav-right .company-selector-btn,
+.dark .layout-top .top-nav-right .branch-selector-btn,
+.dark .layout-top .top-nav-right .user-menu {
+    min-height: 36px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-radius: var(--radius-xl);
+    display: inline-flex;
+    align-items: center;
+}
+
+.dark .layout-top .top-nav-right .language-selector-icon,
+.dark .layout-top .top-nav-right .company-selector-avatar,
+.dark .layout-top .top-nav-right .branch-selector-avatar,
+.dark .layout-top .top-nav-right .user-menu .user-avatar {
+    width: 28px;
+    height: 28px;
+}
+
 /* ===========================================
    FOOTER
    =========================================== */

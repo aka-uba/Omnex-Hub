@@ -583,6 +583,15 @@
     color: #fa5252;
 }
 
+/* License page small stat cards - dark mode filled look (parity with dashboard cards) */
+.dark .license-stats .analytics-card,
+[data-theme="dark"] .license-stats .analytics-card,
+.dark .license-limits-grid .license-limit-card,
+[data-theme="dark"] .license-limits-grid .license-limit-card {
+    background-color: var(--bg-tertiary, #161b22);
+    border-color: var(--border-light, #21262d);
+}
+
 /* Responsive for license limits grid */
 @media (max-width: 1200px) {
     .license-limits-grid {

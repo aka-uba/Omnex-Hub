@@ -311,6 +311,13 @@ export class BundleListPage {
             searchable: true,
             searchPlaceholder: this.__('filters.search'),
             selectable: true,
+            toolbar: {
+                show: true,
+                exports: true
+            },
+            exportFilename: 'paketler',
+            exportTitle: this.__('export.title'),
+            exportSubtitle: this.__('subtitle'),
             onSelectionChange: (rows) => this.onSelectionChange(rows)
         });
 

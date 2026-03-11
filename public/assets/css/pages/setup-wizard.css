@@ -6,7 +6,7 @@
 /* Status Grid */
 .setup-status-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
 }
 
@@ -73,6 +73,11 @@
 .status-card-icon.teal {
     background: rgba(18, 184, 134, 0.15);
     color: #12b886;
+}
+
+.status-card-icon.cyan {
+    background: rgba(34, 211, 238, 0.15);
+    color: #06b6d4;
 }
 
 .status-card-icon.red {

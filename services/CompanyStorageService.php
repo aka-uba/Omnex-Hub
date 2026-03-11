@@ -32,6 +32,8 @@ class CompanyStorageService
             $basePath . DIRECTORY_SEPARATOR . 'renders',
             $basePath . DIRECTORY_SEPARATOR . 'exports',
             $basePath . DIRECTORY_SEPARATOR . 'imports',
+            $basePath . DIRECTORY_SEPARATOR . 'imports' . DIRECTORY_SEPARATOR . 'processed',
+            $basePath . DIRECTORY_SEPARATOR . 'imports' . DIRECTORY_SEPARATOR . 'failed',
             $basePath . DIRECTORY_SEPARATOR . 'temp',
         ];
 
@@ -103,4 +105,3 @@ class CompanyStorageService
         return @file_put_contents($metaPath, $json . PHP_EOL) !== false;
     }
 }
-

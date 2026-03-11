@@ -27,6 +27,8 @@ $failedDir = $importDir . 'failed/';
 // GET: List files in import directory
 // =========================================================
 if ($method === 'GET') {
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $perPage = min(100, max(1, (int) ($_GET['per_page'] ?? 10)));
     $files = [];
 
     if (is_dir($importDir)) {
@@ -80,10 +82,33 @@ if ($method === 'GET') {
         });
     }
 
+    $total = count($files);
+    $offset = ($page - 1) * $perPage;
+    $pagedFiles = array_slice($files, $offset, $perPage);
+
+    $defaultImportFilename = null;
+    try {
+        $resolver = new SettingsResolver();
+        $effective = $resolver->getEffectiveSettings('file_import', $companyId);
+        $settings = $effective['settings'] ?? [];
+        $defaultImportFilename = !empty($settings['default_import_filename'])
+            ? (string)$settings['default_import_filename']
+            : null;
+    } catch (Exception $e) {
+        // Keep listing resilient if settings fetch fails
+    }
+
     Response::success([
-        'files' => $files,
+        'files' => $pagedFiles,
         'directory' => 'storage/companies/' . $companyId . '/imports/',
-        'total' => count($files)
+        'default_import_filename' => $defaultImportFilename,
+        'total' => $total,
+        'pagination' => [
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total_pages' => max(1, (int)ceil($total / $perPage))
+        ]
     ]);
 }
 
@@ -120,8 +145,8 @@ if ($method === 'POST') {
 
     // Load parsers and helpers
     require_once BASE_PATH . '/parsers/BaseParser.php';
-    require_once BASE_PATH . '/parsers/CsvParser.php';
     require_once BASE_PATH . '/parsers/TxtParser.php';
+    require_once BASE_PATH . '/parsers/CsvParser.php';
     require_once BASE_PATH . '/parsers/JsonParser.php';
     require_once BASE_PATH . '/parsers/XmlParser.php';
     require_once BASE_PATH . '/parsers/XlsxParser.php';
@@ -134,56 +159,77 @@ if ($method === 'POST') {
     $fileContent = file_get_contents($filePath);
     $fileHash = md5($fileContent);
 
-    // Check if already imported
+    $fileId = null;
+
+    // Reuse pending API/directory record for the same hash when available
     try {
-        $existing = $db->fetch(
-            "SELECT id, status FROM erp_import_files
-             WHERE company_id = ? AND file_hash = ? AND status IN ('completed', 'processing')
+        $pending = $db->fetch(
+            "SELECT id FROM erp_import_files
+             WHERE company_id = ? AND file_hash = ? AND status IN ('pending', 'processing')
              ORDER BY created_at DESC LIMIT 1",
             [$companyId, $fileHash]
         );
-        if ($existing) {
-            Response::success([
-                'already_imported' => true,
-                'existing_id' => $existing['id'],
-                'message' => 'Bu dosya daha önce import edilmiş'
-            ], 'Dosya zaten import edilmiş');
+
+        if ($pending) {
+            $fileId = $pending['id'];
+            $db->update('erp_import_files', [
+                'status' => 'processing',
+                'processed_at' => null
+            ], 'id = ?', [$fileId]);
+        }
+
+        if (!$fileId) {
+            $existing = $db->fetch(
+                "SELECT id, status FROM erp_import_files
+                 WHERE company_id = ? AND file_hash = ? AND status IN ('completed', 'processing')
+                 ORDER BY created_at DESC LIMIT 1",
+                [$companyId, $fileHash]
+            );
+            if ($existing) {
+                Response::success([
+                    'already_imported' => true,
+                    'existing_id' => $existing['id'],
+                    'message' => 'Bu dosya daha önce import edilmiş'
+                ], 'Dosya zaten import edilmiş');
+            }
         }
     } catch (Exception $e) {
         // Continue
     }
 
     // Create DB record
-    $fileId = $db->generateUuid();
-    try {
-        $db->insert('erp_import_files', [
-            'id' => $fileId,
-            'company_id' => $companyId,
-            'filename' => $filename,
-            'original_filename' => $filename,
-            'file_path' => 'storage/companies/' . $companyId . '/imports/' . $filename,
-            'file_size' => $fileSize,
-            'file_format' => $extension,
-            'file_hash' => $fileHash,
-            'source' => 'manual',
-            'status' => 'processing',
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
-    } catch (Exception $e) {
-        Logger::error('Failed to create import record', ['error' => $e->getMessage()]);
+    if (!$fileId) {
+        $fileId = $db->generateUuid();
+        try {
+            $db->insert('erp_import_files', [
+                'id' => $fileId,
+                'company_id' => $companyId,
+                'filename' => $filename,
+                'original_filename' => $filename,
+                'file_path' => 'storage/companies/' . $companyId . '/imports/' . $filename,
+                'file_size' => $fileSize,
+                'file_format' => $extension,
+                'file_hash' => $fileHash,
+                'source' => 'manual',
+                'status' => 'processing',
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+        } catch (Exception $e) {
+            Logger::error('Failed to create import record', ['error' => $e->getMessage()]);
+        }
     }
 
     // Parse file
     try {
         $parser = OmnexParserFactory::autoDetect($fileContent, $filename);
-        $parseResult = $parser->parse($fileContent);
+        $rawData = $parser->parse($fileContent);
 
-        if (empty($parseResult['data'])) {
+        if (empty($rawData) || !is_array($rawData)) {
             throw new Exception('Dosya parse edilemedi veya boş');
         }
 
-        $rawData = $parseResult['data'];
-        $headers = $parseResult['headers'] ?? array_keys($rawData[0] ?? []);
+        $firstRow = $rawData[0] ?? [];
+        $headers = is_array($firstRow) ? array_keys($firstRow) : [];
 
         // Get import settings for default mappings
         $resolver = new SettingsResolver();

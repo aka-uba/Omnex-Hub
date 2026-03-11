@@ -203,7 +203,7 @@ export class TemplateListPage {
                         onclick="${canEdit ? `event.stopPropagation(); window.templateListPage?.toggleSelect('${t.id}')` : 'event.stopPropagation();'}">
                 </div>
                 <div class="template-card-preview ${isPortrait ? 'portrait' : 'landscape'}">
-                    ${t.thumbnail && t.thumbnail.startsWith('data:')
+                    ${t.thumbnail
                         ? `<img src="${t.thumbnail}" alt="${escapeHTML(t.name)}" class="image-hover-trigger" data-template-id="${t.id}">`
                         : `<div class="template-placeholder">
                             <i class="ti ti-layout"></i>
@@ -273,7 +273,7 @@ export class TemplateListPage {
                     width: '70px',
                     sortable: false,
                     render: (_, row) => {
-                        if (row.thumbnail && row.thumbnail.startsWith('data:')) {
+                        if (row.thumbnail) {
                             return `
                                 <div class="template-table-preview image-hover-trigger" data-template-id="${row.id}">
                                     <img src="${row.thumbnail}" alt="${escapeHTML(row.name)}">
@@ -590,7 +590,7 @@ export class TemplateListPage {
                         <span class="preview-dimensions">${template.width}×${template.height}px</span>
                     </div>
                     <div class="preview-container" style="aspect-ratio: ${aspectRatio};">
-                        ${previewImage && previewImage.startsWith('data:')
+                        ${previewImage
                             ? `<img src="${previewImage}" alt="${escapeHTML(template.name)}">`
                             : `<div class="preview-placeholder">
                                 <i class="ti ti-photo-off"></i>
@@ -654,7 +654,8 @@ export class TemplateListPage {
         try {
             const response = await this.app.api.get('/templates', {
                 page: this.pagination.page,
-                per_page: this.pagination.perPage
+                per_page: this.pagination.perPage,
+                include_preview_data: 1
             });
 
             this.templates = response.data || [];

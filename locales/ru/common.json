@@ -345,7 +345,17 @@
         "print": "Печать",
         "bulkDelete": "Массовое удаление",
         "bulkDeleteConfirm": "Вы уверены, что хотите удалить {count} элементов?",
-        "exportError": "Произошла ошибка во время экспорта"
+        "exportError": "Произошла ошибка во время экспорта",
+        "columnSettings": {
+            "title": "Настройки столбцов",
+            "tableStyle": "Стиль таблицы",
+            "verticalBorders": "Вертикальные границы",
+            "headerBackground": "Фон заголовка",
+            "columns": "Столбцы",
+            "visible": "Видимый",
+            "moveUp": "Вверх",
+            "moveDown": "Вниз"
+        }
     },
     "filter": {
         "title": "Фильтры",
@@ -881,6 +891,9 @@
         "fullscreen": "Полноэкранный режим",
         "installApp": "Установить приложение",
         "toggleSidebar": "Показать/скрыть меню",
+        "selectCompany": "Выберите компанию",
+        "quickSwitchToSidebar": "Переключиться на боковое меню",
+        "quickSwitchToTopNav": "Переключиться на верхнее меню",
         "profile": "Профиль",
         "settings": "Настройки",
         "logout": "Выйти",

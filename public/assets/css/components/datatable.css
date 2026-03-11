@@ -110,6 +110,11 @@
     flex-wrap: wrap;
 }
 
+/* Column settings button */
+[data-table-column-settings] {
+    flex-shrink: 0;
+}
+
 /* Selection count */
 .data-table-selection-count {
     font-size: var(--text-sm);
@@ -275,6 +280,147 @@
 .data-table-bordered .data-table-th,
 .data-table-bordered .data-table-td {
     border: 1px solid var(--border-color);
+}
+
+/* Vertical borders from table style settings */
+.data-table-vertical-borders .data-table-th,
+.data-table-vertical-borders .data-table-td {
+    border-right: 1px solid var(--border-color);
+}
+
+.data-table-vertical-borders .data-table-th:last-child,
+.data-table-vertical-borders .data-table-td:last-child {
+    border-right: none;
+}
+
+/* ===========================================
+   COLUMN SETTINGS MODAL
+   =========================================== */
+
+.data-table-settings-modal[hidden] {
+    display: none !important;
+}
+
+.data-table-settings-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+}
+
+.data-table-settings-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.data-table-settings-dialog {
+    position: relative;
+    width: min(92vw, 860px);
+    max-height: 85vh;
+    margin: 6vh auto;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.data-table-settings-header,
+.data-table-settings-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table-settings-header h3 {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+}
+
+.data-table-settings-body {
+    padding: var(--space-4);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.data-table-settings-section {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    background: var(--bg-secondary);
+}
+
+.data-table-settings-section h4 {
+    margin: 0 0 var(--space-3) 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+}
+
+.data-table-settings-row-inline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.data-table-settings-inline-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.data-table-settings-columns {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.data-table-settings-column-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) auto auto auto;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-primary);
+}
+
+.data-table-settings-column-label {
+    font-weight: var(--font-medium);
+    color: var(--text-primary);
+}
+
+.data-table-settings-column-key {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+}
+
+.data-table-settings-visible-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    white-space: nowrap;
+}
+
+.data-table-settings-footer {
+    border-top: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+.data-table-settings-footer-right {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 /* ===========================================
@@ -1062,6 +1208,22 @@
     /* Sol taraf daraltılıp butonlara daha fazla alan */
     .data-card-header-left {
         max-width: calc(100% - 180px);
+    }
+
+    .data-table-settings-dialog {
+        width: 96vw;
+        margin: 2vh auto;
+        max-height: 94vh;
+    }
+
+    .data-table-settings-column-row {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+    }
+
+    .data-table-settings-row-inline {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

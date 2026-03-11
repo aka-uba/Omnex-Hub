@@ -18,6 +18,7 @@ Last updated: 2026-03-08
 - Avoid unrelated refactors unless requested.
 - Preserve original file encoding; do not silently convert encoding during write.
 - If a file has non-trivial encoding or high breakage risk, create a temp backup before editing and verify content integrity after write.
+- Localization safety rule: never edit locale/translation files without a backup copy first (no backup, no edit).
 - Do not introduce hardcoded UI/user-facing strings; route text through i18n.
 - For every added/updated key, update all 8 language files in scope.
 - Preserve diacritics/special characters in localized content; do not ASCII-normalize translated strings.

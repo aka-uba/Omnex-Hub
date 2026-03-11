@@ -145,6 +145,26 @@ if ($method === 'GET') {
     // Ayarları birleştir
     $newConfig = mergeIntegrationSettings($integrationType, $currentConfig, $data);
 
+    // API anahtarı firma bazında benzersiz olmalı
+    if ($integrationType === 'api' && !empty($newConfig['api_key'])) {
+        $apiRows = $db->fetchAll(
+            "SELECT company_id, config_json
+             FROM integration_settings
+             WHERE integration_type = 'api'
+               AND scope = 'company'
+               AND company_id IS NOT NULL
+               AND company_id <> ?",
+            [$companyId]
+        );
+
+        foreach ($apiRows as $apiRow) {
+            $apiCfg = json_decode($apiRow['config_json'] ?? '{}', true) ?: [];
+            if (!empty($apiCfg['api_key']) && hash_equals((string)$apiCfg['api_key'], (string)$newConfig['api_key'])) {
+                Response::badRequest('Bu API anahtari baska bir firmada kullaniliyor. Lutfen farkli bir API anahtari olusturun.');
+            }
+        }
+    }
+
     // Kaydet (company scope)
     $isActive = isset($data['enabled']) ? (bool)$data['enabled'] : true;
     $resolver->saveCompanySettings($integrationType, $companyId, $newConfig, $isActive);

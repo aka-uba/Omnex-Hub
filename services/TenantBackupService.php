@@ -1903,7 +1903,16 @@ class TenantBackupService
     private function ensureCompanyDirs(string $companyId): void
     {
         $storageBase = defined('STORAGE_PATH') ? STORAGE_PATH : (dirname(__DIR__) . '/storage');
-        $dirs = ['media', 'avatars', 'templates', 'exports', 'logs'];
+        $dirs = [
+            'media',
+            'avatars',
+            'templates',
+            'exports',
+            'logs',
+            'imports',
+            'imports/processed',
+            'imports/failed',
+        ];
         foreach ($dirs as $dir) {
             $path = $storageBase . '/companies/' . $companyId . '/' . $dir;
             if (!is_dir($path)) {

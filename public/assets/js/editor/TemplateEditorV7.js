@@ -1053,7 +1053,118 @@ export class TemplateEditorV7 {
             hook: 'M 20 40 H 72 Q 86 40 86 54 Q 86 62 94 62 H 140 Q 154 62 154 48 Q 154 40 162 40 H 260',
             twinline: 'M 20 32 H 260 M 20 46 H 260'
         };
-        const pathData = pathByType[renderType] || pathByType.wave;
+
+        const hashType = (type) => {
+            const text = String(type || '');
+            let h = 2166136261;
+            for (let i = 0; i < text.length; i++) {
+                h ^= text.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return h >>> 0;
+        };
+
+        const autoPathByType = (type) => {
+            const t = String(type || '').toLowerCase();
+            if (!t) return '';
+            const h = hashType(t);
+            const v = h % 5;
+
+            if (t.includes('basic') || t.includes('minimal') || t.includes('hairline') || t.includes('solid')) {
+                if (v === 0) return 'M 20 40 H 260';
+                if (v === 1) return 'M 20 40 H 260 M 116 40 H 144';
+                if (v === 2) return 'M 20 40 H 260 M 130 28 V 52';
+                if (v === 3) return 'M 20 36 H 260 M 20 44 H 260';
+                return 'M 20 40 H 260 M 100 40 L 108 34 L 116 40 L 108 46 Z M 144 40 L 152 34 L 160 40 L 152 46 Z';
+            }
+
+            if (t.includes('premium') || t.includes('luxury') || t.includes('gold') || t.includes('jewel') || t.includes('crest') || t.includes('medallion')) {
+                if (v === 0) return 'M 20 40 H 96 M 164 40 H 260 M 118 40 L 130 24 L 142 40 L 130 56 Z';
+                if (v === 1) return 'M 20 40 H 260 M 112 40 a 18 18 0 1 1 36 0 a 18 18 0 1 1 -36 0';
+                if (v === 2) return 'M 20 34 H 260 M 20 46 H 260 M 120 40 L 130 28 L 140 40 L 130 52 Z';
+                if (v === 3) return 'M 20 40 H 260 M 130 24 L 136 34 L 148 34 L 138 42 L 142 54 L 130 46 L 118 54 L 122 42 L 112 34 L 124 34 Z';
+                return 'M 20 40 H 104 M 156 40 H 260 M 110 40 a 20 12 0 1 0 40 0 a 20 12 0 1 0 -40 0';
+            }
+
+            if (t.includes('ramadan') || t.includes('bayram') || t.includes('hilal') || t.includes('mosque') || t.includes('lantern') || t.includes('islamic')) {
+                if (v === 0) return 'M 20 40 H 260 M 130 26 a 12 12 0 1 1 0 24 a 8 8 0 1 0 0 -24';
+                if (v === 1) return 'M 20 40 H 108 M 152 40 H 260 M 130 24 L 136 36 L 150 36 L 138 44 L 142 56 L 130 48 L 118 56 L 122 44 L 110 36 L 124 36 Z';
+                if (v === 2) return 'M 20 40 H 260 M 130 20 L 130 30 M 118 30 H 142 V 54 H 118 Z';
+                if (v === 3) return 'M 20 40 H 260 M 96 40 L 104 30 L 112 40 L 104 50 Z M 148 40 L 156 30 L 164 40 L 156 50 Z';
+                return 'M 20 44 Q 80 20 130 34 Q 180 48 260 26';
+            }
+
+            if (t.includes('national') || t.includes('republic') || t.includes('victory') || t.includes('flag') || t.includes('state')) {
+                if (v === 0) return 'M 20 34 H 260 M 20 46 H 260 M 130 26 L 134 34 L 143 34 L 136 40 L 139 48 L 130 43 L 121 48 L 124 40 L 117 34 L 126 34 Z';
+                if (v === 1) return 'M 20 40 H 260 M 120 40 a 10 10 0 1 1 20 0 a 10 10 0 1 1 -20 0';
+                if (v === 2) return 'M 20 36 H 260 M 20 44 H 260 M 108 40 H 152';
+                if (v === 3) return 'M 20 40 H 260 M 78 40 L 84 30 L 90 40 L 84 50 Z M 170 40 L 176 30 L 182 40 L 176 50 Z';
+                return 'M 20 40 H 260 M 130 28 L 138 40 L 130 52 L 122 40 Z';
+            }
+
+            if (t.includes('new-year') || t.includes('holiday') || t.includes('winter') || t.includes('snow') || t.includes('sparkle') || t.includes('confetti') || t.includes('gift') || t.includes('celebration')) {
+                if (v === 0) return 'M 20 40 H 260 M 130 26 L 134 34 L 142 34 L 136 40 L 138 48 L 130 43 L 122 48 L 124 40 L 118 34 L 126 34 Z';
+                if (v === 1) return 'M 20 40 H 260 M 92 34 L 92 46 M 106 32 L 106 48 M 130 30 L 130 50 M 154 32 L 154 48 M 168 34 L 168 46';
+                if (v === 2) return 'M 20 40 H 260 M 120 40 L 130 28 L 140 40 L 130 52 Z M 100 40 L 106 34 L 112 40 L 106 46 Z M 148 40 L 154 34 L 160 40 L 154 46 Z';
+                if (v === 3) return 'M 20 40 H 108 M 152 40 H 260 M 118 30 H 142 V 50 H 118 Z M 130 30 V 50';
+                return 'M 20 40 H 260 M 130 24 L 130 56 M 116 40 H 144 M 120 28 L 140 52 M 140 28 L 120 52';
+            }
+
+            if (t.includes('campaign') || t.includes('promo') || t.includes('discount') || t.includes('sale') || t.includes('opening')) {
+                if (v === 0) return 'M 20 40 H 232 L 260 40 L 240 28 M 260 40 L 240 52';
+                if (v === 1) return 'M 20 40 H 260 M 118 28 H 142 V 52 H 118 Z';
+                if (v === 2) return 'M 20 40 H 260 M 110 40 L 122 26 L 134 40 L 122 54 Z M 126 40 L 138 26 L 150 40 L 138 54 Z';
+                if (v === 3) return 'M 20 36 H 260 M 20 44 H 260 M 220 26 L 244 40 L 220 54';
+                return 'M 20 40 H 260 M 120 28 H 140 M 120 52 H 140 M 120 28 V 52 M 140 28 V 52';
+            }
+
+            if (t.includes('price') || t.includes('retail') || t.includes('pos') || t.includes('marker') || t.includes('label')) {
+                if (v === 0) return 'M 20 40 H 260 M 120 40 L 130 28 L 140 40 L 130 52 Z';
+                if (v === 1) return 'M 20 40 H 104 M 156 40 H 260 M 108 28 H 152 V 52 H 108 Z';
+                if (v === 2) return 'M 20 40 H 260 M 116 40 H 144 M 130 24 V 56';
+                if (v === 3) return 'M 20 40 H 114 M 146 40 H 260 M 118 30 L 142 50 M 142 30 L 118 50';
+                return 'M 20 34 H 260 M 20 46 H 260 M 130 28 L 138 40 L 130 52 L 122 40 Z';
+            }
+
+            if (t.includes('floral') || t.includes('flower') || t.includes('leaf') || t.includes('rose') || t.includes('bloom') || t.includes('garden') || t.includes('petal')) {
+                if (v === 0) return 'M 20 40 Q 56 26 92 40 T 164 40 T 236 40 T 260 40';
+                if (v === 1) return 'M 20 40 H 260 M 96 40 C 106 28 118 28 128 40 C 118 52 106 52 96 40 M 132 40 C 142 28 154 28 164 40 C 154 52 142 52 132 40';
+                if (v === 2) return 'M 20 40 H 260 M 88 40 a 4 4 0 1 1 8 0 a 4 4 0 1 1 -8 0 M 126 40 a 6 6 0 1 1 12 0 a 6 6 0 1 1 -12 0 M 166 40 a 4 4 0 1 1 8 0 a 4 4 0 1 1 -8 0';
+                if (v === 3) return 'M 20 40 H 260 M 70 40 C 80 28 92 28 102 40 C 92 52 80 52 70 40 M 158 40 C 168 28 180 28 190 40 C 180 52 168 52 158 40';
+                return 'M 20 44 Q 70 24 130 40 Q 190 56 260 34';
+            }
+
+            if (t.includes('tech') || t.includes('digital') || t.includes('circuit') || t.includes('scanline') || t.includes('data') || t.includes('pixel') || t.includes('futuristic') || t.includes('blue-screen')) {
+                if (v === 0) return 'M 20 40 H 260 M 20 32 H 260 M 20 48 H 260';
+                if (v === 1) return 'M 20 40 H 80 V 26 H 126 V 54 H 176 V 40 H 260';
+                if (v === 2) return 'M 20 40 H 260 M 40 34 V 46 M 68 34 V 46 M 96 34 V 46 M 124 34 V 46 M 152 34 V 46 M 180 34 V 46 M 208 34 V 46';
+                if (v === 3) return 'M 20 40 H 260 M 100 28 H 160 V 52 H 100 Z';
+                return 'M 20 40 H 92 L 104 26 L 118 52 L 134 30 L 148 48 L 164 28 H 260';
+            }
+
+            if (t.includes('ornamental') || t.includes('baroque') || t.includes('vintage') || t.includes('symmetric') || t.includes('scroll') || t.includes('teardrop') || t.includes('curl')) {
+                if (v === 0) return 'M 20 40 C 44 24 68 24 92 40 H 168 C 192 24 216 24 260 40';
+                if (v === 1) return 'M 20 40 H 260 M 112 40 C 118 26 142 26 148 40 C 142 54 118 54 112 40';
+                if (v === 2) return 'M 20 40 C 48 56 76 24 104 40 C 132 56 160 24 188 40 C 212 52 236 52 260 40';
+                if (v === 3) return 'M 20 40 H 260 M 120 40 L 130 28 L 140 40 L 130 52 Z';
+                return 'M 20 40 C 40 30 60 30 80 40 S 120 50 140 40 S 180 30 200 40 S 232 50 260 40';
+            }
+
+            if (t.includes('double') || t.includes('triple') || t.includes('rail') || t.includes('ribbon')) {
+                if (v === 0) return 'M 20 32 H 260 M 20 48 H 260';
+                if (v === 1) return 'M 20 28 H 260 M 20 40 H 260 M 20 52 H 260';
+                if (v === 2) return 'M 20 32 H 260 M 20 48 H 260 M 124 40 L 130 32 L 136 40 L 130 48 Z';
+                if (v === 3) return 'M 20 40 L 38 28 L 56 40 L 74 52 L 92 40 L 110 28 L 128 40 L 146 52 L 164 40 L 182 28 L 200 40 L 218 52 L 236 40 L 260 30';
+                return 'M 20 40 H 260 M 30 40 a 4 4 0 1 1 8 0 a 4 4 0 1 1 -8 0 M 218 40 a 4 4 0 1 1 8 0 a 4 4 0 1 1 -8 0';
+            }
+
+            if (t.includes('dashed') || t.includes('dash')) return 'M 20 40 H 260';
+            if (t.includes('dotted') || t.includes('dot')) return 'M 20 40 H 260';
+
+            return 'M 20 40 Q 40 26 60 40 T 100 40 T 140 40 T 180 40 T 220 40 T 260 40';
+        };
+
+        const pathData = pathByType[renderType] || autoPathByType(renderType) || pathByType.wave;
         const pathObj = new Path(pathData, {
             ...V7_ORIGIN,
             left: 220,
@@ -1061,6 +1172,7 @@ export class TemplateEditorV7 {
             fill: '',
             stroke: color,
             strokeWidth: width,
+            strokeDashArray: style.strokeDashArray || null,
             strokeLineCap: style.strokeLineCap || 'round',
             strokeLineJoin: style.strokeLineJoin || 'round',
             strokeUniform: true

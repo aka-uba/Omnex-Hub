@@ -29,6 +29,7 @@ $defaults = [
     'enabled' => false,
     'auto_import_enabled' => false,
     'check_interval' => 30,
+    'default_import_filename' => null,
     'allowed_formats' => ['csv', 'txt', 'json', 'xml', 'xlsx'],
     'max_file_size_mb' => 10,
     'default_mappings' => [],
@@ -108,6 +109,7 @@ if ($method === 'PUT') {
     // Merge new settings
     $fields = [
         'enabled', 'auto_import_enabled', 'check_interval',
+        'default_import_filename',
         'allowed_formats', 'max_file_size_mb',
         'update_existing', 'create_new', 'skip_errors', 'trigger_render'
     ];
@@ -118,6 +120,16 @@ if ($method === 'PUT') {
                 $current[$field] = (bool) $data[$field];
             } elseif (in_array($field, ['check_interval', 'max_file_size_mb'])) {
                 $current[$field] = max(1, (int) $data[$field]);
+            } elseif ($field === 'default_import_filename') {
+                $filename = trim((string) $data[$field]);
+                if ($filename === '') {
+                    $current[$field] = null;
+                } else {
+                    $safeFilename = basename($filename);
+                    // Normalize timestamped API-push filenames: 20260311_153045_products.csv => products.csv
+                    $normalized = preg_replace('/^\d{8}_\d{6}_/', '', $safeFilename);
+                    $current[$field] = $normalized !== '' ? $normalized : $safeFilename;
+                }
             } elseif ($field === 'allowed_formats') {
                 $validFormats = ['csv', 'txt', 'json', 'xml', 'xlsx'];
                 $current[$field] = array_values(array_intersect((array) $data[$field], $validFormats));

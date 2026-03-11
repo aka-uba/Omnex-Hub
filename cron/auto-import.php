@@ -27,8 +27,8 @@ require_once BASE_PATH . '/services/ProductImportHelper.php';
 
 // Parsers
 require_once BASE_PATH . '/parsers/BaseParser.php';
-require_once BASE_PATH . '/parsers/CsvParser.php';
 require_once BASE_PATH . '/parsers/TxtParser.php';
+require_once BASE_PATH . '/parsers/CsvParser.php';
 require_once BASE_PATH . '/parsers/JsonParser.php';
 require_once BASE_PATH . '/parsers/XmlParser.php';
 require_once BASE_PATH . '/parsers/XlsxParser.php';
@@ -58,7 +58,7 @@ try {
     $companies = $db->fetchAll(
         "SELECT is2.company_id, is2.config_json, c.name as company_name
          FROM integration_settings is2
-         LEFT JOIN companies c ON c.id = is2.company_id
+         LEFT JOIN companies c ON c.id::text = is2.company_id
          WHERE is2.integration_type = 'file_import'
            AND is2.scope = 'company'
            AND is2.is_active = true"
@@ -130,11 +130,20 @@ try {
 
         // İzin verilen formatlar
         $allowedFormats = $config['allowed_formats'] ?? ['csv', 'txt', 'json', 'xml', 'xlsx'];
+        $defaultImportFilename = trim((string)($config['default_import_filename'] ?? ''));
 
         // Dizindeki dosyaları tara
         $files = [];
         foreach (glob($importDir . '*') as $filePath) {
             if (!is_file($filePath)) continue;
+
+            $filename = basename($filePath);
+            if ($defaultImportFilename !== '') {
+                $isExact = ($filename === $defaultImportFilename);
+                $isTimestampVariant = preg_match('/^\d{8}_\d{6}_/', $filename) === 1
+                    && str_ends_with($filename, $defaultImportFilename);
+                if (!$isExact && !$isTimestampVariant) continue;
+            }
 
             $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
             if (!in_array($extension, $allowedFormats)) continue;
@@ -169,56 +178,76 @@ try {
             // DB'de daha önce işlenmiş mi kontrol et (hash)
             $fileContent = file_get_contents($filePath);
             $fileHash = md5($fileContent);
+            $fileId = null;
 
             try {
-                $existing = $db->fetch(
-                    "SELECT id, status FROM erp_import_files
-                     WHERE company_id = ? AND file_hash = ? AND status IN ('completed', 'processing')
+                $pending = $db->fetch(
+                    "SELECT id FROM erp_import_files
+                     WHERE company_id = ? AND file_hash = ? AND status IN ('pending', 'processing')
                      ORDER BY created_at DESC LIMIT 1",
                     [$companyId, $fileHash]
                 );
 
-                if ($existing) {
-                    echo "      Durum: ATLANDI (Hash eşleşmesi, daha önce işlenmiş)\n";
-                    // Dosyayı processed'e taşı
-                    rename($filePath, $processedDir . $filename);
-                    continue;
+                if ($pending) {
+                    $fileId = $pending['id'];
+                    $db->update('erp_import_files', [
+                        'status' => 'processing',
+                        'processed_at' => null
+                    ], 'id = ?', [$fileId]);
+                }
+
+                if (!$fileId) {
+                    $existing = $db->fetch(
+                        "SELECT id, status FROM erp_import_files
+                         WHERE company_id = ? AND file_hash = ? AND status IN ('completed', 'processing')
+                         ORDER BY created_at DESC LIMIT 1",
+                        [$companyId, $fileHash]
+                    );
+
+                    if ($existing) {
+                        echo "      Durum: ATLANDI (Hash eşleşmesi, daha önce işlenmiş)\n";
+                        // Dosyayı processed'e taşı
+                        rename($filePath, $processedDir . $filename);
+                        continue;
+                    }
                 }
             } catch (Exception $e) {
                 // Tablo yoksa devam et
             }
 
             // erp_import_files kaydı oluştur
-            $fileId = $db->generateUuid();
-            try {
-                $db->insert('erp_import_files', [
-                    'id' => $fileId,
-                    'company_id' => $companyId,
-                    'filename' => $filename,
-                    'original_filename' => $filename,
-                    'file_path' => 'storage/companies/' . $companyId . '/imports/' . $filename,
-                    'file_size' => $fileSize,
-                    'file_format' => $extension,
-                    'file_hash' => $fileHash,
-                    'source' => 'directory_scan',
-                    'status' => 'processing',
-                    'created_at' => date('Y-m-d H:i:s')
-                ]);
-            } catch (Exception $e) {
-                echo "      HATA: DB kaydı oluşturulamadı: " . $e->getMessage() . "\n";
+            if (!$fileId) {
+                $fileId = $db->generateUuid();
+                try {
+                    $db->insert('erp_import_files', [
+                        'id' => $fileId,
+                        'company_id' => $companyId,
+                        'filename' => $filename,
+                        'original_filename' => $filename,
+                        'file_path' => 'storage/companies/' . $companyId . '/imports/' . $filename,
+                        'file_size' => $fileSize,
+                        'file_format' => $extension,
+                        'file_hash' => $fileHash,
+                        'source' => 'directory_scan',
+                        'status' => 'processing',
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                } catch (Exception $e) {
+                    echo "      HATA: DB kaydı oluşturulamadı: " . $e->getMessage() . "\n";
+                }
             }
 
             // Dosyayı parse et
             try {
                 $parser = OmnexParserFactory::autoDetect($fileContent, $filename);
-                $parseResult = $parser->parse($fileContent);
+                $rawData = $parser->parse($fileContent);
 
-                if (empty($parseResult['data'])) {
+                if (empty($rawData) || !is_array($rawData)) {
                     throw new Exception('Dosya parse edilemedi veya boş');
                 }
 
-                $rawData = $parseResult['data'];
-                $headers = $parseResult['headers'] ?? array_keys($rawData[0] ?? []);
+                $firstRow = $rawData[0] ?? [];
+                $headers = is_array($firstRow) ? array_keys($firstRow) : [];
 
                 echo "      Parse: {" . count($rawData) . "} satır, {" . count($headers) . "} sütun\n";
 

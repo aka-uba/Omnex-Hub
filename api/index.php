@@ -1954,6 +1954,9 @@ $router->group(['prefix' => '/api/import', 'middleware' => ['auth']], function($
     $router->get('/history', function($request) {
         require API_PATH . '/import/history.php';
     });
+    $router->delete('/history', function($request) {
+        require API_PATH . '/import/history.php';
+    });
     $router->get('/files', function($request) {
         require API_PATH . '/import/files.php';
     });

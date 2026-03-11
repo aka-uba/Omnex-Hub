@@ -329,6 +329,9 @@ class App {
             const html = page.render();
             container.innerHTML = html;
 
+            // Apply page enter animation to non-tabbed pages.
+            this.applyNonTabbedPageEnterAnimation(container);
+
             // Initialize page if method exists
             if (typeof page.init === 'function') {
                 await page.init();
@@ -341,6 +344,29 @@ class App {
             Logger.error(`Error loading page ${pageName}:`, error);
             this.showError(this.i18n?.t('messages.pageLoadError') || 'Page load error');
         }
+    }
+
+    /**
+     * Apply enter animation for pages without tabbed content.
+     * Keeps existing tab-page animations (e.g. settings tabs) unchanged.
+     */
+    applyNonTabbedPageEnterAnimation(container) {
+        if (!container) return;
+
+        const hasTabbedContent = Boolean(
+            container.querySelector('.settings-tab-content, .tab-content, .tabs-content, [role="tablist"], .settings-tabs')
+        );
+
+        if (hasTabbedContent) {
+            container.classList.remove('page-content-enter');
+            return;
+        }
+
+        container.classList.remove('page-content-enter');
+        // Force reflow so animation restarts on each page navigation.
+        // eslint-disable-next-line no-unused-expressions
+        container.offsetHeight;
+        container.classList.add('page-content-enter');
     }
 
     /**
@@ -467,4 +493,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 export default App;
-

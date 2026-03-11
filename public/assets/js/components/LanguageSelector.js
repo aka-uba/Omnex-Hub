@@ -15,6 +15,7 @@ export class LanguageSelector {
         this.isOpen = false;
         this.storageKey = 'omnex_language';
         this._outsideClickHandler = null;
+        this._syncDropdownHandler = null;
 
         // Available languages (nativeName = always in that language's own script)
         this.languages = [
@@ -155,8 +156,14 @@ export class LanguageSelector {
         // Toggle dropdown
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.isOpen = !this.isOpen;
-            dropdown.classList.toggle('open', this.isOpen);
+            const willOpen = !dropdown.classList.contains('open');
+            if (willOpen) {
+                window.dispatchEvent(new CustomEvent('omnex:header-dropdown-open', {
+                    detail: { source: 'language' }
+                }));
+            }
+            this.isOpen = willOpen;
+            dropdown.classList.toggle('open', willOpen);
         });
 
         // Close on outside click
@@ -171,6 +178,18 @@ export class LanguageSelector {
         };
         document.addEventListener('click', this._outsideClickHandler);
 
+        // Close when another header dropdown opens
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+        }
+        this._syncDropdownHandler = (e) => {
+            if (e?.detail?.source !== 'language') {
+                this.isOpen = false;
+                dropdown.classList.remove('open');
+            }
+        };
+        window.addEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+
         // Handle language selection
         dropdown.querySelectorAll('.language-dropdown-item').forEach(item => {
             item.addEventListener('click', async (e) => {
@@ -184,6 +203,10 @@ export class LanguageSelector {
         if (this._outsideClickHandler) {
             document.removeEventListener('click', this._outsideClickHandler);
             this._outsideClickHandler = null;
+        }
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+            this._syncDropdownHandler = null;
         }
     }
 }

@@ -19,6 +19,8 @@ export class ProductListPage {
         this.table = null;
         this.selectedProducts = [];
         this.mappingDefaults = this.loadMappingDefaults();
+        this.viewStateStorageKey = 'products_list_view_state_v1';
+        this.viewState = this.loadViewState();
         this.sortCycleValues = {
             group: [],
             category: []
@@ -247,6 +249,7 @@ export class ProductListPage {
         this.bindEvents();
         this.initImageHoverPreview();
         await this.loadFilters();
+        this.applySavedViewState();
         await this.loadStats();
     }
 
@@ -254,7 +257,19 @@ export class ProductListPage {
      * Initialize data table
      */
     initTable() {
+        const allowedSortKeys = new Set([
+            'sku', 'name', 'barcode', 'group', 'category',
+            'current_price', 'stock', 'status', 'updated_at',
+            'assigned_device', 'assigned_template'
+        ]);
+        const savedSortBy = typeof this.viewState?.sortBy === 'string' ? this.viewState.sortBy : '';
+        const savedSortDir = String(this.viewState?.sortDir || '').toUpperCase() === 'ASC' ? 'asc' : 'desc';
+        const defaultSort = allowedSortKeys.has(savedSortBy)
+            ? { key: savedSortBy, direction: savedSortDir }
+            : { key: 'updated_at', direction: 'desc' };
+        const pageSize = Number.parseInt(this.viewState?.pageSize, 10);
         this.table = new DataTable('#products-table', {
+            pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 25,
             columns: [
                 {
                     key: 'cover_image',
@@ -327,7 +342,7 @@ export class ProductListPage {
                     key: 'assigned_device',
                     label: this.__('list.columns.assignedDevice'),
                     width: '140px',
-                    sortable: false,
+                    sortable: true,
                     render: (_, row) => {
                         if (row.labels && row.labels.length > 0 && row.labels[0].device_name) {
                             const label = row.labels[0];
@@ -356,7 +371,7 @@ export class ProductListPage {
                     key: 'assigned_template',
                     label: this.__('list.columns.assignedTemplate'),
                     width: '140px',
-                    sortable: false,
+                    sortable: true,
                     render: (_, row) => {
                         if (row.labels && row.labels.length > 0 && row.labels[0].template_name) {
                             const templateName = row.labels[0].template_name;
@@ -430,7 +445,14 @@ export class ProductListPage {
             serverSide: true,
             fetchData: (params) => this.fetchProducts(params),
             selectable: true,
-            defaultSort: { key: 'updated_at', direction: 'desc' },
+            toolbar: {
+                show: true,
+                exports: true
+            },
+            exportFilename: 'urunler',
+            exportTitle: this.__('export.listTitle'),
+            exportSubtitle: this.__('subtitle'),
+            defaultSort,
             onSortChange: (state) => this.handleSortCycle(state),
             onSelectionChange: (rows) => this.onSelectionChange(rows)
         });
@@ -638,6 +660,8 @@ export class ProductListPage {
     }
 
     handleSortCycle({ sortBy, sortDir, prevSortBy, prevSortDir }) {
+        this.saveViewState();
+
         if (sortBy !== 'group' && sortBy !== 'category') {
             return;
         }
@@ -733,26 +757,31 @@ export class ProductListPage {
         // Filter changes
         document.getElementById('filter-group')?.addEventListener('change', () => {
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
         document.getElementById('filter-category')?.addEventListener('change', () => {
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
         document.getElementById('filter-status')?.addEventListener('change', () => {
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
         document.getElementById('filter-label')?.addEventListener('change', () => {
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
         document.getElementById('filter-device')?.addEventListener('change', () => {
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
@@ -764,6 +793,7 @@ export class ProductListPage {
             document.getElementById('filter-label').value = '';
             document.getElementById('filter-device').value = '';
             this.table.state.page = 1;
+            this.saveViewState();
             this.table.refresh();
         });
 
@@ -780,6 +810,81 @@ export class ProductListPage {
             }
         });
 
+    }
+
+    loadViewState() {
+        const defaults = {
+            filters: {
+                group: '',
+                category: '',
+                status: '',
+                hasLabel: '',
+                hasDevice: ''
+            },
+            sortBy: 'updated_at',
+            sortDir: 'DESC',
+            pageSize: 25
+        };
+
+        try {
+            const raw = localStorage.getItem(this.viewStateStorageKey);
+            if (!raw) return defaults;
+            const parsed = JSON.parse(raw);
+            return {
+                ...defaults,
+                ...parsed,
+                filters: {
+                    ...defaults.filters,
+                    ...(parsed?.filters || {})
+                }
+            };
+        } catch (error) {
+            Logger.warn('Failed to load products view state:', error);
+            return defaults;
+        }
+    }
+
+    saveViewState() {
+        const nextState = {
+            filters: {
+                group: document.getElementById('filter-group')?.value || '',
+                category: document.getElementById('filter-category')?.value || '',
+                status: document.getElementById('filter-status')?.value || '',
+                hasLabel: document.getElementById('filter-label')?.value || '',
+                hasDevice: document.getElementById('filter-device')?.value || ''
+            },
+            sortBy: this.table?.state?.sortBy || 'updated_at',
+            sortDir: this.table?.state?.sortDir || 'DESC',
+            pageSize: this.table?.state?.pageSize || 25
+        };
+        this.viewState = nextState;
+        localStorage.setItem(this.viewStateStorageKey, JSON.stringify(nextState));
+    }
+
+    applySavedViewState() {
+        const savedFilters = this.viewState?.filters || {};
+        const setSelectIfExists = (id, value) => {
+            if (!value) return false;
+            const el = document.getElementById(id);
+            if (!el) return false;
+            const hasOption = Array.from(el.options || []).some((opt) => String(opt.value) === String(value));
+            if (!hasOption) return false;
+            el.value = value;
+            return true;
+        };
+
+        const restored = [
+            setSelectIfExists('filter-group', savedFilters.group),
+            setSelectIfExists('filter-category', savedFilters.category),
+            setSelectIfExists('filter-status', savedFilters.status),
+            setSelectIfExists('filter-label', savedFilters.hasLabel),
+            setSelectIfExists('filter-device', savedFilters.hasDevice)
+        ].some(Boolean);
+
+        if (restored && this.table) {
+            this.table.state.page = 1;
+            this.table.refresh();
+        }
     }
 
     /**

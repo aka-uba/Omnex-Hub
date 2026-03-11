@@ -345,7 +345,17 @@
         "print": "Drucken",
         "bulkDelete": "Massenlöschung",
         "bulkDeleteConfirm": "Sind Sie sicher, dass Sie {count} Elemente löschen möchten?",
-        "exportError": "Beim Export ist ein Fehler aufgetreten"
+        "exportError": "Beim Export ist ein Fehler aufgetreten",
+        "columnSettings": {
+            "title": "Spalteneinstellungen",
+            "tableStyle": "Tabellenstil",
+            "verticalBorders": "Vertikale Rahmen",
+            "headerBackground": "Kopfzeilenhintergrund",
+            "columns": "Spalten",
+            "visible": "Sichtbar",
+            "moveUp": "Nach oben",
+            "moveDown": "Nach unten"
+        }
     },
     "filter": {
         "title": "Filter",
@@ -881,6 +891,9 @@
         "fullscreen": "Vollbild",
         "installApp": "App installieren",
         "toggleSidebar": "Menü umschalten",
+        "selectCompany": "Unternehmen auswählen",
+        "quickSwitchToSidebar": "Zum Seitenleisten-Layout wechseln",
+        "quickSwitchToTopNav": "Zum oberen Navigationslayout wechseln",
         "profile": "Profil",
         "settings": "Einstellungen",
         "logout": "Abmelden",

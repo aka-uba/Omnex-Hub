@@ -75,11 +75,13 @@ export class DataTable {
                 show: true,
                 exports: false,
                 filters: false,
+                columnSettings: true,
                 extra: null,
                 onFilterClick: null // Filter button callback
             },
             onSortChange: null,
             exportFilename: 'export', // Export filename prefix
+            tableId: null,
             responsive: true, // Mobilde card görünümü
             striped: false,
             hover: true,
@@ -87,6 +89,13 @@ export class DataTable {
             compact: false,
             ...options
         };
+
+        if (!this.options.tableId) {
+            const inferredId = this.container?.id
+                ? `datatable_${this.container.id}`
+                : (typeof container === 'string' ? `datatable_${container.replace(/[^a-zA-Z0-9_-]/g, '_')}` : null);
+            this.options.tableId = inferredId;
+        }
 
         this.state = {
             page: 1,
@@ -105,6 +114,19 @@ export class DataTable {
         this._windowScrollHandler = null;
         this._documentScrollHandler = null;
         this._externalScrollTargets = [];
+        this._defaultColumns = (this.options.columns || []).map(col => ({
+            key: col.key,
+            hidden: !!col.hidden,
+            backgroundColor: col.backgroundColor || ''
+        }));
+        this.styleSettings = {
+            showVerticalBorders: false,
+            headerBackgroundColor: ''
+        };
+        this._settingsDraftColumns = [];
+        this._settingsDraftStyle = { ...this.styleSettings };
+
+        this._loadPersistedTableSettings();
 
         this.init();
     }
@@ -136,7 +158,8 @@ export class DataTable {
             this.options.striped ? 'data-table-striped' : '',
             this.options.hover ? 'data-table-hover' : '',
             this.options.bordered ? 'data-table-bordered' : '',
-            this.options.compact ? 'data-table-compact' : ''
+            this.options.compact ? 'data-table-compact' : '',
+            this.styleSettings.showVerticalBorders ? 'data-table-vertical-borders' : ''
         ].filter(Boolean).join(' ');
 
         const wrapperClasses = [
@@ -198,6 +221,11 @@ export class DataTable {
                                 <span>${__('table.filters', 'Filtreler')}</span>
                             </button>
                         ` : ''}
+                        ${this.options.toolbar.columnSettings !== false ? `
+                            <button class="btn btn-icon btn-ghost" title="${__('table.columnSettings.title', 'Sütun Ayarları')}" data-table-column-settings>
+                                <i class="ti ti-layout-columns"></i>
+                            </button>
+                        ` : ''}
                         <div data-table-toolbar-actions></div>
                     </div>
                 </div>
@@ -236,9 +264,50 @@ export class DataTable {
                     ` : ''}
                 </div>
             </div>
+            ${this.options.toolbar.columnSettings !== false ? `
+                <div class="data-table-settings-modal" data-table-settings-modal hidden>
+                    <div class="data-table-settings-backdrop" data-table-settings-close></div>
+                    <div class="data-table-settings-dialog" role="dialog" aria-modal="true">
+                        <div class="data-table-settings-header">
+                            <h3>${__('table.columnSettings.title', 'Sütun Ayarları')}</h3>
+                            <button class="btn btn-icon btn-ghost" data-table-settings-close title="${__('actions.close', 'Kapat')}">
+                                <i class="ti ti-x"></i>
+                            </button>
+                        </div>
+                        <div class="data-table-settings-body">
+                            <div class="data-table-settings-section">
+                                <h4>${__('table.columnSettings.tableStyle', 'Tablo Stili')}</h4>
+                                <label class="data-table-settings-row-inline">
+                                    <input type="checkbox" data-settings-vertical-borders />
+                                    <span>${__('table.columnSettings.verticalBorders', 'Dikey Kenarlıklar')}</span>
+                                </label>
+                                <div class="data-table-settings-row-inline">
+                                    <span>${__('table.columnSettings.headerBackground', 'Başlık Arkaplanı')}</span>
+                                    <div class="data-table-settings-inline-actions">
+                                        <input type="color" data-settings-header-bg />
+                                        <button class="btn btn-sm btn-outline" data-settings-clear-header-bg>${__('actions.clear', 'Temizle')}</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="data-table-settings-section">
+                                <h4>${__('table.columnSettings.columns', 'Sütunlar')}</h4>
+                                <div class="data-table-settings-columns" data-settings-columns-list></div>
+                            </div>
+                        </div>
+                        <div class="data-table-settings-footer">
+                            <button class="btn btn-outline" data-table-settings-reset>${__('actions.reset', 'Sıfırla')}</button>
+                            <div class="data-table-settings-footer-right">
+                                <button class="btn btn-outline" data-table-settings-cancel>${__('actions.cancel', 'İptal')}</button>
+                                <button class="btn btn-primary" data-table-settings-apply>${__('actions.apply', 'Uygula')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
         `;
 
         this.renderHeader();
+        this.applyTableStyleClass();
     }
 
     /**
@@ -249,16 +318,22 @@ export class DataTable {
         if (!header) return;
 
         let html = '';
+        const headerBg = this.styleSettings?.headerBackgroundColor || '';
+        const headerTextColor = this.getContrastColor(headerBg);
+        const baseHeaderStyle = [
+            headerBg ? `background-color: ${headerBg}` : '',
+            headerTextColor ? `color: ${headerTextColor}` : ''
+        ].filter(Boolean).join('; ');
 
         // Row number
         if (this.options.showRowNumbers) {
-            html += `<th class="data-table-th-number">#</th>`;
+            html += `<th class="data-table-th-number" style="${baseHeaderStyle}">#</th>`;
         }
 
         // Selection checkbox
         if (this.options.selectable) {
             html += `
-                <th class="data-table-th-checkbox">
+                <th class="data-table-th-checkbox" style="${baseHeaderStyle}">
                     <input type="checkbox" class="form-checkbox" data-table-select-all />
                 </th>
             `;
@@ -275,7 +350,10 @@ export class DataTable {
             html += `
                 <th class="data-table-th ${sortable ? 'data-table-th-sortable' : ''} ${isActionsCol ? 'data-table-th-actions' : ''} ${col.headerClass || ''}"
                     ${sortable ? `data-table-sort="${col.key}"` : ''}
-                    style="${col.width ? `width: ${col.width}` : ''}">
+                    style="${[
+                        col.width ? `width: ${col.width}` : '',
+                        baseHeaderStyle
+                    ].filter(Boolean).join('; ')}">
                     <div class="data-table-th-content">
                         <span>${col.label}</span>
                         ${sortable ? `
@@ -293,7 +371,7 @@ export class DataTable {
 
         // Actions column
         if (this.options.showActions && this.options.actions.length > 0) {
-            html += `<th class="data-table-th data-table-th-actions">${this.options.actionsLabel}</th>`;
+            html += `<th class="data-table-th data-table-th-actions" style="${baseHeaderStyle}">${this.options.actionsLabel}</th>`;
         }
 
         header.innerHTML = html;
@@ -398,7 +476,13 @@ export class DataTable {
                 }
             }
 
-            html += `<td class="data-table-td ${isActionsCol ? 'data-table-td-actions' : ''} ${col.cellClass || ''}" data-label="${col.label}">${cellContent ?? ''}</td>`;
+            const cellBg = col.backgroundColor || '';
+            const cellTextColor = this.getContrastColor(cellBg);
+            const cellStyle = [
+                cellBg ? `background-color: ${cellBg}` : '',
+                cellTextColor ? `color: ${cellTextColor}` : ''
+            ].filter(Boolean).join('; ');
+            html += `<td class="data-table-td ${isActionsCol ? 'data-table-td-actions' : ''} ${col.cellClass || ''}" data-label="${col.label}" style="${cellStyle}">${cellContent ?? ''}</td>`;
         });
 
         // Actions column
@@ -809,6 +893,79 @@ export class DataTable {
 
         // Click events (sort, pagination, actions, row click, dropdown)
         this.container.addEventListener('click', (e) => {
+            const settingsOpenBtn = e.target.closest('[data-table-column-settings]');
+            if (settingsOpenBtn) {
+                e.preventDefault();
+                this.openColumnSettingsModal();
+                return;
+            }
+
+            const settingsCloseBtn = e.target.closest('[data-table-settings-close], [data-table-settings-cancel]');
+            if (settingsCloseBtn) {
+                e.preventDefault();
+                this.closeColumnSettingsModal();
+                return;
+            }
+
+            const settingsApplyBtn = e.target.closest('[data-table-settings-apply]');
+            if (settingsApplyBtn) {
+                e.preventDefault();
+                this.applyColumnSettings();
+                return;
+            }
+
+            const settingsResetBtn = e.target.closest('[data-table-settings-reset]');
+            if (settingsResetBtn) {
+                e.preventDefault();
+                this.resetColumnSettings();
+                return;
+            }
+
+            const clearHeaderColorBtn = e.target.closest('[data-settings-clear-header-bg]');
+            if (clearHeaderColorBtn) {
+                e.preventDefault();
+                this._settingsDraftStyle.headerBackgroundColor = '';
+                this.renderColumnSettingsDraft();
+                return;
+            }
+
+            const clearColumnColorBtn = e.target.closest('[data-settings-clear-color]');
+            if (clearColumnColorBtn) {
+                e.preventDefault();
+                const idx = Number.parseInt(clearColumnColorBtn.dataset.settingsClearColor, 10);
+                if (Number.isFinite(idx) && this._settingsDraftColumns[idx]) {
+                    this._settingsDraftColumns[idx].backgroundColor = '';
+                    this.renderColumnSettingsDraft();
+                }
+                return;
+            }
+
+            const moveUpBtn = e.target.closest('[data-settings-up]');
+            if (moveUpBtn) {
+                e.preventDefault();
+                const idx = Number.parseInt(moveUpBtn.dataset.settingsUp, 10);
+                if (Number.isFinite(idx) && idx > 0 && this._settingsDraftColumns[idx]) {
+                    const current = this._settingsDraftColumns[idx];
+                    this._settingsDraftColumns[idx] = this._settingsDraftColumns[idx - 1];
+                    this._settingsDraftColumns[idx - 1] = current;
+                    this.renderColumnSettingsDraft();
+                }
+                return;
+            }
+
+            const moveDownBtn = e.target.closest('[data-settings-down]');
+            if (moveDownBtn) {
+                e.preventDefault();
+                const idx = Number.parseInt(moveDownBtn.dataset.settingsDown, 10);
+                if (Number.isFinite(idx) && idx >= 0 && idx < this._settingsDraftColumns.length - 1) {
+                    const current = this._settingsDraftColumns[idx];
+                    this._settingsDraftColumns[idx] = this._settingsDraftColumns[idx + 1];
+                    this._settingsDraftColumns[idx + 1] = current;
+                    this.renderColumnSettingsDraft();
+                }
+                return;
+            }
+
             // Sort
             const sortBtn = e.target.closest('[data-table-sort]');
             if (sortBtn) {
@@ -949,6 +1106,31 @@ export class DataTable {
         // Also listen to document scroll (covers most cases)
         this._documentScrollHandler = closeOnScroll;
         document.addEventListener('scroll', this._documentScrollHandler, { passive: true, capture: true });
+
+        // Column settings form controls
+        this.container.addEventListener('change', (e) => {
+            if (e.target.matches('[data-settings-vertical-borders]')) {
+                this._settingsDraftStyle.showVerticalBorders = !!e.target.checked;
+                return;
+            }
+            if (e.target.matches('[data-settings-header-bg]')) {
+                this._settingsDraftStyle.headerBackgroundColor = e.target.value || '';
+                return;
+            }
+            if (e.target.matches('[data-settings-visible]')) {
+                const idx = Number.parseInt(e.target.dataset.settingsVisible, 10);
+                if (Number.isFinite(idx) && this._settingsDraftColumns[idx]) {
+                    this._settingsDraftColumns[idx].hidden = !e.target.checked;
+                }
+                return;
+            }
+            if (e.target.matches('[data-settings-color]')) {
+                const idx = Number.parseInt(e.target.dataset.settingsColor, 10);
+                if (Number.isFinite(idx) && this._settingsDraftColumns[idx]) {
+                    this._settingsDraftColumns[idx].backgroundColor = e.target.value || '';
+                }
+            }
+        });
 
         // Selection
         if (this.options.selectable) {
@@ -1195,6 +1377,221 @@ export class DataTable {
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
 
+    applyTableStyleClass() {
+        const table = this.container?.querySelector('.data-table');
+        if (!table) return;
+        table.classList.toggle('data-table-vertical-borders', !!this.styleSettings.showVerticalBorders);
+    }
+
+    /**
+     * Get readable text color for a background
+     */
+    getContrastColor(hexColor) {
+        if (!hexColor || typeof hexColor !== 'string') return '';
+        const hex = hexColor.replace('#', '').trim();
+        if (!/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex)) return '';
+
+        const fullHex = hex.length === 3
+            ? hex.split('').map(ch => ch + ch).join('')
+            : hex;
+
+        const r = parseInt(fullHex.slice(0, 2), 16);
+        const g = parseInt(fullHex.slice(2, 4), 16);
+        const b = parseInt(fullHex.slice(4, 6), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.55 ? '#111827' : '#ffffff';
+    }
+
+    _getColumnsStorageKey() {
+        return this.options.tableId ? `datatable-columns-${this.options.tableId}` : null;
+    }
+
+    _getStyleStorageKey() {
+        return this.options.tableId ? `datatable-style-${this.options.tableId}` : null;
+    }
+
+    _loadPersistedTableSettings() {
+        const columnsKey = this._getColumnsStorageKey();
+        const styleKey = this._getStyleStorageKey();
+
+        if (columnsKey) {
+            try {
+                const raw = localStorage.getItem(columnsKey);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (Array.isArray(saved) && saved.length > 0) {
+                        const merged = this.options.columns.map((col) => {
+                            const found = saved.find(s => s.key === col.key) || {};
+                            return {
+                                ...col,
+                                hidden: typeof found.hidden === 'boolean' ? found.hidden : !!col.hidden,
+                                backgroundColor: typeof found.backgroundColor === 'string'
+                                    ? found.backgroundColor
+                                    : (col.backgroundColor || '')
+                            };
+                        });
+                        merged.sort((a, b) => {
+                            const ao = saved.find(s => s.key === a.key)?.order ?? 9999;
+                            const bo = saved.find(s => s.key === b.key)?.order ?? 9999;
+                            return ao - bo;
+                        });
+                        this.options.columns = merged;
+                    }
+                }
+            } catch (error) {
+                Logger.warn('DataTable column settings load failed:', error);
+            }
+        }
+
+        if (styleKey) {
+            try {
+                const raw = localStorage.getItem(styleKey);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    this.styleSettings = {
+                        showVerticalBorders: !!saved?.showVerticalBorders,
+                        headerBackgroundColor: saved?.headerBackgroundColor || ''
+                    };
+                }
+            } catch (error) {
+                Logger.warn('DataTable style settings load failed:', error);
+            }
+        }
+    }
+
+    _savePersistedTableSettings() {
+        const columnsKey = this._getColumnsStorageKey();
+        const styleKey = this._getStyleStorageKey();
+
+        if (columnsKey) {
+            try {
+                const payload = this.options.columns.map((col, index) => ({
+                    key: col.key,
+                    hidden: !!col.hidden,
+                    backgroundColor: col.backgroundColor || '',
+                    order: index
+                }));
+                localStorage.setItem(columnsKey, JSON.stringify(payload));
+            } catch (error) {
+                Logger.warn('DataTable column settings save failed:', error);
+            }
+        }
+
+        if (styleKey) {
+            try {
+                localStorage.setItem(styleKey, JSON.stringify(this.styleSettings));
+            } catch (error) {
+                Logger.warn('DataTable style settings save failed:', error);
+            }
+        }
+    }
+
+    _clearPersistedTableSettings() {
+        const columnsKey = this._getColumnsStorageKey();
+        const styleKey = this._getStyleStorageKey();
+        try {
+            if (columnsKey) localStorage.removeItem(columnsKey);
+            if (styleKey) localStorage.removeItem(styleKey);
+        } catch (error) {
+            Logger.warn('DataTable settings clear failed:', error);
+        }
+    }
+
+    openColumnSettingsModal() {
+        const modal = this.container?.querySelector('[data-table-settings-modal]');
+        if (!modal) return;
+
+        this._settingsDraftColumns = this.options.columns.map(col => ({ ...col }));
+        this._settingsDraftStyle = { ...this.styleSettings };
+        this.renderColumnSettingsDraft();
+        modal.hidden = false;
+    }
+
+    closeColumnSettingsModal() {
+        const modal = this.container?.querySelector('[data-table-settings-modal]');
+        if (!modal) return;
+        modal.hidden = true;
+    }
+
+    renderColumnSettingsDraft() {
+        const modal = this.container?.querySelector('[data-table-settings-modal]');
+        if (!modal) return;
+
+        const vertical = modal.querySelector('[data-settings-vertical-borders]');
+        if (vertical) vertical.checked = !!this._settingsDraftStyle.showVerticalBorders;
+
+        const headerBgInput = modal.querySelector('[data-settings-header-bg]');
+        if (headerBgInput) {
+            headerBgInput.value = this._settingsDraftStyle.headerBackgroundColor || '#228be6';
+        }
+
+        const columnsList = modal.querySelector('[data-settings-columns-list]');
+        if (!columnsList) return;
+
+        columnsList.innerHTML = this._settingsDraftColumns.map((col, index) => `
+            <div class="data-table-settings-column-row" data-settings-index="${index}">
+                <div class="data-table-settings-column-main">
+                    <div class="data-table-settings-column-label">${col.label}</div>
+                    <div class="data-table-settings-column-key">${col.key}</div>
+                </div>
+                <label class="data-table-settings-visible-toggle">
+                    <input type="checkbox" data-settings-visible="${index}" ${col.hidden ? '' : 'checked'} />
+                    <span>${__('table.columnSettings.visible', 'Görünür')}</span>
+                </label>
+                <div class="data-table-settings-inline-actions">
+                    <input type="color" data-settings-color="${index}" value="${col.backgroundColor || '#ffffff'}" />
+                    <button class="btn btn-sm btn-outline" data-settings-clear-color="${index}" title="${__('actions.clear', 'Temizle')}">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </div>
+                <div class="data-table-settings-inline-actions">
+                    <button class="btn btn-sm btn-ghost" data-settings-up="${index}" title="${__('table.columnSettings.moveUp', 'Yukarı')}">
+                        <i class="ti ti-chevron-up"></i>
+                    </button>
+                    <button class="btn btn-sm btn-ghost" data-settings-down="${index}" title="${__('table.columnSettings.moveDown', 'Aşağı')}">
+                        <i class="ti ti-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    applyColumnSettings() {
+        this.options.columns = this._settingsDraftColumns.map(col => ({ ...col }));
+        this.styleSettings = { ...this._settingsDraftStyle };
+        this._savePersistedTableSettings();
+        this.applyTableStyleClass();
+        this.renderHeader();
+        this.renderBody();
+        this.closeColumnSettingsModal();
+    }
+
+    resetColumnSettings() {
+        const defaultsByKey = new Map(this._defaultColumns.map(col => [col.key, col]));
+        const restored = this.options.columns.map(col => {
+            const def = defaultsByKey.get(col.key);
+            return {
+                ...col,
+                hidden: def ? !!def.hidden : !!col.hidden,
+                backgroundColor: def?.backgroundColor || ''
+            };
+        });
+
+        restored.sort((a, b) => {
+            const ai = this._defaultColumns.findIndex(c => c.key === a.key);
+            const bi = this._defaultColumns.findIndex(c => c.key === b.key);
+            return ai - bi;
+        });
+
+        this.options.columns = restored;
+        this.styleSettings = { showVerticalBorders: false, headerBackgroundColor: '' };
+        this._clearPersistedTableSettings();
+        this.applyTableStyleClass();
+        this.renderHeader();
+        this.renderBody();
+        this.closeColumnSettingsModal();
+    }
+
     /**
      * Get column span
      */
@@ -1224,9 +1621,8 @@ export class DataTable {
             let exportData = [];
 
             if (this.options.serverSide) {
-                // For server-side, we might need to fetch all data
-                // For now, use current page data
-                exportData = this.state.data;
+                // Server-side mode: fetch all rows using current search/sort/filter context.
+                exportData = await this.getAllDataForExport();
             } else {
                 // Client-side: export all filtered data
                 let data = [...this.options.data];

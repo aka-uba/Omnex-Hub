@@ -345,7 +345,17 @@
         "print": "Çap et",
         "bulkDelete": "Toplu Sil",
         "bulkDeleteConfirm": "{count} elementi silmək istədiyinizə əminsiniz?",
-        "exportError": "Eksport zamanı xəta baş verdi"
+        "exportError": "Eksport zamanı xəta baş verdi",
+        "columnSettings": {
+            "title": "Sütun Ayarları",
+            "tableStyle": "Cədvəl Üslubu",
+            "verticalBorders": "Şaquli Sərhədlər",
+            "headerBackground": "Başlıq Fon Rəngi",
+            "columns": "Sütunlar",
+            "visible": "Görünən",
+            "moveUp": "Yuxarı",
+            "moveDown": "Aşağı"
+        }
     },
     "filter": {
         "title": "Filtrlər",
@@ -880,6 +890,9 @@
         "fullscreen": "Tam ekran",
         "installApp": "Proqramı quraşdırın",
         "toggleSidebar": "Menyuya keçid",
+        "selectCompany": "Şirkəti seçin",
+        "quickSwitchToSidebar": "Yan menyu düzəninə keç",
+        "quickSwitchToTopNav": "Üst menyu düzəninə keç",
         "profile": "Profil",
         "settings": "Parametrlər",
         "logout": "Çıxın",

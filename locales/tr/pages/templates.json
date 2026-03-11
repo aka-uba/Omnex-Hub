@@ -85,7 +85,8 @@
             "multiFrame2x3": "2x3 Çerçeve",
             "grid": "Grid",
             "snap": "Yapıştır",
-            "frame": "Çerçeve"
+            "frame": "Çerçeve",
+            "background": "Arkaplan"
         },
         "inspector": {
             "title": "Denetçi"
@@ -289,7 +290,8 @@
             "add": "Cerceve Ekle",
             "change": "Degistir",
             "remove": "Kaldir",
-            "noFrame": "Cerceve yok"
+            "noFrame": "Cerceve yok",
+            "color": "Cerceve Rengi"
         },
         "dynamicFields": {
             "title": "Dinamik Alanlar",

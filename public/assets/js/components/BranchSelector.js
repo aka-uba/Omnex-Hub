@@ -18,6 +18,7 @@ export class BranchSelector {
         this.isOpen = false;
         this.storageKey = 'omnex_active_branch';
         this._outsideClickHandler = null;
+        this._syncDropdownHandler = null;
     }
 
     /**
@@ -272,8 +273,14 @@ export class BranchSelector {
         // Toggle dropdown
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
-            this.isOpen = !this.isOpen;
-            dropdown.classList.toggle('open', this.isOpen);
+            const willOpen = !dropdown.classList.contains('open');
+            if (willOpen) {
+                window.dispatchEvent(new CustomEvent('omnex:header-dropdown-open', {
+                    detail: { source: 'branch' }
+                }));
+            }
+            this.isOpen = willOpen;
+            dropdown.classList.toggle('open', willOpen);
         });
 
         // Close on outside click
@@ -287,6 +294,18 @@ export class BranchSelector {
             }
         };
         document.addEventListener('click', this._outsideClickHandler);
+
+        // Close when another header dropdown opens
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+        }
+        this._syncDropdownHandler = (e) => {
+            if (e?.detail?.source !== 'branch') {
+                this.isOpen = false;
+                dropdown.classList.remove('open');
+            }
+        };
+        window.addEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
 
         // Handle branch selection
         dropdown.querySelectorAll('.branch-dropdown-item').forEach(item => {
@@ -335,6 +354,10 @@ export class BranchSelector {
         if (this._outsideClickHandler) {
             document.removeEventListener('click', this._outsideClickHandler);
             this._outsideClickHandler = null;
+        }
+        if (this._syncDropdownHandler) {
+            window.removeEventListener('omnex:header-dropdown-open', this._syncDropdownHandler);
+            this._syncDropdownHandler = null;
         }
     }
 }

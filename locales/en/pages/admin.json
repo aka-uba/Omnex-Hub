@@ -769,6 +769,8 @@
         "productionTypesDesc": "Conventional, organic, traditional, etc.",
         "products": "Products",
         "productsDesc": "Demo product data",
+        "templates": "Templates",
+        "templatesDesc": "Demo template data",
         "options": "Options",
         "demoOnly": "Demo data only",
         "defaultOnly": "Default data only",

@@ -345,7 +345,17 @@
         "print": "Imprimer",
         "bulkDelete": "Suppression en masse",
         "bulkDeleteConfirm": "Êtes-vous sûr de vouloir supprimer {count} éléments ?",
-        "exportError": "Une erreur s'est produite lors de l'exportation"
+        "exportError": "Une erreur s'est produite lors de l'exportation",
+        "columnSettings": {
+            "title": "Paramètres des colonnes",
+            "tableStyle": "Style du tableau",
+            "verticalBorders": "Bordures verticales",
+            "headerBackground": "Arrière-plan de l'en-tête",
+            "columns": "Colonnes",
+            "visible": "Visible",
+            "moveUp": "Monter",
+            "moveDown": "Descendre"
+        }
     },
     "filter": {
         "title": "Filtres",
@@ -881,6 +891,9 @@
         "fullscreen": "Plein écran",
         "installApp": "Installer l'application",
         "toggleSidebar": "Basculer le menu",
+        "selectCompany": "Sélectionner une entreprise",
+        "quickSwitchToSidebar": "Passer à la mise en page avec barre latérale",
+        "quickSwitchToTopNav": "Passer à la mise en page avec menu supérieur",
         "profile": "Profil",
         "settings": "Paramètres",
         "logout": "Se déconnecter",

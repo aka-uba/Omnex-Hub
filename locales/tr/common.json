@@ -345,7 +345,17 @@
         "print": "Yazdır",
         "bulkDelete": "Toplu Sil",
         "bulkDeleteConfirm": "{count} öğeyi silmek istediğinizden emin misiniz?",
-        "exportError": "Dışa aktarma sırasında bir hata oluştu"
+        "exportError": "Dışa aktarma sırasında bir hata oluştu",
+        "columnSettings": {
+            "title": "Sütun Ayarları",
+            "tableStyle": "Tablo Stili",
+            "verticalBorders": "Dikey Kenarlıklar",
+            "headerBackground": "Başlık Arkaplanı",
+            "columns": "Sütunlar",
+            "visible": "Görünür",
+            "moveUp": "Yukarı",
+            "moveDown": "Aşağı"
+        }
     },
     "filter": {
         "title": "Filtreler",
@@ -882,6 +892,9 @@
         "fullscreen": "Tam Ekran",
         "installApp": "Uygulamayı Yükle",
         "toggleSidebar": "Menüyü Aç/Kapat",
+        "selectCompany": "Firma Seç",
+        "quickSwitchToSidebar": "Yan Menü Düzenine Geç",
+        "quickSwitchToTopNav": "Üst Menü Düzenine Geç",
         "profile": "Profil",
         "settings": "Ayarlar",
         "logout": "Çıkış Yap",

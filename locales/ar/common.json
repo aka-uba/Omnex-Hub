@@ -345,7 +345,17 @@
         "print": "مطبعة",
         "bulkDelete": "حذف بالجملة",
         "bulkDeleteConfirm": "هل أنت متأكد أنك تريد حذف {count} من العناصر؟",
-        "exportError": "حدث خطأ أثناء التصدير"
+        "exportError": "حدث خطأ أثناء التصدير",
+        "columnSettings": {
+            "title": "إعدادات الأعمدة",
+            "tableStyle": "نمط الجدول",
+            "verticalBorders": "الحدود العمودية",
+            "headerBackground": "خلفية الرأس",
+            "columns": "الأعمدة",
+            "visible": "مرئي",
+            "moveUp": "لأعلى",
+            "moveDown": "لأسفل"
+        }
     },
     "filter": {
         "title": "المرشحات",
@@ -881,6 +891,9 @@
         "fullscreen": "ملء الشاشة",
         "installApp": "تثبيت التطبيق",
         "toggleSidebar": "تبديل القائمة",
+        "selectCompany": "اختر الشركة",
+        "quickSwitchToSidebar": "التبديل إلى تخطيط القائمة الجانبية",
+        "quickSwitchToTopNav": "التبديل إلى تخطيط القائمة العلوية",
         "profile": "حساب تعريفي",
         "settings": "إعدادات",
         "logout": "تسجيل الخروج",

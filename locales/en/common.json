@@ -345,7 +345,17 @@
         "print": "Print",
         "bulkDelete": "Bulk Delete",
         "bulkDeleteConfirm": "Are you sure you want to delete {count} items?",
-        "exportError": "An error occurred during export"
+        "exportError": "An error occurred during export",
+        "columnSettings": {
+            "title": "Column Settings",
+            "tableStyle": "Table Style",
+            "verticalBorders": "Vertical Borders",
+            "headerBackground": "Header Background",
+            "columns": "Columns",
+            "visible": "Visible",
+            "moveUp": "Move Up",
+            "moveDown": "Move Down"
+        }
     },
     "filter": {
         "title": "Filters",
@@ -882,6 +892,9 @@
         "fullscreen": "Fullscreen",
         "installApp": "Install App",
         "toggleSidebar": "Toggle Menu",
+        "selectCompany": "Select Company",
+        "quickSwitchToSidebar": "Switch to Sidebar Layout",
+        "quickSwitchToTopNav": "Switch to Top Navigation Layout",
         "profile": "Profile",
         "settings": "Settings",
         "logout": "Sign Out",

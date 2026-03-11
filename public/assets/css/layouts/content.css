@@ -41,6 +41,27 @@
     box-sizing: border-box;
 }
 
+.page-content.page-content-enter {
+    animation: page-content-enter 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes page-content-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-content.page-content-enter {
+        animation: none;
+    }
+}
+
 /* Top Navigation Layout Content */
 .top-layout-content {
     flex: 1;
@@ -117,6 +138,22 @@
 
 .page-header-breadcrumb .breadcrumb-current {
     color: var(--text-secondary);
+}
+
+/* Dark mode: force breadcrumb texts to white */
+.dark .page-header-breadcrumb a:not(.btn):not(.nav-item),
+[data-theme="dark"] .page-header-breadcrumb a:not(.btn):not(.nav-item),
+.dark .page-header-breadcrumb .breadcrumb-separator,
+[data-theme="dark"] .page-header-breadcrumb .breadcrumb-separator,
+.dark .page-header-breadcrumb .breadcrumb-current,
+[data-theme="dark"] .page-header-breadcrumb .breadcrumb-current {
+    color: #ffffff !important;
+}
+
+.dark .page-header-breadcrumb a:not(.btn):not(.nav-item):hover,
+[data-theme="dark"] .page-header-breadcrumb a:not(.btn):not(.nav-item):hover {
+    color: #ffffff !important;
+    opacity: 0.9;
 }
 
 /* Main row (title + actions) */
