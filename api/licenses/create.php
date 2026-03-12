@@ -80,6 +80,8 @@ $licenseKey = strtoupper(implode('-', [
 $id = $db->generateUuid();
 
 try {
+    $db->beginTransaction();
+
     // Per-device-type pricing fields
     $pricingMode = $data['pricing_mode'] ?? 'flat';
     $exchangeRate = (float)($data['exchange_rate'] ?? 1.0);
@@ -138,13 +140,19 @@ try {
         }
     }
 
-    // Log
-    Logger::audit('create', 'license', [
-        'id' => $id,
-        'company_id' => $companyId,
-        'plan_id' => $planId,
-        'pricing_mode' => $pricingMode
-    ]);
+    $db->commit();
+
+    // Log (non-critical)
+    try {
+        Logger::audit('create', 'license', [
+            'id' => $id,
+            'company_id' => $companyId,
+            'plan_id' => $planId,
+            'pricing_mode' => $pricingMode
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('License create audit skipped: ' . $auditError->getMessage());
+    }
 
     $license = $db->fetch("SELECT * FROM licenses WHERE id = ?", [$id]);
 
@@ -157,7 +165,10 @@ try {
     }
 
     Response::success($license, 'Lisans oluşturuldu');
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     Logger::error('License create error', ['error' => $e->getMessage()]);
     Response::serverError('Lisans oluşturulamadı');
 }

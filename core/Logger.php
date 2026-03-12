@@ -166,16 +166,22 @@ class Logger
     {
         $dir = dirname($file);
 
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            error_log('Logger write skipped: cannot create directory ' . $dir);
+            return;
         }
 
         // Rotate log if too large (10MB)
-        if (file_exists($file) && filesize($file) > 10 * 1024 * 1024) {
-            self::rotate($file);
+        if (file_exists($file)) {
+            $size = @filesize($file);
+            if ($size !== false && $size > 10 * 1024 * 1024) {
+                self::rotate($file);
+            }
         }
 
-        file_put_contents($file, $entry . PHP_EOL, FILE_APPEND | LOCK_EX);
+        if (@file_put_contents($file, $entry . PHP_EOL, FILE_APPEND | LOCK_EX) === false) {
+            error_log('Logger write failed for file: ' . $file);
+        }
     }
 
     /**
@@ -185,16 +191,18 @@ class Logger
     {
         $date = date('Y-m-d_His');
         $rotatedFile = $file . '.' . $date;
-        rename($file, $rotatedFile);
+        if (!@rename($file, $rotatedFile)) {
+            return;
+        }
 
         // Keep only last 10 rotated files
         $pattern = $file . '.*';
-        $files = glob($pattern);
+        $files = glob($pattern) ?: [];
         if (count($files) > 10) {
             sort($files);
             $toDelete = array_slice($files, 0, count($files) - 10);
             foreach ($toDelete as $oldFile) {
-                unlink($oldFile);
+                @unlink($oldFile);
             }
         }
     }

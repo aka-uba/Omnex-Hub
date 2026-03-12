@@ -2035,3 +2035,57 @@ Format:
 - Backup/Restore Safety:
   - Temp backup created: `.codex/tmp_backups/20260312_223523-company-create-modal-i18n`
   - Restore not required.
+## 2026-03-12 - create flow hardening for production-only 500/partial-success risks
+- Request: After push/pull approval, detect and fix other create endpoints that may return 500 while partially persisting records on production.
+- Deployment note:
+  - App commit pushed to origin (`49aa576`) but direct server pull/rebuild could not be executed from this session due SSH key auth error: `Permission denied (publickey)`.
+- Risk review findings:
+  - Multi-step create endpoints without transaction could partially persist data on mid-step exception.
+  - Post-create audit/log and optional filesystem writes could raise warnings/exceptions and flip response to 500 after successful inserts.
+- Changes:
+  - `core/Logger.php`
+    - Hardened file logging path against warning-based failures (`@mkdir`, `@file_put_contents`, guarded rotate/cleanup). Logging failures now degrade to `error_log` without breaking API flow.
+  - `api/users/create.php`
+    - Wrapped user + branch-access inserts in DB transaction.
+    - Added rollback on failure and non-critical audit handling after commit.
+  - `api/notifications/create.php`
+    - Wrapped notification + recipient inserts in DB transaction with rollback on failure.
+  - `api/device-groups/create.php`
+    - Added transaction around group/member inserts; commit before response.
+    - Audit moved to non-critical block.
+  - `api/licenses/create.php`
+    - Added transaction around license + per-device pricing inserts with rollback on failure.
+    - Audit moved to non-critical block after commit.
+  - `api/web-templates/create.php`
+    - Added transaction around template + initial version inserts with rollback.
+    - Fixed audit call signature to match `Logger::audit(action, resource, data)`.
+    - Audit made non-critical.
+  - `api/templates/create.php`
+    - Guarded optional render-image directory/file writes to avoid warning-triggered request abort.
+    - Audit made non-critical.
+  - `api/render-queue/create.php`
+    - Guarded pre-render image directory/file writes to avoid warning-triggered request abort.
+- Files:
+  - core/Logger.php
+  - api/users/create.php
+  - api/notifications/create.php
+  - api/device-groups/create.php
+  - api/licenses/create.php
+  - api/web-templates/create.php
+  - api/templates/create.php
+  - api/render-queue/create.php
+- Checks:
+  - `php -l core/Logger.php`
+  - `php -l api/users/create.php`
+  - `php -l api/notifications/create.php`
+  - `php -l api/device-groups/create.php`
+  - `php -l api/licenses/create.php`
+  - `php -l api/web-templates/create.php`
+  - `php -l api/templates/create.php`
+  - `php -l api/render-queue/create.php`
+- Risks/Follow-up:
+  - Remaining create endpoints were reviewed; highest production instability vectors (multi-insert without transaction + warning-prone IO/audit tail) were patched.
+  - Server-side pull/rebuild still required to activate changes.
+- Backup/Restore Safety:
+  - Temp backup created: `.codex/tmp_backups/20260312_225107-create-hardening`
+  - Restore not required.

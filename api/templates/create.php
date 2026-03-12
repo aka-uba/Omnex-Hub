@@ -67,18 +67,18 @@ if ($renderImageData && strpos($renderImageData, 'data:image') === 0) {
     // Firma bazlı render dizini oluştur
     $renderOwnerId = $companyId ?: 'system';
     $renderDir = STORAGE_PATH . '/companies/' . $renderOwnerId . '/templates/renders';
-    if (!is_dir($renderDir)) {
-        mkdir($renderDir, 0755, true);
+    if (!is_dir($renderDir) && !@mkdir($renderDir, 0755, true) && !is_dir($renderDir)) {
+        $renderDir = null;
     }
 
     // Base64'ten görsel çıkar
     $parts = explode(',', $renderImageData);
-    if (count($parts) === 2) {
+    if ($renderDir && count($parts) === 2) {
         $imageData = base64_decode($parts[1]);
         $fileName = uniqid() . '_' . time() . '.png';
         $filePath = $renderDir . '/' . $fileName;
 
-        if (file_put_contents($filePath, $imageData)) {
+        if (@file_put_contents($filePath, $imageData) !== false) {
             $renderImagePath = 'companies/' . $renderOwnerId . '/templates/renders/' . $fileName;
         }
     }
@@ -152,6 +152,10 @@ $template['layout_type'] = $template['layout_type'] ?? 'full';
 $template['template_file'] = $template['template_file'] ?? null;
 $template['slots'] = $template['slots'] ? json_decode($template['slots'], true) : null;
 
-Logger::audit('create', 'templates', ['template_id' => $id]);
+try {
+    Logger::audit('create', 'templates', ['template_id' => $id]);
+} catch (Throwable $auditError) {
+    error_log('Template create audit skipped: ' . $auditError->getMessage());
+}
 
 Response::created($template, 'Şablon oluşturuldu');

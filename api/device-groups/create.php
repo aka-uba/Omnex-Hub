@@ -19,6 +19,7 @@ if (empty($data['name'])) {
 
 try {
     $id = $db->generateUuid();
+    $db->beginTransaction();
 
     $db->insert('device_groups', [
         'id' => $id,
@@ -41,14 +42,23 @@ try {
         }
     }
 
-    // Log
-    Logger::audit('create', 'device_group', [
-        'id' => $id,
-        'new' => $data
-    ]);
+    $db->commit();
+
+    // Log (non-critical)
+    try {
+        Logger::audit('create', 'device_group', [
+            'id' => $id,
+            'new' => $data
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('Device group create audit skipped: ' . $auditError->getMessage());
+    }
 
     Response::created(['id' => $id, 'message' => 'Grup olusturuldu']);
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     Logger::error('Device group create error', ['error' => $e->getMessage()]);
     Response::serverError('Grup olusturulamadi');
 }

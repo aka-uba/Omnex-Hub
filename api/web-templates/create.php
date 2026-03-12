@@ -46,55 +46,71 @@ if ($existingSlug) {
 // Yeni ID oluştur
 $templateId = $db->generateUuid();
 
-// Şablon oluştur
-$db->insert('web_templates', [
-    'id' => $templateId,
-    'company_id' => $companyId,
-    'name' => $name,
-    'slug' => $slug,
-    'description' => $data['description'] ?? null,
-    'html_content' => $data['html_content'] ?? null,
-    'css_content' => $data['css_content'] ?? null,
-    'js_content' => $data['js_content'] ?? null,
-    'template_type' => $data['template_type'] ?? 'signage',
-    'category' => $data['category'] ?? null,
-    'tags' => !empty($data['tags']) ? json_encode($data['tags']) : null,
-    'thumbnail' => $data['thumbnail'] ?? null,
-    'width' => $data['width'] ?? null,
-    'height' => $data['height'] ?? null,
-    'orientation' => $data['orientation'] ?? 'landscape',
-    'responsive_breakpoints' => !empty($data['responsive_breakpoints']) ? json_encode($data['responsive_breakpoints']) : null,
-    'data_sources' => !empty($data['data_sources']) ? json_encode($data['data_sources']) : null,
-    'dynamic_fields' => !empty($data['dynamic_fields']) ? json_encode($data['dynamic_fields']) : null,
-    'status' => $data['status'] ?? 'draft',
-    'version' => 1,
-    'scope' => 'company',
-    'created_by' => $user['id'],
-    'updated_by' => $user['id']
-]);
+try {
+    $db->beginTransaction();
 
-// İlk versiyonu kaydet
-if (!empty($data['html_content'])) {
-    $db->insert('web_template_versions', [
-        'id' => $db->generateUuid(),
-        'template_id' => $templateId,
-        'version_number' => 1,
-        'version_name' => 'İlk versiyon',
-        'change_notes' => 'Şablon oluşturuldu',
-        'html_content' => $data['html_content'],
+    // Şablon oluştur
+    $db->insert('web_templates', [
+        'id' => $templateId,
+        'company_id' => $companyId,
+        'name' => $name,
+        'slug' => $slug,
+        'description' => $data['description'] ?? null,
+        'html_content' => $data['html_content'] ?? null,
         'css_content' => $data['css_content'] ?? null,
         'js_content' => $data['js_content'] ?? null,
-        'created_by' => $user['id']
+        'template_type' => $data['template_type'] ?? 'signage',
+        'category' => $data['category'] ?? null,
+        'tags' => !empty($data['tags']) ? json_encode($data['tags']) : null,
+        'thumbnail' => $data['thumbnail'] ?? null,
+        'width' => $data['width'] ?? null,
+        'height' => $data['height'] ?? null,
+        'orientation' => $data['orientation'] ?? 'landscape',
+        'responsive_breakpoints' => !empty($data['responsive_breakpoints']) ? json_encode($data['responsive_breakpoints']) : null,
+        'data_sources' => !empty($data['data_sources']) ? json_encode($data['data_sources']) : null,
+        'dynamic_fields' => !empty($data['dynamic_fields']) ? json_encode($data['dynamic_fields']) : null,
+        'status' => $data['status'] ?? 'draft',
+        'version' => 1,
+        'scope' => 'company',
+        'created_by' => $user['id'],
+        'updated_by' => $user['id']
     ]);
+
+    // İlk versiyonu kaydet
+    if (!empty($data['html_content'])) {
+        $db->insert('web_template_versions', [
+            'id' => $db->generateUuid(),
+            'template_id' => $templateId,
+            'version_number' => 1,
+            'version_name' => 'İlk versiyon',
+            'change_notes' => 'Şablon oluşturuldu',
+            'html_content' => $data['html_content'],
+            'css_content' => $data['css_content'] ?? null,
+            'js_content' => $data['js_content'] ?? null,
+            'created_by' => $user['id']
+        ]);
+    }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Web template create error', ['error' => $e->getMessage(), 'name' => $name]);
+    Response::serverError('Şablon oluşturulamadı');
 }
 
-// Audit log
+// Audit log (non-critical)
 if (class_exists('Logger')) {
-    Logger::audit('web_template_created', [
-        'template_id' => $templateId,
-        'name' => $name,
-        'user_id' => $user['id']
-    ]);
+    try {
+        Logger::audit('create', 'web_template', [
+            'template_id' => $templateId,
+            'name' => $name,
+            'user_id' => $user['id']
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('Web template create audit skipped: ' . $auditError->getMessage());
+    }
 }
 
 // Oluşturulan şablonu getir

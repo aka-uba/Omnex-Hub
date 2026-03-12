@@ -177,18 +177,35 @@ $notificationData = [
 
 // Remove null values
 $notificationData = array_filter($notificationData, fn($v) => $v !== null);
-$db->insert('notifications', $notificationData);
 
-// Create recipient records
 $recipientCount = 0;
-foreach ($recipients as $recipientUserId) {
-    $db->insert('notification_recipients', [
-        'id' => $db->generateUuid(),
-        'notification_id' => $notificationId,
-        'user_id' => $recipientUserId,
-        'status' => 'unread'
+$db->beginTransaction();
+
+try {
+    $db->insert('notifications', $notificationData);
+
+    // Create recipient records
+    foreach ($recipients as $recipientUserId) {
+        $db->insert('notification_recipients', [
+            'id' => $db->generateUuid(),
+            'notification_id' => $notificationId,
+            'user_id' => $recipientUserId,
+            'status' => 'unread'
+        ]);
+        $recipientCount++;
+    }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Notification create error', [
+        'error' => $e->getMessage(),
+        'company_id' => $companyId,
+        'target_type' => $targetType
     ]);
-    $recipientCount++;
+    Response::serverError('Bildirim olusturulamadi');
 }
 
 // Return created notification

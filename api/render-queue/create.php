@@ -38,15 +38,15 @@ function savePreRenderedImage(string $base64Image, string $productId, string $co
 
     // Multi-tenant dizin yapısı: /renders/{company_id}/queue/
     $renderDir = STORAGE_PATH . '/renders/' . $companyId . '/queue';
-    if (!is_dir($renderDir)) {
-        mkdir($renderDir, 0755, true);
+    if (!is_dir($renderDir) && !@mkdir($renderDir, 0755, true) && !is_dir($renderDir)) {
+        return null;
     }
 
     // Sadece productId kullan - aynı ürün için üzerine yazar
     $filename = $productId . '.png';
     $filePath = $renderDir . '/' . $filename;
 
-    if (file_put_contents($filePath, $imageData) === false) {
+    if (@file_put_contents($filePath, $imageData) === false) {
         return null;
     }
 
