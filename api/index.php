@@ -1241,6 +1241,11 @@ $router->group(['prefix' => '/api/player', 'middleware' => ['device']], function
 
 // Public stream endpoints (token-based auth, no middleware)
 $router->group(['prefix' => '/api/stream'], function($router) {
+    // M3U wrapper playlist (custom display name + optional download)
+    $router->get('/{token}/playlist.m3u', function($request) {
+        require API_PATH . '/stream/playlist.php';
+    });
+
     // HLS master playlist (adaptive)
     $router->get('/{token}/master.m3u8', function($request) {
         require API_PATH . '/stream/master.php';

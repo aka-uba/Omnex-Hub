@@ -2578,3 +2578,97 @@ Format:
   - `.codex/tmp_backups/20260313_011818-updatejson-encoding-deploy`
   - `.codex/tmp_backups/20260313_012143-htaccess-downloads-fallback`
   - Restore not required.
+## 2026-03-13 - server sync for player CSS patch + OTA domain validation
+- Request context:
+  - Kullanici `https://hub.omnexcore.com/player/` stil degisikliginin sunucuda gorunmedigini bildirdi.
+  - Ayrica APK otomatik guncelleme domaininin hala eski (`akagunduzweb`) olabilecegi suphe edildi.
+- Actions:
+  - Sunucuda (`/opt/omnex-hub`) once tracked local degisiklikler stashlendi, sonra `git pull --ff-only` ile `ae0aaac` commitine cikildi.
+  - `deploy/` icinde app image rebuild + `app/nginx` force-recreate yapildi.
+- Verification:
+  - Canli CSS kontrolu: `https://hub.omnexcore.com/player/assets/css/player.css` icinde desktop card-height patch bulundu (`body:not(.device-tv) ... height: 100%`).
+  - Canli update endpoint: `https://hub.omnexcore.com/downloads/update.json` -> HTTP 200 JSON.
+  - APK ic string kontrolu (`classes*.dex`):
+    - `hub.omnexcore.com` bulundu.
+    - `akagunduzweb.com` bulunmadi.
+- Notes:
+  - `downloads/update.json` canli endpointte JSON olarak servis ediliyor; konsol goruntulemede karakterler codepage nedeniyle bozuk gorunebilir.
+- Checks run:
+  - Live HTTP content checks (player.css/update.json)
+  - APK dex string search (`findstr`)
+- Risks/Follow-up:
+  - Sunucuda stash kaydi olustu (`codex-auto-prepull-...`); istenirse sonradan `git stash list` ile gozden gecirilmeli.
+- Backup/Restore Safety:
+  - Local temp backuplar bu turda degistirilmedi; onceki temp backuplar korunuyor.
+## 2026-03-13 - apk welcome/splash theme restore + OTA v27 publish
+- Request context:
+  - Kullanici APK ilk karşılama ekranı tasariminin eskiye dondugunu, arka planin player eslestirme sayfasi ile ayni stile alinmasini istedi.
+- Changes:
+  - Android source (local, gitignore kapsaminda):
+    - `android-player/omnex-player-app/app/src/main/res/drawable/wizard_mobile_background.xml`
+      - Koyu + cyan radial glow arka plan player registration temasiyla hizalandi.
+    - `android-player/omnex-player-app/app/src/main/res/drawable/wizard_card_bg.xml`
+      - Kart yuzeyi koyu-cyan gradient + cyan border yapildi.
+    - `android-player/omnex-player-app/app/src/main/res/drawable/wizard_mobile_card_bg.xml`
+      - Mobil kart da ayni tema ile hizalandi.
+    - `android-player/omnex-player-app/app/src/main/res/layout/activity_wizard_tv.xml`
+      - Root background düz renk yerine `@drawable/wizard_mobile_background` yapildi.
+    - `android-player/omnex-player-app/app/build.gradle`
+      - `versionCode 27`, `versionName 2.8.3` (local source).
+  - Distribution artifacts:
+    - `downloads/omnex-player.apk` yenilendi.
+    - `public/downloads/omnex-player.apk` yenilendi.
+    - `downloads/omnex-player-standalone-v2.8.3.apk` eklendi.
+    - `public/downloads/omnex-player-standalone-v2.8.3.apk` eklendi.
+  - Update manifests (UTF-8 no BOM):
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    - `versionCode: 27`, `versionName: 2.8.3`, `downloadUrl ...?v=27`
+    - `sha256: 79916b0e50f0475927fb5774f11406f90ab517ef29b4f915969e8ae21b8929f9`
+- Checks:
+  - `android-player/omnex-player-app> .\\gradlew.bat publishDebugApk` (pass)
+  - `android-player/omnex-player-app> .\\gradlew.bat :app:compileStandaloneDebugKotlin` (pass)
+  - JSON parse check: `downloads/update.json`, `public/downloads/update.json` (pass)
+  - BOM check: her iki update.json dosyasi BOM yok (pass)
+- Risks/Follow-up:
+  - `android-player/` gitignore kapsaminda oldugu icin source kod degisiklikleri repo commit'ine dahil degil; dagitim APK artifactlari ve update manifest commitlenir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_013939-apk-welcome-theme-restore`
+  - Restore not required.
+## 2026-03-13 - stream label customization + m3u wrapper endpoint
+- Request context:
+  - VLC tarafinda stream acilisinda gorunen `master.m3u8` etiketinin ozellestirilmesi istendi.
+  - Etiket formati `firma-player-adi-omnexplayer` olacak sekilde duzenlendi.
+  - Stream icin link ve indirilebilir `.m3u` playlist endpointi eklendi.
+- Changes:
+  - `api/stream/helpers.php` (new):
+    - Stream label normalize/build helperlari
+    - Safe filename helperi
+    - Base URL/base path helperlari
+    - Company name resolve helperi
+  - `api/stream/master.php`:
+    - `helpers.php` include edildi.
+    - Stream label company + device adindan uretilir hale getirildi.
+    - Master playlist'e `#EXT-X-SESSION-DATA` stream title metadata satiri eklendi.
+    - Response header'larina custom `Content-Disposition` filename ve `X-Stream-Label` eklendi.
+  - `api/stream/playlist.php` (new):
+    - `GET /api/stream/{token}/playlist.m3u`
+    - `#EXTINF` satirinda custom stream label doner.
+    - Target URL olarak `master.m3u8` verir.
+    - `?download=1` ile attachment download destegi eklendi.
+  - `api/stream/info.php`:
+    - `stream_m3u_url`, `stream_m3u_download_url`, `stream_label` alanlari eklendi.
+  - `api/index.php`:
+    - Public stream routes altina `/{token}/playlist.m3u` route'u eklendi.
+- Checks:
+  - `php -l api/stream/helpers.php`
+  - `php -l api/stream/master.php`
+  - `php -l api/stream/playlist.php`
+  - `php -l api/stream/info.php`
+  - `php -l api/index.php`
+  - Route spot check: `curl -D - http://localhost/market-etiket-sistemi/api/stream/testtoken/playlist.m3u` -> `403` (route active)
+- Risks/Follow-up:
+  - Bazi playerlar `master.m3u8` URL metnini kendi ic davranisiyla gosterebilir; bu durumda istemcide `playlist.m3u` URL kullanimi onerilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_015140-stream-m3u-label`
+  - Restore not required.

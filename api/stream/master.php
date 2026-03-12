@@ -8,6 +8,7 @@
  */
 
 $db = Database::getInstance();
+require_once __DIR__ . '/helpers.php';
 $assignmentPlaylistJoin = $db->isPostgres()
     ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
     : "LEFT JOIN playlists p ON dca.content_id = p.id";
@@ -90,6 +91,8 @@ if (!$device) {
 }
 
 $companyId = $device['company_id'];
+$companyName = streamResolveCompanyName($db, $companyId);
+$streamLabel = streamBuildDisplayLabel($companyName, $device['name'] ?? 'player');
 $deviceProfile = !empty($device['device_profile']) ? json_decode($device['device_profile'], true) : null;
 
 // Cihazin aktif playlist'ini bul
@@ -188,24 +191,8 @@ if (!empty($missingVariantMediaIds)) {
 }
 
 // Base path hesapla (hem HLS hem passthrough icin ortak)
-$basePath = '';
-$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-if (preg_match('#^(.*)/api/#', $scriptName, $m)) {
-    $basePath = $m[1];
-}
-// Fallback: BASE_PATH'ten hesapla
-if (!$basePath && defined('BASE_PATH')) {
-    $docRoot = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/\\'));
-    $fsBase = str_replace('\\', '/', BASE_PATH);
-    if ($docRoot && strpos($fsBase, $docRoot) === 0) {
-        $basePath = rtrim(substr($fsBase, strlen($docRoot)), '/');
-    }
-}
-
-// Protocol + host
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$baseUrl = $scheme . '://' . $host . $basePath;
+$basePath = streamResolveBasePath();
+$baseUrl = streamResolveBaseUrl();
 
 // Fonksiyon: medya dosyasinin tam URL'sini olustur
 function buildMediaUrl($filePath, $baseUrl, $basePath) {
@@ -333,7 +320,12 @@ uksort($availableProfiles, static function ($left, $right) use ($availableProfil
 });
 
 // HLS master playlist ciktisi
-$lines = ["#EXTM3U", "#EXT-X-VERSION:3", ""];
+$lines = [
+    "#EXTM3U",
+    "#EXT-X-VERSION:3",
+    "#EXT-X-SESSION-DATA:DATA-ID=\"com.omnex.stream.title\",VALUE=\"{$streamLabel}\"",
+    "",
+];
 
 foreach ($availableProfiles as $profileName => $variant) {
     $profileDef = HlsTranscoder::PROFILES[$profileName] ?? null;
@@ -374,6 +366,8 @@ try {
 
 // M3U8 response
 header('Content-Type: application/vnd.apple.mpegurl');
+header('Content-Disposition: inline; filename="' . streamBuildSafeFilename($streamLabel, 'm3u8') . '"');
+header('X-Stream-Label: ' . $streamLabel);
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 echo implode("\n", $lines);

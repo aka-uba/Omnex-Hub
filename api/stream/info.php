@@ -6,6 +6,7 @@
  */
 
 $db = Database::getInstance();
+require_once __DIR__ . '/helpers.php';
 $assignmentPlaylistJoin = $db->isPostgres()
     ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
     : "LEFT JOIN playlists p ON dca.content_id = p.id";
@@ -83,9 +84,16 @@ if ($assignment) {
 
 // Stream URL olustur
 $streamUrl = null;
+$streamM3uUrl = null;
+$streamM3uDownloadUrl = null;
+$streamLabel = null;
 if ($device['stream_mode'] && !empty($device['stream_token'])) {
-    $appUrl = defined('APP_URL') ? APP_URL : '';
+    $appUrl = defined('APP_URL') && APP_URL ? APP_URL : streamResolveBaseUrl();
+    $companyName = streamResolveCompanyName($db, $device['company_id'] ?? null);
+    $streamLabel = streamBuildDisplayLabel($companyName, $device['name'] ?? 'player');
     $streamUrl = $appUrl . '/api/stream/' . $device['stream_token'] . '/master.m3u8';
+    $streamM3uUrl = $appUrl . '/api/stream/' . $device['stream_token'] . '/playlist.m3u';
+    $streamM3uDownloadUrl = $streamM3uUrl . '?download=1';
 }
 
 Response::success([
@@ -93,6 +101,9 @@ Response::success([
     'stream_mode' => (bool)$device['stream_mode'],
     'stream_token' => $device['stream_token'] ?? null,
     'stream_url' => $streamUrl,
+    'stream_m3u_url' => $streamM3uUrl,
+    'stream_m3u_download_url' => $streamM3uDownloadUrl,
+    'stream_label' => $streamLabel,
     'stream_status' => $streamStatus,
     'last_stream_request' => $lastRequest,
     'device_profile' => !empty($device['device_profile']) ? json_decode($device['device_profile'], true) : null,
