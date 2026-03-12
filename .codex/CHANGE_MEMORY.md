@@ -2145,3 +2145,71 @@ Format:
 - Backup/Restore Safety:
   - Temp backup created: `.codex/tmp_backups/20260312_230723-logger-warning-and-company-update-delete`
   - Restore not required.
+## 2026-03-12 - stream transcode activation (device-aware profile + worker service)
+- Request: FFmpeg artik docker sunucuda kurulu; player/stream sisteminde cihaz bazli medya olusumunu aktif et ve canli ortamda kontrol et.
+- Findings (production):
+  - App container icinde `ffmpeg` / `ffprobe` vardi ve calisiyordu.
+  - `TranscodeWorker` process calismiyordu; hazir variant sayisi 0 idi.
+  - Bu nedenle stream cihazlari ayni kaynak medya/profil davranisina dusuyordu.
+- Changes:
+  - `services/TranscodeQueueService.php`
+    - `enqueue()` icinde profil secimi otomatiklestirildi.
+    - Profil verilmezse kaynak videonun cozunurlugune gore `HlsTranscoder::getAvailableProfiles()` ile profil listesi seciliyor.
+    - Profil dogrulama/normalize helper eklendi (`resolveProfiles`).
+  - `api/transcode/enqueue.php`
+    - `profiles` artik opsiyonel (auto mode).
+    - Effective profile listesi DB job kaydindan response'a donuluyor.
+  - `api/stream/master.php`
+    - Hazir varianti olmayan playlist videolari icin best-effort auto-enqueue eklendi.
+    - Cihaz profil filtresi iyilestirildi:
+      - `max_res`/`resolution` gibi farkli formatlardan yukseklik parse ediliyor (`720p`, `1280x720`, vb.).
+      - `device_profile` yoksa `screen_width/screen_height` fallback kullaniliyor.
+      - Filtre sonrasi bos kalirsa en uygun fallback profil seciliyor.
+      - Master profile satirlari bitrate'e gore siralaniyor.
+  - `api/media/upload.php`
+    - Video upload sonrasi otomatik transcode queue ekleme (best-effort) eklendi.
+  - `workers/TranscodeWorker.php`
+    - Daemon log forward bug fix: private `Logger::log()` cagrisini public `Logger::info/error/warning/debug` yonlendirmesine cevirildi.
+  - `deploy/docker-compose.yml`
+    - Yeni `transcode-worker` servisi eklendi (daemon mode).
+  - `deploy/docker-compose.local.yml`
+    - Local parity icin `transcode-worker` servisi eklendi.
+- Deployment (production):
+  - Commit `7055618` push edildi, sunucuda pull edildi.
+  - `app` + `transcode-worker` image build/up yapildi, `nginx` restart edildi.
+  - `transcode-worker` container up durumda ve log'da FFmpeg bulundu mesaji goruldu.
+- Files:
+  - services/TranscodeQueueService.php
+  - api/transcode/enqueue.php
+  - api/stream/master.php
+  - api/media/upload.php
+  - workers/TranscodeWorker.php
+  - deploy/docker-compose.yml
+  - deploy/docker-compose.local.yml
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l services/TranscodeQueueService.php`
+  - `php -l api/transcode/enqueue.php`
+  - `php -l api/stream/master.php`
+  - `php -l api/media/upload.php`
+  - `php -l workers/TranscodeWorker.php`
+  - `docker compose -f deploy/docker-compose.local.yml config`
+  - Production container syntax:
+    - `php -l /var/www/html/services/TranscodeQueueService.php`
+    - `php -l /var/www/html/api/transcode/enqueue.php`
+    - `php -l /var/www/html/api/stream/master.php`
+    - `php -l /var/www/html/api/media/upload.php`
+    - `php -l /var/www/html/workers/TranscodeWorker.php`
+  - Production runtime checks:
+    - `php workers/TranscodeWorker.php --status`
+    - `docker compose ps app transcode-worker nginx`
+    - `docker compose logs --tail 30 transcode-worker`
+    - `GET https://hub.omnexcore.com/api/health` => 200
+- Risks/Follow-up:
+  - Eski videolarin variantlari anlik olusmaz; worker kuyrugu isledikce olusur.
+  - Auto-enqueue stream/master tarafinda best-effort calisir; ilk isteklerde passthrough devam edebilir.
+  - Bazý uzak script calistirmalarinda BOM/CRLF kaynakli shell sikintisi goruldu; deploy sonucu dogrulandi, ancak script pipeline icin dikkat edilmeli.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260312_232217-stream-transcode-activation`
+  - Remote backup: `.codex_remote_backups/20260312_202803-stream-transcode`
+  - Restore not required.
