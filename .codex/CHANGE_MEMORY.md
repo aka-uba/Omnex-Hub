@@ -2830,3 +2830,19 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
   - Restore not required.
+## 2026-03-13 - IPTV fallback: playlist.m3u now points to pinned variant profile
+- Request context:
+  - IPTV'de `playlist.m3u` ve indirilen `.m3u` calismiyor, ancak direct profile link (`variant/720p`) calisiyor.
+- Changes:
+  - `api/stream/playlist.php`
+    - Playlist target URL `master.m3u8` yerine profile-pinli variant URL oldu.
+    - Profile secimi: query `?profile=` (360p/540p/720p/1080p) veya cihaz profilinden otomatik cozumleme.
+    - Cihaz profilinden profile map: <=360 -> 360p, <=540 -> 540p, <=720 -> 720p, digeri -> 1080p.
+    - Debug header eklendi: `X-Stream-Profile`.
+- Checks:
+  - `php -l api/stream/playlist.php`
+- Risks/Follow-up:
+  - Eger secilen profile ilgili media icin transcode edilmemisse IPTV tarafinda yine hata verebilir; bu durumda dynamic available-profile fallback endpoint eklenmeli.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.
