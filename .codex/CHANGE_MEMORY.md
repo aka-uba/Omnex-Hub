@@ -2089,3 +2089,24 @@ Format:
 - Backup/Restore Safety:
   - Temp backup created: `.codex/tmp_backups/20260312_225107-create-hardening`
   - Restore not required.
+## 2026-03-12 - frontend logger compatibility alias for `Logger.warning` runtime error
+- Request: After company create test on production, modal confirm failed with `TypeError: Logger.warning is not a function`.
+- Root cause:
+  - `public/assets/js/pages/admin/CompanyManagement.js` used `Logger.warning(...)`.
+  - `public/assets/js/core/Logger.js` exposed `warn(...)` but had no `warning(...)` alias.
+- Changes:
+  - `public/assets/js/core/Logger.js`
+    - Added compatibility alias `warning(...args)` delegating to `warn(...args)`.
+- Additional review:
+  - Quick static scan over `api/**/(update|delete).php` flagged multi-step endpoints with no transaction and/or audit/fs side effects as potential production-only partial-success/500 candidates (next hardening pass suggested).
+- Files:
+  - public/assets/js/core/Logger.js
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `node --check public/assets/js/core/Logger.js`
+  - `node --check public/assets/js/pages/admin/CompanyManagement.js`
+- Risks/Follow-up:
+  - Any existing `Logger.warning(...)` calls are now safe globally.
+  - Update/Delete hardening should continue endpoint-by-endpoint (transaction + non-critical audit/fs wrappers) for fully consistent behavior.
+- Backup/Restore Safety:
+  - Prior task backups remain available; no additional restore needed.

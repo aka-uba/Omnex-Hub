@@ -42,6 +42,13 @@ const Logger = {
     },
 
     /**
+     * Log a warning message (compat alias)
+     */
+    warning(...args) {
+        this.warn(...args);
+    },
+
+    /**
      * Log an error message (always shown - errors are important)
      */
     error(...args) {
