@@ -2271,3 +2271,24 @@ Format:
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260312_235608-transcode-execute-fix`
   - Restore not required.
+## 2026-03-13 - player response includes stream_profile field
+- Request context: 3 cihaz dogrulamasinda URL'ler HLS'e dondu ancak `stream_profile` alani response'ta gorunmedi.
+- Root cause:
+  - `api/player/init.php` ve `api/player/sync.php` icinde secilen profil `playlistItems` uzerine yaziliyordu fakat `transformedItems` map'ine tasinmiyordu.
+- Changes:
+  - `api/player/init.php`
+    - Normal media item response'una `stream_profile` alanini eklendi.
+  - `api/player/sync.php`
+    - Normal media item response'una `stream_profile` alanini eklendi.
+- Files:
+  - api/player/init.php
+  - api/player/sync.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/player/init.php`
+  - `php -l api/player/sync.php`
+- Risks/Follow-up:
+  - Bu ortamdaki test medyalari su an sadece `720p` hazir oldugundan tum cihazlar `720p` gorur; cihaz farkini gorebilmek icin 360p/540p/1080p varyantlari da hazirlanmis bir medya seti gerekir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_000056-player-stream-profile-response`
+  - Restore not required.

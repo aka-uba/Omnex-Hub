@@ -555,6 +555,7 @@ foreach ($playlistItems as $item) {
         'name' => $item['media_name'] ?? 'Unnamed',
         'type' => $contentType,
         'url' => $item['media_url'] ?? '',
+        'stream_profile' => $item['stream_profile'] ?? null,
         'mime_type' => $item['mime_type'] ?? '',
         'duration' => isset($item['duration']) ? (int) $item['duration'] : null,
         'loop' => (int) ($item['loop'] ?? 0),
