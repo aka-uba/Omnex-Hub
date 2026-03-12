@@ -2349,3 +2349,21 @@ Format:
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260313_002655-device-show-hotfix`
   - Restore not required.
+## 2026-03-13 - device detail hotfix (non-playlist assignment uuid guard)
+- Request context:
+  - Device detail API 500: `invalid input syntax for type uuid`.
+  - `device_content_assignments.content_id` bazen path (http_payload json path) oldugunda playlist fallback sorgusuna UUID gibi gidiyordu.
+- Changes:
+  - `api/devices/show.php`
+    - Active assignment sorgusuna `dca.content_type = 'playlist'` filtresi eklendi.
+    - `playlist_items` fallback sorgusundan once `content_id` UUID format kontrolu eklendi; UUID degilse sorgu atlanip bos item listesiyle devam ediliyor.
+- Files:
+  - api/devices/show.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/devices/show.php`
+- Risks/Follow-up:
+  - UUID regex check'i gevsek format kontroludur; canonical UUID validasyonu gerekirse DB tarafi cast veya stricter regex ile sertlestirilebilir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_002959-device-show-contenttype-fix`
+  - Restore not required.

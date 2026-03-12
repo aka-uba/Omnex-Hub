@@ -276,7 +276,7 @@ $assignedContent = $db->fetch(
             p.orientation, p.layout_type, p.default_duration
      FROM device_content_assignments dca
      $playlistJoin
-     WHERE dca.device_id = ? AND dca.status = 'active'
+     WHERE dca.device_id = ? AND dca.status = 'active' AND dca.content_type = 'playlist'
      ORDER BY dca.created_at DESC
      LIMIT 1",
     [$id]
@@ -315,10 +315,16 @@ if ($assignedContent) {
             $selectSql .= " ORDER BY created_at ASC";
         }
 
-        $normalizedItems = $db->fetchAll(
-            $selectSql,
-            [$assignedContent['content_id']]
-        );
+        $playlistId = (string)($assignedContent['content_id'] ?? '');
+        $isValidPlaylistId = preg_match('/^[0-9a-fA-F-]{36}$/', $playlistId) === 1;
+
+        $normalizedItems = [];
+        if ($isValidPlaylistId) {
+            $normalizedItems = $db->fetchAll(
+                $selectSql,
+                [$playlistId]
+            );
+        }
 
         $device['assigned_playlist']['items'] = array_map(function ($item) {
             return [
