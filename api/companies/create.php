@@ -10,6 +10,7 @@ require_once BASE_PATH . '/services/LicenseService.php';
 require_once BASE_PATH . '/services/CompanyStorageService.php';
 
 $db = Database::getInstance();
+$postCreateWarnings = [];
 
 $name = $request->input('name');
 if (!$name) {
@@ -82,55 +83,91 @@ if ($planId) {
     }
 }
 
-// Move temporary branding files if they exist
+$runNonCritical = static function (string $step, callable $fn) use (&$postCreateWarnings): void {
+    set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    });
+
+    try {
+        $fn();
+    } catch (Throwable $e) {
+        $postCreateWarnings[] = $step;
+        error_log(sprintf('Company create non-critical step failed (%s): %s', $step, $e->getMessage()));
+    } finally {
+        restore_error_handler();
+    }
+};
+
+// Move temporary branding files if they exist (non-critical)
 $tempId = $request->input('temp_id');
-if ($tempId && strpos($tempId, 'temp_') === 0) {
+$runNonCritical('branding_move', static function () use ($tempId, $id): void {
+    if (!$tempId || strpos($tempId, 'temp_') !== 0) {
+        return;
+    }
+
     $tempPath = dirname(__DIR__, 2) . '/storage/temp/' . $tempId . '/branding';
     $targetPath = dirname(__DIR__, 2) . '/storage/companies/' . $id . '/branding';
 
-    if (is_dir($tempPath)) {
-        // Ensure target directory exists
-        if (!is_dir($targetPath)) {
-            mkdir($targetPath, 0755, true);
-        }
+    if (!is_dir($tempPath)) {
+        return;
+    }
 
-        // Move all files from temp to target
-        $files = glob($tempPath . '/*');
-        foreach ($files as $file) {
-            $filename = basename($file);
-            rename($file, $targetPath . '/' . $filename);
-        }
+    if (!is_dir($targetPath) && !mkdir($targetPath, 0755, true) && !is_dir($targetPath)) {
+        throw new RuntimeException('Failed to create company branding directory');
+    }
 
-        // Clean up temp directory
-        rmdir($tempPath);
-        $tempParent = dirname($tempPath);
-        if (is_dir($tempParent) && count(glob($tempParent . '/*')) === 0) {
-            rmdir($tempParent);
+    $files = glob($tempPath . '/*') ?: [];
+    foreach ($files as $file) {
+        $filename = basename($file);
+        if (!rename($file, $targetPath . '/' . $filename)) {
+            throw new RuntimeException('Failed to move branding file');
         }
     }
-}
 
-// Seed default data for the new company
+    if (!rmdir($tempPath) && is_dir($tempPath)) {
+        throw new RuntimeException('Failed to clean temp branding directory');
+    }
+
+    $tempParent = dirname($tempPath);
+    if (is_dir($tempParent) && count(glob($tempParent . '/*') ?: []) === 0 && !rmdir($tempParent) && is_dir($tempParent)) {
+        throw new RuntimeException('Failed to clean temp company directory');
+    }
+});
+
+// Seed default data for the new company and ensure storage (non-critical)
 require_once BASE_PATH . '/services/CompanySeeder.php';
-$seeder = new CompanySeeder($id);
-$seedResults = $seeder->seedAllWithStorage();
-$storageEnsure = CompanyStorageService::ensureForCompany($id);
+$seedResults = [];
+$storageEnsure = [];
+
+$runNonCritical('seed_defaults', static function () use (&$seedResults, $id): void {
+    $seeder = new CompanySeeder($id);
+    $seedResults = $seeder->seedAllWithStorage();
+});
+
+$runNonCritical('ensure_storage', static function () use (&$storageEnsure, $id): void {
+    $storageEnsure = CompanyStorageService::ensureForCompany($id);
+});
 
 $company = $db->fetch("SELECT * FROM companies WHERE id = ?", [$id]);
 
-// Audit log
-Logger::audit('create', 'company', [
-    'id' => $id,
-    'new' => [
-        'name' => $name,
-        'code' => $code,
-        'status' => $request->input('status', 'active')
-    ],
-    'seed_results' => $seedResults
-]);
+// Audit log (non-critical)
+$runNonCritical('audit_log', static function () use ($id, $name, $code, $request, $seedResults): void {
+    Logger::audit('create', 'company', [
+        'id' => $id,
+        'new' => [
+            'name' => $name,
+            'code' => $code,
+            'status' => $request->input('status', 'active')
+        ],
+        'seed_results' => $seedResults
+    ]);
+});
 
 // Add seed summary to company data
-$company['seed_summary'] = CompanySeeder::getSummary($seedResults);
+$company['seed_summary'] = !empty($seedResults) ? CompanySeeder::getSummary($seedResults) : null;
 $company['storage_summary'] = $storageEnsure;
+if (!empty($postCreateWarnings)) {
+    $company['post_create_warnings'] = array_values(array_unique($postCreateWarnings));
+}
 
 Response::success($company, 'Company created and default data seeded');

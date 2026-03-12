@@ -1715,3 +1715,323 @@ Format:
 - Risk/Follow-up:
   - Sunucuda rebuild gerekli: `docker compose build app && docker compose up -d app && docker compose restart nginx`
   - Cihaz Bluetooth ile tekrar yapılandırılmalı (sunucu üzerinden, doğru IP/URL ile)
+## 2026-03-12 - Production invalid origin 403 fix for gateway/device machine-to-machine calls
+- Request: Docker production ortaminda local gateway heartbeat/devices register istekleri `403 Invalid origin` aliyordu; HTTP/MQTT cihaz aktarimlarinda da veri gitmeme sorunu incelendi.
+- Root cause:
+  - `middleware/ApiGuardMiddleware.php` icinde `validateOrigin()` prod modda `Origin` olmayan istekleri varsayilan olarak reddediyordu.
+  - Local gateway ve cihaza yonelik bircok M2M istemci (cURL/device firmware) `Origin`/`Referer` gondermedigi icin `/api/gateway/*` ve benzeri endpointler 403 aliyordu.
+- Changes:
+  - `middleware/ApiGuardMiddleware.php`
+    - `Origin` yoksa:
+      - `Referer` ayni host ise izin ver.
+      - `Referer` farkli host ise prod'da mevcut sikilik korunur (reddet).
+      - `Origin` + `Referer` ikisi de yoksa M2M cagrilar icin tum ortamlarda izin ver.
+    - Host karsilastirmalarini guvenli yapmak icin `normalizeHost()` yardimci fonksiyonu eklendi.
+- Files:
+  - middleware/ApiGuardMiddleware.php
+- Checks:
+  - php -l middleware/ApiGuardMiddleware.php
+- Backup/Restore Safety:
+  - Temp backup alindi: `middleware/ApiGuardMiddleware.php.bak_invalid_origin_fix_20260312_020514`
+  - Restore gerekmedi.
+- Risk/Follow-up:
+  - Degisiklikten sonra production deploy/restart gerekli.
+  - Deploy sonrasi dogrulama: `/api/gateway/heartbeat`, `/api/gateway/devices/register`, `/api/esl/http/content`, `/api/esl/mqtt/report` endpointlerinde 403 kaybolmali.
+## 2026-03-12 - Production deploy: ApiGuard invalid-origin fix
+- Request: Sunucuya baglanip `Invalid origin (403)` sorununa alinmis middleware duzeltmesini deploy et ve container yenileme gerekliligini netlestir.
+- Deployment findings:
+  - `deploy/docker-compose.yml` app servisi kodu image build ile aliyor, source code bind mount yok.
+  - Bu nedenle degisikliklerin etkili olmasi icin app rebuild gerekliydi.
+- Deployment actions:
+  - SSH ile sunucuya baglanildi (`camlicayazilim@185.124.84.34:2299`).
+  - Remote backup alindi:
+    - `/opt/omnex-hub/middleware/ApiGuardMiddleware.php.bak_20260312_021226`
+  - Guncel dosya sunucuya kopyalandi:
+    - `/opt/omnex-hub/middleware/ApiGuardMiddleware.php`
+  - Rebuild + restart:
+    - `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml build app`
+    - `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml up -d app`
+- Checks run:
+  - Container icinde syntax: `php -l /var/www/html/middleware/ApiGuardMiddleware.php` (OK)
+  - Public health: `GET https://hub.omnexcore.com/api/health` -> HTTP 200
+  - Guard davranisi probe: `POST https://hub.omnexcore.com/api/gateway/heartbeat` (Origin/Referer yok, auth yok) -> HTTP 401 `MISSING_API_KEY` (beklenen, 403 degil)
+- Risk/Follow-up:
+  - Sunucu repo local patch halinde; GitHub'da ayni commit yoksa sonraki CI/CD deploy bu dosyayi ezebilir.
+  - Kalici cozum icin ayni degisiklik repo ana dala alinmali.
+## 2026-03-12 - Gateway heartbeat 500 fix (PostgreSQL datetime incompatibility) + remote hotfix deploy
+- Request: Local gateway tarafinda DNS sorunu sonrasinda heartbeat/devices akisi hala bozuk; `/api/gateway/heartbeat` 500, cihaz sayisi 0.
+- Root cause:
+  - Sunucuda ilk etapta `api/gateway` endpoint dosyalari image icinde yoktu (`require .../api/gateway/heartbeat.php` fail).
+  - Dosyalar eklendikten sonra heartbeat 500 kaldi: `api/gateway/heartbeat.php` icindeki SQLite-ozel `datetime('now')`/`strftime` SQL ifadeleri PostgreSQL'de `SQLSTATE[42883]` uretip endpoint'i dusuruyordu.
+- Changes:
+  - `api/gateway/heartbeat.php`
+    - DB-zamani bagimsizlastirildi: `datetime('now')` ve `strftime` kullanimi kaldirildi.
+    - Timestamps PHP tarafinda `date('Y-m-d H:i:s')` ile uretildi ve query parametreleriyle gecildi.
+    - Stale command requeue kosulu `COALESCE(sent_at, created_at) <= ?` ve `expires_at > ?` seklinde PostgreSQL uyumlu hale getirildi.
+  - Remote deploy actions:
+    - Eksik `api/gateway` klasoru `/opt/omnex-hub/api/gateway` altina kopyalandi.
+    - App image rebuild + restart yapildi (compose).
+- Files:
+  - api/gateway/heartbeat.php
+- Checks:
+  - Local syntax: `php -l api/gateway/heartbeat.php`
+  - Container syntax: `php -l /var/www/html/api/gateway/heartbeat.php`
+  - Runtime probe: signed gateway heartbeat -> HTTP 200 + expected JSON payload
+  - Runtime probe: `/api/gateway/devices/register` (auth-yok probe) -> 401 (route alive)
+- Backup/Restore Safety:
+  - `api/gateway/heartbeat.php.bak_pgfix_20260312_023707`
+  - Remote backup earlier: `/opt/omnex-hub/middleware/ApiGuardMiddleware.php.bak_20260312_021226`
+- Risk/Follow-up:
+  - Sunucuya kopyalanan `api/gateway` dosyalari local patch; GitHub/CI deploy ile ezilmemesi icin repository'ye commit edilmesi gerekir.
+  - Local gateway tarafinda gecici DNS kesintisi (`Could not resolve host`) istemci ag kaynakliydi; server fix'inden bagimsiz.
+## 2026-03-12 - Gateway send_label file-name sanitize fix (MAC client_id with ':')
+- Request: T�m gateway endpointleri 200 oldugu halde cihazlara gonderim olmuyor; log inceleme.
+- Findings:
+  - Local gateway log: komut aliniyor ve `send_label` calisiyor, ancak `Gorsel zorunlu ancak hazir degil` ile fail ediyor.
+  - Komut hedef cihaz client_id degeri `20:51:F5:4F:50:59` (':' iceriyor).
+  - `handleSendLabel()` bu `client_id` degerini dogrudan temp/remote dosya adlarinda kullaniyor (`*.jpg`, `*.js`, `*_video_*.mp4`). Windows dosya adinda `:` gecersiz oldugu icin gorsel JPEG olusumu basarisiz kaliyor ve komut cihaza gitmiyor.
+- Changes:
+  - `local-gateway-manager/resources/gateway/gateway.php`
+    - `client_id` icin dosya-guvenli `safeClientId` olusturuldu (alfa-numerik + `_.-` disindakiler `_`).
+    - Temp dosyalar, remote dosya adlari ve task path olusumlari `safeClientId` ile guncellendi.
+    - `handleRefreshDevice()` task path olusumu da ayni sekilde sanitize edildi.
+    - Gorsel dosya okuma/JPEG olusturma asamasina ek uyar� loglari eklendi.
+  - `local-gateway-manager/dist/win-unpacked/resources/gateway/gateway.php`
+    - Hemen test icin ayni dosya kopyalandi.
+- Checks:
+  - `php -l local-gateway-manager/resources/gateway/gateway.php`
+- Risks/Follow-up:
+  - Kurulu uygulama yolu `C:\Program Files\Omnex Gateway Manager\resources\gateway\gateway.php` UAC nedeniyle yazilamadi (Permission denied). Bu nedenle aktif kurulu EXE bu fix'i henuz kullanmiyor.
+  - Kalici cozum: Admin yetkisiyle Program Files altindaki gateway.php degistirilmeli veya yeni installer build edilip yeniden kurulmali.
+## 2026-03-12 - Gateway device matching hardening + no-auto-create default (deploy applied)
+- Request: Gateway manager mevcut cihazlari kullanmak yerine yeni cihaz olusturuyor; HTTP/MQTT/HTTP-server ayriminda gonderim sorunlari incelendi.
+- Root cause findings (server live):
+  - `gateway_devices` tablosunda aktif linkler 192.168.1.162/170/172 cihazlarina ait; 192.168.1.160 icin `send_label` komutlari `Failed to connect to 192.168.1.160:80` ile fail.
+  - HTTP/MQTT cihazlarinda aktif assignment var (`http_payload`/`mqtt_payload`), fakat son saatlerde `/api/esl/http/*` ve `/api/esl/mqtt/*` endpoint hit kaydi yok (cihaz tarafi server'a ulasmiyor).
+  - `api/gateway/devices-register.php` eski mantikta company izolasyonu ve normalize client-id/IP matching zayifti; istenmeyen yeni cihaz olusumu riski vardi.
+- Changes:
+  - `api/gateway/devices-register.php`
+    - Company-scoped, normalized (`device_id`/`mqtt_client_id`) + IP bazli deterministik existing-device eslestirme eklendi.
+    - `allow_create` bayragi yoksa yeni cihaz olusturma varsayilani `false` yapildi (bulunamayanlar `skipped`).
+    - Link update'lerde ortak `now` timestamp kullanildi, `skipped` saya�i response'a eklendi.
+  - `api/gateway/devices.php`
+    - `syncDevice()` eslestirmesi normalize serial + `mqtt_client_id` + company + IP fallback ile guclendirildi.
+    - Existing kayitta serial normalizasyonu ayniysa `device_id` formati korunuyor.
+- Deployment:
+  - Remote backups alindi:
+    - `/opt/omnex-hub/api/gateway/devices-register.php.bak_matchfix_20260312_031256`
+    - `/opt/omnex-hub/api/gateway/devices.php.bak_matchfix_20260312_031256`
+    - `/opt/omnex-hub/api/gateway/devices-register.php.bak_nocreate_20260312_031410`
+  - Dosyalar server'a kopyalandi ve app image rebuild + restart yapildi (compose standalone stack).
+- Checks:
+  - Local: `php -l api/gateway/devices-register.php`
+  - Local: `php -l api/gateway/devices.php`
+  - Remote container: `php -l /var/www/html/api/gateway/devices-register.php`
+  - Remote container: `php -l /var/www/html/api/gateway/devices.php`
+  - Live DB spot check: `devices`, `gateway_devices`, `gateway_commands`, `device_content_assignments` sorgulari
+- Risks/Follow-up:
+  - `allow_create=false` default'u bilincli degisikliktir; yeni cihazlar otomatik acilmayacak (gerekirse istekte `allow_create=true` gonderilmeli).
+  - 192.168.1.160 baglanti hatasi ag/cihaz erisimi kaynakli gorunuyor (gatewayden port 80 erisilemiyor).
+  - HTTP/MQTT cihazlari su an server endpointlerine istek atmiyor; cihaz tarafi URL/DNS/internet erisimi ayrica dogrulanmali.
+- Backup/Restore Safety:
+  - Lokal temp backup: `api/gateway/devices-register.php.bak_matchfix_20260312_030219`, `api/gateway/devices.php.bak_matchfix_20260312_030219`
+  - Restore gerekmedi.
+## 2026-03-12 - BLE token retry + MQTT register fallback hardening + bt-password route (deployed)
+- Request: Reset/yeniden kurulum sonrasi cihazlarin eski host (192.168.1.23) ile otomatik konfig olmasi ve Bluetooth Wizard'da "token error" alinmasi incelendi.
+- Findings:
+  - Canli DB `mqtt_settings` degerleri: `broker_url=185.124.84.34`, `content_server_url=https://185.124.84.34/api/esl/mqtt/content`, `report_server_url=https://185.124.84.34/api/esl/mqtt/report`.
+  - `gateways.local_ip=192.168.1.23` (gateway PC local IP) ayri bir alandir; broker host degeri degildir.
+  - `api/esl/mqtt/register.php` icinde broker_url bos kalirsa hardcoded `192.168.1.23` fallback'i vardi.
+  - Bluetooth Wizard'da token gerekli komutlarda otomatik retry/prompt akisi yoktu; token mismatch durumunda adimlar fail oluyordu.
+- Changes:
+  - `api/esl/mqtt/register.php`
+    - Hardcoded `192.168.1.23` fallback kaldirildi.
+    - `broker_url` bossa `503` ile acik hata donuluyor.
+  - `api/index.php`
+    - `GET/POST/DELETE /api/devices/{id}/bt-password` route'lari eklendi.
+  - `public/assets/js/services/BluetoothService.js`
+    - `getAllInfo(..., { throwOnError: true })` destegi eklendi.
+  - `public/assets/js/pages/devices/list/BluetoothWizard.js`
+    - Token-hatasi tespiti (`token/passwd/password`) eklendi.
+    - Token prompt + tek seferlik retry eklendi: `_saveWifi`, `_setProtocol`, `_readInfo`, `_saveHardware`, `_reboot`, `_clearMedia`, `_factoryReset`.
+    - `_readInfo` cagrisi `throwOnError: true` ile token-hatasi yakalayip retry edebiliyor.
+- Deployment:
+  - Dosyalar sunucuya kopyalandi (`/opt/omnex-hub/...`) ve app image rebuild + restart yapildi.
+  - Canli dogrulama: `/api/devices/{id}/bt-password` route unauth durumda `401` donuyor.
+- Checks:
+  - Local: `php -l api/esl/mqtt/register.php`
+  - Local: `php -l api/index.php`
+  - Local: `node --check public/assets/js/services/BluetoothService.js`
+  - Local: `node --check public/assets/js/pages/devices/list/BluetoothWizard.js`
+  - Remote: `docker exec -i omnex-app-1 php -l /var/www/html/api/esl/mqtt/register.php`
+  - Remote: `docker exec -i omnex-app-1 php -l /var/www/html/api/index.php`
+  - Remote DB spot check: `mqtt_settings`, `gateways`
+- Backup/Restore Safety:
+  - Lokal backuplar: `api/esl/mqtt/register.php.bak_tokenfix_20260312_040318`, `api/index.php.bak_tokenfix_20260312_040318`, `public/assets/js/services/BluetoothService.js.bak_tokenfix_20260312_040318`, `public/assets/js/pages/devices/list/BluetoothWizard.js.bak_tokenfix_20260312_040318`
+  - Remote backuplar: `*.bak_tokenfix_20260312_040909` (ayni 4 dosya)
+  - Restore gerekmedi.
+- Risks/Follow-up:
+  - Wizard prompt ile token bilinmiyorsa kullanici yine dogru sifreyi girmelidir; bilinmiyorsa once sistemde kayitli cihazdan bt-password alinmali veya cihaz fiziksel reset proseduru uygulanmalidir.
+  - Bu degisiklikler su an server hotfix olarak deploy edildi; kalici olmasi icin repository ana dala alinmalidir.
+## 2026-03-12 - Temporary BLE token bypass mode for provisioning test (deployed)
+- Request: Cihaz `@B2A301AB37` icin `Token error` devam ediyor; fabrika reset ise yaramadi ve yeniden kurulumda BLE baglantisi sorunlu. Token'i gecici devre disi birakma talebi.
+- Changes:
+  - `public/assets/js/pages/devices/list/BluetoothWizard.js`
+    - `this._tokenBypassMode = true` eklendi (gecici test modu).
+    - Token prompt kapatildi (`_promptForDeviceToken` bypass modda false donuyor).
+    - Token-hatasi durumunda komutlar otomatik `Token:""` ile 1 kez yeniden deneniyor (`_saveWifi`, `_setProtocol`, `_readInfo`, `_saveHardware`, `_reboot`, `_clearMedia`, `_factoryReset`).
+    - Auto-protect (admin/user sifresi otomatik set) bypass modda devre disi.
+    - Cihaz kaydinda `bt_password` backend'e gonderimi bypass modda kapali.
+    - Manual "Cihaz Sifresi" aksiyonu bypass modda pasif (token saklanmiyor).
+- Deployment:
+  - Dosya sunucuya kopyalandi ve app container rebuild+restart yapildi.
+  - Canli dosya dogrulama: `_tokenBypassMode = true` satiri mevcut.
+- Checks:
+  - Local: `node --check public/assets/js/pages/devices/list/BluetoothWizard.js`
+- Backup/Restore Safety:
+  - Lokal backup onceki adimda alinmisti: `public/assets/js/pages/devices/list/BluetoothWizard.js.bak_tokenfix_20260312_040318`
+  - Remote backup: `/opt/omnex-hub/public/assets/js/pages/devices/list/BluetoothWizard.js.bak_tokenbypass_<timestamp>`
+  - Restore gerekmedi.
+- Risks/Follow-up:
+  - Bu modda BLE komut guvenligi gecici olarak dusurulur; test bitince bypass kapatilip normal token/protection akisina geri donulmeli.
+## 2026-03-12 - Local DB token diagnostic for 192.168.1.160 (factory reset command verification)
+- Request: 192.168.1.160 cihazinin DB'deki token kaydi kullanilarak factory reset testinin yapilmasi.
+- Findings:
+  - Local DB'de cihaz bulundu: `name=@B2A301AB37`, `mode=http`, `has_bt=1`.
+  - `bt_password_encrypted` localde basariyla decrypt edildi (16 karakter token).
+  - Uretilen BLE fabrika reset komutu dogrulandi: `+SET-DEVICE:{"Restore":0, "Token":"..."}\r\n`.
+- Notes:
+  - Bu terminal ortamindan cihaza fiziksel Web Bluetooth baglantisi kurulamadigi icin komutun cihaza fiili gonderimi burada yapilamadi.
+  - Komut olusturma/decrypt asamasi basarili.
+- Changed files:
+  - Kalici kod degisikligi yok.
+  - Gecici dosyalar olusturulup silindi: `.codex/tmp_local_bt_check.php`, `.codex/tmp_device160.sql`, `.codex/tmp_device160_token.sql`.
+- Checks:
+  - `php .codex/tmp_local_bt_check.php` (local DB + decrypt dogrulamasi)
+- Risks/Follow-up:
+  - Cihaz tarafinda token mismatch veya BLE pairing cache devam ediyorsa, dogru token ile bile komut reddedilebilir; cihaz/OS Bluetooth cache temizligi ile tekrar denenmeli.
+## 2026-03-12 - BLE wizard wifi-scan token propagation + auth-error surfacing
+- Request: Local Bluetooth wizard son asamada/factory resette token error; icerik gonderimi calisirken wizard adimlarinda tokenin bos gitmesi incelendi.
+- Findings:
+  - Console logda `+GET-DEVICE:{"types":"wifi-list", "Token":""}` komutu wizard WiFi tarama adimindan geliyor.
+  - Wizard `_scanWifiNetworks()` token yukleme yapmadan `scanWifiNetworks()` cagiriyordu.
+  - Service `scanWifiNetworks()` token/parola kaynakli hatalari yutup bos liste donduruyordu; bu nedenle wizard retry/prompt akisi tetiklenmiyordu.
+- Changes:
+  - `public/assets/js/pages/devices/list/BluetoothWizard.js`
+    - `_scanWifiNetworks(allowRetry=true)` yapildi.
+    - WiFi tarama oncesi serverdan token yukleme eklendi; tarama komutlari `this._deviceToken` ile gonderiliyor.
+    - WiFi tarama icin token hatasinda server-token refresh + prompt retry eklendi.
+    - `_connect()` sonrasinda arka planda token preload eklendi.
+    - `_fetchMissingDeviceInfo()` icindeki BLE okumalari token ile guncellendi (`getDeviceInfo/getAllInfo`).
+  - `public/assets/js/services/BluetoothService.js`
+    - `scanWifiNetworks()` icinde token/parola kaynakli hatalar artik yutulmuyor; wizard seviyesine throw ediliyor.
+- Checks:
+  - `node --check public/assets/js/pages/devices/list/BluetoothWizard.js`
+  - `node --check public/assets/js/services/BluetoothService.js`
+- Risks/Follow-up:
+  - Cihaz DB'de eslesemiyorsa token auto-load bos kalir; bu durumda wizard prompt ile manuel token girisi gerekir.
+  - Browser extension kaynakli `Could not establish connection` hatalari uygulama BLE akisini etkilemez; testte eklentisiz profil daha temiz sonuc verir.
+- Backup/Restore Safety:
+  - Temp backup: `public/assets/js/pages/devices/list/BluetoothWizard.js.bak_wifitoken_20260312_044429`
+  - Restore gerekmedi.
+## 2026-03-12 - Local BLE live reset verification for @B devices
+- Request: Localden Pavo `@B` cihazlara kendi tokenlari ile baglanip Bluetooth uzerinden reset atilabildigini dogrulama.
+- Live test summary:
+  - BLE tarama terminalden basariyla calisti; `@B2A401A959` ve `@B2A401A977` goruldu.
+  - Local DB'den `@B%` cihazlarin sifreleri decrypt edilip testte kullanildi.
+  - `@B2A401A959`: `+SET-DEVICE:{"Restore":0,"Token":"..."}` komutuna `+DONE` dondu (factory reset komutu kabul).
+  - `@B2A401A977`: Token ile diger komutlar (`GET-DEVICE Protocol`, `SET Query-cycle`) basarili; fakat `Restore` komutunda cihaz `AT+ECHO=0` dondu (restore komutunu kabul etmedi).
+  - `@B2A301AB37`: Test aninda BLE scan'de gorulmedi (uzakta/kapali olabilir), bu oturumda canli reset testi yapilamadi.
+- Changed files:
+  - Kalici kod degisikligi yok.
+  - Gecici test dosyalari olusturulup silindi: `.codex/tmp_bt_list.php`, `.codex/tmp_dump_bt_tokens.php`, `.codex/tmp_bt_tokens.json`, `.codex/tmp_ble_factory_reset.py`.
+- Checks run:
+  - Live BLE discover/connect/write/notify testleri (Python bleak) basariyla calisti.
+- Risks/Follow-up:
+  - `Restore` komutu cihaz firmware/modele gore farkli anahtar gerektirebilir; `@B2A401A977` icin vendor dokumanindaki alternatif reset payload'i ile tekrar denenmeli.
+  - BLE'de gorunmeyen cihazlar icin fiziksel yakinlik/guc durumu kontrol edilmeli.
+- Backup/Restore Safety:
+  - Sadece gecici script kullanildi; restore gerekmedi.
+## 2026-03-12 - BLE connect UUID fallback for characteristic mismatch errors
+- Request: Wizard baglantisinda `No Characteristics matching UUID ... fff2 ...` hatasi alinmasi.
+- Findings:
+  - `BluetoothService.connect()` tek bir UUID setine (service fff0, write fff2, notify fff1) hardcoded bagliydi.
+  - Varyant cihazlarda characteristic yerlesimi/UUID farki oldugunda baglanti daha en basta kiriliyor.
+- Changes:
+  - `public/assets/js/services/BluetoothService.js`
+    - Service/characteristic candidate listeleri eklendi (`fff0/ffe0`, `fff2/fff3/ffe1`, `fff1/fff4/ffe1`).
+    - `scan()` optionalServices candidate listeyi kullanacak sekilde guncellendi.
+    - `connect()` icinde tek UUID yerine dinamik GATT binding cozumu eklendi (`getPrimaryServices` + characteristic property/uuid fallback).
+    - Yardimci metodlar eklendi: `_normalizeUuid`, `_sortServicesByPreference`, `_findCharacteristicByUuid`, `_findWriteCharacteristic`, `_findNotifyCharacteristic`, `_resolveGattBindings`.
+- Checks:
+  - `node --check public/assets/js/services/BluetoothService.js`
+  - Canli BLE service dump (`@B2A401A977`) ile characteristic goruntuleme testi.
+- Risks/Follow-up:
+  - Browser cache/old JS kalirsa eski kodla hata devam edebilir; hard refresh gerekli.
+  - Cihaz bazli firmware farklarinda yeni UUID gerekirse candidate listesine eklenmeli.
+- Backup/Restore Safety:
+  - Temp backup: `public/assets/js/services/BluetoothService.js.bak_uuidfallback_20260312_045902`
+  - Restore gerekmedi.
+## 2026-03-12 - Live BLE reset retry for @B2A401A959 and @B2A301AB37
+- Request: Iki cihaz icin localden token ile Bluetooth factory reset denemesi (`@B2A401A959`, `@B2A301AB37`).
+- Live results:
+  - `@B2A401A959`: BLE baglanti + `+SET-DEVICE:{"Restore":0,"Token":"..."}` komutu basarili, cihaz `+DONE` dondu.
+  - `@B2A301AB37`: DB token bulundu ancak BLE scan'de cihaz ismi gorulmedi (`NOT_FOUND_IN_SCAN`).
+  - Ek 30s uzun taramada da hedef cihaz gorulmedi; yalniz `@B2A401A977` gorundu.
+- Changed files:
+  - Kalici kod degisikligi yok.
+  - Gecici test dosyalari olusturulup silindi: `.codex/tmp_dump_bt_targets.php`, `.codex/tmp_bt_targets.json`, `.codex/tmp_ble_reset_targets.py`.
+- Checks run:
+  - Canli BLE scan/connect/write/notify testleri (Python bleak).
+- Risks/Follow-up:
+  - `@B2A301AB37` cihazinin BLE advertise etmeme (guc/boot/firmware mode) durumu var; fiziksel yakinlik ve cihaz BLE gorunurlugu dogrulanmali.
+  - Cihaz BLE listede gorunmeden reset komutu uzaktan gonderilemez.
+- Backup/Restore Safety:
+  - Sadece gecici scriptler kullanildi, restore gerekmedi.
+## 2026-03-12 - Pavo BLE reset runbook document added
+- Request: 3 cihazin var olan tokenlari ile resetleme kodlarinin bir dokumanda toplanmasi.
+- Changes:
+  - `docs/PAVO_BLE_FACTORY_RESET_RUNBOOK_2026-03-12.md` eklendi.
+  - Dokumanda: hedef cihaz listesi, reset komut formati, tokeni DB'den cekip komut uretme, Python/bleak canli gonderim akisi, canli durum notu ve operasyon checklist yer aliyor.
+- Security note:
+  - Tokenlar dokumana acik metin olarak yazilmadi; mevcut DB kaydindan runtime'da uretiliyor.
+- Checks run:
+  - `QUICK_CHECKS` kapsaminda bu degisiklik icin uygun syntax check yok (sadece markdown dokuman eklendi).
+- Risks/Follow-up:
+  - Runbook'taki komutlar calistirildiginda terminal ciktilarinda token gorunebilir; paylasim/screenshot oncesi maskeleme uygulanmali.
+- Backup/Restore Safety:
+  - Kod dosyasi degismedi; backup gerekmedi.
+## 2026-03-12 - memory review and server connection recall check
+- Request: Review project memory history and confirm whether server connection details are remembered.
+- Changes: No source code changes. Reviewed PROJECT_SNAPSHOT, WORKFLOW, CHANGE_MEMORY recent entries, and CLAUDE context.
+- Files: .codex/CHANGE_MEMORY.md
+- Checks: Startup memory read completed; keyword scan run in .codex/.claude for server connection references.
+- Risks/Follow-up: Memory includes prior SSH user/host/port reference from earlier hotfix session; resend is needed only if credentials changed.
+- Backup/Restore Safety: No backup required (append-only memory update).
+## 2026-03-12 - production company create 500 mitigation + admin companies modal backdrop lock
+- Request: On production `/admin/companies`, creating a company returned English error toast with 500 while company was actually created; also disable modal close on outside click for this page only and keep toast behavior i18n/explanatory.
+- Root cause:
+  - `api/companies/create.php` ran post-create operations (branding move, seeding, storage ensure, audit log) without warning shielding; in production global API error handler turns PHP warnings into HTTP 500, causing partial-success + error response.
+  - Company modal allowed backdrop click-close by default.
+  - Generic server messages (`Internal server error`) were passed directly to toast, bypassing contextual i18n UX.
+- Changes:
+  - `api/companies/create.php`
+    - Added non-critical execution wrapper with temporary warning-to-exception guard for post-create steps.
+    - Wrapped branding move, seed defaults, storage ensure, and audit log as non-critical steps.
+    - API now preserves successful company creation response and returns `post_create_warnings` when optional post-steps fail.
+  - `public/assets/js/pages/admin/CompanyManagement.js`
+    - Disabled outside-click close for company modal via `closeOnBackdrop: false`.
+    - Improved save error toast: generic server errors now map to contextual i18n fallback (`add/edit company` + localized operation failed text); non-generic API messages still shown directly.
+    - Logged `post_create_warnings` from successful create responses for diagnostics.
+- Files:
+  - api/companies/create.php
+  - public/assets/js/pages/admin/CompanyManagement.js
+- Checks:
+  - `php -l api/companies/create.php`
+  - `node --check public/assets/js/pages/admin/CompanyManagement.js`
+- Risks/Follow-up:
+  - Non-critical warnings are now tolerated; if repeated warnings appear in logs (`Company create non-critical step failed`), underlying server filesystem/log permission issues should be corrected.
+  - Recommended production re-test: create company with and without branding upload, then verify no 500 and modal only closes via cancel/X.
+- Backup/Restore Safety:
+  - Temp backup created: `.codex/tmp_backups/20260312_223523-company-create-modal-i18n`
+  - Restore not required.

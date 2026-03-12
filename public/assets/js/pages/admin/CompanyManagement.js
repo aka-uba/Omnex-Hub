@@ -645,6 +645,7 @@ export class CompanyManagementPage {
             icon: isEdit ? 'ti-building-cog' : 'ti-building-plus',
             content: formContent,
             size: 'lg',
+            closeOnBackdrop: false,
             confirmText: isEdit ? this.__('modal.update') : this.__('modal.save'),
             cancelText: this.__('modal.cancel'),
             onConfirm: async () => {
@@ -833,15 +834,28 @@ export class CompanyManagementPage {
                 await this.app.api.put(`/companies/${id}`, data);
                 Toast.success(this.__('companies.toast.updated'));
             } else {
-                await this.app.api.post('/companies', data);
+                const createResponse = await this.app.api.post('/companies', data);
                 Toast.success(this.__('companies.toast.created'));
+                if (Array.isArray(createResponse?.data?.post_create_warnings) && createResponse.data.post_create_warnings.length > 0) {
+                    Logger.warning('Company created with non-critical post-create warnings', {
+                        warnings: createResponse.data.post_create_warnings
+                    });
+                }
             }
             // Clear temp ID after save
             this.tempCompanyId = null;
             this.dataTable?.refresh();
             await this.loadStats();
         } catch (error) {
-            Toast.error(error.message || this.__('companies.toast.operationFailed'));
+            const rawMessage = typeof error?.message === 'string' ? error.message.trim() : '';
+            const normalized = rawMessage.toLowerCase();
+            const isGenericServerMessage = normalized === '' ||
+                normalized === 'internal server error' ||
+                normalized === 'request failed';
+            const actionLabel = id ? this.__('companies.editCompany') : this.__('companies.addCompany');
+            const fallbackMessage = `${actionLabel}: ${this.__('companies.toast.operationFailed')}`;
+
+            Toast.error(isGenericServerMessage ? fallbackMessage : rawMessage);
             throw error;
         }
     }
