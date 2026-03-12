@@ -66,8 +66,9 @@ if (!function_exists('streamPlaylistResolveProfile')) {
         if ($height <= 0) return '720p';
         if ($height <= 360) return '360p';
         if ($height <= 540) return '540p';
-        if ($height <= 720) return '720p';
-        return '1080p';
+        // IPTV tarafinda 1080p adaptasyonu her uygulamada stabil olmadigi icin
+        // otomatik secimi 720p'de sinirla; 1080p isteyen istemci query ile isteyebilir.
+        return '720p';
     }
 }
 

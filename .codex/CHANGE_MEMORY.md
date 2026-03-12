@@ -2846,3 +2846,17 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
   - Restore not required.
+## 2026-03-13 - IPTV auto profile cap to 720p
+- Request context:
+  - `playlist.m3u` otomatik profile seciminde 1080p donuyor; kullanici tarafinda 720p stabil calisiyor.
+- Changes:
+  - `api/stream/playlist.php`
+    - Otomatik profile secimi 1080p yerine maksimum 720p olacak sekilde cap edildi.
+    - 1080p ihtiyaci query `?profile=1080p` ile halen destekleniyor.
+- Checks:
+  - `php -l api/stream/playlist.php`
+- Risks/Follow-up:
+  - 1080p talep eden istemciler query param kullanmali; varsayilan uyumluluk odakli 720p.
+- Backup/Restore Safety:
+  - Temp backup zinciri: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.
