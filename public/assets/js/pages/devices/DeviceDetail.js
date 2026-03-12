@@ -2158,6 +2158,7 @@ export class DeviceDetailPage {
      */
     async loadDeviceInfo() {
         if (!this.device) return;
+        if ((this.device.status || '').toLowerCase() !== 'online') return;
         // PavoDisplay HTTP-SERVER cihazları IP gerektirir, MQTT cihazlar IP'siz de çalışabilir
         if (!this.device.ip_address && !this.device.mqtt_client_id) return;
 

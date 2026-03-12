@@ -108,16 +108,27 @@ function buildPublicUrl($path, $basePath) {
         return $normalized;
     }
 
-    // Remove Windows drive letter if present
-    $normalized = preg_replace('/^[A-Za-z]:/', '', $normalized);
-
-    // Remove BASE_PATH prefix if present
+    // Remove BASE_PATH prefix if present (supports with/without drive letter)
     $baseFs = str_replace('\\', '/', BASE_PATH);
+    $baseFsNoDrive = preg_replace('/^[A-Za-z]:/', '', $baseFs);
     if (strpos($normalized, $baseFs) === 0) {
         $normalized = substr($normalized, strlen($baseFs));
+    } else {
+        $normalizedNoDrive = preg_replace('/^[A-Za-z]:/', '', $normalized);
+        if (strpos($normalizedNoDrive, $baseFsNoDrive) === 0) {
+            $normalized = substr($normalizedNoDrive, strlen($baseFsNoDrive));
+        } else {
+            $normalized = $normalizedNoDrive;
+        }
     }
 
     $normalized = ltrim($normalized, '/');
+
+    // Absolute filesystem path can still contain ".../storage/...".
+    $storagePos = strpos($normalized, 'storage/');
+    if ($storagePos !== false) {
+        $normalized = substr($normalized, $storagePos);
+    }
 
     if (strpos($normalized, 'storage/') === 0) {
         return $basePath . '/' . $normalized;
@@ -221,8 +232,7 @@ if ($templateId) {
     }
 
     if ($renderFile) {
-        $relativePath = str_replace(str_replace('\\', '/', BASE_PATH), '', str_replace('\\', '/', $renderFile));
-        $device['render_image_url'] = $basePath . $relativePath;
+        $device['render_image_url'] = buildPublicUrl($renderFile, $basePath);
     }
 
     // Fallback: check template's own render_image field

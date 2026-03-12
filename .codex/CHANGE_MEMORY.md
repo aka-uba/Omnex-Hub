@@ -2367,3 +2367,25 @@ Format:
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260313_002959-device-show-contenttype-fix`
   - Restore not required.
+## 2026-03-13 - device detail hotfix (render preview URL normalization + offline device_info skip)
+- Request context:
+  - Device detail ekraninda render preview URL'i `/storage/xampp/htdocs/...` gibi hatali olusuyor ve 500 donuyordu.
+  - Offline cihazlarda `device_info` control cagrisi timeout log kirliligi olusturuyordu.
+- Changes:
+  - `api/devices/show.php`
+    - `buildPublicUrl` normalize mantigi guclendirildi (BASE_PATH drive/no-drive varyantlari + `.../storage/...` alt yol yakalama).
+    - Device render cache dosyasi URL'i manuel path concat yerine `buildPublicUrl` ile uretiliyor.
+  - `public/assets/js/pages/devices/DeviceDetail.js`
+    - `loadDeviceInfo()` icine `status !== online` guard eklendi; offline cihazlarda control cagrisi atlanir.
+- Files:
+  - api/devices/show.php
+  - public/assets/js/pages/devices/DeviceDetail.js
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/devices/show.php`
+  - `node --check public/assets/js/pages/devices/DeviceDetail.js`
+- Risks/Follow-up:
+  - Cihaz status stale (yanlislikla online) ise timeout yine gorulebilir; bu durumda heartbeat freshness kontrolu ile ek guard dusunulebilir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_003240-device-preview-timeout-fix`
+  - Restore not required.
