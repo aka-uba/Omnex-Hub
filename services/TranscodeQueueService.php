@@ -109,10 +109,11 @@ class TranscodeQueueService
         if (!$job) return null;
 
         // Atomic claim: pending -> processing
-        $affected = $this->db->execute(
+        $this->db->query(
             "UPDATE transcode_queue SET status = 'processing', started_at = ?, updated_at = ? WHERE id = ? AND status = 'pending'",
             [date('Y-m-d H:i:s'), date('Y-m-d H:i:s'), $job['id']]
         );
+        $affected = $this->db->rowCount();
 
         if (!$affected) return null; // Baska worker kapmis
 
@@ -127,7 +128,7 @@ class TranscodeQueueService
      */
     public function updateProgress(string $queueId, int $progress): void
     {
-        $this->db->execute(
+        $this->db->query(
             "UPDATE transcode_queue SET progress = ?, updated_at = ? WHERE id = ?",
             [min(100, max(0, $progress)), date('Y-m-d H:i:s'), $queueId]
         );
@@ -407,7 +408,7 @@ class TranscodeQueueService
         }
 
         // DB kayitlarini sil
-        $this->db->execute("DELETE FROM transcode_variants WHERE media_id = ?", [$mediaId]);
-        $this->db->execute("DELETE FROM transcode_queue WHERE media_id = ?", [$mediaId]);
+        $this->db->query("DELETE FROM transcode_variants WHERE media_id = ?", [$mediaId]);
+        $this->db->query("DELETE FROM transcode_queue WHERE media_id = ?", [$mediaId]);
     }
 }

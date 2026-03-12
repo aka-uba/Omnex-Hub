@@ -2251,3 +2251,23 @@ Format:
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260312_233935-player-device-hls-normal`
   - Restore not required.
+## 2026-03-12 - transcode worker crash fix (Database::execute)
+- Request context: Normal player `stream_profile` dogrulamasinda tum cihazlarda profil bos geldi; queue ilerlemiyordu.
+- Root cause:
+  - `TranscodeQueueService` icinde `Database::execute()` cagrilari var.
+  - Bu repositoryde `core/Database.php` yalnizca `query()` + `rowCount()` sagliyor, `execute()` yok.
+  - Sonuc: Worker `dequeue()` sirasinda fatal `Call to undefined method Database::execute()` ile dusuyor ve container restart loop'a giriyor.
+- Changes:
+  - `services/TranscodeQueueService.php`
+    - Tum `execute()` cagrilari `query()` ile degistirildi.
+    - Atomic claim adiminda etkilenen satir kontrolu `query()` sonrasi `rowCount()` ile yapildi.
+- Files:
+  - services/TranscodeQueueService.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l services/TranscodeQueueService.php`
+- Risks/Follow-up:
+  - Worker ayaga kalktiktan sonra pending queue bir sure islenerek `transcode_variants` olusacak; player `stream_profile` dolumu bundan sonra gorulecek.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260312_235608-transcode-execute-fix`
+  - Restore not required.
