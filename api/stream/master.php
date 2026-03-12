@@ -323,7 +323,6 @@ uksort($availableProfiles, static function ($left, $right) use ($availableProfil
 $lines = [
     "#EXTM3U",
     "#EXT-X-VERSION:3",
-    "#EXT-X-SESSION-DATA:DATA-ID=\"com.omnex.stream.title\",VALUE=\"{$streamLabel}\"",
     "",
 ];
 

@@ -168,6 +168,14 @@ if ($request->has('stream_mode')) {
     if ($data['stream_mode'] === 1 && empty($device['stream_token'])) {
         $tokenLength = defined('STREAM_TOKEN_LENGTH') ? STREAM_TOKEN_LENGTH : 32;
         $data['stream_token'] = bin2hex(random_bytes($tokenLength));
+    } elseif ($data['stream_mode'] === 0) {
+        // Stream kapatildiginda canli pencere referansini sifirla.
+        $data['stream_started_at'] = null;
+
+        // Eski stream oyuncusu modeli UI'da stream olarak kalmasin.
+        if (($device['model'] ?? null) === 'stream_player' && !$request->has('model')) {
+            $data['model'] = null;
+        }
     }
 }
 if ($request->has('device_profile')) {

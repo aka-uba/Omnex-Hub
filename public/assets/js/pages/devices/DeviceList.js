@@ -587,8 +587,16 @@ export class DeviceListPage {
                     icon: 'ti-copy',
                     label: this.__('stream.copyUrl'),
                     class: 'btn-ghost text-purple',
-                    visible: (row) => row.model === 'stream_player' && row.stream_token,
+                    visible: (row) => (row.model === 'stream_player' || Number(row.stream_mode) === 1) && row.stream_token,
                     onClick: (row) => this.copyStreamUrl(row)
+                },
+                {
+                    name: 'download-stream-playlist',
+                    icon: 'ti-download',
+                    label: `${this.__('common.download')} M3U`,
+                    class: 'btn-ghost text-info',
+                    visible: (row) => (row.model === 'stream_player' || Number(row.stream_mode) === 1) && row.stream_token,
+                    onClick: (row) => this.downloadStreamPlaylist(row)
                 },
                 {
                     name: 'history',
@@ -1015,14 +1023,22 @@ export class DeviceListPage {
         return `${Math.floor(seconds / 86400)}g`;
     }
 
+    getStreamPlaylistUrl(device, options = {}) {
+        const basePath = window.OmnexConfig?.basePath || '';
+        const baseUrl = `${window.location.origin}${basePath}`;
+        const token = device?.stream_token;
+        if (!token) return '';
+
+        const downloadSuffix = options.download ? '?download=1' : '';
+        return `${baseUrl}/api/stream/${token}/playlist.m3u${downloadSuffix}`;
+    }
+
     copyStreamUrl(device) {
         if (!device.stream_token) {
             Toast.error(this.__('stream.noToken'));
             return;
         }
-        const basePath = window.OmnexConfig?.basePath || '';
-        const baseUrl = `${window.location.origin}${basePath}`;
-        const streamUrl = `${baseUrl}/api/stream/${device.stream_token}/master.m3u8`;
+        const streamUrl = this.getStreamPlaylistUrl(device);
         navigator.clipboard.writeText(streamUrl).then(() => {
             Toast.success(this.__('stream.copied'));
         }).catch(() => {
@@ -1035,6 +1051,22 @@ export class DeviceListPage {
             document.body.removeChild(ta);
             Toast.success(this.__('stream.copied'));
         });
+    }
+
+    downloadStreamPlaylist(device) {
+        if (!device.stream_token) {
+            Toast.error(this.__('stream.noToken'));
+            return;
+        }
+
+        const playlistUrl = this.getStreamPlaylistUrl(device, { download: true });
+        const anchor = document.createElement('a');
+        anchor.href = playlistUrl;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
     }
 
     showHistory(device) {
@@ -1476,7 +1508,7 @@ export class DeviceListPage {
                 }
                 const data = { name, type: finalType, status, group_id, branch_id, serial_number, ip_address, location, mac_address, screen_width, screen_height };
                 if (model) data.model = model;
-                if (stream_mode) data.stream_mode = stream_mode;
+                data.stream_mode = stream_mode;
 
                 if (id) {
                     await this.app.api.put(`/devices/${id}`, data);

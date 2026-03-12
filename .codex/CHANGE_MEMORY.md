@@ -2682,3 +2682,54 @@ Format:
   - `GET https://hub.omnexcore.com/api/stream/{token}/master.m3u8` -> `200`, `Content-Disposition` now custom label-based filename.
   - `GET https://hub.omnexcore.com/api/stream/{token}/playlist.m3u` -> `200`, body includes `#EXTINF:-1,<company-device-omnexplayer>` and master URL.
   - `GET .../playlist.m3u?download=1` -> `200`, `Content-Disposition: attachment`.
+## 2026-03-13 - android source tree diagnosis (player vs player-build)
+- Request context:
+  - Kullanici APK izin davranisi ve wizard tasarim farki icin hangi kaynak agacin kullanildigini sordu.
+  - `android-player-build/.../standalone` altindaki APK surumu dogrulandi.
+- Findings:
+  - `android-player-build` standalone output: `versionCode 24`, `versionName 2.8.0`.
+  - `android-player` standalone output: `versionCode 27`, `versionName 2.8.3`.
+  - Dagitim APK hash eslesmesi: `downloads/omnex-player.apk` == `android-player/.../app-standalone-debug.apk` (v27).
+  - `android-player-build` APK hash farkli (eski paket).
+  - Wizard icon/background/layout dosyalari iki agacta farkli; anime/stroke ikonlar `android-player-build` agacinda.
+  - Install permission popup sadece `SELF_UPDATE_ENABLED` ve `canRequestPackageInstalls()==false` ise gorunur; startup prompt tek-sefer preference gate ile sinirli.
+- Changed files:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - Dosya hash karsilastirmalari (APK + drawable/layout)
+  - `output-metadata.json` version dogrulamasi
+- Risks/Follow-up:
+  - Yanlis kaynak agactan build alinmasi tasarim ve update endpoint farklarina yol acar; tek source-of-truth belirlenmeli.
+- Backup/Restore Safety:
+  - Bugun olusturulmus backup klasorleri mevcut, ozellikle `20260313_013939-apk-welcome-theme-restore`.
+## 2026-03-13 - stream UX follow-up (playlist link + stream mode disable)
+- Request context:
+  - VLC gecislerinde isim gorunmesi ve cihazlar ekraninda eski `master.m3u8` linkinin kopyalanmasi bildirildi.
+  - Cihaz duzenleme modalinda stream cihazini normal cihaza cevirince stream modunda kalma sorunu bildirildi.
+- Changes:
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Stream kopyalama URL'i `master.m3u8` yerine `playlist.m3u` oldu.
+    - Sag tik islemlerine `Download M3U` aksiyonu eklendi (`?download=1`).
+    - `stream_mode` artik create/update payload'inda her zaman gonderiliyor (0/1).
+  - `public/assets/js/pages/devices/DeviceDetail.js`
+    - Stream kartindaki URL `playlist.m3u` olarak guncellendi.
+    - Stream kartina M3U indirme butonu eklendi.
+  - `api/devices/update.php`
+    - `stream_mode=0` geldiginde `stream_started_at` sifirlanir.
+    - Eski `model=stream_player` degeri, model explicit gonderilmemisse temizlenir (UI stream badge'inin kalmasini engeller).
+  - `api/stream/master.php`
+    - `#EXT-X-SESSION-DATA` title satiri kaldirildi (VLC tarafi isim gorunumunu azaltmak icin).
+  - `api/stream/playlist.php`
+    - Varsayilan `.m3u` cikisinda `#EXTINF` basligi bos donuyor.
+    - `?label=1` ile istenirse etiketi tekrar dahil etme opsiyonu eklendi.
+- Checks:
+  - `php -l api/stream/master.php`
+  - `php -l api/stream/playlist.php`
+  - `php -l api/devices/update.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+  - `node --check public/assets/js/pages/devices/DeviceDetail.js`
+- Risks/Follow-up:
+  - VLC davranisi player surumune gore degisebilir; geciste isim overlay tamamen kapanmazsa `playlist.m3u` + bos `EXTINF` kombinasyonu ile tekrar sahada dogrulanmali.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_021353-stream-followup-fixes`
+  - Restore not required.

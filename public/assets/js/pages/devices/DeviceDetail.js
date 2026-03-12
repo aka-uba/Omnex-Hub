@@ -795,7 +795,8 @@ export class DeviceDetailPage {
     renderStreamModeCard(d) {
         const basePath = window.OmnexConfig?.basePath || '';
         const baseUrl = `${window.location.origin}${basePath}`;
-        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/master.m3u8` : '';
+        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u` : '';
+        const streamDownloadUrl = d.stream_token ? `${streamUrl}?download=1` : '';
 
         // Stream status calculation
         let streamStatus = 'offline';
@@ -841,6 +842,9 @@ export class DeviceDetailPage {
                                 <button class="btn btn-sm btn-outline" id="copy-stream-url-btn" title="${this.__('stream.copyUrl')}">
                                     <i class="ti ti-copy"></i>
                                 </button>
+                                <a class="btn btn-sm btn-outline" id="download-stream-playlist-btn" href="${streamDownloadUrl}" target="_blank" rel="noopener" title="${this.__('common.download')} M3U">
+                                    <i class="ti ti-download"></i>
+                                </a>
                             </div>
                         </div>
                     ` : `
