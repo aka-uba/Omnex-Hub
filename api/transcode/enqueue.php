@@ -18,24 +18,32 @@ if (!$mediaId) {
     Response::error('media_id gerekli', 400);
 }
 
-$profiles = $body['profiles'] ?? [defined('STREAM_DEFAULT_PROFILE') ? STREAM_DEFAULT_PROFILE : '720p'];
+$profiles = $body['profiles'] ?? null;
 
-// Gecerli profiller mi kontrol et
-$validProfiles = array_keys(HlsTranscoder::PROFILES);
-foreach ($profiles as $p) {
-    if (!in_array($p, $validProfiles)) {
-        Response::error("Gecersiz profil: $p. Gecerli: " . implode(', ', $validProfiles), 400);
+if ($profiles !== null) {
+    if (!is_array($profiles) || empty($profiles)) {
+        Response::error('profiles array olmali', 400);
+    }
+
+    // Gecerli profiller mi kontrol et
+    $validProfiles = array_keys(HlsTranscoder::PROFILES);
+    foreach ($profiles as $p) {
+        if (!in_array($p, $validProfiles, true)) {
+            Response::error("Gecersiz profil: $p. Gecerli: " . implode(', ', $validProfiles), 400);
+        }
     }
 }
 
 try {
     $service = new TranscodeQueueService();
     $jobId = $service->enqueue($mediaId, $companyId, $profiles);
+    $job = $db->fetch("SELECT profiles FROM transcode_queue WHERE id = ?", [$jobId]);
+    $effectiveProfiles = json_decode($job['profiles'] ?? '[]', true) ?: [];
 
     Response::success([
         'job_id' => $jobId,
         'media_id' => $mediaId,
-        'profiles' => $profiles,
+        'profiles' => $effectiveProfiles,
         'message' => 'Transcode isi kuyruge eklendi',
     ], 201);
 } catch (\Exception $e) {

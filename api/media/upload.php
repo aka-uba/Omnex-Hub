@@ -214,6 +214,16 @@ $db->insert('media', [
     'scope' => $target  // 'company' or 'public'
 ]);
 
+// Best-effort: video upload sonrasinda otomatik transcode kuyrukla
+if ($mediaType === 'video' && !empty($insertCompanyId)) {
+    try {
+        $transcodeQueue = new TranscodeQueueService();
+        $transcodeQueue->autoEnqueueOnUpload($id, $insertCompanyId);
+    } catch (\Throwable $e) {
+        error_log('Media upload auto-transcode enqueue skipped: ' . $e->getMessage());
+    }
+}
+
 // ========================================
 // UPDATE STORAGE USAGE (v2.0.14)
 // ========================================

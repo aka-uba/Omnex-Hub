@@ -20,10 +20,6 @@ class TranscodeQueueService
      */
     public function enqueue(string $mediaId, string $companyId, ?array $profiles = null): string
     {
-        if (!$profiles) {
-            $profiles = [defined('STREAM_DEFAULT_PROFILE') ? STREAM_DEFAULT_PROFILE : '720p'];
-        }
-
         // Media bilgisini al
         $media = $this->db->fetch(
             "SELECT * FROM media WHERE id = ? AND (company_id = ? OR company_id IS NULL)",
@@ -54,6 +50,8 @@ class TranscodeQueueService
         if (!file_exists($inputPath)) {
             throw new \Exception("Dosya bulunamadi: $inputPath");
         }
+
+        $profiles = $this->resolveProfiles($profiles, $inputPath);
 
         $streamStoragePath = defined('STREAM_STORAGE_PATH') ? STREAM_STORAGE_PATH : (defined('STORAGE_PATH') ? STORAGE_PATH . '/streams' : 'storage/streams');
         $outputDir = $streamStoragePath . '/' . $companyId . '/' . $mediaId;
@@ -320,6 +318,49 @@ class TranscodeQueueService
         ], 'id = ?', [$queueId]);
 
         return true;
+    }
+
+    /**
+     * Kuyruk isi icin profil listesini normalize eder.
+     * Profil verilmezse kaynak video cozunurlugune gore otomatik profil secer.
+     */
+    private function resolveProfiles(?array $profiles, string $inputPath): array
+    {
+        $validProfiles = array_keys(HlsTranscoder::PROFILES);
+        $defaultProfile = defined('STREAM_DEFAULT_PROFILE') ? STREAM_DEFAULT_PROFILE : '720p';
+
+        if (!$profiles || empty($profiles)) {
+            try {
+                $transcoder = new HlsTranscoder();
+                $ffInfo = $transcoder->detectFfmpeg();
+                if ($ffInfo['available']) {
+                    $videoInfo = $transcoder->getVideoInfo($inputPath);
+                    $autoProfiles = $transcoder->getAvailableProfiles((int)($videoInfo['height'] ?? 0));
+                    $profiles = array_values(array_unique($autoProfiles));
+                }
+            } catch (\Throwable $e) {
+                error_log('Transcode auto-profile detection failed: ' . $e->getMessage());
+            }
+        }
+
+        if (!$profiles || empty($profiles)) {
+            $profiles = [$defaultProfile];
+        }
+
+        $profiles = array_values(array_unique(array_map(static function ($p) {
+            return is_string($p) ? trim($p) : '';
+        }, $profiles)));
+        $profiles = array_values(array_filter($profiles, static function ($p) {
+            return $p !== '';
+        }));
+
+        foreach ($profiles as $profile) {
+            if (!in_array($profile, $validProfiles, true)) {
+                throw new \Exception("Gecersiz profil: {$profile}");
+            }
+        }
+
+        return $profiles;
     }
 
     /**

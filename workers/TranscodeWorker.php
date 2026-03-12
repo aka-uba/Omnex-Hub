@@ -168,7 +168,20 @@ class TranscodeWorker
         echo "[{$ts}] [{$prefix}] {$message}\n";
 
         if (class_exists('Logger')) {
-            Logger::log($level, "[TranscodeWorker] {$message}");
+            try {
+                $line = "[TranscodeWorker] {$message}";
+                if ($level === 'error') {
+                    Logger::error($line);
+                } elseif ($level === 'warning' || $level === 'warn') {
+                    Logger::warning($line);
+                } elseif ($level === 'debug') {
+                    Logger::debug($line);
+                } else {
+                    Logger::info($line);
+                }
+            } catch (\Throwable $e) {
+                error_log('[TranscodeWorker] logger forward failed: ' . $e->getMessage());
+            }
         }
     }
 

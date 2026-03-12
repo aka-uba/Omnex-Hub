@@ -16,6 +16,57 @@ $schedulePlaylistJoin = $db->isPostgres()
     : "LEFT JOIN playlists p ON s.content_id = p.id";
 // $request router closure'dan gelir - yeni olusturma (route params kaybolur)
 
+/**
+ * "720p", "1280x720", "720", "FullHD 1080p" gibi degerlerden yukseklik cikarir.
+ */
+function streamExtractHeight($value): ?int {
+    if ($value === null) return null;
+    $v = trim((string)$value);
+    if ($v === '') return null;
+
+    if (preg_match('/(\d{3,4})\s*x\s*(\d{3,4})/i', $v, $m)) {
+        return max((int)$m[1], (int)$m[2]);
+    }
+    if (preg_match('/(\d{3,4})\s*p/i', $v, $m)) {
+        return (int)$m[1];
+    }
+    if (preg_match('/^\d{3,4}$/', $v)) {
+        return (int)$v;
+    }
+
+    return null;
+}
+
+/**
+ * Cihaz icin maksimum oynatma yuksekligini hesaplar.
+ */
+function streamResolveDeviceMaxHeight(array $device, ?array $deviceProfile): ?int {
+    $candidates = [];
+
+    if (is_array($deviceProfile)) {
+        foreach (['max_res', 'max_resolution', 'resolution', 'max_profile', 'max_height'] as $key) {
+            if (!empty($deviceProfile[$key])) {
+                $h = streamExtractHeight($deviceProfile[$key]);
+                if ($h) {
+                    $candidates[] = $h;
+                }
+            }
+        }
+    }
+
+    $screenW = (int)($device['screen_width'] ?? 0);
+    $screenH = (int)($device['screen_height'] ?? 0);
+    if ($screenW > 0 || $screenH > 0) {
+        $candidates[] = max($screenW, $screenH);
+    }
+
+    if (empty($candidates)) {
+        return null;
+    }
+
+    return max($candidates);
+}
+
 // Token'i route'dan al
 $token = $request->getRouteParam('token');
 if (!$token) {
@@ -103,6 +154,7 @@ if (!$playlist || empty($playlistItems)) {
 // Video item'lari filtrele ve transcode variant'larini topla
 $transcodeService = new TranscodeQueueService();
 $streamVariants = [];
+$missingVariantMediaIds = [];
 
 foreach ($playlistItems as $item) {
     $itemType = $item['type'] ?? '';
@@ -118,6 +170,20 @@ foreach ($playlistItems as $item) {
             'duration' => (float)($item['duration'] ?? 0),
             'variants' => $variants,
         ];
+    } else {
+        $missingVariantMediaIds[] = (string)$mediaId;
+    }
+}
+
+// HLS variant yoksa otomatik transcode kuyruğu olustur (best-effort)
+if (!empty($missingVariantMediaIds)) {
+    $missingVariantMediaIds = array_values(array_unique($missingVariantMediaIds));
+    foreach ($missingVariantMediaIds as $missingMediaId) {
+        try {
+            $transcodeService->enqueue($missingMediaId, $companyId, null);
+        } catch (\Throwable $e) {
+            error_log("[stream master] auto enqueue skipped for media {$missingMediaId}: " . $e->getMessage());
+        }
     }
 }
 
@@ -334,26 +400,67 @@ foreach ($streamVariants as $sv) {
     }
 }
 
-// Device profile filtresi (Faz B icin hazir)
-if ($deviceProfile && !empty($deviceProfile['max_res'])) {
-    $maxHeight = (int)str_replace('p', '', $deviceProfile['max_res']);
+// Cihaz profili / ekran cozunurlugu bazli profil filtresi
+$allProfiles = $availableProfiles;
+$deviceMaxHeight = streamResolveDeviceMaxHeight($device, $deviceProfile);
+if ($deviceMaxHeight !== null) {
     foreach ($availableProfiles as $name => $v) {
-        $height = (int)str_replace('p', '', $name);
-        if ($height > $maxHeight) {
+        $profileDef = HlsTranscoder::PROFILES[$name] ?? null;
+        $profileHeight = $profileDef['height'] ?? streamExtractHeight($v['resolution'] ?? $name) ?? 0;
+        if ($profileHeight > $deviceMaxHeight) {
             unset($availableProfiles[$name]);
         }
     }
 }
+
+// Filtreleme sonrasi profil kalmazsa en yakin profili tut
+if (empty($availableProfiles) && !empty($allProfiles)) {
+    if ($deviceMaxHeight !== null) {
+        $bestName = null;
+        $bestHeight = 0;
+        foreach ($allProfiles as $name => $v) {
+            $profileDef = HlsTranscoder::PROFILES[$name] ?? null;
+            $profileHeight = $profileDef['height'] ?? streamExtractHeight($v['resolution'] ?? $name) ?? 0;
+            if ($profileHeight <= $deviceMaxHeight && $profileHeight >= $bestHeight) {
+                $bestName = $name;
+                $bestHeight = $profileHeight;
+            }
+        }
+        if ($bestName !== null) {
+            $availableProfiles[$bestName] = $allProfiles[$bestName];
+        }
+    }
+
+    if (empty($availableProfiles)) {
+        // Son fallback: en dusuk bitrate profili
+        uasort($allProfiles, static function ($a, $b) {
+            return (int)($a['bitrate'] ?? 0) <=> (int)($b['bitrate'] ?? 0);
+        });
+        $first = array_key_first($allProfiles);
+        if ($first !== null) {
+            $availableProfiles[$first] = $allProfiles[$first];
+        }
+    }
+}
+
+// Profilleri bitrate'e gore dusukten yuksege sirala
+uksort($availableProfiles, static function ($left, $right) use ($availableProfiles) {
+    $leftBitrate = (int)($availableProfiles[$left]['bitrate'] ?? (HlsTranscoder::PROFILES[$left]['bitrate'] ?? 0));
+    $rightBitrate = (int)($availableProfiles[$right]['bitrate'] ?? (HlsTranscoder::PROFILES[$right]['bitrate'] ?? 0));
+    if ($leftBitrate === $rightBitrate) {
+        return strcmp((string)$left, (string)$right);
+    }
+    return $leftBitrate <=> $rightBitrate;
+});
 
 // HLS master playlist ciktisi
 $lines = ["#EXTM3U", "#EXT-X-VERSION:3", ""];
 
 foreach ($availableProfiles as $profileName => $variant) {
     $profileDef = HlsTranscoder::PROFILES[$profileName] ?? null;
-    if (!$profileDef) continue;
-
-    $bandwidth = ($variant['bitrate'] ?? $profileDef['bitrate']) * 1000;
-    $resolution = $variant['resolution'] ?? ($profileDef['width'] . 'x' . $profileDef['height']);
+    $bitrateKbps = (int)($variant['bitrate'] ?? ($profileDef['bitrate'] ?? 1000));
+    $bandwidth = max(128000, $bitrateKbps * 1000);
+    $resolution = $variant['resolution'] ?? ($profileDef ? ($profileDef['width'] . 'x' . $profileDef['height']) : '1280x720');
 
     $lines[] = "#EXT-X-STREAM-INF:BANDWIDTH={$bandwidth},RESOLUTION={$resolution},NAME=\"{$profileName}\"";
     $lines[] = "{$basePath}/api/stream/{$token}/variant/{$profileName}/playlist.m3u8";
