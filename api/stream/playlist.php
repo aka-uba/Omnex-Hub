@@ -31,8 +31,8 @@ $companyName = streamResolveCompanyName($db, $device['company_id'] ?? null);
 $streamLabel = streamBuildDisplayLabel($companyName, $device['name'] ?? 'player');
 $baseUrl = streamResolveBaseUrl();
 $masterUrl = $baseUrl . '/api/stream/' . $token . '/master.m3u8';
-$showLabelRaw = strtolower((string)$request->query('label', '0'));
-$showLabel = in_array($showLabelRaw, ['1', 'true', 'yes'], true);
+$showLabelRaw = strtolower((string)$request->query('label', '1'));
+$showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
 $extInfTitle = $showLabel ? $streamLabel : '';
 
 $lines = [

@@ -11,6 +11,46 @@ Format:
 
 ---
 
+## 2026-03-13 - Comprehensive Toast i18n fix across entire codebase
+- Request: Detect and fix ALL Toast messages not connected to i18n (hardcoded text, English fallbacks, catch blocks losing error details)
+- Changes:
+  - **4 issue categories fixed:**
+    - 🔴 Pure hardcoded strings → replaced with i18n keys
+    - 🟡 Hardcoded fallbacks (`this.__('key') || 'fallback'`) → removed fallback
+    - 🟠 Catch blocks losing error detail → added `+ ': ' + (error.message || '')`
+    - 🔵 Double fallbacks (`|| i18n || hardcoded`) → removed hardcoded
+  - **BluetoothWizard.js**: 26 fixes (12 new bluetooth.wizard.* i18n keys)
+  - **TenantBackupPage.js**: 15 fixes (8 new backup.json keys across errors.* and import_modal.*)
+  - **NetworkScanner.js**: 1 fix (new scan.gatewayNotReady key)
+  - **app.js**: 2 fixes (removed unnecessary English fallbacks)
+  - **DeviceDetail.js**: 5 fixes (removed double fallback patterns)
+  - **EditorWrapper.js**: 3 fixes (removed fallbacks + added error.message to catch)
+  - **QueueDashboard.js**: ~9 catch block fixes (added error.message)
+  - **CompanyManagement.js, PlaylistDetail.js, PlaylistList.js, ScheduleForm.js, TemplateList.js, WebTemplateList.js, NotificationSettings.js, AuditLog.js**: catch blocks enhanced with error.message
+  - **16 translation JSON files**: New keys added to all 8 languages (devices.json + backup.json)
+- Files:
+  - public/assets/js/app.js
+  - public/assets/js/pages/devices/list/BluetoothWizard.js
+  - public/assets/js/pages/devices/list/NetworkScanner.js
+  - public/assets/js/pages/devices/DeviceDetail.js
+  - public/assets/js/pages/admin/TenantBackupPage.js
+  - public/assets/js/pages/admin/CompanyManagement.js
+  - public/assets/js/pages/admin/AuditLog.js
+  - public/assets/js/pages/templates/EditorWrapper.js
+  - public/assets/js/pages/templates/TemplateList.js
+  - public/assets/js/pages/queue/QueueDashboard.js
+  - public/assets/js/pages/signage/PlaylistDetail.js
+  - public/assets/js/pages/signage/PlaylistList.js
+  - public/assets/js/pages/signage/ScheduleForm.js
+  - public/assets/js/pages/web-templates/WebTemplateList.js
+  - public/assets/js/pages/notifications/NotificationSettings.js
+  - locales/{tr,en,ru,az,de,nl,fr,ar}/pages/devices.json (8 files)
+  - locales/{tr,en,ru,az,de,nl,fr,ar}/pages/backup.json (8 files)
+- Checks: node --check on all 15 JS files passed ✓, JSON.parse on all 16 translation files passed ✓
+- Risk/Follow-up: None. All i18n keys exist in all 8 languages. Comprehensive grep confirmed zero remaining hardcoded Toast strings.
+
+---
+
 ## 2026-03-13 - Player & Streaming Architecture Documentation
 - Request: Mevcut player yapisi, stream duzeni, FFmpeg ayarlari, istemci profilleri ve yayin akisini arastir ve dokumante et
 - Changes:
@@ -2733,3 +2773,41 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_021353-stream-followup-fixes`
   - Restore not required.
+
+## 2026-03-13 - BluetoothWizard Toast i18n cleanup
+- Request: Replace hardcoded Turkish Toast strings with i18n keys and remove unnecessary fallback patterns in BluetoothWizard.js
+- Changes:
+  - Replaced 13 hardcoded Turkish Toast/tooltip strings with `this.__()` i18n calls
+  - Removed 11 unnecessary `|| 'fallback'` patterns from existing i18n calls
+  - Added 12 new i18n keys under `bluetooth.wizard` in all 8 language files (tr, en, ru, az, de, nl, fr, ar)
+  - New keys: connectionRequired, wifiConfigRequired, protocolRequired, verificationRequired, localhostWarning, httpServerSwitching, rebootingWait, rebootReadInfo, infoIncomplete, infoReadFailed, ipRequired, completeStepsTooltip
+- Files:
+  - public/assets/js/pages/devices/list/BluetoothWizard.js
+  - locales/tr/pages/devices.json
+  - locales/en/pages/devices.json
+  - locales/ru/pages/devices.json
+  - locales/az/pages/devices.json
+  - locales/de/pages/devices.json
+  - locales/nl/pages/devices.json
+  - locales/fr/pages/devices.json
+  - locales/ar/pages/devices.json
+- Checks:
+  - JSON validity verified for all 8 translation files via Node.js JSON.parse
+  - Key existence verified in all 8 files (bluetooth.wizard.connectionRequired spot-check)
+- Risks/Follow-up: None. All existing keys were verified present before removing fallbacks.
+## 2026-03-13 - IPTV compatibility tweak for stream playlist.m3u
+- Request context:
+  - `playlist.m3u` linki VLC'de calisiyor ancak bazi IPTV uygulamalarinda oynatma hatasi olusturuyor.
+- Root cause:
+  - Bos `#EXTINF` basligi bazi IPTV parser'larinda gecersiz kabul edilebiliyor.
+- Changes:
+  - `api/stream/playlist.php`
+    - `label` query varsayilani `1` yapildi.
+    - Varsayilan cikis tekrar etiketli (`firma-cihaz-omnexplayer`) hale getirildi.
+    - Etiket gizleme ihtiyaci icin `?label=0` destegi korunuyor.
+- Checks:
+  - `php -l api/stream/playlist.php`
+- Risks/Follow-up:
+  - Farkli IPTV istemcilerinde master playlist adaptif destegi degisken olabilir; gerekirse profile-pinli ek endpoint degerlendirilebilir.
+- Backup/Restore Safety:
+  - Bu mikro degisiklik onceki backup setiyle ayni kapsamda (`20260313_021353-stream-followup-fixes`), restore gerekmiyor.
