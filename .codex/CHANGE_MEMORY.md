@@ -2811,3 +2811,22 @@ Format:
   - Farkli IPTV istemcilerinde master playlist adaptif destegi degisken olabilir; gerekirse profile-pinli ek endpoint degerlendirilebilir.
 - Backup/Restore Safety:
   - Bu mikro degisiklik onceki backup setiyle ayni kapsamda (`20260313_021353-stream-followup-fixes`), restore gerekmiyor.
+## 2026-03-13 - IPTV playback fix via absolute HLS URLs
+- Request context:
+  - VLC calisirken IPTV uygulamalarinda stream aciliyor fakat videolar oynatilamiyor; indirilen `.m3u` dosyasi da calismiyor.
+- Root cause hypothesis:
+  - Bazi IPTV istemcileri HLS master/variant icindeki relative URL'leri guvenilir sekilde cozemiyor.
+- Changes:
+  - `api/stream/master.php`
+    - Variant playlist URL'leri relative yerine full absolute URL oldu.
+  - `api/stream/variant.php`
+    - Segment URL'leri relative yerine full absolute URL oldu.
+    - Base URL hesaplamasi icin stream helper include edildi.
+- Checks:
+  - `php -l api/stream/master.php`
+  - `php -l api/stream/variant.php`
+- Risks/Follow-up:
+  - Sorun devam ederse istemci tarafi codec/protocol kisitlari icin ADB log ile hedef uygulama debug gerekir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.

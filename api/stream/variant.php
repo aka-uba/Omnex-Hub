@@ -16,6 +16,7 @@
  */
 
 $db = Database::getInstance();
+require_once __DIR__ . '/helpers.php';
 $assignmentPlaylistJoin = $db->isPostgres()
     ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
     : "LEFT JOIN playlists p ON dca.content_id = p.id";
@@ -69,11 +70,8 @@ if (empty($playlistItems) && !empty($device['current_playlist_id'])) {
 // Tum video segmentlerini topla (global segment listesi)
 // ====================================================================
 $segmentDuration = defined('STREAM_SEGMENT_DURATION') ? STREAM_SEGMENT_DURATION : 6;
-$basePath = '';
-$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-if (preg_match('#^(.*)/api/#', $scriptName, $m)) {
-    $basePath = $m[1];
-}
+$basePath = streamResolveBasePath();
+$baseUrl = streamResolveBaseUrl();
 
 // Global segment listesi: her eleman { duration, url, discontinuity }
 $allSegments = [];
@@ -126,7 +124,7 @@ foreach ($playlistItems as $item) {
         // Segment dosya referansi
         if (strpos($vLine, '#') !== 0 && strpos($vLine, 'segment_') !== false) {
             $segmentFilename = basename($vLine);
-            $segmentUrl = "{$basePath}/api/stream/{$token}/segment/{$mediaId}/{$profile}/{$segmentFilename}";
+            $segmentUrl = "{$baseUrl}/api/stream/{$token}/segment/{$mediaId}/{$profile}/{$segmentFilename}";
             $dur = $pendingDuration ?? (float)$segmentDuration;
 
             $allSegments[] = [

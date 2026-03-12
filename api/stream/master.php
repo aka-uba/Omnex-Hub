@@ -333,7 +333,7 @@ foreach ($availableProfiles as $profileName => $variant) {
     $resolution = $variant['resolution'] ?? ($profileDef ? ($profileDef['width'] . 'x' . $profileDef['height']) : '1280x720');
 
     $lines[] = "#EXT-X-STREAM-INF:BANDWIDTH={$bandwidth},RESOLUTION={$resolution},NAME=\"{$profileName}\"";
-    $lines[] = "{$basePath}/api/stream/{$token}/variant/{$profileName}/playlist.m3u8";
+    $lines[] = "{$baseUrl}/api/stream/{$token}/variant/{$profileName}/playlist.m3u8";
     $lines[] = "";
 }
 
