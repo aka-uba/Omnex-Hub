@@ -2672,3 +2672,13 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_015140-stream-m3u-label`
   - Restore not required.
+## 2026-03-13 - stream m3u deploy verification
+- Commit/Push:
+  - `d41999f` pushed to `origin/main`.
+- Server deploy:
+  - `/opt/omnex-hub`: `git pull --ff-only`
+  - `deploy/`: `docker compose ... build app` + `up -d --force-recreate app nginx`
+- Live verification:
+  - `GET https://hub.omnexcore.com/api/stream/{token}/master.m3u8` -> `200`, `Content-Disposition` now custom label-based filename.
+  - `GET https://hub.omnexcore.com/api/stream/{token}/playlist.m3u` -> `200`, body includes `#EXTINF:-1,<company-device-omnexplayer>` and master URL.
+  - `GET .../playlist.m3u?download=1` -> `200`, `Content-Disposition: attachment`.
