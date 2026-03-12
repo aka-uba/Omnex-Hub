@@ -2329,3 +2329,23 @@ Format:
 - Backup/Restore Safety:
   - Backup path: `.codex/tmp_backups/20260313_001207-device-stream-fixes`
   - `create.php` bir ara regex denemesinde bozuldu, ayni backup'tan restore edilip guvenli patch ile tekrar duzeltildi.
+## 2026-03-13 - device detail hotfix (playlist order column + safe JSON decode)
+- Request context:
+  - Device detail endpoint'inde 500 hatalari devam etti:
+    - `column "order_index" does not exist`
+    - `json_decode(): Argument #1 must be of type string, array given`
+- Changes:
+  - `api/devices/show.php`
+    - Guvenli JSON parse yardimcisi eklendi (`deviceShowDecodeJsonArray`) ve metadata/current_content/user preferences/playlist_items parse noktalarinda kullanildi.
+    - `isValidImagePath` ve `buildPublicUrl` non-string inputlarda guvenli hale getirildi.
+    - `playlist_items` fallback sorgusunda siralama kolonu dinamik secilir hale getirildi (`order_index` -> `sort_order` -> `item_order` -> `position`; yoksa `created_at`).
+- Files:
+  - api/devices/show.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/devices/show.php`
+- Risks/Follow-up:
+  - `playlist_items` tablosunda beklenmeyen farkli bir kolon adlandirmasi varsa siralama `created_at`/natural order fallback ile calisir; gerekirse prod DB'de kolon standardizasyonu yapilmali.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_002655-device-show-hotfix`
+  - Restore not required.

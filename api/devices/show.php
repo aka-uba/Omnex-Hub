@@ -16,6 +16,28 @@ $playlistJoin = $db->isPostgres()
     ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT) AND dca.content_type = 'playlist'"
     : "LEFT JOIN playlists p ON dca.content_id = p.id AND dca.content_type = 'playlist'";
 
+function deviceShowDecodeJsonArray($value, array $default = []): array {
+    if (is_array($value)) {
+        return $value;
+    }
+
+    if (is_object($value)) {
+        return (array)$value;
+    }
+
+    if (!is_string($value)) {
+        return $default;
+    }
+
+    $trimmed = trim($value);
+    if ($trimmed === '') {
+        return $default;
+    }
+
+    $decoded = json_decode($trimmed, true);
+    return is_array($decoded) ? $decoded : $default;
+}
+
 $device = $db->fetch(
     "SELECT d.*, g.name as group_name, c.name as company_name, b.name as branch_name
      FROM devices d
@@ -31,7 +53,7 @@ if (!$device) {
 }
 
 // Map type - use original_type from metadata if available
-$metadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];
+$metadata = deviceShowDecodeJsonArray($device['metadata'] ?? null, []);
 $device['serial_number'] = $device['device_id'];
 $device['db_type'] = $device['type'];
 
@@ -67,6 +89,7 @@ if (defined('BASE_PATH')) {
 // Helper: check if value is a valid file path (not base64 data)
 function isValidImagePath($value) {
     if (empty($value)) return false;
+    if (!is_string($value)) return false;
     if (strlen($value) > 500) return false;
     if (strpos($value, 'data:') === 0) return false;
     if (preg_match('/^[A-Za-z0-9+\/=]{50,}$/', $value)) return false;
@@ -77,6 +100,7 @@ function isValidImagePath($value) {
 // Helper: build public URL from file path
 function buildPublicUrl($path, $basePath) {
     if (empty($path)) return null;
+    if (!is_string($path)) return null;
     $normalized = str_replace('\\', '/', $path);
 
     // If already an HTTP URL, return as-is
@@ -114,7 +138,7 @@ $productId = null;
 $assignedAt = null;
 
 if (!empty($device['current_content'])) {
-    $contentData = json_decode($device['current_content'], true);
+    $contentData = deviceShowDecodeJsonArray($device['current_content'], []);
 
     if ($contentData && isset($contentData['template_id'])) {
         $templateId = $contentData['template_id'];
@@ -176,7 +200,7 @@ if ($templateId) {
     $deviceType = $device['db_type'] ?? $device['type'] ?? 'esl';
 
     // Try user locale first, fallback to 'tr'
-    $userPrefs = !empty($user['preferences']) ? json_decode($user['preferences'], true) : [];
+    $userPrefs = deviceShowDecodeJsonArray($user['preferences'] ?? null, []);
     $locales = array_unique(array_filter([$userPrefs['language'] ?? null, 'tr', 'en']));
 
     $renderFile = null;
@@ -267,16 +291,32 @@ if ($assignedContent) {
         'orientation' => $assignedContent['orientation'],
         'layout_type' => $assignedContent['layout_type'],
         'default_duration' => $assignedContent['default_duration'],
-        'items' => json_decode($assignedContent['playlist_items'] ?: '[]', true),
+        'items' => deviceShowDecodeJsonArray($assignedContent['playlist_items'] ?? null, []),
         'assigned_at' => $assignedContent['created_at']
     ];
 
     if (empty($device['assigned_playlist']['items']) || !is_array($device['assigned_playlist']['items'])) {
+        $orderColumn = null;
+        foreach (['order_index', 'sort_order', 'item_order', 'position'] as $candidate) {
+            if ($db->columnExists('playlist_items', $candidate)) {
+                $orderColumn = $candidate;
+                break;
+            }
+        }
+
+        $selectSql = "SELECT id, media_id, duration";
+        if ($orderColumn !== null) {
+            $selectSql .= ", {$orderColumn} AS item_order";
+        }
+        $selectSql .= " FROM playlist_items WHERE playlist_id = ?";
+        if ($orderColumn !== null) {
+            $selectSql .= " ORDER BY {$orderColumn} ASC";
+        } elseif ($db->columnExists('playlist_items', 'created_at')) {
+            $selectSql .= " ORDER BY created_at ASC";
+        }
+
         $normalizedItems = $db->fetchAll(
-            "SELECT id, media_id, duration, order_index
-             FROM playlist_items
-             WHERE playlist_id = ?
-             ORDER BY order_index ASC",
+            $selectSql,
             [$assignedContent['content_id']]
         );
 
@@ -285,7 +325,7 @@ if ($assignedContent) {
                 'id' => $item['id'],
                 'media_id' => $item['media_id'] ?? null,
                 'duration' => $item['duration'] ?? null,
-                'order' => $item['order_index'] ?? 0
+                'order' => $item['item_order'] ?? 0
             ];
         }, $normalizedItems);
     }
@@ -322,7 +362,7 @@ if ($assignedContent) {
 // Sanitize current_content - don't send raw base64 data to frontend
 if (!empty($device['current_content']) && !isValidImagePath($device['current_content'])) {
     // If it's valid JSON, keep it; otherwise clear it
-    $parsed = json_decode($device['current_content'], true);
+    $parsed = deviceShowDecodeJsonArray($device['current_content'], []);
     if (!$parsed) {
         $device['current_content'] = null;
     }
