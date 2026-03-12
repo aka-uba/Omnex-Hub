@@ -12,6 +12,9 @@ if (!$user) {
 
 $companyId = Auth::getActiveCompanyId();
 $id = $request->routeParam('id');
+$playlistJoin = $db->isPostgres()
+    ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT) AND dca.content_type = 'playlist'"
+    : "LEFT JOIN playlists p ON dca.content_id = p.id AND dca.content_type = 'playlist'";
 
 $device = $db->fetch(
     "SELECT d.*, g.name as group_name, c.name as company_name, b.name as branch_name
@@ -248,7 +251,7 @@ $assignedContent = $db->fetch(
             p.items as playlist_items, p.status as playlist_status,
             p.orientation, p.layout_type, p.default_duration
      FROM device_content_assignments dca
-     LEFT JOIN playlists p ON dca.content_id = p.id AND dca.content_type = 'playlist'
+     $playlistJoin
      WHERE dca.device_id = ? AND dca.status = 'active'
      ORDER BY dca.created_at DESC
      LIMIT 1",

@@ -229,159 +229,38 @@ function buildMediaUrl($filePath, $baseUrl, $basePath) {
 }
 
 // ====================================================================
-// PASSTHROUGH MODE: Transcode yoksa orijinal videolari M3U olarak sun
-// Desteklenen tipler: video (medya dosyasi), stream (HLS/m3u8 URL)
+// STRICT HLS MODE:
+// - Video item'lar yalnizca transcode edilmis HLS variant'lari ile sunulur.
+// - Variant hazir degilse istemciye "hazirlaniyor" yaniti verilir.
 // ====================================================================
 if (empty($streamVariants)) {
-
-    // Orijinal video dosyalarini ve stream URL'lerini topla
-    $directVideos = [];
-    $trackIndex = 0;
-    $playlistName = $playlist['name'] ?? 'Playlist';
-
-    foreach ($playlistItems as $item) {
-        $itemType = $item['type'] ?? '';
-
-        // --- Stream tipi: m3u8/HLS/RTSP URL dogrudan eklenir ---
-        if ($itemType === 'stream') {
-            $streamUrl = $item['url'] ?? '';
-            if (empty($streamUrl)) continue;
-
-            $trackIndex++;
-            $isMuted = isset($item['muted']) ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0') : true;
-            $itemName = $item['name'] ?? 'Stream';
-
-            $directVideos[] = [
-                'duration' => (int)($item['duration'] ?? -1),
-                'url' => $streamUrl,
-                'name' => $itemName,
-                'muted' => $isMuted,
-                'is_stream' => true,
-            ];
-            continue;
-        }
-
-        // --- Video tipi: medya dosyasindan URL olustur ---
-        if ($itemType !== 'video') continue;
-        $mediaId = $item['media_id'] ?? $item['id'] ?? null;
-        if (!$mediaId) continue;
-
-        $media = $db->fetch(
-            "SELECT id, name, file_path, mime_type, file_size FROM media WHERE id = ?",
-            [$mediaId]
-        );
-        if (!$media || empty($media['file_path'])) continue;
-
-        $url = buildMediaUrl($media['file_path'], $baseUrl, $basePath);
-        if (!$url) continue;
-
-        $trackIndex++;
-        // muted: varsayilan true (playlist'te muted !== false ise sesli degil)
-        $isMuted = isset($item['muted']) ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0') : true;
-
-        $directVideos[] = [
-            'duration' => (int)($item['duration'] ?? -1),
-            'url' => $url,
-            'name' => $media['name'] ?? 'Video',
-            'muted' => $isMuted,
-            'is_stream' => false,
-        ];
-    }
-
-    if (empty($directVideos)) {
-        http_response_code(404);
-        header('Content-Type: application/json');
-        echo json_encode(['error' => 'No playable content found in playlist (video or stream items required)']);
-        exit;
-    }
-
-    // last_stream_request_at guncelle (passthrough modunda stream_started_at gerekmez)
+    $now = date('Y-m-d H:i:s');
     $db->query(
         "UPDATE devices SET last_stream_request_at = ?, last_seen = ?, status = 'online' WHERE id = ?",
-        [date('Y-m-d H:i:s'), date('Y-m-d H:i:s'), $device['id']]
+        [$now, $now, $device['id']]
     );
 
-    // Access log
     try {
         $db->query(
             "INSERT INTO stream_access_logs (device_id, stream_token, request_type, request_path, ip_address, user_agent, response_status, created_at)
-             VALUES (?, ?, 'master_passthrough', ?, ?, ?, 200, ?)",
-            [$device['id'], $token, $_SERVER['REQUEST_URI'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '', date('Y-m-d H:i:s')]
+             VALUES (?, ?, 'master_waiting_transcode', ?, ?, ?, 503, ?)",
+            [$device['id'], $token, $_SERVER['REQUEST_URI'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '', $now]
         );
-    } catch (\Exception $e) {}
-
-    // Tarayici erisimini engelle - sadece VLC/IPTV/media player erisebilir
-    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-    $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
-    $isBrowser = (
-        stripos($acceptHeader, 'text/html') !== false &&
-        (stripos($userAgent, 'Mozilla') !== false || stripos($userAgent, 'Chrome') !== false)
-        && stripos($userAgent, 'VLC') === false
-        && stripos($userAgent, 'IPTV') === false
-        && stripos($userAgent, 'Kodi') === false
-        && stripos($userAgent, 'ExoPlayer') === false
-        && stripos($userAgent, 'Lavf') === false
-        && stripos($userAgent, 'mpv') === false
-        && stripos($userAgent, 'Windows-Media-Player') === false
-        && stripos($userAgent, 'NSPlayer') === false
-        && stripos($userAgent, 'MPlayer') === false
-    );
-
-    if ($isBrowser) {
-        http_response_code(403);
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Origin: *');
-        echo json_encode([
-            'error' => 'Browser access not allowed',
-            'message' => 'Bu stream sadece VLC, IPTV veya media player uygulamalari ile izlenebilir. Tarayici ile erisim engellenmistir.',
-            'hint' => 'VLC > Medya > Ag Akisi Ac > URL yapistir'
-        ]);
-        exit;
+    } catch (\Exception $e) {
+        // Log hatasi kritik degil.
     }
 
-    // M3U playlist (VLC/IPTV uyumlu + sonsuz dongu destegi)
-    $lines = ["#EXTM3U"];
-
-    // Playlist item'lari olustur (tekli blok - sonra tekrarlanacak)
-    $itemLines = [];
-    foreach ($directVideos as $v) {
-        // EXTINF: sure, title
-        // Title bos birakilir = VLC isim gostermez
-        // Bosluk " " = WMP URL yerine bos gosterir
-        $itemLines[] = "#EXTINF:{$v['duration']}, ";
-
-        // VLC: ses kapaliysa no-audio direktifi
-        // NOT: Windows Media Player #EXTVLCOPT'u tanImaz, WMP icin M3U ses kontrolu yok
-        if ($v['muted']) {
-            $itemLines[] = "#EXTVLCOPT:no-audio";
-        }
-
-        $itemLines[] = $v['url'];
-    }
-
-    // Dinamik dongu: 72 saat (3 gun) dolduracak kadar tekrarla
-    // M3U duz metin - 10.000 tur bile ~3MB, playerlar rahat parse eder
-    $totalDuration = 0;
-    foreach ($directVideos as $v) {
-        $dur = $v['duration'] > 0 ? $v['duration'] : 30;
-        $totalDuration += $dur;
-    }
-    $targetSeconds = 604800; // 7 gun (1 hafta)
-    $repeatCount = ($totalDuration > 0) ? (int)ceil($targetSeconds / $totalDuration) : 10000;
-    $repeatCount = max($repeatCount, 500);    // minimum 500 tur
-    $repeatCount = min($repeatCount, 25000);  // maksimum 25.000 tur (~7MB)
-
-    for ($i = 0; $i < $repeatCount; $i++) {
-        foreach ($itemLines as $line) {
-            $lines[] = $line;
-        }
-    }
-
-    header('Content-Type: audio/x-mpegurl');
+    http_response_code(503);
+    header('Content-Type: application/json');
     header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Retry-After: 5');
     header('Access-Control-Allow-Origin: *');
-    header('Content-Disposition: inline; filename="playlist.m3u"');
-    echo implode("\n", $lines) . "\n";
+    echo json_encode([
+        'error' => 'Stream is preparing',
+        'message' => 'HLS variants are not ready yet. Please retry shortly.',
+        'retry_after_seconds' => 5,
+        'pending_media_ids' => $missingVariantMediaIds
+    ]);
     exit;
 }
 

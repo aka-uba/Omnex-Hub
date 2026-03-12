@@ -1380,6 +1380,10 @@ export class DeviceListPage {
         return false;
     }
 
+    isEslFamilyType(type) {
+        return ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl'].includes(String(type || '').trim());
+    }
+
     async findDeviceByIp(ipAddress, excludeDeviceId = null) {
         const ip = String(ipAddress || '').trim();
         if (!ip) return null;
@@ -1433,7 +1437,7 @@ export class DeviceListPage {
         }
 
         try {
-            if (ip_address) {
+            if (ip_address && this.isEslFamilyType(type)) {
                 const existingDevice = await this.findDeviceByIp(ip_address, id);
                 if (existingDevice) {
                     const existingName = existingDevice.name || existingDevice.id || this.__('messages.unknownDevice');

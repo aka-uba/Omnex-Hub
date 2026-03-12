@@ -25,6 +25,7 @@ $typeMap = [
     'esl' => 'esl',
     'esl_android' => 'esl',      // PavoDisplay Android ESL devices
     'esl_rtos' => 'esl',         // RTOS-based ESL devices
+    'hanshow_esl' => 'esl',      // Hanshow ESL devices
     'tablet' => 'android_tv',    // Tablets as signage
     'mobile' => 'android_tv',    // Mobile as signage
     'android_tv' => 'android_tv',
@@ -33,6 +34,14 @@ $typeMap = [
     'pwa_player' => 'web_display',  // PWA Player -> web_display
     'stream_player' => 'android_tv'  // Stream Mode (VLC/IPTV)
 ];
+
+$existingMetadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];
+$existingOriginalType = is_array($existingMetadata) ? ($existingMetadata['original_type'] ?? null) : null;
+$effectiveFrontendType = $request->has('type')
+    ? (string)$request->input('type')
+    : ((is_string($existingOriginalType) && $existingOriginalType !== '') ? $existingOriginalType : (string)($device['type'] ?? ''));
+$isEslFamilyType = in_array($effectiveFrontendType, ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl'], true)
+    || (($device['type'] ?? null) === 'esl');
 
 $data = [];
 
@@ -104,9 +113,12 @@ if ($request->has('type')) {
     $data['type'] = $typeMap[$frontendType] ?? $frontendType;
 
     // Store original frontend type in metadata
-    $existingMetadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];
-    $existingMetadata['original_type'] = $frontendType;
-    $data['metadata'] = json_encode($existingMetadata);
+    $metadataPayload = is_array($existingMetadata) ? $existingMetadata : [];
+    $metadataPayload['original_type'] = $frontendType;
+    $data['metadata'] = json_encode($metadataPayload);
+
+    $isEslFamilyType = in_array($frontendType, ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl'], true)
+        || (($data['type'] ?? null) === 'esl');
 }
 
 if (isset($data['metadata']) && is_array($data['metadata'])) {
@@ -126,17 +138,19 @@ if (array_key_exists('ip_address', $data)) {
             Response::error('IP adresi formatı geçersiz', 422);
         }
 
-        $existingIpDevice = $db->fetch(
-            "SELECT id, name FROM devices WHERE company_id = ? AND ip_address = ? AND id != ? LIMIT 1",
-            [$companyId, $data['ip_address'], $id]
-        );
-
-        if ($existingIpDevice) {
-            Response::error(
-                'Bu IP adresi başka bir cihaza atanmış',
-                409,
-                ['existing_device' => $existingIpDevice]
+        if ($isEslFamilyType) {
+            $existingIpDevice = $db->fetch(
+                "SELECT id, name FROM devices WHERE company_id = ? AND ip_address = ? AND id != ? LIMIT 1",
+                [$companyId, $data['ip_address'], $id]
             );
+
+            if ($existingIpDevice) {
+                Response::error(
+                    'Bu IP adresi başka bir cihaza atanmış',
+                    409,
+                    ['existing_device' => $existingIpDevice]
+                );
+            }
         }
     }
 }

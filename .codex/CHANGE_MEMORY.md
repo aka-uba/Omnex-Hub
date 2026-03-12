@@ -2292,3 +2292,40 @@ Format:
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260313_000056-player-stream-profile-response`
   - Restore not required.
+## 2026-03-13 - device detail Postgres cast fix + IP uniqueness scope + strict HLS stream mode
+- Request context:
+  - Device detail sayfasi 500 hatasi veriyordu (`text = uuid` join hatasi).
+  - Device create/update tarafinda IP cakismasi bazi cihaz tiplerinde gereksiz blokluyordu.
+  - Stream master playlist passthrough modunda binlerce tekrarli item uretiyordu.
+- Changes:
+  - `api/devices/show.php`
+    - Postgres icin playlist join cast eklendi (`CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)`).
+  - `api/devices/create.php`
+    - IP uniqueness kontrolu ESL ailesiyle sinirlandi (`esl`, `esl_rtos`, `esl_android`, `hanshow_esl`).
+  - `api/devices/update.php`
+    - `hanshow_esl` typeMap eklendi.
+    - Effective frontend type cozumlemesi eklendi; IP uniqueness kontrolu ESL ailesiyle sinirlandi.
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Client-side IP conflict pre-check yalniz ESL ailesi icin calisacak hale getirildi.
+  - `api/stream/master.php`
+    - Tekrarlý M3U passthrough blok kaldirildi.
+    - Variant hazir degilken `503 Stream is preparing` JSON + `Retry-After: 5` donusu eklendi.
+- Files:
+  - api/devices/show.php
+  - api/devices/create.php
+  - api/devices/update.php
+  - public/assets/js/pages/devices/DeviceList.js
+  - api/stream/master.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/devices/create.php`
+  - `php -l api/devices/update.php`
+  - `php -l api/devices/show.php`
+  - `php -l api/stream/master.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Stream master artik variant hazir degilse 503 donuyor; client tarafinda bu duruma retry/backoff UX'i gorunur olmali.
+  - Passthrough behavior kaldirildigi icin transcode worker sagligi kritik (queue/process monitoring onerilir).
+- Backup/Restore Safety:
+  - Backup path: `.codex/tmp_backups/20260313_001207-device-stream-fixes`
+  - `create.php` bir ara regex denemesinde bozuldu, ayni backup'tan restore edilip guvenli patch ile tekrar duzeltildi.

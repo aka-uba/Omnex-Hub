@@ -23,6 +23,8 @@ $typeMap = [
 
 $frontendType = $request->input('type', 'esl');
 $dbType = $typeMap[$frontendType] ?? $frontendType;
+$isEslFamilyType = in_array($frontendType, ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl'], true)
+    || $dbType === 'esl';
 
 // Validate type
 if (!in_array($dbType, $validTypes)) {
@@ -59,17 +61,20 @@ if ($ipAddress !== null && strtolower($ipAddress) !== 'localhost') {
         Response::error('IP adresi formatı geçersiz', 422);
     }
 
-    $existingIpDevice = $db->fetch(
+    // ESL ailesinde IP cihaza ozeldir; signage/web cihazlarda ayni IP izinlidir.
+    if ($isEslFamilyType) {
+        $existingIpDevice = $db->fetch(
         "SELECT id, name FROM devices WHERE company_id = ? AND ip_address = ? LIMIT 1",
         [$companyId, $ipAddress]
     );
 
-    if ($existingIpDevice) {
-        Response::error(
-            'Bu IP adresi başka bir cihaza atanmış',
-            409,
-            ['existing_device' => $existingIpDevice]
-        );
+        if ($existingIpDevice) {
+            Response::error(
+                'Bu IP adresi başka bir cihaza atanmış',
+                409,
+                ['existing_device' => $existingIpDevice]
+            );
+        }
     }
 }
 
