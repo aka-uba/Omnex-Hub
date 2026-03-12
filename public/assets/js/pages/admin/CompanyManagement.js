@@ -837,7 +837,7 @@ export class CompanyManagementPage {
                 const createResponse = await this.app.api.post('/companies', data);
                 Toast.success(this.__('companies.toast.created'));
                 if (Array.isArray(createResponse?.data?.post_create_warnings) && createResponse.data.post_create_warnings.length > 0) {
-                    Logger.warning('Company created with non-critical post-create warnings', {
+                    Logger.warn('Company created with non-critical post-create warnings', {
                         warnings: createResponse.data.post_create_warnings
                     });
                 }

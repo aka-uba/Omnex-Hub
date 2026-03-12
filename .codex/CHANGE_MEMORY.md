@@ -2109,4 +2109,39 @@ Format:
   - Any existing `Logger.warning(...)` calls are now safe globally.
   - Update/Delete hardening should continue endpoint-by-endpoint (transaction + non-critical audit/fs wrappers) for fully consistent behavior.
 - Backup/Restore Safety:
-  - Prior task backups remain available; no additional restore needed.
+  - Prior task backups remain available; no additional restore needed.## 2026-03-12 - logger.warning uyumluluk riski ve company update/delete hardening
+- Request: `Logger.warning is not a function` hatasinin benzer CRUD akislarda da olup olmayacagini kontrol et; company update/delete tarafinda benzer 500/exception risklerini azalt.
+- Changes:
+  - `public/assets/js/pages/admin/CompanyManagement.js`
+    - `Logger.warning(...)` -> `Logger.warn(...)`.
+  - `public/assets/js/pages/admin/TenantBackupPage.js`
+    - `Logger.warning(...)` -> `Logger.warn(...)`.
+  - `public/assets/js/pages/products/ProductForm.js`
+    - `Logger.warning(...)` -> `Logger.warn(...)`.
+  - `api/companies/update.php`
+    - Company + license guncelleme adimlari transaction icine alindi (begin/commit/rollback).
+    - Lisans cache temizleme commit sonrasina alindi ve non-critical hale getirildi.
+    - License/company audit loglari non-critical try/catch ile korundu.
+  - `api/companies/delete.php`
+    - Company delete adimi transaction icine alindi (begin/commit/rollback).
+    - Audit log non-critical try/catch ile korundu.
+- Files:
+  - public/assets/js/pages/admin/CompanyManagement.js
+  - public/assets/js/pages/admin/TenantBackupPage.js
+  - public/assets/js/pages/products/ProductForm.js
+  - api/companies/update.php
+  - api/companies/delete.php
+- Checks:
+  - `php -l api/companies/update.php`
+  - `php -l api/companies/delete.php`
+  - `node --check public/assets/js/pages/admin/CompanyManagement.js`
+  - `node --check public/assets/js/pages/admin/TenantBackupPage.js`
+  - `node --check public/assets/js/pages/products/ProductForm.js`
+  - `Select-String` scan: `Logger.warning(` kullanimi kalmadi.
+  - Static risk taramasi (`api/**/(update|delete).php`): transaction eksigi olan yuksek riskli endpoint listesi cikartildi.
+- Risks/Follow-up:
+  - Ayni tip partial-success/500 riski, transaction ve non-critical side-effect sarmasi olmayan bazi update/delete endpointlerinde devam ediyor (device-groups, devices, licenses, products, templates, users, web-templates vb.).
+  - Service worker cache'i olan istemcilerde eski bundle gecici olarak kalabilir; hard reload önerilir.
+- Backup/Restore Safety:
+  - Temp backup created: `.codex/tmp_backups/20260312_230723-logger-warning-and-company-update-delete`
+  - Restore not required.

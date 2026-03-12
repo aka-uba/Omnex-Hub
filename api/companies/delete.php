@@ -17,15 +17,32 @@ if ($userCount > 0) {
     Response::badRequest('Şirkete bağlı kullanıcılar var. Önce kullanıcıları silin.');
 }
 
-$db->delete('companies', 'id = ?', [$id]);
+$db->beginTransaction();
+try {
+    $db->delete('companies', 'id = ?', [$id]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
 
-// Audit log
-Logger::audit('delete', 'company', [
-    'id' => $id,
-    'old' => [
-        'name' => $company['name'],
-        'code' => $company['code']
-    ]
-]);
+    Logger::error('Company delete error', [
+        'company_id' => $id,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
+
+try {
+    Logger::audit('delete', 'company', [
+        'id' => $id,
+        'old' => [
+            'name' => $company['name'],
+            'code' => $company['code']
+        ]
+    ]);
+} catch (Throwable $e) {
+    error_log('Company delete audit skipped: ' . $e->getMessage());
+}
 
 Response::success(null, 'Şirket silindi');

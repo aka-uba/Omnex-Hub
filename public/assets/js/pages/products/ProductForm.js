@@ -2803,7 +2803,7 @@ export class ProductFormPage {
                     }
                 } catch (halError) {
                     // HAL kaydetme hatası ürün kaydını etkilemesin
-                    Logger.warning('Üretim şekli HAL verisine kaydedilemedi:', halError);
+                    Logger.warn('Üretim şekli HAL verisine kaydedilemedi:', halError);
                 }
             }
 

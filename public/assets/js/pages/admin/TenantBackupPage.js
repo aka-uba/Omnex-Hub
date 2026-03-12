@@ -171,7 +171,7 @@ export class TenantBackupPage {
                 this.applySettingsToForm();
             }
         } catch (e) {
-            Logger.warning('Failed to load backup settings', e);
+            Logger.warn('Failed to load backup settings', e);
         }
     }
 
