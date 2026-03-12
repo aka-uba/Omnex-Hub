@@ -2213,3 +2213,18 @@ Format:
   - Local temp backup: `.codex/tmp_backups/20260312_232217-stream-transcode-activation`
   - Remote backup: `.codex_remote_backups/20260312_202803-stream-transcode`
   - Restore not required.
+## 2026-03-12 - transcode-worker healthcheck fix
+- Request context: Stream transcode activation sonrasi `transcode-worker` container `unhealthy` gorunuyordu.
+- Root cause:
+  - Docker image seviyesindeki Apache HTTP healthcheck (`curl http://localhost:80/api/health`) worker container icin uygun degil.
+- Changes:
+  - `deploy/docker-compose.yml`
+    - `transcode-worker` servisine worker-uyumlu healthcheck eklendi (`php -r "exit(0);"`).
+  - `deploy/docker-compose.local.yml`
+    - Ayni healthcheck local compose'a eklendi.
+- Checks:
+  - `docker compose -f deploy/docker-compose.local.yml config`
+- Risks/Follow-up:
+  - Healthcheck yalnizca container liveness dogrular; queue throughput icin ek metrik izleme onerilir.
+- Backup/Restore Safety:
+  - Prior local/remote backups from stream activation task remain valid.
