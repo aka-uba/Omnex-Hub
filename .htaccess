@@ -16,6 +16,7 @@ RewriteRule ^(backup|backups|deploy|tests)(/|$) - [F,L,NC]
     AddType text/css .css
     AddType application/json .json
     AddType application/manifest+json .webmanifest
+    AddType application/vnd.android.package-archive .apk
 </IfModule>
 
 # Set RewriteBase dynamically (comment out or set to your subdirectory)
@@ -50,6 +51,11 @@ RewriteRule ^api/(.+)$ api/index.php [QSA,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(assets|images|fonts|branding)/(.*)$ public/$1/$2 [L]
+
+# Downloads fallback - serve from public/downloads when root /downloads is absent
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^downloads/(.*)$ public/downloads/$1 [L]
 
 # Player static files - serve from public/player
 RewriteCond %{REQUEST_FILENAME} !-f
