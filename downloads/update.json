@@ -1,8 +1,8 @@
 {
-  "versionCode": 26,
-  "versionName": "2.8.2",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=26",
-  "releaseNotes": "- Varsayılan sunucu adresi hub.omnexcore.com/player olarak güncellendi\n- Android APK otomatik güncelleme manifesti ve hash doğrulaması revize edildi\n- Güncelleme dosyalarında UTF-8 karakter/encoding düzeltmeleri yapıldı\n- Etkinleştirme ekranı PC görünümünde kart hizalama iyileştirildi",
+  "versionCode": 27,
+  "versionName": "2.8.3",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=27",
+  "releaseNotes": "- APK ilk karşılama/wizard arka planı player eşitleme ekranı temasıyla yeniden hizalandı\n- Wizard kart yüzeyleri koyu-cyan cam efektiyle güncellendi\n- TV wizard açılış arka planı da aynı tema ile eşitlendi\n- Otomatik güncelleme paketi v27 olarak yayınlandı",
   "mandatory": false,
-  "sha256": "0438ef58c1cfbb0d4e221138f76e02a447e9e345fa36b848c8ee9e0fea58cb93"
+  "sha256": "79916b0e50f0475927fb5774f11406f90ab517ef29b4f915969e8ae21b8929f9"
 }
