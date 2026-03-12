@@ -2589,6 +2589,29 @@ body {
     height: auto !important;
 }
 
+@media (min-width: 1360px) and (orientation: landscape) {
+    body:not(.device-tv) #registration-screen .registration-content {
+        align-items: stretch;
+    }
+
+    body:not(.device-tv) #registration-screen .registration-header,
+    body:not(.device-tv) #registration-screen .sync-code-container {
+        min-height: clamp(300px, 34vmin, 420px);
+    }
+
+    body:not(.device-tv) #registration-screen .registration-header {
+        align-self: stretch;
+    }
+
+    body:not(.device-tv) #registration-screen .sync-code-container {
+        align-self: stretch;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+}
+
 .fallback {
     align-items: center;
     justify-content: center;

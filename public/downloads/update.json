@@ -1,8 +1,8 @@
-﻿{
-    "versionCode":  26,
-    "versionName":  "2.8.2",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=26",
-    "releaseNotes":  "- LAN sunucular icin URL normalizasyonu iyilestirildi (yerel IP/localhost varsayilani http)\n- Yerel agda SSL strict modu otomatik yumusatildi (self-signed uyumluluk)\n- Android network security ayarlari yerel HTTP erisimi engellemeyecek sekilde duzeltildi\n- Paket imzasi ve mevcut uygulama islev akislari korunarak derlendi",
-    "mandatory":  false,
-    "sha256":  "0438ef58c1cfbb0d4e221138f76e02a447e9e345fa36b848c8ee9e0fea58cb93"
+{
+  "versionCode": 26,
+  "versionName": "2.8.2",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=26",
+  "releaseNotes": "- Varsayılan sunucu adresi hub.omnexcore.com/player olarak güncellendi\n- Android APK otomatik güncelleme manifesti ve hash doğrulaması revize edildi\n- Güncelleme dosyalarında UTF-8 karakter/encoding düzeltmeleri yapıldı\n- Etkinleştirme ekranı PC görünümünde kart hizalama iyileştirildi",
+  "mandatory": false,
+  "sha256": "0438ef58c1cfbb0d4e221138f76e02a447e9e345fa36b848c8ee9e0fea58cb93"
 }
