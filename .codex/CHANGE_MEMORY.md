@@ -2228,3 +2228,26 @@ Format:
   - Healthcheck yalnizca container liveness dogrular; queue throughput icin ek metrik izleme onerilir.
 - Backup/Restore Safety:
   - Prior local/remote backups from stream activation task remain valid.
+## 2026-03-12 - normal player device-aware HLS selection (init/sync)
+- Request context: Stream tarafindaki cihaz profiline gore transcode/HLS secimi normal player akisinda da calissin; farkli cihazlar ayni boyuta zorlanmasin.
+- Changes:
+  - `api/player/init.php`
+    - Video medya URL cozumleme akisi cihaz profili/screen boyutuna gore HLS variant secer hale getirildi.
+    - Hazir variant yoksa best-effort auto-enqueue eklendi; fallback olarak mevcut media dosya URL'si korunuyor.
+    - Variant playlist path -> web URL cozumlemesi eklendi (`storage/` ve `BASE_PATH` mutlak yol destekli).
+  - `api/player/sync.php`
+    - Init ile ayni device-aware HLS secim ve fallback davranisi sync response tarafina eklendi.
+    - Hazir variant yoksa best-effort auto-enqueue + mevcut URL fallback davranisi eklendi.
+- Files:
+  - api/player/init.php
+  - api/player/sync.php
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `php -l api/player/init.php`
+  - `php -l api/player/sync.php`
+- Risks/Follow-up:
+  - Bu degisiklik yalniz `api/player/init` ve `api/player/sync` akisini kapsar; eski/alternatif `api/player/content` kullanan client varsa ayni mantigin oraya da tasinmasi gerekebilir.
+  - Ilk isteklerde variant henuz hazir degilse fallback kaynak medya oynatilir; worker tamamladiginda sonraki init/sync cevabinda HLS URL doner.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260312_233935-player-device-hls-normal`
+  - Restore not required.

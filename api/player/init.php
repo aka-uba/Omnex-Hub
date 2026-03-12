@@ -15,6 +15,225 @@ $playlistOrderColumn = $db->columnExists('playlist_items', 'sort_order') ? 'sort
 $assignmentPlaylistJoin = "JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)";
 $schedulePlaylistJoin = "LEFT JOIN playlists p ON CAST(s.playlist_id AS TEXT) = CAST(p.id AS TEXT)";
 
+function playerBuildMediaUrl(string $filePath, string $basePath): ?string
+{
+    if ($filePath === '') {
+        return null;
+    }
+
+    if (preg_match('/^https?:\/\//i', $filePath)) {
+        return $filePath;
+    }
+
+    if (preg_match('/^[A-Za-z]:/', $filePath)) {
+        return $basePath . '/api/media/serve.php?path=' . urlencode($filePath);
+    }
+
+    if (strpos($filePath, 'storage/') === 0) {
+        return $basePath . '/' . ltrim($filePath, '/');
+    }
+
+    return $basePath . '/storage/' . ltrim($filePath, '/');
+}
+
+function playerBuildVariantPlaylistUrl(?string $playlistPath, string $basePath): ?string
+{
+    if (!$playlistPath) {
+        return null;
+    }
+
+    $normalized = str_replace('\\', '/', $playlistPath);
+    if (preg_match('/^https?:\/\//i', $normalized)) {
+        return $normalized;
+    }
+
+    if (strpos($normalized, 'storage/') === 0) {
+        return $basePath . '/' . ltrim($normalized, '/');
+    }
+
+    if (defined('BASE_PATH')) {
+        $basePathFs = str_replace('\\', '/', rtrim(BASE_PATH, '/\\'));
+        if (strpos($normalized, $basePathFs . '/') === 0) {
+            $relative = ltrim(substr($normalized, strlen($basePathFs)), '/');
+            return $basePath . '/' . $relative;
+        }
+    }
+
+    return null;
+}
+
+function playerExtractHeight($value): ?int
+{
+    if ($value === null) {
+        return null;
+    }
+
+    $raw = trim((string)$value);
+    if ($raw === '') {
+        return null;
+    }
+
+    if (preg_match('/(\d{3,4})\s*x\s*(\d{3,4})/i', $raw, $matches)) {
+        return max((int)$matches[1], (int)$matches[2]);
+    }
+
+    if (preg_match('/(\d{3,4})\s*p/i', $raw, $matches)) {
+        return (int)$matches[1];
+    }
+
+    if (preg_match('/^\d{3,4}$/', $raw)) {
+        return (int)$raw;
+    }
+
+    return null;
+}
+
+function playerResolveDeviceMaxHeight(array $deviceInfo): ?int
+{
+    $candidates = [];
+    $rawProfile = $deviceInfo['device_profile'] ?? null;
+    $deviceProfile = null;
+
+    if (is_string($rawProfile) && $rawProfile !== '') {
+        $decoded = json_decode($rawProfile, true);
+        if (is_array($decoded)) {
+            $deviceProfile = $decoded;
+        }
+    } elseif (is_array($rawProfile)) {
+        $deviceProfile = $rawProfile;
+    }
+
+    if (is_array($deviceProfile)) {
+        foreach (['max_res', 'max_resolution', 'resolution', 'max_profile', 'max_height'] as $key) {
+            if (!empty($deviceProfile[$key])) {
+                $height = playerExtractHeight($deviceProfile[$key]);
+                if ($height !== null) {
+                    $candidates[] = $height;
+                }
+            }
+        }
+    }
+
+    $screenW = (int)($deviceInfo['screen_width'] ?? 0);
+    $screenH = (int)($deviceInfo['screen_height'] ?? 0);
+    if ($screenW > 0 || $screenH > 0) {
+        $candidates[] = max($screenW, $screenH);
+    }
+
+    if (empty($candidates)) {
+        return null;
+    }
+
+    return max($candidates);
+}
+
+function playerVariantHeight(array $variant): int
+{
+    $profileName = (string)($variant['profile'] ?? '');
+    $profileDef = HlsTranscoder::PROFILES[$profileName] ?? null;
+    if (is_array($profileDef) && !empty($profileDef['height'])) {
+        return (int)$profileDef['height'];
+    }
+
+    $height = playerExtractHeight($variant['resolution'] ?? $profileName);
+    return $height ?? 0;
+}
+
+function playerSelectVariantForDevice(array $variants, ?int $deviceMaxHeight): ?array
+{
+    if (empty($variants)) {
+        return null;
+    }
+
+    usort($variants, static function ($left, $right) {
+        $leftBitrate = (int)($left['bitrate'] ?? 0);
+        $rightBitrate = (int)($right['bitrate'] ?? 0);
+        if ($leftBitrate === $rightBitrate) {
+            return strcmp((string)($left['profile'] ?? ''), (string)($right['profile'] ?? ''));
+        }
+        return $leftBitrate <=> $rightBitrate;
+    });
+
+    if ($deviceMaxHeight !== null) {
+        $bestVariant = null;
+        $bestHeight = 0;
+        foreach ($variants as $variant) {
+            $height = playerVariantHeight($variant);
+            if ($height > 0 && $height <= $deviceMaxHeight && $height >= $bestHeight) {
+                $bestHeight = $height;
+                $bestVariant = $variant;
+            }
+        }
+        if ($bestVariant) {
+            return $bestVariant;
+        }
+
+        return $variants[0];
+    }
+
+    $defaultProfile = defined('STREAM_DEFAULT_PROFILE') ? STREAM_DEFAULT_PROFILE : '720p';
+    foreach ($variants as $variant) {
+        if (($variant['profile'] ?? '') === $defaultProfile) {
+            return $variant;
+        }
+    }
+
+    return $variants[count($variants) - 1];
+}
+
+function playerResolveMediaPlayback(array $item, array $deviceInfo, ?string $companyId, string $basePath, TranscodeQueueService $transcodeService, ?int $deviceMaxHeight): array
+{
+    $fallbackUrl = playerBuildMediaUrl((string)($item['media_path'] ?? ''), $basePath);
+    $contentType = (string)($item['media_type'] ?? '');
+    $mimeType = (string)($item['mime_type'] ?? '');
+    $isVideo = $contentType === 'video' || strpos($mimeType, 'video/') === 0;
+    $mediaId = (string)($item['media_id'] ?? '');
+
+    if (!$isVideo || $mediaId === '') {
+        return [
+            'url' => $fallbackUrl ?? '',
+            'profile' => null,
+        ];
+    }
+
+    $variants = $transcodeService->getReadyVariants($mediaId);
+    if (empty($variants)) {
+        if (!empty($companyId)) {
+            try {
+                $transcodeService->enqueue($mediaId, $companyId, null);
+            } catch (\Throwable $e) {
+                error_log("[player init] auto enqueue skipped for media {$mediaId}: " . $e->getMessage());
+            }
+        }
+
+        return [
+            'url' => $fallbackUrl ?? '',
+            'profile' => null,
+        ];
+    }
+
+    $selectedVariant = playerSelectVariantForDevice($variants, $deviceMaxHeight);
+    if (!$selectedVariant) {
+        return [
+            'url' => $fallbackUrl ?? '',
+            'profile' => null,
+        ];
+    }
+
+    $variantUrl = playerBuildVariantPlaylistUrl($selectedVariant['playlist_path'] ?? null, $basePath);
+    if (!$variantUrl) {
+        return [
+            'url' => $fallbackUrl ?? '',
+            'profile' => null,
+        ];
+    }
+
+    return [
+        'url' => $variantUrl,
+        'profile' => $selectedVariant['profile'] ?? null,
+    ];
+}
+
 // Calculate base path for URLs
 $basePath = '';
 if (defined('BASE_PATH')) {
@@ -75,6 +294,8 @@ if ($deviceInfo['current_template_id']) {
 // Get active playlist for this device
 $playlist = null;
 $playlistItems = [];
+$transcodeService = new TranscodeQueueService();
+$deviceMaxHeight = playerResolveDeviceMaxHeight($deviceInfo);
 
 // FIRST: Check device_content_assignments table for direct playlist assignment
 $contentAssignment = $db->fetch(
@@ -220,19 +441,31 @@ if ($playlist) {
     }
 
     // Add full URL to media items (skip template items - they're handled separately)
+    $resolvedMediaCache = [];
     foreach ($playlistItems as &$item) {
         if (!empty($item['media_path'])) {
-            $filePath = $item['media_path'];
-            // Handle different path types
-            if (preg_match('/^[A-Za-z]:/', $filePath)) {
-                // Windows absolute path - use serve.php
-                $item['media_url'] = $basePath . '/api/media/serve.php?path=' . urlencode($filePath);
-            } elseif (strpos($filePath, 'storage/') === 0) {
-                // Already has storage prefix
-                $item['media_url'] = $basePath . '/' . ltrim($filePath, '/');
+            $mediaId = (string)($item['media_id'] ?? '');
+            if ($mediaId !== '' && isset($resolvedMediaCache[$mediaId])) {
+                $item['media_url'] = $resolvedMediaCache[$mediaId]['url'];
+                if (!empty($resolvedMediaCache[$mediaId]['profile'])) {
+                    $item['stream_profile'] = $resolvedMediaCache[$mediaId]['profile'];
+                }
             } else {
-                // Relative path (media/...) - prepend storage
-                $item['media_url'] = $basePath . '/storage/' . ltrim($filePath, '/');
+                $resolved = playerResolveMediaPlayback(
+                    $item,
+                    $deviceInfo,
+                    $companyId,
+                    $basePath,
+                    $transcodeService,
+                    $deviceMaxHeight
+                );
+                $item['media_url'] = $resolved['url'];
+                if (!empty($resolved['profile'])) {
+                    $item['stream_profile'] = $resolved['profile'];
+                }
+                if ($mediaId !== '') {
+                    $resolvedMediaCache[$mediaId] = $resolved;
+                }
             }
         }
     }
