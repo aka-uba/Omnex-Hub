@@ -1,0 +1,8 @@
+{
+  "versionCode": 25,
+  "versionName": "2.8.1",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=25",
+  "releaseNotes": "- LAN sunucular icin URL normalizasyonu iyilestirildi (yerel IP/localhost varsayilani http)\n- Yerel agda SSL strict modu otomatik yumusatildi (self-signed uyumluluk)\n- Android network security ayarlari yerel HTTP erisimi engellemeyecek sekilde duzeltildi\n- Paket imzasi ve mevcut uygulama islev akislari korunarak derlendi",
+  "mandatory": false,
+  "sha256": "d7f2e5ced0ff5f2c5951d3d84a8c8a692add99f10338424135f561533ff74091"
+}

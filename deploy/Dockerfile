@@ -85,6 +85,7 @@ COPY core/ ./core/
 COPY middleware/ ./middleware/
 COPY services/ ./services/
 COPY public/ ./public/
+COPY downloads/ ./downloads/
 COPY locales/ ./locales/
 COPY parsers/ ./parsers/
 COPY mappings/ ./mappings/

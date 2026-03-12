@@ -33,7 +33,7 @@ android-player.zip
 esl-research/
 
 # ---- Downloads (APK binaries) ----
-downloads/
+# NOTE: downloads klasoru ve icerigi release dagitimi icin bilerek Git'te tutulur.
 
 # ---- Web Builder - INCLUDED (used in project) ----
 
@@ -156,6 +156,12 @@ tests/
 *.apk
 *.jar
 *.tar.gz
+
+# Keep release artifacts in tracked downloads directories
+!downloads/
+!downloads/**
+!public/downloads/
+!public/downloads/**
 
 # ---- Claude Temp Files ----
 **/tmpclaude-*

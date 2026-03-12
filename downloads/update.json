@@ -1,0 +1,8 @@
+{
+  "versionCode": 25,
+  "versionName": "2.8.1",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=25",
+  "releaseNotes": "- PWA Player renk teması turquoise (#18c8c8) ile güncellendi\n- Wizard ve splash ekranları tamamen yeniden tasarlandı (profesyonel koyu tema)\n- Turquoise tabanlı yeni renk paleti (Android + PWA tutarlı)\n- Stroke tarzı vektörel wizard ikonları\n- Pill şeklinde adım göstergeleri\n- Splash logo animasyonu ve intro ses desteği\n- Glassmorphism tarzı koyu kart tasarımı\n- Sabit release keystore ile imzalama\n- Türkçe karakter encoding sorunları düzeltildi",
+  "mandatory": false,
+  "sha256": "d7f2e5ced0ff5f2c5951d3d84a8c8a692add99f10338424135f561533ff74091"
+}
