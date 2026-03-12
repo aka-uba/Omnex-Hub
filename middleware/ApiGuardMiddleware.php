@@ -110,30 +110,36 @@ class ApiGuardMiddleware
         // Get origin header
         $origin = $_SERVER['HTTP_ORIGIN'] ?? null;
 
-        // If no origin (direct request, not AJAX), allow
-        // Browser same-origin requests don't send Origin header
+        // If no origin, treat as non-browser/system client request.
+        // Gateway, ESL devices, health checks and monitoring tools
+        // usually do not send Origin/Referer headers.
         if (!$origin) {
             // Check Referer as fallback for same-origin detection
             $referer = $_SERVER['HTTP_REFERER'] ?? null;
             if ($referer) {
-                $refererHost = parse_url($referer, PHP_URL_HOST);
-                $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+                $refererHost = self::normalizeHost($referer);
+                $serverHost = self::normalizeHost($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '');
 
                 // Same host is OK
-                if ($refererHost === $serverHost || $refererHost === parse_url($serverHost, PHP_URL_HOST)) {
+                if ($refererHost !== '' && $serverHost !== '' && $refererHost === $serverHost) {
                     return true;
                 }
+
+                // Browser-sourced request with foreign referer:
+                // keep strict behavior in production.
+                return !self::isProduction();
             }
-            // No origin, no referer - likely direct API call or Postman, allow in dev
-            return !self::isProduction();
+
+            // No Origin + no Referer: allow machine-to-machine calls in all envs.
+            return true;
         }
 
         // Parse origin
-        $originHost = parse_url($origin, PHP_URL_HOST);
-        $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+        $originHost = self::normalizeHost($origin);
+        $serverHost = self::normalizeHost($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '');
 
         // Same origin is always OK
-        if ($originHost === $serverHost || $originHost === parse_url($serverHost, PHP_URL_HOST)) {
+        if ($originHost !== '' && $serverHost !== '' && $originHost === $serverHost) {
             self::setCorsHeaders($origin);
             return true;
         }
@@ -187,6 +193,32 @@ class ApiGuardMiddleware
         }
 
         return false;
+    }
+
+    /**
+     * Normalize host value from URL or host header.
+     */
+    private static function normalizeHost(?string $value): string
+    {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return '';
+        }
+
+        $host = parse_url($value, PHP_URL_HOST);
+        if (is_string($host) && $host !== '') {
+            return strtolower($host);
+        }
+
+        if (!str_contains($value, '://')) {
+            $host = parse_url('http://' . $value, PHP_URL_HOST);
+            if (is_string($host) && $host !== '') {
+                return strtolower($host);
+            }
+        }
+
+        // Last fallback for plain host:port values.
+        return strtolower((string)preg_replace('/:\d+$/', '', $value));
     }
 
     /**

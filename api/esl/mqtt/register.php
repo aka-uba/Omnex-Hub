@@ -157,7 +157,10 @@ if ($device) {
     }
 
     // Broker URL'den host ve port ayikla
-    $brokerUrl = $credentials['broker_url'] ?? '192.168.1.23';
+    $brokerUrl = trim((string)($credentials['broker_url'] ?? ''));
+    if ($brokerUrl === '') {
+        Response::error('MQTT broker adresi tanimli degil', 503);
+    }
     $brokerPort = $credentials['broker_port'] ?? 1883;
     // mqtt://host:port formatindan sadece host'u al
     $mqttHost = preg_replace('#^(mqtt|tcp|ssl)://#i', '', $brokerUrl);

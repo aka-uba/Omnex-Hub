@@ -25,6 +25,20 @@ export class BluetoothService {
         this.SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb';
         this.WRITE_CHARACTERISTIC_UUID = '0000fff2-0000-1000-8000-00805f9b34fb';
         this.NOTIFY_CHARACTERISTIC_UUID = '0000fff1-0000-1000-8000-00805f9b34fb';
+        this.SERVICE_UUID_CANDIDATES = [
+            '0000fff0-0000-1000-8000-00805f9b34fb',
+            '0000ffe0-0000-1000-8000-00805f9b34fb'
+        ];
+        this.WRITE_UUID_CANDIDATES = [
+            '0000fff2-0000-1000-8000-00805f9b34fb',
+            '0000fff3-0000-1000-8000-00805f9b34fb',
+            '0000ffe1-0000-1000-8000-00805f9b34fb'
+        ];
+        this.NOTIFY_UUID_CANDIDATES = [
+            '0000fff1-0000-1000-8000-00805f9b34fb',
+            '0000fff4-0000-1000-8000-00805f9b34fb',
+            '0000ffe1-0000-1000-8000-00805f9b34fb'
+        ];
     }
 
     /**
@@ -48,7 +62,7 @@ export class BluetoothService {
             const requestOptions = showAll
                 ? {
                     acceptAllDevices: true,
-                    optionalServices: [this.SERVICE_UUID, 'battery_service']
+                    optionalServices: [...this.SERVICE_UUID_CANDIDATES, 'battery_service']
                 }
                 : {
                     filters: [
@@ -56,7 +70,7 @@ export class BluetoothService {
                         { namePrefix: 'PavoDisplay' },
                         { namePrefix: 'ESL_' }
                     ],
-                    optionalServices: [this.SERVICE_UUID, 'battery_service']
+                    optionalServices: [...this.SERVICE_UUID_CANDIDATES, 'battery_service']
                 };
 
             this.device = await navigator.bluetooth.requestDevice(requestOptions);
@@ -83,14 +97,12 @@ export class BluetoothService {
             // GATT Server'a bağlan
             this.server = await this.device.gatt.connect();
 
-            // Primary Service'i al
-            const service = await this.server.getPrimaryService(this.SERVICE_UUID);
+            const services = await this.server.getPrimaryServices();
+            const serviceCandidates = this._sortServicesByPreference(services);
+            const bindings = await this._resolveGattBindings(serviceCandidates);
 
-            // Write Characteristic'i al
-            this.writeCharacteristic = await service.getCharacteristic(this.WRITE_CHARACTERISTIC_UUID);
-
-            // Notify Characteristic'i al ve dinlemeye başla
-            this.notifyCharacteristic = await service.getCharacteristic(this.NOTIFY_CHARACTERISTIC_UUID);
+            this.writeCharacteristic = bindings.writeCharacteristic;
+            this.notifyCharacteristic = bindings.notifyCharacteristic;
             await this.notifyCharacteristic.startNotifications();
             this.notifyCharacteristic.addEventListener('characteristicvaluechanged',
                 this.handleNotification.bind(this));
@@ -111,6 +123,78 @@ export class BluetoothService {
             this.connected = false;
             throw error;
         }
+    }
+
+    _normalizeUuid(uuid) {
+        return String(uuid || '').toLowerCase();
+    }
+
+    _sortServicesByPreference(services = []) {
+        const byPref = new Map(this.SERVICE_UUID_CANDIDATES.map((uuid, idx) => [this._normalizeUuid(uuid), idx]));
+        return [...services].sort((a, b) => {
+            const aIdx = byPref.has(this._normalizeUuid(a.uuid)) ? byPref.get(this._normalizeUuid(a.uuid)) : 999;
+            const bIdx = byPref.has(this._normalizeUuid(b.uuid)) ? byPref.get(this._normalizeUuid(b.uuid)) : 999;
+            return aIdx - bIdx;
+        });
+    }
+
+    _findCharacteristicByUuid(characteristics = [], candidates = []) {
+        const preferred = new Set(candidates.map(uuid => this._normalizeUuid(uuid)));
+        return characteristics.find(ch => preferred.has(this._normalizeUuid(ch.uuid))) || null;
+    }
+
+    _findWriteCharacteristic(characteristics = []) {
+        const byUuid = this._findCharacteristicByUuid(characteristics, this.WRITE_UUID_CANDIDATES);
+        if (byUuid) return byUuid;
+
+        return characteristics.find(ch => ch?.properties?.write || ch?.properties?.writeWithoutResponse) || null;
+    }
+
+    _findNotifyCharacteristic(characteristics = [], writeCharacteristic = null) {
+        const byUuid = this._findCharacteristicByUuid(characteristics, this.NOTIFY_UUID_CANDIDATES);
+        if (byUuid) return byUuid;
+
+        const byProperty = characteristics.find(ch => ch?.properties?.notify || ch?.properties?.indicate) || null;
+        if (byProperty) return byProperty;
+
+        if (writeCharacteristic && (writeCharacteristic?.properties?.notify || writeCharacteristic?.properties?.indicate)) {
+            return writeCharacteristic;
+        }
+
+        return null;
+    }
+
+    async _resolveGattBindings(services = []) {
+        const debugServices = [];
+
+        for (const service of services) {
+            let characteristics = [];
+            try {
+                characteristics = await service.getCharacteristics();
+            } catch (error) {
+                continue;
+            }
+
+            debugServices.push({
+                service: this._normalizeUuid(service.uuid),
+                chars: characteristics.map(ch => this._normalizeUuid(ch.uuid))
+            });
+
+            const writeCharacteristic = this._findWriteCharacteristic(characteristics);
+            const notifyCharacteristic = this._findNotifyCharacteristic(characteristics, writeCharacteristic);
+
+            if (writeCharacteristic && notifyCharacteristic) {
+                console.log('%c[BLE] GATT binding resolved', 'color: #4caf50', {
+                    service: service.uuid,
+                    write: writeCharacteristic.uuid,
+                    notify: notifyCharacteristic.uuid
+                });
+                return { writeCharacteristic, notifyCharacteristic };
+            }
+        }
+
+        console.warn('[BLE] No compatible GATT characteristics found', debugServices);
+        throw new Error('GATT characteristics not found');
     }
 
     /**
@@ -442,6 +526,7 @@ export class BluetoothService {
      */
     async scanWifiNetworks(token = '') {
         this._wifiScanCancelled = false;
+        let authError = null;
         const commands = [
             `+GET-DEVICE:{"types":"wifi-list", "Token":"${token}"}`,
             `+GET-DEVICE:{"types":"wifi_list", "Token":"${token}"}`,
@@ -467,12 +552,18 @@ export class BluetoothService {
                     console.log('%c[BLE-Q] WiFi tarama iptal hatası yakalandı, döngüden çıkılıyor', 'color: #ff9800');
                     return [];
                 }
+                const message = String(error?.message || error || '').toLowerCase();
+                if (message.includes('token') || message.includes('passwd') || message.includes('password')) {
+                    authError = error;
+                    break;
+                }
                 // Diğer hatalar: bir sonraki komutu dene
             }
         }
 
         // İptal kontrolü
         if (this._wifiScanCancelled) return [];
+        if (authError) throw authError;
 
         // Fallback: mevcut bağlı SSID
         try {
@@ -483,6 +574,10 @@ export class BluetoothService {
                 return normalized;
             }
         } catch (error) {
+            const message = String(error?.message || error || '').toLowerCase();
+            if (message.includes('token') || message.includes('passwd') || message.includes('password')) {
+                throw error;
+            }
             // Ignore fallback errors
         }
 
@@ -501,6 +596,7 @@ export class BluetoothService {
         const timeout = Number.isFinite(options?.timeoutMs) && options.timeoutMs > 0
             ? options.timeoutMs
             : 5000;
+        const throwOnError = options?.throwOnError === true;
         const info = {};
 
         for (const type of types) {
@@ -509,6 +605,9 @@ export class BluetoothService {
                 info[type] = this.parseResponse(response, type);
             } catch (e) {
                 info[type] = null;
+                if (throwOnError) {
+                    throw e;
+                }
             }
         }
 

@@ -518,6 +518,17 @@ $router->group(['prefix' => '/api/devices', 'middleware' => ['auth']], function(
         require API_PATH . '/devices/network-config.php';
     });
 
+    // Bluetooth password management
+    $router->get('/{id}/bt-password', function($request) {
+        require API_PATH . '/devices/bt-password.php';
+    });
+    $router->post('/{id}/bt-password', function($request) {
+        require API_PATH . '/devices/bt-password.php';
+    });
+    $router->delete('/{id}/bt-password', function($request) {
+        require API_PATH . '/devices/bt-password.php';
+    });
+
     // Network scan for PavoDisplay devices
     $router->post('/scan', function($request) {
         require API_PATH . '/devices/scan.php';

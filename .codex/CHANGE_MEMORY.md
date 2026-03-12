@@ -11,6 +11,18 @@ Format:
 
 ---
 
+## 2026-03-13 - Player & Streaming Architecture Documentation
+- Request: Mevcut player yapisi, stream duzeni, FFmpeg ayarlari, istemci profilleri ve yayin akisini arastir ve dokumante et
+- Changes:
+  - Tum player/streaming kaynak kodlari analiz edildi (30+ dosya)
+  - Kapsamli dokumantasyon olusturuldu: PWA Player, HLS streaming, FFmpeg transcode, cihaz profilleri, Service Worker, zamanlama sistemi
+  - 17 bolumde detayli teknik referans
+- Files: docs/PLAYER_STREAMING_ARCHITECTURE.md (yeni)
+- Checks: Dokumantasyon gorevi, syntax kontrolu uygulanmadi
+- Risk/Follow-up: Faz B (coklu profil) aktif edildiginde dokuman guncellenmeli
+
+---
+
 ## 2026-03-12 - MQTT Broker (Mosquitto) Docker deployment
 - Request: Sunucuya MQTT Broker kur, Docker icinde, sistemle uyumlu, guncel surum
 - Changes:
@@ -1785,7 +1797,7 @@ Format:
   - Sunucuya kopyalanan `api/gateway` dosyalari local patch; GitHub/CI deploy ile ezilmemesi icin repository'ye commit edilmesi gerekir.
   - Local gateway tarafinda gecici DNS kesintisi (`Could not resolve host`) istemci ag kaynakliydi; server fix'inden bagimsiz.
 ## 2026-03-12 - Gateway send_label file-name sanitize fix (MAC client_id with ':')
-- Request: Tüm gateway endpointleri 200 oldugu halde cihazlara gonderim olmuyor; log inceleme.
+- Request: Tï¿½m gateway endpointleri 200 oldugu halde cihazlara gonderim olmuyor; log inceleme.
 - Findings:
   - Local gateway log: komut aliniyor ve `send_label` calisiyor, ancak `Gorsel zorunlu ancak hazir degil` ile fail ediyor.
   - Komut hedef cihaz client_id degeri `20:51:F5:4F:50:59` (':' iceriyor).
@@ -1795,7 +1807,7 @@ Format:
     - `client_id` icin dosya-guvenli `safeClientId` olusturuldu (alfa-numerik + `_.-` disindakiler `_`).
     - Temp dosyalar, remote dosya adlari ve task path olusumlari `safeClientId` ile guncellendi.
     - `handleRefreshDevice()` task path olusumu da ayni sekilde sanitize edildi.
-    - Gorsel dosya okuma/JPEG olusturma asamasina ek uyarý loglari eklendi.
+    - Gorsel dosya okuma/JPEG olusturma asamasina ek uyarï¿½ loglari eklendi.
   - `local-gateway-manager/dist/win-unpacked/resources/gateway/gateway.php`
     - Hemen test icin ayni dosya kopyalandi.
 - Checks:
@@ -1813,7 +1825,7 @@ Format:
   - `api/gateway/devices-register.php`
     - Company-scoped, normalized (`device_id`/`mqtt_client_id`) + IP bazli deterministik existing-device eslestirme eklendi.
     - `allow_create` bayragi yoksa yeni cihaz olusturma varsayilani `false` yapildi (bulunamayanlar `skipped`).
-    - Link update'lerde ortak `now` timestamp kullanildi, `skipped` sayaçi response'a eklendi.
+    - Link update'lerde ortak `now` timestamp kullanildi, `skipped` sayaï¿½i response'a eklendi.
   - `api/gateway/devices.php`
     - `syncDevice()` eslestirmesi normalize serial + `mqtt_client_id` + company + IP fallback ile guclendirildi.
     - Existing kayitta serial normalizasyonu ayniysa `device_id` formati korunuyor.
@@ -2141,7 +2153,7 @@ Format:
   - Static risk taramasi (`api/**/(update|delete).php`): transaction eksigi olan yuksek riskli endpoint listesi cikartildi.
 - Risks/Follow-up:
   - Ayni tip partial-success/500 riski, transaction ve non-critical side-effect sarmasi olmayan bazi update/delete endpointlerinde devam ediyor (device-groups, devices, licenses, products, templates, users, web-templates vb.).
-  - Service worker cache'i olan istemcilerde eski bundle gecici olarak kalabilir; hard reload önerilir.
+  - Service worker cache'i olan istemcilerde eski bundle gecici olarak kalabilir; hard reload ï¿½nerilir.
 - Backup/Restore Safety:
   - Temp backup created: `.codex/tmp_backups/20260312_230723-logger-warning-and-company-update-delete`
   - Restore not required.
@@ -2208,7 +2220,7 @@ Format:
 - Risks/Follow-up:
   - Eski videolarin variantlari anlik olusmaz; worker kuyrugu isledikce olusur.
   - Auto-enqueue stream/master tarafinda best-effort calisir; ilk isteklerde passthrough devam edebilir.
-  - Bazý uzak script calistirmalarinda BOM/CRLF kaynakli shell sikintisi goruldu; deploy sonucu dogrulandi, ancak script pipeline icin dikkat edilmeli.
+  - Bazï¿½ uzak script calistirmalarinda BOM/CRLF kaynakli shell sikintisi goruldu; deploy sonucu dogrulandi, ancak script pipeline icin dikkat edilmeli.
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260312_232217-stream-transcode-activation`
   - Remote backup: `.codex_remote_backups/20260312_202803-stream-transcode`
@@ -2308,7 +2320,7 @@ Format:
   - `public/assets/js/pages/devices/DeviceList.js`
     - Client-side IP conflict pre-check yalniz ESL ailesi icin calisacak hale getirildi.
   - `api/stream/master.php`
-    - Tekrarlý M3U passthrough blok kaldirildi.
+    - Tekrarlï¿½ M3U passthrough blok kaldirildi.
     - Variant hazir degilken `503 Stream is preparing` JSON + `Retry-After: 5` donusu eklendi.
 - Files:
   - api/devices/show.php
@@ -2388,4 +2400,181 @@ Format:
   - Cihaz status stale (yanlislikla online) ise timeout yine gorulebilir; bu durumda heartbeat freshness kontrolu ile ek guard dusunulebilir.
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260313_003240-device-preview-timeout-fix`
+  - Restore not required.
+## 2026-03-13 - production no-cache rebuild and container recreate
+- Request context:
+  - Localde duzelen degisiklikler sunucuda gorunmuyordu; kullanici cache'siz rebuild istedi.
+- Changes:
+  - Kod degisikligi yok (repo dosyalarinda yeni edit yok).
+  - Sunucuda (`185.124.84.34`, `camlicayazilim`) operasyonel deploy yapildi:
+    - `/opt/omnex-hub` icinde `git pull --ff-only` (82a35d6 -> df08980)
+    - `docker compose -p omnex -f docker-compose.yml -f docker-compose.standalone.yml build --no-cache app transcode-worker nginx`
+    - `docker compose ... up -d --force-recreate app transcode-worker nginx`
+    - app icinde `opcache_reset()` calistirildi
+- Verification:
+  - `docker compose ... ps` ciktisinda `app`, `transcode-worker`, `nginx` yeniden olusup `healthy/up` goruldu.
+  - Sunucudaki dosyalarda yeni frontend guardlar dogrulandi:
+    - `DeviceList.js` icinde `isEslFamilyType`
+    - `DeviceDetail.js` icinde offline `loadDeviceInfo` guard'i
+- Risks/Follow-up:
+  - Istemci tarafinda Service Worker/browser cache kalmissa eski JS davranisi devam edebilir; client tarafinda SW unregister + hard refresh gerekebilir.
+  - `/api/health` localhost sorgusunda 301 goruldu (ortam HTTPS yonlendirme davranisina bagli olabilir).
+- Backup/Restore Safety:
+  - Bu adimda dosya restore gerekmemis, sadece runtime rebuild/recreate uygulanmistir.
+## 2026-03-13 - android player default server + apk rebuild + update manifest refresh
+- Request context:
+  - Android player varsayilan sunucu adresi `https://hub.omnexcore.com/player/` olacak sekilde guncellendi.
+  - Yeni APK build alinip `downloads` altina kopyalanmasi ve update/upload manifest dosyasinin guncellenmesi istendi.
+- Changes:
+  - `android-player/omnex-player-app/app/build.gradle`
+    - `SERVER_URL` (default + debug) -> `https://hub.omnexcore.com/player/`
+    - `versionCode` -> `25`, `versionName` -> `2.8.1`
+  - `android-player/omnex-player-app/app/src/main/java/com/omnex/player/UpdateManager.kt`
+    - `UPDATE_URL` -> `https://hub.omnexcore.com/downloads/update.json`
+    - `APK_URL` -> `https://hub.omnexcore.com/downloads/omnex-player.apk`
+  - `downloads/update.json`
+    - version/downloadUrl/sha256 guncellendi (`v25`, yeni SHA).
+  - `public/downloads/update.json`
+    - version/downloadUrl/sha256 guncellendi (`v25`, yeni SHA).
+  - Build artifact kopyalari:
+    - `downloads/omnex-player.apk` yenilendi.
+    - `public/downloads/omnex-player.apk` yenilendi.
+    - `downloads/omnex-player-standalone-v2.8.1.apk` eklendi.
+    - `public/downloads/omnex-player-standalone-v2.8.1.apk` eklendi.
+- Checks:
+  - `android-player/omnex-player-app> .\\gradlew.bat publishDebugApk` (pass)
+  - `android-player/omnex-player-app> .\\gradlew.bat :app:compileDebugKotlin` (failed: flavor nedeniyle task ambiguous)
+  - `android-player/omnex-player-app> .\\gradlew.bat :app:compileStandaloneDebugKotlin` (pass)
+  - `ConvertFrom-Json` parse check:
+    - `downloads/update.json` (pass)
+    - `public/downloads/update.json` (pass)
+- Risks/Follow-up:
+  - `downloads/update.json` releaseNotes metninde onceki karakter kodlamasi kaynakli bozuk karakterler mevcut (bu adimda sadece version/url/hash satirlari degisti).
+  - Bu build `standalone debug` artifact'tan yayinlandi (`publishDebugApk` task akisi).
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_005602-apk-default-server-update`
+  - Restore not required.
+## 2026-03-13 - registration desktop card height alignment (PC)
+- Request context:
+  - Android player etkinlestirme ekraninin PC gorunumunde eslestirme kodu card'inin soldaki marka card'i ile ayni yukseklikte olmasi istendi.
+- Changes:
+  - `public/player/assets/css/player.css`
+    - Desktop landscape (`min-width:1360px`) ve sadece non-TV (`body:not(.device-tv)`) icin override eklendi.
+    - `registration-content` grid item hizasi `stretch` yapildi.
+    - `registration-header` ve `sync-code-container` ayni `min-height` degerine cekildi.
+    - `sync-code-container` icin `align-self: stretch` + `height: 100%` ile soldaki card ile yukseklik esitlemesi yapildi.
+- Files:
+  - public/player/assets/css/player.css
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `node --check public/player/assets/js/player.js`
+- Risks/Follow-up:
+  - Duzenleme desktop landscape hedeflidir; 1360px alti ekranlarda mevcut responsive davranis korunur.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_010241-player-registration-pc-height`
+  - Restore not required.
+## 2026-03-13 - track downloads in git + include in docker app container
+- Request context:
+  - `downloads` dizininin Git push'a dahil edilmesi ve sunucu Docker container icinde de erisilebilir olmasi istendi.
+- Changes:
+  - `.gitignore`
+    - `downloads/` ignore kurali kaldirildi.
+    - `downloads` ve `public/downloads` icin explicit unignore kurallari eklendi (`!downloads/**`, `!public/downloads/**`).
+  - `deploy/Dockerfile`
+    - Build image icine `downloads/` klasoru eklendi (`COPY downloads/ ./downloads/`).
+  - `deploy/docker-compose.yml`
+    - App service'e host bind mount eklendi: `../downloads:/var/www/html/downloads`.
+- Files:
+  - .gitignore
+  - deploy/Dockerfile
+  - deploy/docker-compose.yml
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `git check-ignore -v downloads/update.json` (downloads unignored dogrulandi)
+  - `git check-ignore -v downloads/omnex-player.apk` (downloads unignored dogrulandi)
+  - `git check-ignore -v public/downloads/omnex-player.apk` (public/downloads unignored dogrulandi)
+  - `docker compose -f deploy/docker-compose.yml config` (ilk deneme env eksikligi nedeniyle fail)
+  - `OMNEX_DB_PASS=x OMNEX_JWT_SECRET=x docker compose -f deploy/docker-compose.yml config` (pass)
+- Risks/Follow-up:
+  - `downloads` altindaki APK dosyalari artik repo'ya dahil olacagindan repository boyutu buyur.
+  - Sunucuda etkin olmasi icin deploy tarafinda yeniden build + recreate gereklidir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_010844-downloads-git-docker-include`
+  - Restore not required.
+## 2026-03-13 - force OTA progression by bumping Android APK/update manifest to v26
+- Request context:
+  - Kullanici `downloads/update.json` guncel olmadigi icin cihazlarin otomatik guncelleme cekmedigini bildirdi.
+- Changes:
+  - `android-player/omnex-player-app/app/build.gradle` (local source)
+    - `versionCode` -> `26`
+    - `versionName` -> `2.8.2`
+  - Yeni APK build alindi ve dagitim dosyalari yenilendi:
+    - `downloads/omnex-player.apk`
+    - `public/downloads/omnex-player.apk`
+    - `downloads/omnex-player-standalone-v2.8.2.apk` (yeni)
+    - `public/downloads/omnex-player-standalone-v2.8.2.apk` (yeni)
+  - Update manifest dosyalari guncellendi:
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    - `versionCode: 26`, `versionName: 2.8.2`, `downloadUrl ...?v=26`
+    - `sha256: 0438ef58c1cfbb0d4e221138f76e02a447e9e345fa36b848c8ee9e0fea58cb93`
+- Files:
+  - android-player/omnex-player-app/app/build.gradle
+  - downloads/omnex-player.apk
+  - downloads/omnex-player-standalone-v2.8.2.apk
+  - downloads/update.json
+  - public/downloads/omnex-player.apk
+  - public/downloads/omnex-player-standalone-v2.8.2.apk
+  - public/downloads/update.json
+  - .codex/CHANGE_MEMORY.md
+- Checks:
+  - `android-player/omnex-player-app> .\\gradlew.bat publishDebugApk` (pass)
+  - `android-player/omnex-player-app> .\\gradlew.bat :app:compileStandaloneDebugKotlin` (pass)
+  - `ConvertFrom-Json` parse check:
+    - `downloads/update.json` (pass)
+    - `public/downloads/update.json` (pass)
+- Risks/Follow-up:
+  - `android-player/` dizini gitignore kapsaminda oldugu icin `build.gradle` versiyon artisi repo'ya commitlenmez; APK artifact ve update manifest commitlenir.
+- Backup/Restore Safety:
+  - Local temp backup: `.codex/tmp_backups/20260313_011321-apk-v26-autoupdate`
+  - Restore not required.
+## 2026-03-13 - update.json encoding/release notes fix + github push + server pull/deploy
+- Request context:
+  - Kullanici, baglam degisikliginden sonra update.json iceriginin guncellenmedigini, release note degismedigini ve encoding'in bozuk oldugunu bildirdi.
+  - Islem bitince commit/push/pull talep edildi.
+- Changes:
+  - `downloads/update.json`
+    - Release notes metni guncellendi.
+    - UTF-8 (BOM'suz) olarak yeniden yazildi.
+  - `public/downloads/update.json`
+    - Release notes metni guncellendi.
+    - UTF-8 (BOM'suz) olarak yeniden yazildi.
+  - `public/player/assets/css/player.css`
+    - Daha once istenen PC registration card yukseklik esitlemesi commitlenip pushlandi.
+  - `.htaccess`
+    - `downloads/*` istekleri icin `public/downloads/*` fallback rewrite eklendi.
+    - `.apk` icin MIME type eklendi (`application/vnd.android.package-archive`).
+- Git:
+  - Commit: `75dea3e` (player.css + update.json release notes/encoding)
+  - Commit: `5bbd329` (.htaccess downloads fallback + apk mime)
+  - Push: `origin/main` basarili.
+- Server pull/deploy:
+  - SSH: `camlicayazilim@185.124.84.34` (key: `~/.ssh/camlicayazilim_omnex`)
+  - `/opt/omnex-hub` icinde `git pull --ff-only` (df08980 -> 5bbd329)
+  - `deploy/` icinde app image rebuild + recreate:
+    - `docker compose -p omnex -f docker-compose.yml -f docker-compose.standalone.yml build app`
+    - `docker compose -p omnex -f docker-compose.yml -f docker-compose.standalone.yml up -d --force-recreate app nginx`
+- Verification:
+  - `https://raw.githubusercontent.com/aka-uba/Omnex-Hub/main/downloads/update.json` -> `versionCode: 26`, `versionName: 2.8.2`
+  - `https://hub.omnexcore.com/downloads/update.json` -> `200`, `Content-Type: application/json`
+  - `https://hub.omnexcore.com/downloads/omnex-player.apk` -> `200`, `Content-Type: application/vnd.android.package-archive`, `bytes=7948861`
+  - Live JSON byte stream UTF-8 decode check: OK.
+- Checks:
+  - `node --check public/player/assets/js/player.js`
+  - `ConvertFrom-Json` parse check: `downloads/update.json`, `public/downloads/update.json`
+- Risks/Follow-up:
+  - Local repoda kullaniciya ait baska unstaged degisiklikler mevcut (bu adimda dokunulmadi).
+- Backup/Restore Safety:
+  - `.codex/tmp_backups/20260313_011818-updatejson-encoding-deploy`
+  - `.codex/tmp_backups/20260313_012143-htaccess-downloads-fallback`
   - Restore not required.

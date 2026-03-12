@@ -43,6 +43,8 @@ export class BluetoothWizard {
         this._pendingWifiConfig = null;
         this._isReadingInfo = false;
         this._deviceToken = ''; // BT protection password (set during protocol step)
+        // Keep false in normal flow; can be toggled for emergency field tests.
+        this._tokenBypassMode = false;
         this._currentStep = 1;
         this._highestReachedStep = 1;
     }
@@ -247,6 +249,10 @@ export class BluetoothWizard {
      * @private
      */
     async _setDevicePassword() {
+        if (this._tokenBypassMode) {
+            this._deviceToken = '';
+            return;
+        }
         const currentPassword = this._deviceToken || '';
         const newPassword = prompt(
             'Cihaz BLE şifresi belirleyin:\n(Bu şifre olmadan kimse Bluetooth ile bağlanamaz)\n\n'
@@ -856,7 +862,7 @@ export class BluetoothWizard {
      * Cihazdan WiFi ağlarını tara ve listele
      * @private
      */
-    async _scanWifiNetworks() {
+    async _scanWifiNetworks(allowRetry = true) {
         const btn = document.getElementById('bt-scan-wifi-btn');
         if (btn) {
             btn.disabled = true;
@@ -864,8 +870,11 @@ export class BluetoothWizard {
         }
 
         try {
+            if (!this._tokenBypassMode) {
+                await this._loadDeviceTokenFromServer();
+            }
             this._log(this.__('bluetooth.wizard.scanningNetworks'));
-            const scanned = await this.bluetoothService.scanWifiNetworks();
+            const scanned = await this.bluetoothService.scanWifiNetworks(this._deviceToken);
             const networks = Array.isArray(scanned) ? scanned : [];
             this._updateWifiNetworkOptions(networks);
 
@@ -880,6 +889,15 @@ export class BluetoothWizard {
                 Toast.warning(this.__('bluetooth.wizard.scanEmptyWarning'));
             }
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._scanWifiNetworks(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._scanWifiNetworks(false);
+                }
+            }
             this._log(this.__('bluetooth.wizard.scanError', { error: error.message }), 'error');
             Toast.warning(this.__('bluetooth.wizard.scanFailedWarning'));
         } finally {
@@ -1205,10 +1223,21 @@ export class BluetoothWizard {
         result.lcd_screen_height = this._extractDimension(result.lcd_screen_height, 0);
 
         if (!this.bluetoothService?.connected) return result;
+        let token = this._deviceToken || '';
+
+        if (!this._tokenBypassMode) {
+            try {
+                token = await this._loadDeviceTokenFromServer();
+            } catch (error) {
+                Logger.debug('BluetoothWizard: token preload skipped while fetching device info', {
+                    error: error?.message || String(error)
+                });
+            }
+        }
 
         try {
             if (!this._isValidIpAddress(result.ip)) {
-                const rawIp = await this.bluetoothService.getDeviceInfo('ip');
+                const rawIp = await this.bluetoothService.getDeviceInfo('ip', token);
                 const parsedIp = this.bluetoothService.parseResponse(rawIp, 'ip');
                 result.ip = this._extractIpAddress(this._extractPrimitive(parsedIp, 'ip') || rawIp);
             }
@@ -1218,7 +1247,7 @@ export class BluetoothWizard {
 
         try {
             if (!this._isValidMacAddress(result.mac)) {
-                const rawMac = await this.bluetoothService.getDeviceInfo('mac');
+                const rawMac = await this.bluetoothService.getDeviceInfo('mac', token);
                 const parsedMac = this.bluetoothService.parseResponse(rawMac, 'mac');
                 result.mac = this._extractMacAddress(this._extractPrimitive(parsedMac, 'mac') || rawMac);
             }
@@ -1228,8 +1257,8 @@ export class BluetoothWizard {
 
         try {
             if (!result.lcd_screen_width || !result.lcd_screen_height) {
-                const rawW = await this.bluetoothService.getDeviceInfo('lcd_screen_width');
-                const rawH = await this.bluetoothService.getDeviceInfo('lcd_screen_height');
+                const rawW = await this.bluetoothService.getDeviceInfo('lcd_screen_width', token);
+                const rawH = await this.bluetoothService.getDeviceInfo('lcd_screen_height', token);
                 const parsedW = this.bluetoothService.parseResponse(rawW, 'lcd_screen_width');
                 const parsedH = this.bluetoothService.parseResponse(rawH, 'lcd_screen_height');
                 const width = this._extractDimension(parsedW, result.lcd_screen_width || 800);
@@ -1243,7 +1272,7 @@ export class BluetoothWizard {
 
         if (!this._isValidIpAddress(result.ip) || !this._isValidMacAddress(result.mac)) {
             try {
-                const allInfo = await this.bluetoothService.getAllInfo();
+                const allInfo = await this.bluetoothService.getAllInfo(token);
                 const normalized = this._normalizeBtDeviceInfo(allInfo);
                 if (!this._isValidIpAddress(result.ip)) {
                     result.ip = normalized.ip || result.ip;
@@ -1366,6 +1395,87 @@ export class BluetoothWizard {
         }
 
         return fallback;
+    }
+
+    _isTokenError(error) {
+        const message = String(error?.message || error || '').toLowerCase();
+        if (!message) return false;
+        return message.includes('token') || message.includes('passwd') || message.includes('password');
+    }
+
+    _promptForDeviceToken() {
+        if (this._tokenBypassMode) {
+            return false;
+        }
+        const promptText = this.__('networkConfig.adminPasswordPlaceholder');
+        const current = this._deviceToken || '';
+        const entered = window.prompt(promptText, current);
+        if (entered === null) {
+            return false;
+        }
+        const normalized = String(entered).trim();
+        if (!normalized) {
+            return false;
+        }
+        this._deviceToken = normalized;
+        return true;
+    }
+
+    async _resolveKnownDeviceForToken() {
+        const normalized = this._normalizeBtDeviceInfo(this.btNormalizedDeviceInfo || this.btDeviceInfo || {});
+        const ipCandidates = [
+            normalized.ip,
+            this._readInfoValueFromUi('bt-info-ip')
+        ].map(v => String(v || '').trim()).filter(Boolean);
+
+        for (const ip of ipCandidates) {
+            if (!this._isValidIpAddress(ip)) continue;
+            const byIp = await this._findExistingDeviceByIp(ip);
+            if (byIp?.id) return byIp;
+        }
+
+        const serialCandidates = [
+            normalized.mac,
+            this._readInfoValueFromUi('bt-info-mac'),
+            this.bluetoothService?.device?.id,
+            this.bluetoothService?.device?.name
+        ].map(v => String(v || '').trim()).filter(Boolean);
+
+        const seen = new Set();
+        for (const serial of serialCandidates) {
+            if (seen.has(serial)) continue;
+            seen.add(serial);
+            const bySerial = await this._findExistingDeviceBySerial(serial);
+            if (bySerial?.id) return bySerial;
+        }
+
+        return null;
+    }
+
+    async _loadDeviceTokenFromServer(force = false) {
+        if (!force && this._deviceToken) {
+            return this._deviceToken;
+        }
+
+        try {
+            const existing = await this._resolveKnownDeviceForToken();
+            if (!existing?.id) {
+                return '';
+            }
+
+            const response = await this.app.api.get(`/devices/${existing.id}/bt-password`);
+            const password = String(response?.data?.password || '').trim();
+            if (password) {
+                this._deviceToken = password;
+                return password;
+            }
+        } catch (error) {
+            Logger.debug('BluetoothWizard: stored token fetch failed', {
+                error: error?.message || String(error)
+            });
+        }
+
+        return '';
     }
 
     /**
@@ -1559,6 +1669,14 @@ export class BluetoothWizard {
             this._setStep(3);
             this._ensureStaticIpDefaults();
 
+            if (!this._tokenBypassMode) {
+                this._loadDeviceTokenFromServer().catch((error) => {
+                    Logger.debug('BluetoothWizard: token preload after connect failed', {
+                        error: error?.message || String(error)
+                    });
+                });
+            }
+
             // Auto-fetch WiFi list after connection
             setTimeout(() => this._scanWifiNetworks(), 250);
 
@@ -1579,7 +1697,7 @@ export class BluetoothWizard {
      * WiFi ayarlarını kaydet
      * @private
      */
-    async _saveWifi() {
+    async _saveWifi(allowRetry = true) {
         const ssid = document.getElementById('bt-wifi-ssid')?.value?.trim();
         const password = document.getElementById('bt-wifi-password')?.value;
         const useStatic = document.getElementById('bt-ip-mode')?.value === 'static';
@@ -1593,6 +1711,7 @@ export class BluetoothWizard {
         if (btn) btn.disabled = true;
 
         try {
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.configuringWifi', { ssid }));
 
             if (this._isKexinDevice) {
@@ -1661,6 +1780,15 @@ export class BluetoothWizard {
             this._updateAddDeviceButtonState();
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._saveWifi(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._saveWifi(false);
+                }
+            }
             this.workflowState.wifiConfigured = false;
             this._log(this.__('bluetooth.wizard.wifiError', { error: error.message }), 'error');
             Toast.error(error.message);
@@ -1674,12 +1802,13 @@ export class BluetoothWizard {
      * Protokol ayarla
      * @private
      */
-    async _setProtocol() {
+    async _setProtocol(allowRetry = true) {
         const protocol = document.getElementById('bt-protocol')?.value || 'HTTP-SERVER';
         const btn = document.getElementById('bt-set-protocol-btn');
         if (btn) btn.disabled = true;
 
         try {
+            await this._loadDeviceTokenFromServer();
             // Arka planda çalışan WiFi tarama komutlarını iptal et ve mevcut komutun bitmesini bekle
             this._log('Kuyruk temizleniyor ve mevcut BLE komutu bekleniyor...');
             await this.bluetoothService.cancelPendingCommands('Protokol ayarı için kuyruk temizlendi');
@@ -1945,7 +2074,7 @@ export class BluetoothWizard {
             this.workflowState.verified = false;
 
             // ── Auto-protect: Set BT admin+user password after protocol is configured ──
-            if (!this._deviceToken && this.bluetoothService.connected) {
+            if (!this._tokenBypassMode && !this._deviceToken && this.bluetoothService.connected) {
                 try {
                     const autoPassword = this._generateSecurePassword(16);
                     this._log(this.__('bluetooth.protection.settingPassword') || 'BLE koruma şifresi ayarlanıyor...');
@@ -2015,6 +2144,15 @@ export class BluetoothWizard {
             this._updateAddDeviceButtonState();
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._setProtocol(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._setProtocol(false);
+                }
+            }
             this.workflowState.protocolConfigured = false;
             this._log(this.__('bluetooth.wizard.protocolError', { error: error.message }), 'error');
             Toast.error(error.message);
@@ -2103,7 +2241,7 @@ export class BluetoothWizard {
      * Cihaz bilgilerini oku
      * @private
      */
-    async _readInfo() {
+    async _readInfo(allowRetry = true) {
         const btn = document.getElementById('bt-read-info-btn');
         if (this._isReadingInfo) {
             this._log('Cihaz bilgileri okuma islemi zaten devam ediyor.', 'info');
@@ -2125,11 +2263,13 @@ export class BluetoothWizard {
             await this.bluetoothService.cancelPendingCommands('Cihaz bilgisi okuma oncesi kuyruk temizligi');
             await new Promise(resolve => setTimeout(resolve, 200));
 
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.readingInfo'));
             const info = await Promise.race([
                 this.bluetoothService.getAllInfo(this._deviceToken, {
                     types: ['ip', 'mac', 'Protocol', 'lcd_screen_width', 'lcd_screen_height'],
-                    timeoutMs: 2500
+                    timeoutMs: 2500,
+                    throwOnError: true
                 }),
                 new Promise((_, reject) => {
                     setTimeout(() => {
@@ -2176,6 +2316,17 @@ export class BluetoothWizard {
             }
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    this._isReadingInfo = false;
+                    return this._readInfo(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    this._isReadingInfo = false;
+                    return this._readInfo(false);
+                }
+            }
             this.workflowState.verified = false;
             this._log(this.__('bluetooth.wizard.readInfoError', { error: error.message }), 'error');
             Toast.warning(error.message || 'Cihaz bilgileri okunamadi');
@@ -2193,7 +2344,7 @@ export class BluetoothWizard {
      * Donanım ayarlarını kaydet
      * @private
      */
-    async _saveHardware() {
+    async _saveHardware(allowRetry = true) {
         const volume = parseInt(document.getElementById('bt-volume')?.value) || 100;
         const brightness = parseInt(document.getElementById('bt-brightness')?.value) || 100;
         const btn = document.getElementById('bt-save-hardware-btn');
@@ -2201,6 +2352,7 @@ export class BluetoothWizard {
         if (btn) btn.disabled = true;
 
         try {
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.hardwareSettings', { volume, brightness }));
             await this.bluetoothService.setHardware(volume, brightness, this._deviceToken);
 
@@ -2208,6 +2360,15 @@ export class BluetoothWizard {
             Toast.success(this.__('bluetooth.success'));
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._saveHardware(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._saveHardware(false);
+                }
+            }
             this._log(this.__('bluetooth.wizard.hardwareError', { error: error.message }), 'error');
             Toast.error(error.message);
         } finally {
@@ -2219,12 +2380,13 @@ export class BluetoothWizard {
      * Cihazı yeniden başlat
      * @private
      */
-    async _reboot() {
+    async _reboot(allowRetry = true) {
         if (!confirm(this.__('bluetooth.confirm.reboot'))) {
             return;
         }
 
         try {
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.rebooting'));
             await this.bluetoothService.reboot(this._deviceToken);
 
@@ -2237,6 +2399,15 @@ export class BluetoothWizard {
             this._updateStatus(false);
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._reboot(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._reboot(false);
+                }
+            }
             this._log(this.__('bluetooth.wizard.rebootError', { error: error.message }), 'error');
             Toast.error(error.message);
         }
@@ -2246,12 +2417,13 @@ export class BluetoothWizard {
      * Medya dosyalarını temizle
      * @private
      */
-    async _clearMedia() {
+    async _clearMedia(allowRetry = true) {
         if (!confirm(this.__('bluetooth.confirm.clearMedia'))) {
             return;
         }
 
         try {
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.clearingMedia'));
             await this.bluetoothService.clearMedia(this._deviceToken);
 
@@ -2259,6 +2431,15 @@ export class BluetoothWizard {
             Toast.success(this.__('bluetooth.toast.mediaCleared') || 'Medyalar temizlendi');
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._clearMedia(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._clearMedia(false);
+                }
+            }
             this._log(this.__('bluetooth.wizard.clearMediaError', { error: error.message }), 'error');
             Toast.error(error.message);
         }
@@ -2268,12 +2449,13 @@ export class BluetoothWizard {
      * Fabrika ayarlarına sıfırla
      * @private
      */
-    async _factoryReset() {
+    async _factoryReset(allowRetry = true) {
         if (!confirm(this.__('bluetooth.confirm.factoryReset'))) {
             return;
         }
 
         try {
+            await this._loadDeviceTokenFromServer();
             this._log(this.__('bluetooth.wizard.resetting'));
             await this.bluetoothService.factoryReset(this._deviceToken);
 
@@ -2289,6 +2471,15 @@ export class BluetoothWizard {
             this._updateStatus(false);
 
         } catch (error) {
+            if (allowRetry && this._isTokenError(error)) {
+                const serverToken = await this._loadDeviceTokenFromServer(true);
+                if (serverToken) {
+                    return this._factoryReset(false);
+                }
+                if (this._promptForDeviceToken()) {
+                    return this._factoryReset(false);
+                }
+            }
             this._log(this.__('bluetooth.wizard.resetError', { error: error.message }), 'error');
             Toast.error(error.message);
         }
@@ -2430,7 +2621,7 @@ export class BluetoothWizard {
         }
 
         // Include BT password for server-side encrypted storage
-        if (this._deviceToken) {
+        if (!this._tokenBypassMode && this._deviceToken) {
             data.bt_password = this._deviceToken;
         }
 
