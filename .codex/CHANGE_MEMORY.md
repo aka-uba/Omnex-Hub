@@ -2860,3 +2860,42 @@ Format:
 - Backup/Restore Safety:
   - Temp backup zinciri: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
   - Restore not required.
+## 2026-03-13 - IPTV/VLC compatibility tuning (redirect+variant copy)
+- Request context:
+  - IPTV'de playlist link/file calismiyor; direct `variant/720p` calisiyor.
+  - VLC tarafinda medya adi gorunmesi tekrar bildirildi.
+- Changes:
+  - `api/stream/playlist.php`
+    - Default `label=0` (VLC isim overlay azaltma).
+    - Non-download isteklerde varsayilan mod `redirect`: endpoint dogrudan secilen variant URL'e 302 yonlendirir.
+    - Download modunda M3U cikti `#EXTINF:0` + CRLF formatina alindi.
+    - Icerik tipi `application/x-mpegURL; charset=utf-8` oldu.
+    - Debug header'lari: `X-Stream-Profile`, `X-Stream-Target`.
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - `copy-stream-url` artik dogrudan `variant/720p/playlist.m3u8` kopyalar.
+    - Download aksiyonu `playlist.m3u?download=1&profile=720p&label=0` kullanir.
+- Checks:
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Bazi IPTV istemcileri 302 takip etmeyebilir; bu durumda UI tarafinda dogrudan variant URL kullanimi zaten devrede.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.
+## 2026-03-13 - stream profile auto-selection restored (no fixed 720)
+- Request context:
+  - Kullanici stream cihazlari icin 720p sabitlenmemesi, cihaz profiline gore otomatik ffmpeg/profile seciminin korunmasini istedi.
+- Changes:
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Copy stream link artik sabit `720p` degil; cihaz `device_profile` ve ekran olcusune gore 360/540/720/1080 profile secer.
+    - Download playlist URL'i de ayni secilen profile ile olusturulur.
+  - `api/stream/playlist.php`
+    - Backend auto profile seciminde tekrar 1080p secenegi aktif edildi (720 cap kaldirildi).
+- Checks:
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+  - `php -l api/stream/playlist.php`
+- Risks/Follow-up:
+  - Bazi IPTV istemcileri 1080p profile'da zorlanirsa cihaz profili 720p'e cekilerek ayni otomasyonla stabil kalir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.

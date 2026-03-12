@@ -66,9 +66,7 @@ if (!function_exists('streamPlaylistResolveProfile')) {
         if ($height <= 0) return '720p';
         if ($height <= 360) return '360p';
         if ($height <= 540) return '540p';
-        // IPTV tarafinda 1080p adaptasyonu her uygulamada stabil olmadigi icin
-        // otomatik secimi 720p'de sinirla; 1080p isteyen istemci query ile isteyebilir.
-        return '720p';
+        return '1080p';
     }
 }
 
@@ -98,20 +96,39 @@ $baseUrl = streamResolveBaseUrl();
 $requestedProfile = (string)$request->query('profile', '');
 $selectedProfile = streamPlaylistResolveProfile($device, $requestedProfile);
 $targetUrl = $baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8';
-$showLabelRaw = strtolower((string)$request->query('label', '1'));
+$showLabelRaw = strtolower((string)$request->query('label', '0'));
 $showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
 $extInfTitle = $showLabel ? $streamLabel : '';
 
-$lines = [
-    '#EXTM3U',
-    '#EXTINF:-1,' . $extInfTitle,
-    $targetUrl,
-    '',
-];
-
 $downloadRaw = strtolower((string)$request->query('download', '0'));
 $isDownload = in_array($downloadRaw, ['1', 'true', 'yes', 'download'], true);
+$modeRaw = strtolower((string)$request->query('mode', $isDownload ? 'm3u' : 'redirect'));
+$isRedirectMode = !$isDownload && ($modeRaw === 'redirect' || $modeRaw === 'stream' || $modeRaw === 'direct');
 $contentDisposition = $isDownload ? 'attachment' : 'inline';
+
+if ($isRedirectMode) {
+    $now = date('Y-m-d H:i:s');
+    try {
+        $db->query(
+            "UPDATE devices SET last_stream_request_at = ?, last_seen = ?, status = 'online' WHERE id = ?",
+            [$now, $now, $device['id']]
+        );
+        $db->query(
+            "INSERT INTO stream_access_logs (device_id, stream_token, request_type, request_path, ip_address, user_agent, response_status, created_at)
+             VALUES (?, ?, 'playlist_redirect', ?, ?, ?, 302, ?)",
+            [$device['id'], $token, $_SERVER['REQUEST_URI'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '', $now]
+        );
+    } catch (\Throwable $e) {
+        // Best effort only.
+    }
+
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Access-Control-Allow-Origin: *');
+    header('X-Stream-Profile: ' . $selectedProfile);
+    header('X-Stream-Target: ' . $targetUrl);
+    header('Location: ' . $targetUrl, true, 302);
+    exit;
+}
 
 $now = date('Y-m-d H:i:s');
 try {
@@ -128,10 +145,18 @@ try {
     // Best effort only.
 }
 
-header('Content-Type: audio/x-mpegurl');
+$lines = [
+    '#EXTM3U',
+    '#EXTINF:0,' . $extInfTitle,
+    $targetUrl,
+    '',
+];
+
+header('Content-Type: application/x-mpegURL; charset=utf-8');
 header('Content-Disposition: ' . $contentDisposition . '; filename="' . streamBuildSafeFilename($streamLabel, 'm3u') . '"');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 header('X-Stream-Label: ' . $streamLabel);
 header('X-Stream-Profile: ' . $selectedProfile);
-echo implode("\n", $lines);
+header('X-Stream-Target: ' . $targetUrl);
+echo implode("\r\n", $lines);

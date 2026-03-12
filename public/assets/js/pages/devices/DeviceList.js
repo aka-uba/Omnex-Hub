@@ -1029,8 +1029,77 @@ export class DeviceListPage {
         const token = device?.stream_token;
         if (!token) return '';
 
-        const downloadSuffix = options.download ? '?download=1' : '';
-        return `${baseUrl}/api/stream/${token}/playlist.m3u${downloadSuffix}`;
+        const params = new URLSearchParams();
+        if (options.download) params.set('download', '1');
+        if (options.profile) params.set('profile', String(options.profile));
+        if (options.label === false) params.set('label', '0');
+        const qs = params.toString();
+
+        return `${baseUrl}/api/stream/${token}/playlist.m3u${qs ? `?${qs}` : ''}`;
+    }
+
+    extractStreamHeight(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return null;
+
+        const sizeMatch = raw.match(/(\d{3,4})\s*x\s*(\d{3,4})/i);
+        if (sizeMatch) {
+            return Math.max(Number(sizeMatch[1]), Number(sizeMatch[2]));
+        }
+
+        const pMatch = raw.match(/(\d{3,4})\s*p/i);
+        if (pMatch) {
+            return Number(pMatch[1]);
+        }
+
+        if (/^\d{3,4}$/.test(raw)) {
+            return Number(raw);
+        }
+
+        return null;
+    }
+
+    resolveStreamProfile(device) {
+        let profileData = null;
+
+        if (device?.device_profile && typeof device.device_profile === 'object') {
+            profileData = device.device_profile;
+        } else if (typeof device?.device_profile === 'string') {
+            try {
+                profileData = JSON.parse(device.device_profile);
+            } catch (_) {
+                profileData = null;
+            }
+        }
+
+        let height = null;
+        if (profileData) {
+            const keys = ['max_res', 'max_resolution', 'resolution', 'max_profile', 'max_height'];
+            for (const key of keys) {
+                height = this.extractStreamHeight(profileData[key]);
+                if (height) break;
+            }
+        }
+
+        if (!height) {
+            const screenW = Number(device?.screen_width || 0);
+            const screenH = Number(device?.screen_height || 0);
+            height = Math.max(screenW, screenH);
+        }
+
+        if (!height || Number.isNaN(height)) return '720p';
+        if (height <= 360) return '360p';
+        if (height <= 540) return '540p';
+        if (height <= 720) return '720p';
+        return '1080p';
+    }
+
+    getStreamVariantUrl(device, profile = '720p') {
+        const basePath = window.OmnexConfig?.basePath || '';
+        const baseUrl = `${window.location.origin}${basePath}`;
+        const token = device?.stream_token;
+        if (!token) return '';
+        return `${baseUrl}/api/stream/${token}/variant/${profile}/playlist.m3u8`;
     }
 
     copyStreamUrl(device) {
@@ -1038,7 +1107,8 @@ export class DeviceListPage {
             Toast.error(this.__('stream.noToken'));
             return;
         }
-        const streamUrl = this.getStreamPlaylistUrl(device);
+        const selectedProfile = this.resolveStreamProfile(device);
+        const streamUrl = this.getStreamVariantUrl(device, selectedProfile);
         navigator.clipboard.writeText(streamUrl).then(() => {
             Toast.success(this.__('stream.copied'));
         }).catch(() => {
@@ -1059,7 +1129,12 @@ export class DeviceListPage {
             return;
         }
 
-        const playlistUrl = this.getStreamPlaylistUrl(device, { download: true });
+        const selectedProfile = this.resolveStreamProfile(device);
+        const playlistUrl = this.getStreamPlaylistUrl(device, {
+            download: true,
+            profile: selectedProfile,
+            label: false
+        });
         const anchor = document.createElement('a');
         anchor.href = playlistUrl;
         anchor.target = '_blank';
