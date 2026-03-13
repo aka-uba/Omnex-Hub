@@ -70,6 +70,115 @@ if (!function_exists('streamPlaylistResolveProfile')) {
     }
 }
 
+if (!function_exists('streamPlaylistResolveAvailableProfiles')) {
+    function streamPlaylistResolveAvailableProfiles($db, array $device): array
+    {
+        $assignmentPlaylistJoin = $db->isPostgres()
+            ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
+            : "LEFT JOIN playlists p ON dca.content_id = p.id";
+
+        $playlistItems = [];
+
+        $assignment = $db->fetch(
+            "SELECT p.items FROM device_content_assignments dca
+             $assignmentPlaylistJoin
+             WHERE dca.device_id = ? AND dca.status = 'active' AND dca.content_type = 'playlist'
+             ORDER BY dca.created_at DESC LIMIT 1",
+            [$device['id']]
+        );
+
+        if ($assignment) {
+            $playlistItems = json_decode($assignment['items'] ?? '[]', true) ?: [];
+        }
+
+        if (empty($playlistItems) && !empty($device['current_playlist_id'])) {
+            $playlist = $db->fetch("SELECT items FROM playlists WHERE id = ?", [$device['current_playlist_id']]);
+            if ($playlist) {
+                $playlistItems = json_decode($playlist['items'] ?? '[]', true) ?: [];
+            }
+        }
+
+        $mediaIds = [];
+        foreach ($playlistItems as $item) {
+            $itemType = $item['type'] ?? '';
+            $mediaId = $item['media_id'] ?? $item['id'] ?? null;
+            if ($itemType === 'video' && $mediaId) {
+                $mediaIds[] = (string)$mediaId;
+            }
+        }
+        $mediaIds = array_values(array_unique($mediaIds));
+        if (empty($mediaIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($mediaIds), '?'));
+        $params = array_merge([(string)$device['company_id']], $mediaIds);
+
+        $rows = $db->fetchAll(
+            "SELECT profile, COUNT(*) as cnt
+             FROM transcode_variants
+             WHERE company_id = ? AND status = 'ready' AND media_id IN ($placeholders)
+             GROUP BY profile",
+            $params
+        );
+
+        $available = [];
+        foreach ($rows as $row) {
+            $profile = strtolower((string)($row['profile'] ?? ''));
+            if ($profile !== '') {
+                $available[$profile] = (int)($row['cnt'] ?? 0);
+            }
+        }
+
+        return $available;
+    }
+}
+
+if (!function_exists('streamPlaylistSelectProfile')) {
+    function streamPlaylistSelectProfile(array $availableProfiles, string $requestedProfile, string $autoProfile): string
+    {
+        $allowed = ['360p', '540p', '720p', '1080p'];
+        $requested = strtolower(trim($requestedProfile));
+        $auto = strtolower(trim($autoProfile));
+
+        if (!in_array($auto, $allowed, true)) {
+            $auto = '720p';
+        }
+
+        if (empty($availableProfiles)) {
+            return in_array($requested, $allowed, true) ? $requested : $auto;
+        }
+
+        if (in_array($requested, $allowed, true) && isset($availableProfiles[$requested])) {
+            return $requested;
+        }
+        if (isset($availableProfiles[$auto])) {
+            return $auto;
+        }
+
+        $fallbackOrder = [
+            '1080p' => ['720p', '540p', '360p'],
+            '720p' => ['540p', '360p', '1080p'],
+            '540p' => ['360p', '720p', '1080p'],
+            '360p' => ['540p', '720p', '1080p'],
+        ];
+
+        foreach ($fallbackOrder[$auto] as $candidate) {
+            if (isset($availableProfiles[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        foreach (['720p', '540p', '360p', '1080p'] as $candidate) {
+            if (isset($availableProfiles[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return $auto;
+    }
+}
+
 $token = $request->getRouteParam('token');
 if (!$token) {
     http_response_code(400);
@@ -94,7 +203,9 @@ $companyName = streamResolveCompanyName($db, $device['company_id'] ?? null);
 $streamLabel = streamBuildDisplayLabel($companyName, $device['name'] ?? 'player');
 $baseUrl = streamResolveBaseUrl();
 $requestedProfile = (string)$request->query('profile', '');
-$selectedProfile = streamPlaylistResolveProfile($device, $requestedProfile);
+$autoProfile = streamPlaylistResolveProfile($device, '');
+$availableProfiles = streamPlaylistResolveAvailableProfiles($db, $device);
+$selectedProfile = streamPlaylistSelectProfile($availableProfiles, $requestedProfile, $autoProfile);
 $targetUrl = $baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8';
 $showLabelRaw = strtolower((string)$request->query('label', '0'));
 $showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
@@ -126,6 +237,8 @@ if ($isRedirectMode) {
     header('Access-Control-Allow-Origin: *');
     header('X-Stream-Profile: ' . $selectedProfile);
     header('X-Stream-Target: ' . $targetUrl);
+    header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
+    header('X-Stream-Profile-Auto: ' . $autoProfile);
     header('Location: ' . $targetUrl, true, 302);
     exit;
 }
@@ -159,4 +272,6 @@ header('Access-Control-Allow-Origin: *');
 header('X-Stream-Label: ' . $streamLabel);
 header('X-Stream-Profile: ' . $selectedProfile);
 header('X-Stream-Target: ' . $targetUrl);
+header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
+header('X-Stream-Profile-Auto: ' . $autoProfile);
 echo implode("\r\n", $lines);

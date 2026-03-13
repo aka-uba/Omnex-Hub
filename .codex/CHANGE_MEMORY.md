@@ -2899,3 +2899,24 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
   - Restore not required.
+## 2026-03-13 - profile-aware availability fallback (fix 1080 dead links)
+- Request context:
+  - VLC link'i 1080p variant'e gidip acilamiyor; kullanici cihaza gore otomatik profile secimini korumak istiyor.
+- Root cause:
+  - Frontend link uretimi cihaz profile'ini 1080p seciyor ancak aktif playlistte hazir 1080p transcode olmayabiliyor.
+- Changes:
+  - `api/stream/playlist.php`
+    - Aktif playlistteki video media'lar icin `transcode_variants` tablosundan hazir profiller tespit edilir.
+    - Secim algoritmasi: requested profile -> device auto profile -> fallback order (720/540/360/1080) ile mevcut profile secilir.
+    - `mode=redirect` ile link dogrudan secilen variant'e yonlenir, ama secilen profile artik mevcutluk kontrolunden gecer.
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Copy link artik backend resolver endpointini (`playlist.m3u?mode=redirect&label=0`) kopyalar; frontend tarafinda yanlis profile sabitlemez.
+    - Download m3u de ayni resolver endpointten profile parametresi vermeden uretilir (backend mevcut profile secer).
+- Checks:
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Cihazda hic ready transcode yoksa endpoint yine oynatilamaz; bu durumda transcode queue ve hazir profile kontrolu gerekir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
+  - Restore not required.

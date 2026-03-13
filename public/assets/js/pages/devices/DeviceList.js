@@ -1033,6 +1033,7 @@ export class DeviceListPage {
         if (options.download) params.set('download', '1');
         if (options.profile) params.set('profile', String(options.profile));
         if (options.label === false) params.set('label', '0');
+        if (options.mode) params.set('mode', String(options.mode));
         const qs = params.toString();
 
         return `${baseUrl}/api/stream/${token}/playlist.m3u${qs ? `?${qs}` : ''}`;
@@ -1107,8 +1108,8 @@ export class DeviceListPage {
             Toast.error(this.__('stream.noToken'));
             return;
         }
-        const selectedProfile = this.resolveStreamProfile(device);
-        const streamUrl = this.getStreamVariantUrl(device, selectedProfile);
+        // Always copy through resolver endpoint so backend can choose available profile fallback.
+        const streamUrl = this.getStreamPlaylistUrl(device, { mode: 'redirect', label: false });
         navigator.clipboard.writeText(streamUrl).then(() => {
             Toast.success(this.__('stream.copied'));
         }).catch(() => {
@@ -1129,10 +1130,8 @@ export class DeviceListPage {
             return;
         }
 
-        const selectedProfile = this.resolveStreamProfile(device);
         const playlistUrl = this.getStreamPlaylistUrl(device, {
             download: true,
-            profile: selectedProfile,
             label: false
         });
         const anchor = document.createElement('a');
