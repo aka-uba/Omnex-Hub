@@ -3086,3 +3086,40 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/20260313_042030-crud-hardening-pass2
   - Restore not required.
+## 2026-03-13 - Android player wizard visual restore + APK v2.8.4 release package update
+- Request context:
+  - Kullanici wizard tasariminin eski animasyonlu/ikonlu haline geri alinmasini, sadece arka planin player tema stilinde kalmasini ve yeni APK'nin downloads/update.json ile yayinlanmasini istedi.
+- Changes:
+  - Local Android source (gitignore kapsaminda, release build icin):
+    - ndroid-player/omnex-player-app/app/src/main/java/com/omnex/player/WizardActivity.kt
+      - Animasyonlu adim gecisleri + icon_pulse geri alindi.
+      - Yerel ag hostlari icin http, digerleri icin https secen URL normalizasyonu korundu.
+    - Wizard layout/icon dosyalari animasyonlu tasarim referansina gore geri alindi:
+      - es/layout/activity_wizard_mobile.xml
+      - es/layout-land/activity_wizard_mobile.xml
+      - es/layout/activity_wizard_tv.xml
+      - es/drawable/wizard_welcome.xml
+      - es/drawable/wizard_server.xml
+      - es/drawable/wizard_ready.xml
+      - es/anim/icon_pulse.xml (eklendi)
+      - es/anim/splash_logo_enter.xml (eklendi)
+    - Arka plan drawables player stilinde mevcut halleriyle korunmustur:
+      - es/drawable/wizard_mobile_background.xml
+      - es/drawable/wizard_mobile_card_bg.xml
+      - es/drawable/wizard_card_bg.xml
+    - Build version guncellendi: ersionCode 28, ersionName 2.8.4 (ndroid-player/omnex-player-app/app/build.gradle).
+  - Tracked release artifacts:
+    - downloads/omnex-player.apk guncellendi.
+    - public/downloads/omnex-player.apk guncellendi.
+    - downloads/update.json guncellendi.
+    - public/downloads/update.json guncellendi.
+    - Versioned kopyalar olusturuldu: downloads/omnex-player-standalone-v2.8.4.apk, public/downloads/omnex-player-standalone-v2.8.4.apk.
+- Checks:
+  - ./gradlew.bat publishDebugApk (android-player/omnex-player-app)
+  - apt dump badging downloads/omnex-player.apk -> ersionCode='28', ersionName='2.8.4'
+  - Get-FileHash downloads/omnex-player.apk -Algorithm SHA256 -> d611a2a43dbaa9d994235d7c50373079f6ac9dc789ec1854b6d03915fd501229
+- Risks/Follow-up:
+  - Android kaynak klasoru gitignore altinda oldugu icin tasarim kaynak degisiklikleri repoya gitmez; dagitim APK dosyalari ve update.json uzerinden yapilir.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/20260313_044404-android-wizard-restore
+  - Restore not required.
