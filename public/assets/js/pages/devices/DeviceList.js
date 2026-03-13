@@ -593,7 +593,7 @@ export class DeviceListPage {
                 {
                     name: 'download-stream-playlist',
                     icon: 'ti-download',
-                    label: `${this.__('common.download')} M3U`,
+                    label: `${this.__('actions.download')} M3U`,
                     class: 'btn-ghost text-info',
                     visible: (row) => (row.model === 'stream_player' || Number(row.stream_mode) === 1) && row.stream_token,
                     onClick: (row) => this.downloadStreamPlaylist(row)

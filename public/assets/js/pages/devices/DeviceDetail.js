@@ -842,7 +842,7 @@ export class DeviceDetailPage {
                                 <button class="btn btn-sm btn-outline" id="copy-stream-url-btn" title="${this.__('stream.copyUrl')}">
                                     <i class="ti ti-copy"></i>
                                 </button>
-                                <a class="btn btn-sm btn-outline" id="download-stream-playlist-btn" href="${streamDownloadUrl}" target="_blank" rel="noopener" title="${this.__('common.download')} M3U">
+                                <a class="btn btn-sm btn-outline" id="download-stream-playlist-btn" href="${streamDownloadUrl}" target="_blank" rel="noopener" title="${this.__('actions.download')} M3U">
                                     <i class="ti ti-download"></i>
                                 </a>
                             </div>
