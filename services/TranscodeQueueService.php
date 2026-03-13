@@ -441,7 +441,7 @@ class TranscodeQueueService
                 $cid = $v['company_id'];
 
                 // Mevcut variant dosyalarini ve DB kayitlarini temizle
-                $this->cleanupVariants($mid);
+                $this->cleanupMedia($mid);
 
                 // Yeni transcode kuyruğuna ekle
                 $this->enqueue($mid, $cid, null);
