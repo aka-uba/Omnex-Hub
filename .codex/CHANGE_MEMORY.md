@@ -3192,3 +3192,33 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/Api.js.20260313_051618.notifications-auth-precheck.bak
   - Restore not required.
+
+## 2026-03-13 - Stream gecis donmasi + efekt tutarsizligi + siyah ekran fix
+
+- Request: VLC stream gecislerinde donma, playlist efektleri tutarsiz, PWA siyah ekran sorunu
+- Root causes:
+  1. variant.php: MEDIA-SEQUENCE dongu gecisinde geriye atliyordu (HLS spec ihlali)
+  2. player.js: releaseResolvedTransitionType() exit+enter icin 2 kez cagriliyordu
+  3. player.css: #video-content-alt.loading kurali eksikti, z-index sifirlaniyordu
+- Changes:
+  - api/stream/variant.php
+    - globalMediaSequence: elapsed zamani / ortalama segment suresi bazli monoton artan hesaplama
+    - EXT-X-TARGETDURATION: sabit 6 yerine segmentlerdeki max surenin ceil degeri
+  - public/player/assets/js/player.js
+    - applyExitTransition: releaseResolvedTransitionType kaldirildi (sadece enter'da)
+    - applyEnterTransition: enterElement.style.zIndex='' satiri kaldirildi
+    - visibilitychange: video pause/resume eklendi (tab gecisinde siyah ekran onlemi)
+  - public/player/assets/css/player.css
+    - #video-content-alt.loading { visibility: hidden } eklendi
+    - .content-item { z-index: 0 } base katman eklendi
+- Checks:
+  - php -l api/stream/variant.php -> OK
+  - node -e "new Function(code)" player.js -> OK
+- Risks/Follow-up:
+  - VLC'de stream gecisi test edilmeli (playlist dongusu)
+  - PWA'da tab gecisi test edilmeli
+  - random-safe efekt modu regresyon testi
+- Backup/Restore Safety:
+  - api/stream/variant.php.bak_streamfix_20260313
+  - public/player/assets/js/player.js.bak_streamfix_20260313
+  - public/player/assets/css/player.css.bak_streamfix_20260313

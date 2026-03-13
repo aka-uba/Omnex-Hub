@@ -194,19 +194,32 @@ $halfWindow = (int)floor($windowSize / 2);
 // Bos pencere yok - her zaman windowSize kadar segment goster
 $windowStart = $currentSegmentIndex - $halfWindow;
 
-// Global media sequence: dongu sayisi * total + pencere baslangici
-$globalMediaSequence = $completedLoops * $totalSegmentCount + $currentSegmentIndex - $halfWindow;
-if ($globalMediaSequence < 0) {
-    $globalMediaSequence = 0;
-}
+// Global media sequence: monoton artan (HLS spec gereksinimi)
+// windowStart negatif olabilir (currentSegmentIndex < halfWindow),
+// ama global sequence her zaman pozitif ve artan olmali.
+// elapsed/segmentDuration toplam gecen segment sayisini verir - bu her zaman artar.
+$elapsedSegments = 0;
+$accTime = 0.0;
+$avgSegDur = $totalDuration / $totalSegmentCount;
+$elapsedSegments = (int)floor((float)$elapsed / $avgSegDur);
+$globalMediaSequence = max(0, $elapsedSegments - $halfWindow);
 
 // ====================================================================
 // HLS playlist ciktisi (LIVE mod - EXT-X-ENDLIST YOK)
 // ====================================================================
+// EXT-X-TARGETDURATION: segmentlerdeki maksimum surenin ceil degeri (HLS spec)
+$maxSegDuration = 0.0;
+foreach ($allSegments as $seg) {
+    if ($seg['duration'] > $maxSegDuration) {
+        $maxSegDuration = $seg['duration'];
+    }
+}
+$targetDuration = (int)ceil($maxSegDuration > 0 ? $maxSegDuration : $segmentDuration);
+
 $lines = [
     "#EXTM3U",
     "#EXT-X-VERSION:3",
-    "#EXT-X-TARGETDURATION:{$segmentDuration}",
+    "#EXT-X-TARGETDURATION:{$targetDuration}",
     "#EXT-X-MEDIA-SEQUENCE:{$globalMediaSequence}",
     ""
 ];

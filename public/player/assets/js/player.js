@@ -2639,7 +2639,9 @@ class OmnexPlayer {
                     this._cleanupVideoElement(exitElement, true);
                 }
             }
-            this.releaseResolvedTransitionType();
+            // releaseResolvedTransitionType() buradan kaldirildi.
+            // Exit ve enter ayni resolved type'i paylasir; release sadece
+            // applyEnterTransition() sonunda yapilir (tek nokta).
         }, duration);
     }
 
@@ -2671,8 +2673,9 @@ class OmnexPlayer {
             const enterElement = element;
             setTimeout(() => {
                 this.clearTransitionClasses(enterElement);
-                // Reset z-index after transition
-                enterElement.style.zIndex = '';
+                // z-index temizlemeyi kaldir: CSS .content-item base z-index:0
+                // sağlar, transition class'lari kaldiginda CSS z-index devralir.
+                // Inline style silmek icerik katmanini arka plana dusuruyordu.
                 this.releaseResolvedTransitionType();
             }, this._transitionDuration);
         } else {
@@ -4655,12 +4658,20 @@ class OmnexPlayer {
 
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
-                // âœ… iOS PWA FIX: App backgrounded - pause heartbeat
+                // iOS PWA FIX: App backgrounded - pause heartbeat + video
                 this.pauseHeartbeat();
-                if (this.debug) console.log('[Player] App backgrounded - heartbeat paused');
+                const activeVideo = this.getActiveVideoElement();
+                if (activeVideo && !activeVideo.paused) {
+                    activeVideo.pause();
+                }
+                if (this.debug) console.log('[Player] App backgrounded - heartbeat & video paused');
             } else {
-                // âœ… iOS PWA FIX: App foregrounded - resume and sync
+                // iOS PWA FIX: App foregrounded - resume heartbeat + video + sync
                 this.resumeHeartbeat();
+                const activeVideo = this.getActiveVideoElement();
+                if (activeVideo && activeVideo.paused && activeVideo.readyState >= 2) {
+                    activeVideo.play().catch(() => {});
+                }
                 this.syncContent();
                 if (this.debug) console.log('[Player] App foregrounded - syncing playlist');
                 this.sendHeartbeat();

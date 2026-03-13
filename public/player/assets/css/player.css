@@ -643,7 +643,8 @@ video::-ms-media-controls {
 }
 
 /* Hide video while loading/buffering - prevents flash of play button */
-#video-content.loading {
+#video-content.loading,
+#video-content-alt.loading {
     visibility: hidden;
 }
 
@@ -1200,6 +1201,7 @@ video::poster {
 
 .content-item {
     transition: opacity 0.5s ease;
+    z-index: 0; /* Base katman - gecis sonrasi icerik arka plana dusmesin */
 }
 
 .content-item.transition-enter,
