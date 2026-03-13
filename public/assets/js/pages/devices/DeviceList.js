@@ -1103,12 +1103,44 @@ export class DeviceListPage {
         return `${baseUrl}/api/stream/${token}/variant/${profile}/playlist.m3u8`;
     }
 
-    copyStreamUrl(device) {
+    async resolveDirectStreamUrl(device) {
+        const fallbackProfile = this.resolveStreamProfile(device);
+        const fallbackVariantUrl = this.getStreamVariantUrl(device, fallbackProfile);
+        const resolverUrl = this.getStreamPlaylistUrl(device, { mode: 'redirect', label: false });
+
+        if (!resolverUrl) {
+            return fallbackVariantUrl;
+        }
+
+        try {
+            const response = await fetch(resolverUrl, {
+                method: 'GET',
+                redirect: 'follow',
+                cache: 'no-store'
+            });
+
+            const targetHeader = response.headers?.get('X-Stream-Target');
+            const resolvedUrl = (response.url || '').trim();
+
+            if (resolvedUrl && resolvedUrl.includes('/variant/') && resolvedUrl.endsWith('/playlist.m3u8')) {
+                return resolvedUrl;
+            }
+            if (targetHeader && targetHeader.includes('/variant/') && targetHeader.endsWith('/playlist.m3u8')) {
+                return targetHeader;
+            }
+        } catch (error) {
+            Logger.warning('Stream resolver fallback used', error);
+        }
+
+        return fallbackVariantUrl;
+    }
+
+    async copyStreamUrl(device) {
         if (!device.stream_token) {
             Toast.error(this.__('stream.noToken'));
             return;
         }
-        const streamUrl = this.getStreamPlaylistUrl(device);
+        const streamUrl = await this.resolveDirectStreamUrl(device);
         navigator.clipboard.writeText(streamUrl).then(() => {
             Toast.success(this.__('stream.copied'));
         }).catch(() => {
@@ -1123,20 +1155,29 @@ export class DeviceListPage {
         });
     }
 
-    downloadStreamPlaylist(device) {
+    async downloadStreamPlaylist(device) {
         if (!device.stream_token) {
             Toast.error(this.__('stream.noToken'));
             return;
         }
 
-        const playlistUrl = this.getStreamPlaylistUrl(device, { download: true });
+        const directUrl = await this.resolveDirectStreamUrl(device);
+        const lines = ['#EXTM3U', '#EXTINF:0,', directUrl, ''];
+        const content = lines.join('\n');
+        const blob = new Blob([content], { type: 'application/x-mpegURL;charset=utf-8' });
+        const objectUrl = URL.createObjectURL(blob);
+        const safeName = String(device?.name || 'omnex-stream')
+            .toLowerCase()
+            .replace(/[^a-z0-9-_]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
         const anchor = document.createElement('a');
-        anchor.href = playlistUrl;
-        anchor.target = '_blank';
-        anchor.rel = 'noopener';
+        anchor.href = objectUrl;
+        anchor.download = `${safeName || 'omnex-stream'}.m3u`;
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
+        URL.revokeObjectURL(objectUrl);
     }
 
     showHistory(device) {

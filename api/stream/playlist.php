@@ -288,13 +288,15 @@ try {
 
 $lines = [
     '#EXTM3U',
-    '#EXTINF:-1,' . $extInfTitle,
+    '#EXTINF:0,' . $extInfTitle,
     $targetUrl,
     '',
 ];
 
-header('Content-Type: audio/x-mpegurl');
-header('Content-Disposition: ' . $contentDisposition . '; filename="' . streamBuildSafeFilename($streamLabel, 'm3u') . '"');
+header('Content-Type: application/x-mpegURL; charset=utf-8');
+if ($isDownload) {
+    header('Content-Disposition: ' . $contentDisposition . '; filename="' . streamBuildSafeFilename($streamLabel, 'm3u') . '"');
+}
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
 header('X-Stream-Label: ' . $streamLabel);
@@ -302,4 +304,4 @@ header('X-Stream-Profile: ' . $selectedProfile);
 header('X-Stream-Target: ' . $targetUrl);
 header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
 header('X-Stream-Profile-Auto: ' . $autoProfile);
-echo implode("\r\n", $lines);
+echo implode("\n", $lines);

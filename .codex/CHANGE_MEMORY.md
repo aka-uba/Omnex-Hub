@@ -2941,3 +2941,26 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_030838-stream-master-regression-fix`
   - Restore not required.
+## 2026-03-13 - IPTV direct-variant resolution and M3U compatibility hardening
+- Request context:
+  - IPTV tarafinda wrapper playlist link/file acilmiyor; ayni tokenin direct `variant/720p/playlist.m3u8` linki calisiyor.
+- Root cause hypothesis:
+  - Bazi IPTV istemcileri nested `.m3u` -> `.m3u8` akisinda veya HTTP header/format farklarinda (inline disposition / CRLF / redirect handling) kirilabiliyor.
+- Changes:
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Yeni `resolveDirectStreamUrl()` eklendi: backend resolver (`playlist.m3u?mode=redirect&label=0`) cagrilip final `variant/*.m3u8` URL'i cozuluyor.
+    - `copyStreamUrl()` artik resolved direct variant URL'i kopyaliyor.
+    - `downloadStreamPlaylist()` artik client-side `.m3u` dosyasi uretiyor ve icine direct variant URL yaziyor (nested wrapper bagimliligi kaldirildi).
+  - `api/stream/playlist.php`
+    - M3U satiri `#EXTINF:0` olarak sadeleþtirildi.
+    - Satir sonlari `\n` yapildi.
+    - Content-Type `application/x-mpegURL; charset=utf-8` oldu.
+    - `Content-Disposition` sadece `download=1` durumunda set ediliyor.
+- Checks:
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Cok kati IPTV parser'larinda yine profile uyumsuzlugu olursa profile pin (`?profile=720p`) secenegi UI'da opsiyonel acilabilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_032655-iptv-direct-variant-resolve`
+  - Restore not required.
