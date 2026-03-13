@@ -2964,3 +2964,17 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_032655-iptv-direct-variant-resolve`
   - Restore not required.
+## 2026-03-13 - VLC title fallback suppression on stream transitions
+- Request context:
+  - IPTV dosya/link sorununa ek olarak VLC'de video gecislerinde dosya/URL adi yeniden gorunmeye basladi.
+- Changes:
+  - `api/stream/master.php`
+    - Master playlist'e tekrar `#EXT-X-SESSION-DATA:DATA-ID="com.omnex.stream.title"` satiri eklendi (stream label escaped).
+    - HTTP response'tan `Content-Disposition` kaldirildi (VLC'nin dosya adi fallback olasiligini azaltmak icin).
+- Checks:
+  - `php -l api/stream/master.php`
+- Risks/Follow-up:
+  - Bazi istemciler session-data tag'ini ignore eder; bu durumda ad fallback'i istemci tarafi ayariyla da etkilenebilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_033854-vlc-title-suppression`
+  - Restore not required.

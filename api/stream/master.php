@@ -320,9 +320,16 @@ uksort($availableProfiles, static function ($left, $right) use ($availableProfil
 });
 
 // HLS master playlist ciktisi
+$streamLabelEscaped = str_replace(
+    ['\\', '"'],
+    ['\\\\', '\\"'],
+    (string)$streamLabel
+);
+
 $lines = [
     "#EXTM3U",
     "#EXT-X-VERSION:3",
+    "#EXT-X-SESSION-DATA:DATA-ID=\"com.omnex.stream.title\",VALUE=\"{$streamLabelEscaped}\"",
     "",
 ];
 
@@ -365,7 +372,6 @@ try {
 
 // M3U8 response
 header('Content-Type: application/vnd.apple.mpegurl');
-header('Content-Disposition: inline; filename="' . streamBuildSafeFilename($streamLabel, 'm3u8') . '"');
 header('X-Stream-Label: ' . $streamLabel);
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');
