@@ -49,11 +49,23 @@
         "transitions": {
             "none": "Aucune",
             "fade": "Fondu",
+            "crossfade": "Fondu enchaîné",
             "slideLeft": "Glissement gauche",
             "slideRight": "Glissement droite",
             "slideUp": "Glissement haut",
             "slideDown": "Glissement bas",
-            "zoom": "Zoom"
+            "pushLeft": "Poussée gauche",
+            "pushRight": "Poussée droite",
+            "pushUp": "Poussée haut",
+            "pushDown": "Poussée bas",
+            "wipeLeft": "Balayage gauche",
+            "wipeRight": "Balayage droite",
+            "wipeUp": "Balayage haut",
+            "wipeDown": "Balayage bas",
+            "zoom": "Zoom",
+            "zoomIn": "Zoom avant",
+            "zoomOut": "Zoom arrière",
+            "randomSafe": "Aléatoire sûr"
         },
         "form": {
             "fields": {

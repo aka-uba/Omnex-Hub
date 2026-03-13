@@ -49,11 +49,23 @@
         "transitions": {
             "none": "Yok",
             "fade": "Solma",
+            "crossfade": "Çapraz Geçiş",
             "slideLeft": "Sola Kayma",
             "slideRight": "Sağa Kayma",
             "slideUp": "Yukarı Kayma",
             "slideDown": "Aşağı Kayma",
-            "zoom": "Yakınlaştırma"
+            "pushLeft": "Sola İtme",
+            "pushRight": "Sağa İtme",
+            "pushUp": "Yukarı İtme",
+            "pushDown": "Aşağı İtme",
+            "wipeLeft": "Sola Silme",
+            "wipeRight": "Sağa Silme",
+            "wipeUp": "Yukarı Silme",
+            "wipeDown": "Aşağı Silme",
+            "zoom": "Yakınlaştırma",
+            "zoomIn": "Yakınlaşma",
+            "zoomOut": "Uzaklaşma",
+            "randomSafe": "Güvenli Rastgele"
         },
         "form": {
             "fields": {

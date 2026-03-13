@@ -49,11 +49,23 @@
         "transitions": {
             "none": "Keine",
             "fade": "Einblenden",
+            "crossfade": "Überblenden",
             "slideLeft": "Nach links schieben",
             "slideRight": "Nach rechts schieben",
             "slideUp": "Nach oben schieben",
             "slideDown": "Nach unten schieben",
-            "zoom": "Zoomen"
+            "pushLeft": "Nach links drücken",
+            "pushRight": "Nach rechts drücken",
+            "pushUp": "Nach oben drücken",
+            "pushDown": "Nach unten drücken",
+            "wipeLeft": "Nach links wischen",
+            "wipeRight": "Nach rechts wischen",
+            "wipeUp": "Nach oben wischen",
+            "wipeDown": "Nach unten wischen",
+            "zoom": "Zoomen",
+            "zoomIn": "Hineinzoomen",
+            "zoomOut": "Herauszoomen",
+            "randomSafe": "Sicherer Zufall"
         },
         "form": {
             "fields": {

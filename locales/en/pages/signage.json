@@ -49,11 +49,23 @@
         "transitions": {
             "none": "None",
             "fade": "Fade",
+            "crossfade": "Crossfade",
             "slideLeft": "Slide Left",
             "slideRight": "Slide Right",
             "slideUp": "Slide Up",
             "slideDown": "Slide Down",
-            "zoom": "Zoom"
+            "pushLeft": "Push Left",
+            "pushRight": "Push Right",
+            "pushUp": "Push Up",
+            "pushDown": "Push Down",
+            "wipeLeft": "Wipe Left",
+            "wipeRight": "Wipe Right",
+            "wipeUp": "Wipe Up",
+            "wipeDown": "Wipe Down",
+            "zoom": "Zoom",
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "randomSafe": "Safe Random"
         },
         "form": {
             "fields": {
