@@ -10,7 +10,7 @@ $db = Database::getInstance();
 $service = new TranscodeQueueService();
 
 // Transcode edilmemis videolar
-$all = $db->fetchAll("SELECT id, file_name, company_id, scope FROM media WHERE file_type = 'video' ORDER BY scope, company_id");
+$all = $db->fetchAll("SELECT id, name, original_name, company_id, scope FROM media WHERE file_type = 'video' ORDER BY scope, company_id");
 $queued = 0;
 $skipped = 0;
 $errors = [];
@@ -23,8 +23,8 @@ foreach ($all as $v) {
     $mediaId = $v['id'];
 
     // Zaten transcode edilmis veya kuyrukta mi?
-    $hasVariants = $db->fetch("SELECT COUNT(*) as c FROM transcode_variants WHERE media_id = ?", [$mediaId]);
-    $hasQueue = $db->fetch("SELECT COUNT(*) as c FROM transcode_queue WHERE media_id = ? AND status IN ('pending','processing')", [$mediaId]);
+    $hasVariants = $db->fetch("SELECT COUNT(*) as c FROM transcode_variants WHERE media_id = CAST(? AS TEXT)", [$mediaId]);
+    $hasQueue = $db->fetch("SELECT COUNT(*) as c FROM transcode_queue WHERE media_id = CAST(? AS TEXT) AND status IN ('pending','processing')", [$mediaId]);
 
     if ((int)($hasVariants['c'] ?? 0) > 0 || (int)($hasQueue['c'] ?? 0) > 0) {
         continue; // Zaten mevcut, atla
@@ -33,7 +33,7 @@ foreach ($all as $v) {
     // company_id coz
     $companyId = $v['company_id'] ?? $fallbackCompanyId;
     if (!$companyId) {
-        $errors[] = $v['file_name'] . ': company_id bulunamadi';
+        $errors[] = ($v['original_name'] ?? $v['name'] ?? $v['id']) . ': company_id bulunamadi';
         $skipped++;
         continue;
     }
@@ -41,11 +41,11 @@ foreach ($all as $v) {
     try {
         $service->enqueue($mediaId, $companyId, null);
         $queued++;
-        echo "[QUEUED] " . $v['file_name'] . " (scope:" . ($v['scope'] ?? 'null') . ")" . PHP_EOL;
+        echo "[QUEUED] " . ($v['original_name'] ?? $v['name'] ?? $v['id']) . " (scope:" . ($v['scope'] ?? 'null') . ")" . PHP_EOL;
     } catch (\Throwable $e) {
         $skipped++;
-        $errors[] = $v['file_name'] . ': ' . $e->getMessage();
-        echo "[SKIP]  " . $v['file_name'] . ': ' . $e->getMessage() . PHP_EOL;
+        $errors[] = ($v['original_name'] ?? $v['name'] ?? $v['id']) . ': ' . $e->getMessage();
+        echo "[SKIP]  " . ($v['original_name'] ?? $v['name'] ?? $v['id']) . ': ' . $e->getMessage() . PHP_EOL;
     }
 }
 
