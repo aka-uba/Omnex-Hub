@@ -154,6 +154,9 @@ $totalDuration = 0.0;
 foreach ($allSegments as $seg) {
     $totalDuration += $seg['duration'];
 }
+if ($totalDuration <= 0) {
+    $totalDuration = (float)$segmentDuration * max(1, $totalSegmentCount);
+}
 
 // stream_started_at referans zamani (yoksa simdi set et)
 $streamStarted = $device['stream_started_at'] ?? null;
@@ -187,7 +190,7 @@ for ($i = 0; $i < $totalSegmentCount; $i++) {
 $completedLoops = (int)floor((float)$elapsed / $totalDuration);
 
 // Window boyutu: ~6 dakika = ~60 segment (6sn per segment)
-$windowSize = 60;
+$windowSize = min(60, $totalSegmentCount);
 $halfWindow = (int)floor($windowSize / 2);
 
 // Pencere baslangici: current - halfWindow (geride biraz birakiyoruz)
@@ -197,11 +200,9 @@ $windowStart = $currentSegmentIndex - $halfWindow;
 // Global media sequence: monoton artan (HLS spec gereksinimi)
 // windowStart negatif olabilir (currentSegmentIndex < halfWindow),
 // ama global sequence her zaman pozitif ve artan olmali.
-// elapsed/segmentDuration toplam gecen segment sayisini verir - bu her zaman artar.
-$elapsedSegments = 0;
-$accTime = 0.0;
-$avgSegDur = $totalDuration / $totalSegmentCount;
-$elapsedSegments = (int)floor((float)$elapsed / $avgSegDur);
+// Burada sequence'i gercek segment ilerleyisi ile esitliyoruz.
+// Ortalama sure kullanimi degisken segmentlerde drift olusturur.
+$elapsedSegments = ($completedLoops * $totalSegmentCount) + $currentSegmentIndex;
 $globalMediaSequence = max(0, $elapsedSegments - $halfWindow);
 
 // ====================================================================
@@ -250,8 +251,10 @@ try {
     );
 } catch (\Exception $e) {}
 
-// Cache: 3 saniye (player bu aralikla yeniden cekmeli)
+// Live HLS playlist cache'lenmemeli (VLC/PWA eski m3u8 tutmasin)
 header('Content-Type: application/vnd.apple.mpegurl');
-header('Cache-Control: public, max-age=3');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 header('Access-Control-Allow-Origin: *');
 echo implode("\n", $lines);
