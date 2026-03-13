@@ -1,8 +1,8 @@
 {
-  "versionCode": 28,
-  "versionName": "2.8.4",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=28",
-  "releaseNotes": "- Wizard tasarimi animasyonlu ikonlarla geri yuklendi\n- Wizard gecis animasyonlari ve adim gostergesi geri getirildi\n- Arka plan temasi player ekrani stiliyle korundu\n- Varsayilan sunucu ve update indirme yolu mevcut haliyle korundu",
+  "versionCode": 29,
+  "versionName": "2.9.0",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=29",
+  "releaseNotes": "- Yeni animasyonlu splash ekrani (OmneX logo hareketi)\n- Ozel startup chime sesi (warm chord)\n- Baslik ve alt yazi animasyonlari eklendi\n- AnimatedVectorDrawable ile logo: C-arc donusu + 3 bar slide-in",
   "mandatory": false,
-  "sha256": "d611a2a43dbaa9d994235d7c50373079f6ac9dc789ec1854b6d03915fd501229"
+  "sha256": "f67fcaa15ddb47d60972bccdb34ded5ab74925a1e883c813a3ed4792bf19cbc5"
 }
