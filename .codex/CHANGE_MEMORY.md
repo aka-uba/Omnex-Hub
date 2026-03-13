@@ -3255,3 +3255,142 @@ Format:
     - .codex/tmp_backups/sw.js.20260314_001433.vlcfix.bak
     - .codex/tmp_backups/player.js.20260314_001433.vlcfix.bak
   - Restore not required.
+
+## 2026-03-14 - Sync race guard (pre-commit step)
+- Request context:
+  - Kullanici, PWA'da animasyon gecisi sonrasi icerigin gorunmemesi sorununun devam ettigini; console loglarinda arka plana gecis/geri donus ve sync hash satirlarini paylasti.
+- Findings:
+  - `syncContent()` ayni anda birden fazla kaynaktan tetikleniyor (visibilitychange, periodik sync, SW message).
+  - Karsilastirma degiskenlerinin bir kismi await oncesi, hash hesabi await sonrasi alindigi icin race durumunda yalanci `playlistChanged/itemsChanged/configChanged` olusabiliyor.
+  - Yalanci degisiklik algisi `stopPlayback()+startPlayback()` dalini gereksiz tetikleyip gecis sirasinda gorunurluk/siyah ekran etkisi uretebiliyor.
+- Changes:
+  - public/player/assets/js/player.js
+    - Sync race engeli icin `_syncInFlight`, `_queuedSyncPending`, `_queuedSyncForceRestart` eklendi.
+    - In-flight iken gelen sync istekleri tek bir kuyruða birlestirildi (coalesced follow-up sync).
+    - Karsilastirma snapshot'i tek noktadan alinacak sekilde current playlist/hash/signature hesaplamasi normalize edildi.
+- Checks:
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - Bu adim concurrency kaynakli yalanci restart'lari hedefler; eger siyah ekran devam ederse ikinci adimda transition class/visibility state'i runtime log ile daha derin izlenmeli.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/player.js.20260314_003246.sync-lock-investigation.bak
+  - Restore not required.
+
+## 2026-03-14 - PWA transition visibility/z-index deep debug instrumentation
+- Request context:
+  - Kullanici, PWA'da efekt gecisinden sonra icerik gorunmemesi sorunu icin z-index/visibility odakli derin debug istedi.
+- Findings:
+  - Console akisi, visibilitychange + sync tetiklemeleri ve transition sirasinda katman durumunun anlik izlenmesine ihtiyac oldugunu gosteriyor.
+- Changes:
+  - public/player/assets/js/player.js
+    - `_debugBuildElementState()` eklendi: display/visibility/opacity/z-index (inline+computed), animation state, rect, video runtime state.
+    - `_debugDumpLayerState()` eklendi: tum ana katmanlar + merkez noktadaki top element snapshot.
+    - Debug snapshot noktalarina enstrumantasyon eklendi:
+      - hideAllContent basi/sonu
+      - applyExitTransition basi/sonu
+      - applyEnterTransition basi/sonu
+      - revealVideoElement anlik + transition-sonrasi
+      - visibilitychange hidden/visible once-sonra
+- Checks:
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - Debug mode acikken log hacmi yuksek olur; sorun tespitinden sonra bu enstrumantasyon sadeleþtirilmeli.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
+  - Restore not required.
+
+## 2026-03-14 - Transition duplicate reveal guard + timer dedupe
+- Request context:
+  - Kullanici, hem browser hem PWA modunda gecis sonrasi gorunurluk sorununu tekrar test etti; loglarda ayni item icin coklu `reveal-video` ve `enter-transition-start` tetiklenmesi goruldu.
+- Findings:
+  - Video event callback'leri (onplay/onplaying/onloadeddata/canplaythrough/promise.then) ayni item icin art arda `revealVideoElement()` cagiriyor.
+  - Bu tekrarlar ayni elemana birden fazla enter transition timeout'u baglayip katman durumunu bozabiliyor.
+- Changes:
+  - public/player/assets/js/player.js
+    - Transition timeout dedupe eklendi (`_enterTransitionTimers`, `_exitTransitionTimers`).
+    - `_cleanupVideoElement()` icinde pending enter/exit timeout temizligi eklendi.
+    - `revealVideoElement()` duplicate guard eklendi (`reveal-video-skip-duplicate`).
+    - Enter transition sadece gercekten yeni reveal durumunda calisacak sekilde kosullandirildi.
+  - public/player/index.html
+    - Player module query version `v=43 -> v=44` guncellendi.
+- Checks:
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - Debug enstrumantasyonu halen acik; kok neden kapandiktan sonra loglar sadeleþtirilmeli.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
+  - Restore not required.
+
+## 2026-03-14 - Overlay mask hardening + explicit layer pinning
+- Request context:
+  - Kullanici, son loglardan sonra PWA'da efekt sonrasi videonun arkada kalmasi/maske kalmasi olasiligini bildirdi.
+- Findings:
+  - Duplicate reveal sorunu bastirilmis durumda; kalan risk overlay-mask class'inin takili kalmasi veya aktif katmanin z-index'te geride kalmasi.
+- Changes:
+  - public/player/assets/js/player.js
+    - Layer debug payload'ina `hasOverlayMask` eklendi.
+    - hideAllContent'te kapatilan elementler icin `z-index:0` netlendi.
+    - applyExitTransition'ta cikan element `z-index:1`, exit sonu `z-index:0` yapildi.
+    - applyEnterTransition'ta giren element `z-index:2` pinlendi.
+    - revealVideoElement'ta `show-overlay-mask` varsa zorla temizleniyor (`overlay-mask-force-removed` debug eventi).
+    - reveal edilen video icin `z-index:2` explicit uygulandi.
+  - public/player/index.html
+    - Player module query version `v=44 -> v=45` guncellendi.
+- Checks:
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - Sorun devam ederse sonraki adimda wipe-up etkisinin video icin clip-path fallback'e (fade) dusurulmesi degerlendirilmeli.
+- Backup/Restore Safety:
+  - Onceki debug backup'lar korunuyor (.codex/tmp_backups/player.js.*)
+  - Restore not required.
+
+## 2026-03-14 - Layer debug removal after verification
+- Request context:
+  - Kullanici, davranis duzeldigi icin eklenen PWA layer debug loglarinin kaldirilmasini istedi.
+- Findings:
+  - Son test loglarinda duplicate reveal baskilamasi, sync hash stabilitesi ve transition akisinda regrese eden belirti gorulmedi.
+- Changes:
+  - public/player/assets/js/player.js
+    - Gecici layer debug enstrumantasyonu tamamen kaldirildi (`_debugBuildElementState`, `_debugDumpLayerState` ve tum cagrilari).
+    - Fonksiyonel duzeltmeler korundu (sync race guard, duplicate reveal guard, transition timer dedupe, z-index pinning, overlay mask force remove).
+  - public/player/index.html
+    - Player module query version `v=45 -> v=46` guncellendi.
+- Checks:
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - SW'deki `Media cache results` loglari gelmeye devam eder; istenirse sonraki adimda bu loglar da debug kosuluna alinabilir.
+- Backup/Restore Safety:
+  - Onceki temp backup'lar korunuyor (.codex/tmp_backups/player.js.*)
+  - Restore not required.
+
+## 2026-03-14 - Signage refresh dedupe + Edge PWA transition fallback
+- Request context:
+  - Kullanici, signage playlist ikonlarindan refresh komutunun birden fazla tetiklendigini ve Edge PWA'da transition efektlerinin Chrome kadar tutarli uygulanmadigini bildirdi.
+  - Edit oncesi mevcut durumun saglikli notuyla temp backup alinmasi istendi.
+- Findings:
+  - Playlist komut akisinda assigned device listesinde tekrarli device_id gelirse ayni cihaza birden fazla komut gidebiliyor.
+  - UI tarafinda hizli tekrar tetiklemeleri (cift listener/cift tik) komut akisinda duplicate dispatch riski olusturuyor.
+  - Edge PWA'da wipe tabanli clip-path gecisleri video akislarda tutarsiz gorunebiliyor.
+- Changes:
+  - public/assets/js/pages/signage/PlaylistList.js
+    - `getUniqueAssignedDevices()` eklendi; komut ve cihaz listeleri device_id bazli dedupe edildi.
+    - `isDuplicatePlaylistCommandTrigger()` eklendi; kisa pencere icinde ayni playlist+komut tekrar tetikleri engellendi.
+    - `sendPlaylistCommand()` dedupe+trigger-guard kullanacak sekilde guncellendi.
+    - `sendCommandToDevices()` cagrisi oncesi `deviceIds` uniq hale getirildi.
+    - `showAssignedDevicesModal()` cihaz listesi dedupe edilerek gosterilecek sekilde guncellendi.
+  - public/player/assets/js/player.js
+    - Edge PWA tespiti eklendi (`_isEdgeBrowser`, `_isEdgePwa`).
+    - `getEdgeTransitionFallback()` eklendi; Edge PWA'da `wipe-*` gecisleri `push-*` fallback'e mapleniyor.
+    - `getResolvedTransitionType()` fallback mapper kullanacak sekilde guncellendi.
+  - public/player/index.html
+    - player module query version `v=46 -> v=47` (working tree referansi) olacak sekilde guncellendi.
+- Checks:
+  - node --check public/assets/js/pages/signage/PlaylistList.js
+  - node --check public/player/assets/js/player.js
+- Risks/Follow-up:
+  - EÄŸer Edge tarafinda bazi cihazlarda push gecisleri de tutarsiz olursa sonraki adimda Edge PWA icin gecis seti `fade/crossfade` ile daha da daraltilabilir.
+  - Signage API tarafinda duplicate assignment kaydi olusuyorsa backend tarafinda da unique constraint veya dedupe katmani ile sertlestirme dusunulmeli.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/20260314_010548_refresh-edge-healthy
+  - Not: edit oncesi "mevcut durum saglikli" notu backup klasorunde tutuldu.
+  - Restore not required.

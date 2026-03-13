@@ -90,6 +90,9 @@ class OmnexPlayer {
         this.syncCodeTimer = null;
         this.statusBarTimer = null;
         this.performanceProfile = perfProfileFromQuery || String(globalPlayerConfig.performanceProfile || 'default');
+        this._syncInFlight = false;
+        this._queuedSyncPending = false;
+        this._queuedSyncForceRestart = false;
 
         // Configuration
         this.config = {
@@ -135,10 +138,15 @@ class OmnexPlayer {
         this.videoDebugTimer = null;
         this.videoDebugOverlay = null;
         this._nativeVideoMode = false;
+        this._enterTransitionTimers = new WeakMap();
+        this._exitTransitionTimers = new WeakMap();
 
         // Dual video element ping-pong for seamless video-to-video crossfade
         this._activeVideoSlot = 'primary'; // 'primary' or 'alt'
         this._pendingExitElement = null;   // Deferred exit transition (video→video)
+        this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
+        this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
+        this._lastEdgeTransitionFallbackLog = null;
     }
 
     isLegacyProfile() {
@@ -151,6 +159,30 @@ class OmnexPlayer {
 
     isConstrainedProfile() {
         return this.isLegacyProfile() || this.isBalancedProfile();
+    }
+
+    getEdgeTransitionFallback(transitionType) {
+        if (!this._isEdgePwa || !transitionType || transitionType === 'none') {
+            return transitionType;
+        }
+
+        const fallbackMap = {
+            'wipe-left': 'push-left',
+            'wipe-right': 'push-right',
+            'wipe-up': 'push-up',
+            'wipe-down': 'push-down'
+        };
+
+        const fallbackTransition = fallbackMap[transitionType] || transitionType;
+        if (fallbackTransition !== transitionType) {
+            const fallbackLogKey = `${transitionType}->${fallbackTransition}`;
+            if (this._lastEdgeTransitionFallbackLog !== fallbackLogKey) {
+                console.log(`[Player] Edge PWA transition fallback: ${transitionType} -> ${fallbackTransition}`);
+                this._lastEdgeTransitionFallbackLog = fallbackLogKey;
+            }
+        }
+
+        return fallbackTransition;
     }
 
     /**
@@ -2554,6 +2586,7 @@ class OmnexPlayer {
             for (const el of allContent) {
                 if (el && el !== prevElement && el !== nextElement) {
                     el.style.display = 'none';
+                    el.style.zIndex = '0';
                     this.clearTransitionClasses(el);
                 }
             }
@@ -2568,6 +2601,7 @@ class OmnexPlayer {
                     continue;
                 }
                 el.style.display = 'none';
+                el.style.zIndex = '0';
                 this.clearTransitionClasses(el);
             }
         }
@@ -2619,6 +2653,7 @@ class OmnexPlayer {
         // Ensure element is visible and on a lower z-layer during exit
         element.style.display = 'block';
         element.style.visibility = 'visible';
+        element.style.zIndex = '1';
 
         // Add exit transition class
         element.classList.add('transition-exit', `${resolvedTransitionType}-exit`);
@@ -2626,7 +2661,11 @@ class OmnexPlayer {
         // Hide element after transition completes
         const duration = this._transitionDuration;
         const exitElement = element;
-        setTimeout(() => {
+        const prevTimer = this._exitTransitionTimers.get(exitElement);
+        if (prevTimer) {
+            clearTimeout(prevTimer);
+        }
+        const exitTimerId = setTimeout(() => {
             // Check if this element is now the current element (being used for new content)
             if (this._currentElement === exitElement) {
                 // Element is being reused for new content, just clear transition classes
@@ -2634,6 +2673,7 @@ class OmnexPlayer {
             } else {
                 // Element is no longer current, safe to hide
                 exitElement.style.display = 'none';
+                exitElement.style.zIndex = '0';
                 this.clearTransitionClasses(exitElement);
 
                 // If it's a video element, fully release resources after exit transition.
@@ -2646,7 +2686,9 @@ class OmnexPlayer {
             // releaseResolvedTransitionType() buradan kaldirildi.
             // Exit ve enter ayni resolved type'i paylasir; release sadece
             // applyEnterTransition() sonunda yapilir (tek nokta).
+            this._exitTransitionTimers.delete(exitElement);
         }, duration);
+        this._exitTransitionTimers.set(exitElement, exitTimerId);
     }
 
     /**
@@ -2665,6 +2707,7 @@ class OmnexPlayer {
         element.style.display = 'block';
         element.style.visibility = 'visible';
         element.style.opacity = '1';
+        element.style.zIndex = '2';
 
         if (resolvedTransitionType !== 'none') {
             // Add enter transition class (z-index: 2 via CSS)
@@ -2675,13 +2718,19 @@ class OmnexPlayer {
 
             // Remove transition classes after animation completes
             const enterElement = element;
-            setTimeout(() => {
+            const prevTimer = this._enterTransitionTimers.get(enterElement);
+            if (prevTimer) {
+                clearTimeout(prevTimer);
+            }
+            const enterTimerId = setTimeout(() => {
                 this.clearTransitionClasses(enterElement);
                 // z-index temizlemeyi kaldir: CSS .content-item base z-index:0
                 // sağlar, transition class'lari kaldiginda CSS z-index devralir.
                 // Inline style silmek icerik katmanini arka plana dusuruyordu.
                 this.releaseResolvedTransitionType();
+                this._enterTransitionTimers.delete(enterElement);
             }, this._transitionDuration);
+            this._enterTransitionTimers.set(enterElement, enterTimerId);
         } else {
             this._currentElement = element;
         }
@@ -2743,7 +2792,7 @@ class OmnexPlayer {
 
         if (this._transitionType !== 'random-safe') {
             this._runtimeTransitionType = this._transitionType;
-            return this._runtimeTransitionType;
+            return this.getEdgeTransitionFallback(this._runtimeTransitionType);
         }
 
         if (!this._runtimeTransitionType) {
@@ -2766,7 +2815,7 @@ class OmnexPlayer {
             this._runtimeTransitionType = safeTransitions[index];
         }
 
-        return this._runtimeTransitionType;
+        return this.getEdgeTransitionFallback(this._runtimeTransitionType);
     }
 
     releaseResolvedTransitionType() {
@@ -2811,6 +2860,17 @@ class OmnexPlayer {
      */
     _cleanupVideoElement(video, resetSource = true) {
         if (!video) return;
+
+        const enterTimer = this._enterTransitionTimers.get(video);
+        if (enterTimer) {
+            clearTimeout(enterTimer);
+            this._enterTransitionTimers.delete(video);
+        }
+        const exitTimer = this._exitTransitionTimers.get(video);
+        if (exitTimer) {
+            clearTimeout(exitTimer);
+            this._exitTransitionTimers.delete(video);
+        }
 
         video.onended = null;
         video.onerror = null;
@@ -3184,14 +3244,37 @@ class OmnexPlayer {
         if (!video) return;
         if (!this.isPlaying || this._currentVideoItem !== item) return;
 
+        const wasLoading = video.classList.contains('loading');
+        const hasPendingExit = !!(this._pendingExitElement && this._pendingExitElement !== video);
+        const alreadyVisible =
+            !wasLoading &&
+            this._currentElement === video &&
+            video.style.display !== 'none' &&
+            video.style.visibility !== 'hidden';
+
+        if (alreadyVisible && !hasPendingExit) {
+            return;
+        }
+
+        const previousCurrentElement = this._currentElement;
+
+        const contentContainer = document.getElementById('content-container');
+        if (contentContainer && contentContainer.classList.contains('show-overlay-mask')) {
+            contentContainer.classList.remove('show-overlay-mask');
+        }
+
         video.classList.remove('loading');
         video.style.display = 'block';
         video.style.visibility = 'visible';
         video.style.opacity = '1';
+        video.style.zIndex = '2';
         this._currentElement = video;
 
         // Apply enter transition for seamless crossfade
-        if (this._transitionType !== 'none') {
+        const shouldRunEnterTransition =
+            this._transitionType !== 'none' &&
+            (wasLoading || previousCurrentElement !== video || hasPendingExit);
+        if (shouldRunEnterTransition) {
             this.applyEnterTransition(video);
         }
 
@@ -3202,6 +3285,7 @@ class OmnexPlayer {
             this._pendingExitElement = null;
             this.applyExitTransition(exitEl);
         }
+
     }
 
     getItemDurationValue(item) {
@@ -4145,11 +4229,27 @@ class OmnexPlayer {
      * Sync content with server
      */
     async syncContent(options = {}) {
+        const forceRestart = options.forceRestart === true;
+
+        // Serialize sync calls to avoid racing comparisons from mixed snapshots.
+        if (this._syncInFlight) {
+            this._queuedSyncPending = true;
+            this._queuedSyncForceRestart = this._queuedSyncForceRestart || forceRestart;
+            return;
+        }
+
+        this._syncInFlight = true;
         try {
-            const forceRestart = options.forceRestart === true;
-            const currentPlaylistId = this.playlist ? this.playlist.id : null;
-            const currentItemCount = (this.playlist && this.playlist.items) ? this.playlist.items.length : 0;
-            const currentConfigSignature = this.buildPlaylistConfigSignature(this.playlist);
+            const currentPlaylist = this.playlist;
+            const currentPlaylistId = currentPlaylist ? currentPlaylist.id : null;
+            const currentItems = (currentPlaylist && currentPlaylist.items) ? currentPlaylist.items : [];
+            const currentItemCount = currentItems.length;
+            const currentConfigSignature = this.buildPlaylistConfigSignature(currentPlaylist);
+            const savedIndex = this.currentIndex;
+            const wasPlaying = this.isPlaying;
+            const currentItemKeys = currentItems.map((i) => this.buildPlaylistItemSignature(i));
+            const currentItemsHash = currentItemKeys.join(',');
+            const currentSlotSignature = currentItemKeys[savedIndex] || '';
 
             const response = await api.init_player();
 
@@ -4167,16 +4267,8 @@ class OmnexPlayer {
                 const playlistChanged = currentPlaylistId !== newPlaylistId;
                 const itemsChanged = currentItemCount !== newItemCount;
                 const configChanged = currentConfigSignature !== newConfigSignature;
-                const savedIndex = this.currentIndex;
-                const wasPlaying = this.isPlaying;
 
                 // âœ… CRITICAL FIX: medya kimliği + url + duration + loop + muted değerlerini hash'e dahil et
-                var currentItemsHash = '';
-                var currentItemKeys = [];
-                if (this.playlist && this.playlist.items) {
-                    currentItemKeys = this.playlist.items.map((i) => this.buildPlaylistItemSignature(i));
-                    currentItemsHash = currentItemKeys.join(',');
-                }
                 var newItemsHash = '';
                 var newItemKeys = [];
                 if (data.playlist.items) {
@@ -4184,7 +4276,7 @@ class OmnexPlayer {
                     newItemsHash = newItemKeys.join(',');
                 }
                 const contentChanged = currentItemsHash !== newItemsHash;
-                const currentSlotChanged = currentItemKeys[savedIndex] !== newItemKeys[savedIndex];
+                const currentSlotChanged = currentSlotSignature !== (newItemKeys[savedIndex] || '');
 
                 // âœ… DEBUG: Her zaman hash karşılaştırmasını logla
                 if (this.debug) {
@@ -4280,6 +4372,18 @@ class OmnexPlayer {
             await storage.put('config', { key: 'lastSync', value: new Date().toISOString() });
         } catch (error) {
             // Silent fail
+        } finally {
+            this._syncInFlight = false;
+
+            // Run one consolidated sync if requests arrived while in-flight.
+            if (this._queuedSyncPending) {
+                const queuedForceRestart = this._queuedSyncForceRestart === true;
+                this._queuedSyncPending = false;
+                this._queuedSyncForceRestart = false;
+                setTimeout(() => {
+                    this.syncContent({ forceRestart: queuedForceRestart });
+                }, 0);
+            }
         }
     }
 

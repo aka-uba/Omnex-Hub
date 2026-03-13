@@ -17,6 +17,8 @@ export class PlaylistListPage {
         this.templates = [];
         this.dataTable = null;
         this.deviceTree = null;
+        this._commandDedupWindowMs = 1200;
+        this._lastCommandTriggerMap = new Map();
     }
 
     /**
@@ -24,6 +26,52 @@ export class PlaylistListPage {
      */
     __(key, params = {}) {
         return this.app.i18n.t(key, params);
+    }
+
+    getUniqueAssignedDevices(devices = []) {
+        const uniqueDevices = [];
+        const seenDeviceIds = new Set();
+
+        for (const device of (Array.isArray(devices) ? devices : [])) {
+            const rawDeviceId = device?.device_id;
+            if (rawDeviceId === null || typeof rawDeviceId === 'undefined') {
+                continue;
+            }
+
+            const deviceId = String(rawDeviceId);
+            if (!deviceId || seenDeviceIds.has(deviceId)) {
+                continue;
+            }
+
+            seenDeviceIds.add(deviceId);
+            uniqueDevices.push(device);
+        }
+
+        return uniqueDevices;
+    }
+
+    isDuplicatePlaylistCommandTrigger(playlistId, command) {
+        const key = `${playlistId || 'unknown'}:${command || 'unknown'}`;
+        const now = Date.now();
+        const lastTriggeredAt = this._lastCommandTriggerMap.get(key) || 0;
+
+        if (now - lastTriggeredAt < this._commandDedupWindowMs) {
+            Logger.log('[PlaylistList] Duplicate command trigger skipped:', key);
+            return true;
+        }
+
+        this._lastCommandTriggerMap.set(key, now);
+
+        if (this._lastCommandTriggerMap.size > 250) {
+            const cutoff = now - (this._commandDedupWindowMs * 5);
+            for (const [mapKey, mapTime] of this._lastCommandTriggerMap.entries()) {
+                if (mapTime < cutoff) {
+                    this._lastCommandTriggerMap.delete(mapKey);
+                }
+            }
+        }
+
+        return false;
     }
 
     render() {
@@ -682,7 +730,12 @@ export class PlaylistListPage {
     }
 
     async sendPlaylistCommand(playlist, command) {
-        const devices = playlist?.assigned_devices || [];
+        const playlistId = playlist?.id || 'unknown';
+        if (this.isDuplicatePlaylistCommandTrigger(playlistId, command)) {
+            return;
+        }
+
+        const devices = this.getUniqueAssignedDevices(playlist?.assigned_devices || []);
         if (!devices.length) {
             Toast.error(this.__('playlists.form.noDevices'));
             return;
@@ -760,7 +813,13 @@ export class PlaylistListPage {
         let success = 0;
         let failed = 0;
 
-        for (const deviceId of deviceIds) {
+        const uniqueDeviceIds = Array.from(new Set(
+            (Array.isArray(deviceIds) ? deviceIds : [])
+                .map(deviceId => String(deviceId || ''))
+                .filter(Boolean)
+        ));
+
+        for (const deviceId of uniqueDeviceIds) {
             try {
                 await this.app.api.post(`/devices/${deviceId}/send-command`, { command });
                 success++;
@@ -798,7 +857,7 @@ export class PlaylistListPage {
         const playlist = this.playlists.find(p => p.id === playlistId);
         if (!playlist) return;
 
-        const devices = playlist.assigned_devices || [];
+        const devices = this.getUniqueAssignedDevices(playlist.assigned_devices || []);
         const title = this.__('playlists.modal.assignedDevices', { name: playlist.name });
 
         const content = `
