@@ -288,7 +288,7 @@ try {
 
 $lines = [
     '#EXTM3U',
-    '#EXTINF:0,' . $extInfTitle,
+    '#EXTINF:-1,' . $extInfTitle,
     $targetUrl,
     '',
 ];

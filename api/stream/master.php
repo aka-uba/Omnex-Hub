@@ -320,16 +320,9 @@ uksort($availableProfiles, static function ($left, $right) use ($availableProfil
 });
 
 // HLS master playlist ciktisi
-$streamLabelEscaped = str_replace(
-    ['\\', '"'],
-    ['\\\\', '\\"'],
-    (string)$streamLabel
-);
-
 $lines = [
     "#EXTM3U",
     "#EXT-X-VERSION:3",
-    "#EXT-X-SESSION-DATA:DATA-ID=\"com.omnex.stream.title\",VALUE=\"{$streamLabelEscaped}\"",
     "",
 ];
 

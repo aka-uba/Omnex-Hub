@@ -2978,3 +2978,27 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_033854-vlc-title-suppression`
   - Restore not required.
+## 2026-03-13 - IPTV Smarters channel parse fix + VLC transition title regression fix
+- Request context:
+  - IPTV Smarters Pro'da M3U import'ta "canli TV 0 icerik" gorunuyor (stream calissa da kanal listesi bos).
+  - VLC'de video gecislerinde playlist/medya adi tekrar gorunuyor.
+- Changes:
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Downloaded M3U icerigi IPTV parser uyumlu hale getirildi:
+      - `#EXTINF:-1 tvg-id="" tvg-name="..." group-title="Omnex",...`
+      - Kanal adi bos olmayacak sekilde cihaz adindan uretiliyor.
+      - VLC icin opsiyon satirlari eklendi: `#EXTVLCOPT:no-video-title-show`, `#EXTVLCOPT:input-title-format=`.
+  - `api/stream/playlist.php`
+    - Wrapper M3U satiri `#EXTINF:-1` formatina geri alindi (IPTV parser uyumlulugu).
+  - `api/stream/master.php`
+    - VLC gecislerinde playlist adinin gorunmesini tetikleyen `EXT-X-SESSION-DATA` satiri kaldirildi.
+    - `Content-Disposition` zaten onceki duzeltmede kaldirilmisti ve korunuyor.
+- Checks:
+  - `php -l api/stream/master.php`
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Farkli IPTV uygulamalarinda M3U attribute beklentileri degisebilir; gerekirse app'e gore ikinci export profili eklenebilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_034936-iptvsmarters-vlc-title-fix`
+  - Restore not required.

@@ -1162,7 +1162,18 @@ export class DeviceListPage {
         }
 
         const directUrl = await this.resolveDirectStreamUrl(device);
-        const lines = ['#EXTM3U', '#EXTINF:0,', directUrl, ''];
+        const streamTitleRaw = String(device?.name || 'Omnex Live')
+            .replace(/[\r\n]+/g, ' ')
+            .trim();
+        const streamTitle = (streamTitleRaw || 'Omnex Live').replace(/"/g, '\'');
+        const lines = [
+            '#EXTM3U',
+            `#EXTINF:-1 tvg-id="" tvg-name="${streamTitle}" group-title="Omnex",${streamTitle}`,
+            '#EXTVLCOPT:no-video-title-show',
+            '#EXTVLCOPT:input-title-format=',
+            directUrl,
+            ''
+        ];
         const content = lines.join('\n');
         const blob = new Blob([content], { type: 'application/x-mpegURL;charset=utf-8' });
         const objectUrl = URL.createObjectURL(blob);
