@@ -2082,6 +2082,10 @@ class OmnexPlayer {
         // Must be a proper http/https URL
         if (!url.startsWith('http://') && !url.startsWith('https://')) return false;
 
+        const lowerUrl = url.toLowerCase();
+        // Never precache live HLS manifest/stream endpoints.
+        if (lowerUrl.includes('/api/stream/') || lowerUrl.includes('.m3u8')) return false;
+
         // Reject URLs with unresolved template variables
         if (url.includes('%7B') || url.includes('%7D') ||
             url.includes('{') || url.includes('}')) return false;

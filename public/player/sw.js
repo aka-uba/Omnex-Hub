@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const CACHE_VERSION = 'v1.2.5';
+const CACHE_VERSION = 'v1.2.6';
 const CACHE_NAME = `omnex-player-${CACHE_VERSION}`;
 const MEDIA_CACHE_NAME = `omnex-player-media-${CACHE_VERSION}`;
 
@@ -30,13 +30,13 @@ const API_ROUTES = [
 ];
 
 // Media types to cache
-const MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.m3u8'];
+const MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm'];
 
 /**
  * ✅ MEMORY LEAK FIX: Prune media cache to prevent unlimited growth
  * @param {number} maxSizeMB - Maximum cache size in megabytes (default: 50MB)
  */
-async function pruneMediaCache(maxSizeMB = 50) {
+async function pruneMediaCacheBySize(maxSizeMB = 50) {
     try {
         const cache = await caches.open(MEDIA_CACHE_NAME);
         const requests = await cache.keys();
@@ -159,6 +159,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Live HLS playlists should be network-first (avoid stale manifests).
+    if (isLivePlaylistRequest(url.pathname)) {
+        event.respondWith(livePlaylistNetworkFirst(event.request));
+        return;
+    }
+
     // Media requests - Cache first, network fallback
     if (isMediaRequest(url.pathname)) {
         event.respondWith(cacheFirstMedia(event.request));
@@ -184,6 +190,10 @@ function isMediaRequest(pathname) {
     return MEDIA_EXTENSIONS.some(ext => lowerPath.endsWith(ext)) ||
            lowerPath.includes('/storage/') ||
            lowerPath.includes('/media/');
+}
+
+function isLivePlaylistRequest(pathname) {
+    return pathname.toLowerCase().endsWith('.m3u8');
 }
 
 /**
@@ -254,6 +264,23 @@ async function documentNetworkFirst(request) {
 }
 
 /**
+ * Network-first strategy for live HLS playlists.
+ * m3u8 files are intentionally not cached.
+ */
+async function livePlaylistNetworkFirst(request) {
+    try {
+        return await fetch(request, { cache: 'no-store' });
+    } catch (error) {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+
+        return new Response('Playlist not available', { status: 503 });
+    }
+}
+
+/**
  * Cache First Strategy for Media
  * Check cache first, then network
  */
@@ -276,7 +303,7 @@ async function cacheFirstMedia(request) {
             const cache = await caches.open(MEDIA_CACHE_NAME);
             await cache.put(request, networkResponse.clone());
             // ✅ MEMORY LEAK FIX: Prune cache after adding new items
-            pruneMediaCache(50).catch(() => {}); // Non-blocking
+            pruneMediaCacheBySize(50).catch(() => {}); // Non-blocking
         }
 
         return networkResponse;
@@ -354,7 +381,7 @@ self.addEventListener('message', (event) => {
             break;
 
         case 'PRUNE_MEDIA_CACHE':
-            pruneMediaCache(data.keepUrls);
+            pruneMediaCacheByKeepList(data.keepUrls);
             break;
 
         case 'CLEAR_MEDIA_CACHE':
@@ -393,6 +420,9 @@ function isValidCacheableUrl(urlString) {
         // Reject URLs with unresolved template variables ({, })
         if (url.pathname.includes('%7B') || url.pathname.includes('%7D') ||
             url.pathname.includes('{') || url.pathname.includes('}')) return false;
+
+        // Never precache live manifests.
+        if (url.pathname.toLowerCase().endsWith('.m3u8')) return false;
 
         return true;
     } catch (e) {
@@ -462,7 +492,7 @@ async function cacheMediaList(urls) {
  * Prune stale media cache entries.
  * Keeps only currently referenced playlist media URLs.
  */
-async function pruneMediaCache(keepUrls) {
+async function pruneMediaCacheByKeepList(keepUrls) {
     const keepSet = new Set(
         (Array.isArray(keepUrls) ? keepUrls : [])
             .filter(Boolean)

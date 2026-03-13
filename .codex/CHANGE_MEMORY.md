@@ -3222,3 +3222,36 @@ Format:
   - api/stream/variant.php.bak_streamfix_20260313
   - public/player/assets/js/player.js.bak_streamfix_20260313
   - public/player/assets/css/player.css.bak_streamfix_20260313
+
+## 2026-03-14 - Stream/PWA follow-up: live manifest cache bypass + SW prune fix
+- Request context:
+  - Kullanici, VLC stream gecislerinde donma ve PWA/PC playerda gecis efekti tutarsizligi + gecis sonrasi siyah ekran problemlerinin sunucuda devam ettigini bildirdi.
+- Findings:
+  - public/player/sw.js dosyasinda `pruneMediaCache` fonksiyonu iki kez tanimliydi; ikinci tanim birincisini override ettigi icin `pruneMediaCache(50)` cagrisi keep-list prune gibi calisip medya cache'ini yanlis temizleyebiliyordu.
+  - Service Worker `.m3u8` isteklerini media cache-first akisina sokuyordu; canli HLS playlist'lerinde bu durum bayat manifest ve gecis donmasi uretiyordu.
+  - public/player/assets/js/player.js precache akisi canli stream URL'lerini (`/api/stream/...` ve `.m3u8`) da cachelemeye aday yapiyordu.
+- Changes:
+  - public/player/sw.js
+    - CACHE_VERSION `v1.2.6` yapildi.
+    - `.m3u8` media cache listesinden cikarildi.
+    - `isLivePlaylistRequest()` + `livePlaylistNetworkFirst()` eklendi (manifestler network-first/no-store).
+    - Cakisan fonksiyonlar ayrildi: `pruneMediaCacheBySize()` ve `pruneMediaCacheByKeepList()`.
+    - `PRUNE_MEDIA_CACHE` message handler yeni keep-list fonksiyonuna baglandi.
+    - URL validator'a `.m3u8` precache engeli eklendi.
+  - public/player/assets/js/player.js
+    - `isValidCacheableUrl()` icinde `/api/stream/` ve `.m3u8` URL'leri precache disina alindi.
+  - public/player/index.html
+    - Player module query version `v=42 -> v=43` guncellendi.
+- Checks:
+  - php -l api/stream/variant.php
+  - node --check public/player/assets/js/player.js
+  - node --check public/player/sw.js
+- Risks/Follow-up:
+  - Yeni SW'nin devreye girmesi icin istemcilerde eski worker temizlenmeli (hard refresh + gerekirse cache/site data temizligi).
+  - VLC tarafinda donma devam ederse, sunucudaki eski transcode varyantlari icin yeniden transcode uygulanmasi gerekebilir.
+- Backup/Restore Safety:
+  - Temp backups:
+    - .codex/tmp_backups/variant.php.20260314_001433.vlcfix.bak
+    - .codex/tmp_backups/sw.js.20260314_001433.vlcfix.bak
+    - .codex/tmp_backups/player.js.20260314_001433.vlcfix.bak
+  - Restore not required.
