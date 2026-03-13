@@ -95,6 +95,10 @@ export class Api {
     async request(method, endpoint, data = null, options = {}) {
         const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
 
+        // Proactively refresh short-lived/expired access tokens before request.
+        // This avoids noisy 401 bursts on polling endpoints (e.g. notifications).
+        await this.ensureFreshAccessToken(options, endpoint);
+
         const headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
@@ -262,6 +266,48 @@ export class Api {
             }
 
             throw error;
+        }
+    }
+
+    /**
+     * Parse JWT exp claim (seconds since epoch)
+     */
+    parseTokenExpiry(token) {
+        if (!token || typeof token !== 'string') return null;
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+
+        try {
+            const payloadRaw = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+            const payload = JSON.parse(payloadRaw);
+            const exp = Number(payload?.exp);
+            return Number.isFinite(exp) ? exp : null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    /**
+     * Refresh access token right before expiry to reduce first-request 401s.
+     */
+    async ensureFreshAccessToken(options = {}, endpoint = '') {
+        if (options?.noAuth || options?.noRefresh) return;
+        if (!this.token || !this.refreshToken) return;
+
+        const exp = this.parseTokenExpiry(this.token);
+        if (!exp) return;
+
+        const now = Math.floor(Date.now() / 1000);
+        const refreshLeadSeconds = 45;
+
+        if ((exp - now) > refreshLeadSeconds) {
+            return;
+        }
+
+        Logger.debug('API: Access token near expiry, refreshing before request...', { endpoint });
+        const refreshed = await this.tryRefreshToken();
+        if (refreshed) {
+            this.loadTokens();
         }
     }
 

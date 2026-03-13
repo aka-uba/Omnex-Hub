@@ -3122,4 +3122,58 @@ Format:
   - Android kaynak klasoru gitignore altinda oldugu icin tasarim kaynak degisiklikleri repoya gitmez; dagitim APK dosyalari ve update.json uzerinden yapilir.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/20260313_044404-android-wizard-restore
+  - Restore not required.## 2026-03-13 - CRUD smoke test harness (non-destructive update/delete probes)
+- Request context:
+  - Kullanici, daha once transaction hardening uygulanan update/delete endpointleri icin birlikte smoke test calistirmamizi istedi.
+  - Ozellikle canli veriyi bozmadan (non-destructive) CRUD update/delete davranisinda 500 ve exception riskini gormek hedeflendi.
+- Changes:
+  - scripts/test_endpoints_smoke.php
+    - Auth asamasina local token bootstrap eklendi (Admin/SuperAdmin -> Auth::generateTokens fallback).
+    - Non-destructive CRUD smoke asamasi eklendi (update: mevcut degeri tekrar gonderme, delete: fake UUID probe).
+    - Hedef endpointler: device-groups, devices, licenses, products, templates, users, web-templates, media, render-queue, gateways.
+    - CSRF gerektiren web-templates icin token/cookie yonetimi eklendi.
+    - Yeni CLI secenekleri: --skip-crud, --no-local-token.
+- Checks:
+  - php -l scripts/test_endpoints_smoke.php
+  - php scripts/test_endpoints_smoke.php --skip-public
+  - php scripts/test_endpoints_smoke.php
+- Risks/Follow-up:
+  - Bu smoke update cagirilari kayitlarin is alanlarini degistirmez ancak endpointler updated_at/audit gibi metadata yazabilir.
+  - Delete probe fake UUID kullandigi icin transaction rollback yolunu degil, endpointin guvenli hata davranisini dogrular.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/test_endpoints_smoke.php.20260313_045850.bak
+  - Restore not required.
+## 2026-03-13 - Production CRUD smoke run with SuperAdmin token (manual API-driven selection)
+- Request context:
+  - Kullanici sunucuda (hub.omnexcore.com) da update/delete smoke testinin SuperAdmin ile calistirilmasini istedi.
+- Changes:
+  - Kod degisikligi yok (yalnizca runtime smoke test calistirildi).
+- Checks:
+  - php scripts/test_endpoints_smoke.php --base-url=https://hub.omnexcore.com (local token fallback denemesi -> 401, beklendigi gibi)
+  - API login + endpoint list inspection (SuperAdmin) ile remote data shape dogrulamasi
+  - Non-destructive manual smoke (remote API-driven IDs):
+    - PASS: PUT devices/licenses/products/templates/users
+    - PASS: DELETE probe device-groups/products/templates/users/web-templates/media/render-queue/gateways (safe 404)
+    - SKIP: PUT device-groups, PUT web-templates (kayit yok)
+  - Summary: PASS=15 FAIL=0 SKIP=2
+- Risks/Follow-up:
+  - Testte update endpointleri ayni degerle cagrildigi icin is verisi degismedi; ancak updated_at/audit kayitlari yazilmis olabilir.
+## 2026-03-13 - Notification 401 hardening (proactive token refresh in Api)
+- Request context:
+  - Kullanici, sunucuda bildirim endpointlerinde (`/api/notifications`, `/api/notifications/unread-count`) 401 goruldugunu; localde ayni akisin sorunsuz oldugunu bildirdi.
+- Findings:
+  - Endpointler sunucuda gecerli bearer token ile calisiyor (manual check: notifications/unread-count -> success).
+  - 401, istemci tarafinda token gecis aninda (polling) olusan auth yenileme yarisi/seans suresi etkisi olarak gorunuyor.
+- Changes:
+  - public/assets/js/core/Api.js
+    - `request()` basina `ensureFreshAccessToken()` cagrisi eklendi.
+    - JWT `exp` parse yardimcisi eklendi (`parseTokenExpiry`).
+    - Token suresi 45 saniye altina dusunce, istek oncesi refresh yapilacak sekilde preflight yenileme eklendi.
+- Checks:
+  - node --check public/assets/js/core/Api.js
+- Risks/Follow-up:
+  - Refresh token gecersizse 401 yine olusabilir; bu durumda beklenen davranis session-expired akisidir.
+  - Sunucuda yeni JS'nin aktif olmasi icin cache/SW temizleyip hard refresh onerilir.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/Api.js.20260313_051618.notifications-auth-precheck.bak
   - Restore not required.
