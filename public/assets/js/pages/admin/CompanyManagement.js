@@ -802,7 +802,7 @@ export class CompanyManagementPage {
             }
         } catch (error) {
             Logger.error('Company branding upload error:', error);
-            Toast.error(this.__('companies.toast.uploadError'));
+            Toast.error(this.__('companies.toast.uploadError') + ': ' + (error.message || ''));
         }
     }
 
@@ -874,7 +874,7 @@ export class CompanyManagementPage {
                     this.dataTable?.refresh();
                     await this.loadStats();
                 } catch (error) {
-                    Toast.error(this.__('companies.toast.deleteError'));
+                    Toast.error(this.__('companies.toast.deleteError') + ': ' + (error.message || ''));
                     throw error;
                 }
             }

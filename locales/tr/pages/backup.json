@@ -93,7 +93,10 @@
         "start": "İçe Aktarmayı Başlat",
         "started": "İçe aktarma başlatıldı",
         "completed": "İçe aktarma başarıyla tamamlandı",
-        "failed": "İçe aktarma başarısız"
+        "failed": "İçe aktarma başarısız",
+        "fileRequired": "Dosya seçin",
+        "companyNameRequired": "Firma adı gerekli",
+        "targetCompanyRequired": "Hedef firma seçin"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Yedek Silme",
         "message": "Bu yedek kalıcı olarak silinecektir. Devam etmek istiyor musunuz?"
+    },
+
+    "errors": {
+        "backupFailed": "Yedekleme başarısız",
+        "settingsSaveFailed": "Ayarlar kaydedilemedi",
+        "loadFailed": "Yükleme başarısız",
+        "downloadFailed": "İndirme başarısız",
+        "deleteFailed": "Silme başarısız"
     },
 
     "size": {

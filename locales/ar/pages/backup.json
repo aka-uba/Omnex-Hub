@@ -93,7 +93,10 @@
         "start": "بدء الاستيراد",
         "started": "بدأ الاستيراد",
         "completed": "تم الاستيراد بنجاح",
-        "failed": "فشل الاستيراد"
+        "failed": "فشل الاستيراد",
+        "fileRequired": "يرجى اختيار ملف",
+        "companyNameRequired": "اسم الشركة مطلوب",
+        "targetCompanyRequired": "يرجى اختيار الشركة المستهدفة"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "حذف النسخة الاحتياطية",
         "message": "سيتم حذف هذه النسخة الاحتياطية نهائياً. هل تريد المتابعة؟"
+    },
+
+    "errors": {
+        "backupFailed": "فشل النسخ الاحتياطي",
+        "settingsSaveFailed": "تعذر حفظ الإعدادات",
+        "loadFailed": "فشل التحميل",
+        "downloadFailed": "فشل التنزيل",
+        "deleteFailed": "فشل الحذف"
     },
 
     "size": {

@@ -93,7 +93,10 @@
         "start": "İdxalı başlat",
         "started": "İdxal başladıldı",
         "completed": "İdxal uğurla tamamlandı",
-        "failed": "İdxal uğursuz oldu"
+        "failed": "İdxal uğursuz oldu",
+        "fileRequired": "Fayl seçin",
+        "companyNameRequired": "Şirkət adı tələb olunur",
+        "targetCompanyRequired": "Hədəf şirkəti seçin"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Yedəyi sil",
         "message": "Bu yedək həmişəlik silinəcək. Davam etmək istəyirsiniz?"
+    },
+
+    "errors": {
+        "backupFailed": "Yedəkləmə uğursuz oldu",
+        "settingsSaveFailed": "Parametrlər saxlanıla bilmədi",
+        "loadFailed": "Yükləmə uğursuz",
+        "downloadFailed": "Endirmə uğursuz",
+        "deleteFailed": "Silmə uğursuz"
     },
 
     "size": {

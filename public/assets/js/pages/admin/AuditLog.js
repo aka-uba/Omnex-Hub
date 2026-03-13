@@ -451,7 +451,7 @@ export class AuditLogPage {
             };
         } catch (error) {
             Logger.error('Audit logs fetch error:', error);
-            Toast.error(this.__('auditLog.messages.loadError'));
+            Toast.error(this.__('auditLog.messages.loadError') + ': ' + (error.message || ''));
             return { data: [], total: 0 };
         }
     }
@@ -670,7 +670,7 @@ export class AuditLogPage {
             }
         } catch (error) {
             Logger.error('Archive error:', error);
-            Toast.error(this.__('auditLog.archive.archiveError'));
+            Toast.error(this.__('auditLog.archive.archiveError') + ': ' + (error.message || ''));
         }
     }
 
@@ -701,7 +701,7 @@ export class AuditLogPage {
             }
         } catch (error) {
             Logger.error('Delete error:', error);
-            Toast.error(this.__('auditLog.archive.deleteError'));
+            Toast.error(this.__('auditLog.archive.deleteError') + ': ' + (error.message || ''));
         }
     }
 

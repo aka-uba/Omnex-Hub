@@ -743,7 +743,7 @@ export class PlaylistDetailPage {
             Logger.log('[DEBUG] Items rendered');
         } catch (error) {
             Logger.error('[DEBUG] Playlist load error:', error);
-            Toast.error(this.__('messages.loadFailed'));
+            Toast.error(this.__('messages.loadFailed') + ': ' + (error.message || ''));
         }
     }
 
@@ -1828,7 +1828,7 @@ export class PlaylistDetailPage {
             window.location.hash = '#/signage/playlists';
         } catch (error) {
             Logger.error('[DEBUG] Save error:', error);
-            Toast.error(this.__('messages.saveFailed'));
+            Toast.error(this.__('messages.saveFailed') + ': ' + (error.message || ''));
         }
     }
 

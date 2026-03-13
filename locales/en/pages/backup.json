@@ -93,7 +93,10 @@
         "start": "Start Import",
         "started": "Import started",
         "completed": "Import completed successfully",
-        "failed": "Import failed"
+        "failed": "Import failed",
+        "fileRequired": "Please select a file",
+        "companyNameRequired": "Company name is required",
+        "targetCompanyRequired": "Please select target company"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Delete Backup",
         "message": "This backup will be permanently deleted. Do you want to continue?"
+    },
+
+    "errors": {
+        "backupFailed": "Backup failed",
+        "settingsSaveFailed": "Failed to save settings",
+        "loadFailed": "Load failed",
+        "downloadFailed": "Download failed",
+        "deleteFailed": "Delete failed"
     },
 
     "size": {

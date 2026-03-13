@@ -795,8 +795,8 @@ export class DeviceDetailPage {
     renderStreamModeCard(d) {
         const basePath = window.OmnexConfig?.basePath || '';
         const baseUrl = `${window.location.origin}${basePath}`;
-        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u` : '';
-        const streamDownloadUrl = d.stream_token ? `${streamUrl}?download=1` : '';
+        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/variant/720p/playlist.m3u8` : '';
+        const streamDownloadUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u?download=1&profile=720p&label=0` : '';
 
         // Stream status calculation
         let streamStatus = 'offline';
@@ -1431,17 +1431,17 @@ export class DeviceDetailPage {
                 // PavoDisplay: ping ile bağlantı testi
                 const response = await this.app.api.post(`/devices/${this.deviceId}/control`, { action: 'ping' });
                 if (response?.success && response?.data?.success !== false) {
-                    Toast.success(response?.data?.message || this.__('toast.testSuccess') || 'Cihaz bağlantısı başarılı');
+                    Toast.success(response?.data?.message || this.__('toast.testSuccess'));
                 } else {
-                    Toast.error(response?.data?.message || this.__('toast.testFailed') || 'Bağlantı testi başarısız');
+                    Toast.error(response?.data?.message || this.__('toast.testFailed'));
                 }
             } else {
                 // PWA Player
                 await this.app.api.post(`/devices/${this.deviceId}/command`, { command: 'test' });
-                Toast.success(this.__('toast.testSuccess') || 'Test komutu gönderildi');
+                Toast.success(this.__('toast.testSuccess'));
             }
         } catch (error) {
-            Toast.error(error?.data?.message || error.message || this.__('toast.testFailed') || 'Test başarısız');
+            Toast.error(error?.data?.message || error.message || this.__('toast.testFailed'));
         }
     }
 

@@ -1166,10 +1166,10 @@ export class EditorWrapper {
                     Logger.warn('[EditorWrapper] Bilinmeyen alan kategorisi:', category);
             }
 
-            Toast.success(this.__('toast.fieldAdded') || 'Alan eklendi');
+            Toast.success(this.__('toast.fieldAdded'));
         } catch (error) {
             Logger.error('[EditorWrapper] Slot\'a alan eklenirken hata:', error);
-            Toast.error(this.__('toast.fieldAddError') || 'Alan eklenemedi');
+            Toast.error(this.__('toast.fieldAddError') + ': ' + (error.message || ''));
         } finally {
             // Flag'i kaldır ve frame'i tekrar seçili yap (panel açık kalsın)
             this._addingToSlot = false;
@@ -4077,7 +4077,7 @@ export class EditorWrapper {
                 this._slotMediaInsertContext = null;
                 if (selectedMedia?.url) {
                     await this._insertMediaIntoSlot(selectedMedia, slotContext);
-                    Toast.success(this.__('toast.fieldAdded') || 'Alan eklendi');
+                    Toast.success(this.__('toast.fieldAdded'));
                 }
                 return;
             }

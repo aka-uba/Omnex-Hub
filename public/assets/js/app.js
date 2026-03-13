@@ -178,7 +178,7 @@ class App {
 
             // Show error but continue
             try {
-                Toast.error(this.i18n?.t('messages.appInitError') || 'Application error');
+                Toast.error(this.i18n?.t('messages.appInitError'));
             } catch (e) {
                 // Toast might not be available yet
                 Logger.error('Could not show error toast:', e);
@@ -445,7 +445,7 @@ class App {
         }
 
         if (!this.auth.hasRole(['SuperAdmin', 'Admin'])) {
-            Toast.error(this.i18n?.t('messages.accessDenied') || 'Access denied');
+            Toast.error(this.i18n?.t('messages.accessDenied'));
             this.router.navigate('/dashboard');
             return;
         }

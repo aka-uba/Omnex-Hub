@@ -207,7 +207,7 @@ export class ScheduleListPage {
                     Toast.success(this.__('schedules.toast.deleted'));
                     this.dataTable?.refresh();
                 } catch (error) {
-                    Toast.error(this.__('messages.deleteFailed'));
+                    Toast.error(this.__('messages.deleteFailed') + ': ' + (error.message || ''));
                     throw error;
                 }
             }

@@ -928,7 +928,7 @@ class NetworkScanner {
             if (mode === 'gateway') {
                 const gatewayStatus = await this._refreshGatewayStatus();
                 if (!gatewayStatus.ready) {
-                    Toast.error(gatewayStatus.message || 'Gateway hazir degil');
+                    Toast.error(gatewayStatus.message || this.__('scan.gatewayNotReady'));
                     return;
                 }
 

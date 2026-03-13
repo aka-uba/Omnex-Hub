@@ -751,7 +751,7 @@ export class TemplateListPage {
                     Toast.success(this.__('toast.deleted'));
                     await this.loadTemplates();
                 } catch (error) {
-                    Toast.error(this.__('messages.deleteFailed'));
+                    Toast.error(this.__('messages.deleteFailed') + ': ' + (error.message || ''));
                     throw error;
                 }
             }
@@ -909,7 +909,7 @@ export class TemplateListPage {
             Toast.success(this.__('export.success'));
         } catch (error) {
             Logger.error('Export error:', error);
-            Toast.error(this.__('export.error'));
+            Toast.error(this.__('export.error') + ': ' + (error.message || ''));
             throw error;
         }
     }
@@ -1074,7 +1074,7 @@ export class TemplateListPage {
             const data = JSON.parse(text);
             this.showImportPreview(data);
         } catch (error) {
-            Toast.error(this.__('import.parseError'));
+            Toast.error(this.__('import.parseError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1175,7 +1175,7 @@ export class TemplateListPage {
             }
         } catch (error) {
             Logger.error('Import error:', error);
-            Toast.error(this.__('import.error'));
+            Toast.error(this.__('import.error') + ': ' + (error.message || ''));
             throw error;
         }
     }

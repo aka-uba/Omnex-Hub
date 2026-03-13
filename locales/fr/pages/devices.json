@@ -542,6 +542,7 @@
         "registered": "Enregistré",
         "addDevice": "Ajouter",
         "ipRequired": "L'adresse IP est obligatoire",
+        "gatewayNotReady": "La passerelle n'est pas prête",
         "failed": "Échec du scan",
         "deviceFound": "Appareil trouvé",
         "screenSize": "Taille de l'écran",
@@ -788,7 +789,19 @@
             "ipReadFailed": "Échec de la lecture de l'IP : {error}",
             "macReadFailed": "Échec de la lecture de la MAC : {error}",
             "screenReadFailed": "Échec de la lecture de la taille de l'écran : {error}",
-            "extraInfoReadFailed": "Erreur de lecture des informations supplémentaires : {error}"
+            "extraInfoReadFailed": "Erreur de lecture des informations supplémentaires : {error}",
+            "connectionRequired": "Impossible d'ajouter l'appareil sans terminer la connexion.",
+            "wifiConfigRequired": "Impossible d'ajouter l'appareil sans enregistrer les paramètres WiFi.",
+            "protocolRequired": "Impossible d'ajouter l'appareil sans terminer la configuration du protocole.",
+            "verificationRequired": "Impossible d'ajouter l'appareil sans terminer la vérification finale.",
+            "localhostWarning": "L'adresse du serveur est localhost ! L'appareil ne peut pas accéder à cette adresse. Entrez l'IP LAN réelle.",
+            "httpServerSwitching": "L'appareil passe en mode HTTP-SERVER. Veuillez patienter ~60-90 secondes.",
+            "rebootingWait": "L'appareil redémarre. Veuillez patienter ~20 secondes.",
+            "rebootReadInfo": "L'appareil redémarre. Cliquez sur « Lire les infos » après ~20 secondes.",
+            "infoIncomplete": "Les informations de l'appareil étaient incomplètes. Réessayez l'étape « Lire les infos ».",
+            "infoReadFailed": "Impossible de lire les informations de l'appareil",
+            "ipRequired": "Impossible d'enregistrer l'appareil sans informations IP.",
+            "completeStepsTooltip": "Complétez les étapes de connexion, WiFi, protocole et vérification pour ajouter l'appareil."
         }
     },
     "control": {

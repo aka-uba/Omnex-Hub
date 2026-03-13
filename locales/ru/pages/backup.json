@@ -93,7 +93,10 @@
         "start": "Начать импорт",
         "started": "Импорт начат",
         "completed": "Импорт успешно завершён",
-        "failed": "Импорт не удался"
+        "failed": "Импорт не удался",
+        "fileRequired": "Выберите файл",
+        "companyNameRequired": "Название компании обязательно",
+        "targetCompanyRequired": "Выберите целевую компанию"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Удалить резервную копию",
         "message": "Эта резервная копия будет безвозвратно удалена. Продолжить?"
+    },
+
+    "errors": {
+        "backupFailed": "Резервное копирование не удалось",
+        "settingsSaveFailed": "Не удалось сохранить настройки",
+        "loadFailed": "Ошибка загрузки",
+        "downloadFailed": "Ошибка скачивания",
+        "deleteFailed": "Ошибка удаления"
     },
 
     "size": {

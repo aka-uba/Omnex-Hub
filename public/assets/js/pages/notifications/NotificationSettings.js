@@ -548,7 +548,7 @@ export class NotificationSettingsPage {
             }
         } catch (error) {
             Logger.error('Error requesting notification permission:', error);
-            Toast.error(this.__('settings.desktopPermissionError'));
+            Toast.error(this.__('settings.desktopPermissionError') + ': ' + (error.message || ''));
             document.getElementById('setting-desktop').checked = false;
         }
     }
@@ -618,7 +618,7 @@ export class NotificationSettingsPage {
 
         } catch (error) {
             Logger.error('Error saving notification settings:', error);
-            Toast.error(this.__('settings.saveError'));
+            Toast.error(this.__('settings.saveError') + ': ' + (error.message || ''));
         } finally {
             this.isSaving = false;
             if (btn) {

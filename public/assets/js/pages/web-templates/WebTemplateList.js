@@ -377,7 +377,7 @@ export class WebTemplateList {
             }
         } catch (error) {
             console.error('Delete template error:', error);
-            Toast.error(this.__('messages.deleteError'));
+            Toast.error(this.__('messages.deleteError') + ': ' + (error.message || ''));
         }
     }
 
@@ -422,7 +422,7 @@ export class WebTemplateList {
             }
         } catch (error) {
             console.error('Duplicate template error:', error);
-            Toast.error(this.__('messages.duplicateError'));
+            Toast.error(this.__('messages.duplicateError') + ': ' + (error.message || ''));
         }
     }
 

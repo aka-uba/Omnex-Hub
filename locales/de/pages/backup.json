@@ -93,7 +93,10 @@
         "start": "Import starten",
         "started": "Import gestartet",
         "completed": "Import erfolgreich abgeschlossen",
-        "failed": "Import fehlgeschlagen"
+        "failed": "Import fehlgeschlagen",
+        "fileRequired": "Bitte wählen Sie eine Datei",
+        "companyNameRequired": "Firmenname ist erforderlich",
+        "targetCompanyRequired": "Bitte wählen Sie eine Zielfirma"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Backup löschen",
         "message": "Dieses Backup wird dauerhaft gelöscht. Möchten Sie fortfahren?"
+    },
+
+    "errors": {
+        "backupFailed": "Backup fehlgeschlagen",
+        "settingsSaveFailed": "Einstellungen konnten nicht gespeichert werden",
+        "loadFailed": "Laden fehlgeschlagen",
+        "downloadFailed": "Download fehlgeschlagen",
+        "deleteFailed": "Löschen fehlgeschlagen"
     },
 
     "size": {

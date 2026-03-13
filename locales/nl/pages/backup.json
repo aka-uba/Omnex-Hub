@@ -93,7 +93,10 @@
         "start": "Import starten",
         "started": "Import gestart",
         "completed": "Import succesvol voltooid",
-        "failed": "Import mislukt"
+        "failed": "Import mislukt",
+        "fileRequired": "Selecteer een bestand",
+        "companyNameRequired": "Bedrijfsnaam is vereist",
+        "targetCompanyRequired": "Selecteer een doelbedrijf"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Back-up verwijderen",
         "message": "Deze back-up wordt permanent verwijderd. Wilt u doorgaan?"
+    },
+
+    "errors": {
+        "backupFailed": "Back-up mislukt",
+        "settingsSaveFailed": "Instellingen konden niet worden opgeslagen",
+        "loadFailed": "Laden mislukt",
+        "downloadFailed": "Downloaden mislukt",
+        "deleteFailed": "Verwijderen mislukt"
     },
 
     "size": {

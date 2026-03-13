@@ -465,7 +465,7 @@ export class PlaylistListPage {
             await this.loadPlaylists();
         } catch (error) {
             Logger.error('Save error:', error);
-            Toast.error(this.__('messages.saveFailed'));
+            Toast.error(this.__('messages.saveFailed') + ': ' + (error.message || ''));
             throw error;
         }
     }
@@ -867,7 +867,7 @@ export class PlaylistListPage {
                         this.showAssignedDevicesModal(playlistId);
                     } catch (error) {
                         Logger.error('Remove assigned device error:', error);
-                        Toast.error(this.__('messages.saveFailed'));
+                        Toast.error(this.__('messages.saveFailed') + ': ' + (error.message || ''));
                     }
                 });
             });
@@ -887,7 +887,7 @@ export class PlaylistListPage {
                     Toast.success(this.__('playlists.toast.deleted'));
                     await this.loadPlaylists();
                 } catch (error) {
-                    Toast.error(this.__('messages.deleteFailed'));
+                    Toast.error(this.__('messages.deleteFailed') + ': ' + (error.message || ''));
                     throw error;
                 }
             }

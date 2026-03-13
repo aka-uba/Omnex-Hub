@@ -281,7 +281,7 @@ export class ScheduleFormPage {
             this.updateSelectedCount();
         } catch (error) {
             Logger.error('Schedule load error:', error);
-            Toast.error(this.__('schedules.toast.loadFailed'));
+            Toast.error(this.__('schedules.toast.loadFailed') + ': ' + (error.message || ''));
         }
     }
 
@@ -403,7 +403,7 @@ export class ScheduleFormPage {
             window.location.hash = '#/signage/schedules';
         } catch (error) {
             Logger.error('Save error:', error);
-            Toast.error(this.__('schedules.toast.saveFailed'));
+            Toast.error(this.__('schedules.toast.saveFailed') + ': ' + (error.message || ''));
         }
     }
 

@@ -93,7 +93,10 @@
         "start": "Démarrer l'importation",
         "started": "Importation démarrée",
         "completed": "Importation terminée avec succès",
-        "failed": "L'importation a échoué"
+        "failed": "L'importation a échoué",
+        "fileRequired": "Veuillez sélectionner un fichier",
+        "companyNameRequired": "Le nom de l'entreprise est requis",
+        "targetCompanyRequired": "Veuillez sélectionner l'entreprise cible"
     },
 
     "restore_confirm": {
@@ -120,6 +123,14 @@
     "delete_confirm": {
         "title": "Supprimer la sauvegarde",
         "message": "Cette sauvegarde sera définitivement supprimée. Voulez-vous continuer ?"
+    },
+
+    "errors": {
+        "backupFailed": "La sauvegarde a échoué",
+        "settingsSaveFailed": "Impossible d'enregistrer les paramètres",
+        "loadFailed": "Échec du chargement",
+        "downloadFailed": "Échec du téléchargement",
+        "deleteFailed": "Échec de la suppression"
     },
 
     "size": {

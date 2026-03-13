@@ -109,22 +109,22 @@ export class BluetoothWizard {
 
     _isWorkflowReadyForDeviceAdd() {
         if (!this.workflowState.connected) {
-            Toast.warning('Cihaz baglantisi tamamlanmadan ekleme yapilamaz.');
+            Toast.warning(this.__('bluetooth.wizard.connectionRequired'));
             return false;
         }
 
         if (!this.workflowState.wifiConfigured) {
-            Toast.warning('WiFi ayarlari kaydedilmeden cihaz eklenemez.');
+            Toast.warning(this.__('bluetooth.wizard.wifiConfigRequired'));
             return false;
         }
 
         if (!this.workflowState.protocolConfigured) {
-            Toast.warning('Protokol ayari tamamlanmadan cihaz eklenemez.');
+            Toast.warning(this.__('bluetooth.wizard.protocolRequired'));
             return false;
         }
 
         if (!this.workflowState.verified) {
-            Toast.warning('Son dogrulama tamamlanmadan cihaz eklenemez.');
+            Toast.warning(this.__('bluetooth.wizard.verificationRequired'));
             return false;
         }
 
@@ -143,7 +143,7 @@ export class BluetoothWizard {
         addBtn.disabled = !canAdd;
         addBtn.title = canAdd
             ? ''
-            : 'Cihaz eklemek icin baglanti, WiFi, protokol ve dogrulama adimlarini tamamlayin.';
+            : this.__('bluetooth.wizard.completeStepsTooltip');
     }
 
     /**
@@ -267,7 +267,7 @@ export class BluetoothWizard {
             await this.bluetoothService.setUserPassword(newPassword.trim(), newPassword.trim());
             this._deviceToken = newPassword.trim();
             this._log('Admin + User şifresi ayarlandı', 'success');
-            Toast.success('Cihaz BLE şifresi ayarlandı.');
+            Toast.success(this.__('bluetooth.toast.passwordSet'));
         } catch (error) {
             this._log(`Şifre ayarlanamadı: ${error.message}`, 'error');
             Toast.error(error.message);
@@ -1647,7 +1647,7 @@ export class BluetoothWizard {
             this.workflowState.connected = true;
             this._updateStatus(true, this.bluetoothService.device?.name);
             this._log(this.__('bluetooth.wizard.connected'), 'success');
-            Toast.success(this.__('bluetooth.toast.connected') || 'Cihaza baglanildi');
+            Toast.success(this.__('bluetooth.toast.connected'));
 
             // BLE bağlantı kopuşunu dinle (reboot dahil)
             this.bluetoothService.device?.addEventListener('gattserverdisconnected', () => {
@@ -1773,7 +1773,7 @@ export class BluetoothWizard {
             this.workflowState.wifiConfigured = true;
             this.workflowState.protocolConfigured = false;
             this.workflowState.verified = false;
-            Toast.success(this.__('bluetooth.toast.wifiConfigured') || 'WiFi ayarlari kaydedildi');
+            Toast.success(this.__('bluetooth.toast.wifiConfigured'));
 
             // Move to protocol step
             this._setStep(4);
@@ -1842,7 +1842,7 @@ export class BluetoothWizard {
                 const appSecret = document.getElementById('bt-mqtt-app-secret')?.value?.trim() || '';
 
                 if (!mqttUrl) {
-                    Toast.warning(this.__('bluetooth.mqttUrlRequired') || 'MQTT Broker URL gerekli');
+                    Toast.warning(this.__('bluetooth.mqttUrlRequired'));
                     if (btn) btn.disabled = false;
                     return;
                 }
@@ -1930,7 +1930,7 @@ export class BluetoothWizard {
                         if (remoteServer) {
                             if (/^https?:\/\/(localhost|127\.0\.0\.1)/i.test(remoteServer)) {
                                 this._log('UYARI: Remote-server localhost! Cihaz erişemez, gerçek IP kullanın!', 'error');
-                                Toast.warning('Sunucu adresi localhost! Cihaz bu adrese erişemez. Gerçek LAN IP girin.');
+                                Toast.warning(this.__('bluetooth.wizard.localhostWarning'));
                             }
                             this._log(`Remote-server: ${remoteServer}`);
                             await this.bluetoothService.setRemoteServer(remoteServer, this._deviceToken);
@@ -2010,14 +2010,14 @@ export class BluetoothWizard {
                             } catch (e) { this._log(`Application geri yazma: ${e.message}`, 'info'); }
                         }
 
-                        Toast.info('Cihaz HTTP-SERVER moduna geçiyor. ~60-90 saniye bekleyin.');
+                        Toast.info(this.__('bluetooth.wizard.httpServerSwitching'));
                     } else {
                         // HTTP PULL modunda reboot gerekli (ayarların uygulanması için)
                         this._log('Cihaz yeniden başlatılıyor...');
                         try {
                             await this.bluetoothService.reboot(this._deviceToken);
                             this._log('Reboot gönderildi. Cihaz ~20sn sonra sunucuya bağlanacak.', 'info');
-                            Toast.info('Cihaz yeniden başlatılıyor. ~20 saniye bekleyin.');
+                            Toast.info(this.__('bluetooth.wizard.rebootingWait'));
                         } catch (rebootErr) {
                             this._log(`Reboot gönderildi (bağlantı kopabilir): ${rebootErr.message}`, 'info');
                         }
@@ -2041,7 +2041,7 @@ export class BluetoothWizard {
                         // localhost uyarısı
                         if (remoteServer && /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(remoteServer)) {
                             this._log('UYARI: Remote-server localhost! Cihaz erişemez, gerçek IP kullanın!', 'error');
-                            Toast.warning('Sunucu adresi localhost! Cihaz bu adrese erişemez. Gerçek LAN IP girin.');
+                            Toast.warning(this.__('bluetooth.wizard.localhostWarning'));
                         }
 
                         if (remoteServer) {
@@ -2092,7 +2092,7 @@ export class BluetoothWizard {
 
             this._log(this.__('bluetooth.wizard.protocolSet'), 'success');
             if (protocol !== 'MQTT') {
-                Toast.success(this.__('bluetooth.toast.protocolSet') || 'Protokol ayarlandi');
+                Toast.success(this.__('bluetooth.toast.protocolSet'));
             }
 
             // Move to verify step
@@ -2128,7 +2128,7 @@ export class BluetoothWizard {
                     }
                 } else {
                     this._log('Cihaz yeniden başlıyor. ~20sn bekleyip "Bilgileri Oku" butonuna tıklayın.', 'info');
-                    Toast.info('Cihaz yeniden başlıyor. ~20 saniye sonra "Bilgileri Oku" butonuna tıklayın.');
+                    Toast.info(this.__('bluetooth.wizard.rebootReadInfo'));
                 }
             } else {
                 // PavoDisplay veya MQTT — reboot yok, hemen oku
@@ -2224,10 +2224,10 @@ export class BluetoothWizard {
                 }
 
                 this._log('MQTT ayarlari yuklendi', 'success');
-                Toast.success(this.__('bluetooth.mqttSettingsLoaded') || 'MQTT ayarlari sunucudan yuklendi');
+                Toast.success(this.__('bluetooth.mqttSettingsLoaded'));
             } else {
                 this._log('Sunucuda MQTT ayari bulunamadi', 'error');
-                Toast.warning(this.__('bluetooth.mqttNoSettings') || 'Sunucuda MQTT ayari bulunamadi. Ayarlar > MQTT bolumunden yapilandirin.');
+                Toast.warning(this.__('bluetooth.mqttNoSettings'));
             }
         } catch (error) {
             this._log(`MQTT ayarlari yuklenemedi: ${error.message}`, 'error');
@@ -2309,10 +2309,10 @@ export class BluetoothWizard {
 
             if (hasVerificationData) {
                 this._log(this.__('bluetooth.wizard.infoRead'), 'success');
-                Toast.success(this.__('bluetooth.toast.infoRead') || 'Cihaz bilgileri alindi');
+                Toast.success(this.__('bluetooth.toast.infoRead'));
             } else {
                 this._log('Cihaz bilgileri eksik geldi. Son adimi tekrar okuyun.', 'error');
-                Toast.warning('Cihaz bilgileri eksik geldi. "Bilgileri Oku" adimini tekrar deneyin.');
+                Toast.warning(this.__('bluetooth.wizard.infoIncomplete'));
             }
 
         } catch (error) {
@@ -2329,7 +2329,7 @@ export class BluetoothWizard {
             }
             this.workflowState.verified = false;
             this._log(this.__('bluetooth.wizard.readInfoError', { error: error.message }), 'error');
-            Toast.warning(error.message || 'Cihaz bilgileri okunamadi');
+            Toast.warning(error.message || this.__('bluetooth.wizard.infoReadFailed'));
         } finally {
             this._isReadingInfo = false;
             if (btn) {
@@ -2390,7 +2390,7 @@ export class BluetoothWizard {
             this._log(this.__('bluetooth.wizard.rebooting'));
             await this.bluetoothService.reboot(this._deviceToken);
 
-            Toast.info(this.__('bluetooth.toast.rebooting') || 'Cihaz yeniden baslatiliyor...');
+            Toast.info(this.__('bluetooth.toast.rebooting'));
 
             // Disconnect as device will reboot
             this.bluetoothService.disconnect();
@@ -2428,7 +2428,7 @@ export class BluetoothWizard {
             await this.bluetoothService.clearMedia(this._deviceToken);
 
             this._log(this.__('bluetooth.wizard.mediaCleared'), 'success');
-            Toast.success(this.__('bluetooth.toast.mediaCleared') || 'Medyalar temizlendi');
+            Toast.success(this.__('bluetooth.toast.mediaCleared'));
 
         } catch (error) {
             if (allowRetry && this._isTokenError(error)) {
@@ -2462,7 +2462,7 @@ export class BluetoothWizard {
             // Factory reset clears device password — clear our token too
             this._deviceToken = '';
 
-            Toast.success(this.__('bluetooth.toast.factoryResetDone') || 'Fabrika ayarlarina sifirlandi');
+            Toast.success(this.__('bluetooth.toast.factoryResetDone'));
 
             // Disconnect as device will reset
             this.bluetoothService.disconnect();
@@ -2633,7 +2633,7 @@ export class BluetoothWizard {
 
         // MQTT modunda IP zorunlu degil
         if (!data.ip_address && !this._mqttProtocolSelected) {
-            Toast.error('Cihaz IP bilgisi olmadan kayit yapilamaz.');
+            Toast.error(this.__('bluetooth.wizard.ipRequired'));
             throw new Error('Validation failed');
         }
 
@@ -2674,7 +2674,7 @@ export class BluetoothWizard {
                 // Mevcut cihazı güncelle (PUT)
                 const updateResponse = await this.app.api.put(`/devices/${existingDevice.id}`, data);
                 if (updateResponse.success) {
-                    Toast.success(this.__('bluetooth.wizard.deviceUpdated') || 'Cihaz bilgileri güncellendi');
+                    Toast.success(this.__('bluetooth.wizard.deviceUpdated'));
                     if (this.onDeviceAdded) this.onDeviceAdded(updateResponse.data);
                     this.refreshDevices();
                 } else {

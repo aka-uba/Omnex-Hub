@@ -695,7 +695,7 @@ export class QueueDashboardPage {
 
         } catch (error) {
             console.error('Failed to load queue data:', error);
-            Toast.error(this.__('toast.loadError'));
+            Toast.error(this.__('toast.loadError') + ': ' + (error.message || ''));
         }
     }
 
@@ -822,7 +822,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Process error:', error);
-            Toast.error(this.__('toast.processError'));
+            Toast.error(this.__('toast.processError') + ': ' + (error.message || ''));
             this._emptyProcessCount = 0;
             this._stalledProcessingCount = 0;
         } finally {
@@ -1100,7 +1100,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Cleanup failed:', error);
-            Toast.error(this.__('toast.cleanupError'));
+            Toast.error(this.__('toast.cleanupError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1128,7 +1128,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Retry failed:', error);
-            Toast.error(this.__('toast.retryError'));
+            Toast.error(this.__('toast.retryError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1146,7 +1146,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Cancel failed:', error);
-            Toast.error(this.__('toast.cancelError'));
+            Toast.error(this.__('toast.cancelError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1164,7 +1164,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Delete failed:', error);
-            Toast.error(this.__('toast.deleteError'));
+            Toast.error(this.__('toast.deleteError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1184,7 +1184,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Start now failed:', error);
-            Toast.error(this.__('toast.startNowError'));
+            Toast.error(this.__('toast.startNowError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1204,7 +1204,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Reschedule failed:', error);
-            Toast.error(this.__('toast.rescheduleError'));
+            Toast.error(this.__('toast.rescheduleError') + ': ' + (error.message || ''));
         }
     }
 
@@ -1225,7 +1225,7 @@ export class QueueDashboardPage {
             }
         } catch (error) {
             console.error('Bulk delete failed:', error);
-            Toast.error(this.__('toast.deleteError'));
+            Toast.error(this.__('toast.deleteError') + ': ' + (error.message || ''));
         }
     }
 

@@ -159,7 +159,7 @@ export class TenantBackupPage {
             await this.loadCompanyList();
         } catch (e) {
             Logger.error('TenantBackupPage: loadData failed', e);
-            Toast.error(this.__('actions.backup_now') + ' - Error');
+            Toast.error(this.__('errors.backupFailed'));
         }
     }
 
@@ -204,7 +204,7 @@ export class TenantBackupPage {
                 Toast.success(this.__('settings.saved'));
             }
         } catch (e) {
-            Toast.error(e.message || 'Error');
+            Toast.error(e.message || this.__('errors.settingsSaveFailed'));
         }
     }
 
@@ -412,7 +412,7 @@ export class TenantBackupPage {
                     const selectedGroups = allChecked ? null : [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
 
                     if (!allChecked && selectedGroups.length === 0) {
-                        Toast.error(this.__('export.no_selection') || 'En az bir kategori seçin');
+                        Toast.error(this.__('export.no_selection'));
                         return;
                     }
 
@@ -442,7 +442,7 @@ export class TenantBackupPage {
      */
     async _doExport(companyId, groups, includeMedia) {
         try {
-            Toast.info(this.__('export.started') || 'Yedekleme başlatılıyor...');
+            Toast.info(this.__('export.started'));
             const res = await this.app.api.post('/tenant-backup/export', {
                 company_id: companyId,
                 include_media: includeMedia,
@@ -518,7 +518,7 @@ export class TenantBackupPage {
                 onConfirm: () => this.startBackup(companyId),
             });
         } catch (e) {
-            Toast.error(e.message || 'Error');
+            Toast.error(e.message || this.__('errors.loadFailed'));
         }
     }
 
@@ -547,7 +547,7 @@ export class TenantBackupPage {
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
         } catch (e) {
-            Toast.error(e.message || 'Download failed');
+            Toast.error(e.message || this.__('errors.downloadFailed'));
         }
     }
 
@@ -565,7 +565,7 @@ export class TenantBackupPage {
                 Toast.warning(this.__('list.no_backups'));
             }
         } catch (e) {
-            Toast.error(e.message || 'Error');
+            Toast.error(e.message || this.__('errors.loadFailed'));
         }
     }
 
@@ -579,7 +579,7 @@ export class TenantBackupPage {
      * Then show restore modal with group selection.
      */
     async restoreBackup(backupId, sourceCompanyId, sourceCompanyName) {
-        Toast.info(this.__('restore_confirm.loading') || 'Yedek bilgileri okunuyor...');
+        Toast.info(this.__('restore_confirm.loading'));
 
         try {
             // Download the archive first to peek its manifest
@@ -602,7 +602,7 @@ export class TenantBackupPage {
             this._showRestoreModal(backupId, sourceCompanyId, sourceCompanyName, archiveBlob, availableGroups, manifest);
 
         } catch (e) {
-            Toast.error(e.message || this.__('restore_confirm.peek_failed') || 'Yedek okunamadı');
+            Toast.error(e.message || this.__('restore_confirm.peek_failed'));
         }
     }
 
@@ -711,7 +711,7 @@ export class TenantBackupPage {
                 if (checkboxes.length > 0) {
                     selectedGroups = [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
                     if (selectedGroups.length === 0) {
-                        Toast.error(this.__('restore_confirm.no_selection') || 'En az bir kategori seçin');
+                        Toast.error(this.__('restore_confirm.no_selection'));
                         return;
                     }
                 }
@@ -722,7 +722,7 @@ export class TenantBackupPage {
                     const typed = document.getElementById('confirm-company-name')?.value?.trim();
 
                     if (!typed || typed !== targetCompanyName) {
-                        Toast.error(this.__('restore_confirm.name_mismatch') || 'Firma adı eşleşmiyor!');
+                        Toast.error(this.__('restore_confirm.name_mismatch'));
                         return;
                     }
 
@@ -730,7 +730,7 @@ export class TenantBackupPage {
                 } else {
                     const newName = document.getElementById('restore-new-company-name')?.value?.trim();
                     if (!newName) {
-                        Toast.error(this.__('restore_confirm.name_required') || 'Firma adı gerekli');
+                        Toast.error(this.__('restore_confirm.name_required'));
                         return;
                     }
 
@@ -779,7 +779,7 @@ export class TenantBackupPage {
      * Execute restore: upload pre-downloaded archive blob as import
      */
     async _executeRestore(archiveBlob, mode, targetCompanyId, newCompanyName, includeMedia, selectedGroups) {
-        Toast.info(this.__('restore_confirm.started') || 'Geri yükleme başlatılıyor...');
+        Toast.info(this.__('restore_confirm.started'));
         try {
             const formData = new FormData();
             formData.append('file', archiveBlob, 'restore.tar.gz');
@@ -799,7 +799,7 @@ export class TenantBackupPage {
             const importRes = await this.app.api.upload('/tenant-backup/import', formData);
             if (importRes.success) {
                 const totalRows = importRes.data?.total_rows || 0;
-                Toast.success(`${this.__('import_modal.completed') || 'İçe aktarma tamamlandı'} (${totalRows} kayıt)`);
+                Toast.success(`${this.__('import_modal.completed')} (${totalRows} kayıt)`);
                 await this.loadCompanyList();
             } else {
                 Toast.error(importRes.message || this.__('import_modal.failed'));
@@ -822,7 +822,7 @@ export class TenantBackupPage {
                         await this.loadCompanyList();
                     }
                 } catch (e) {
-                    Toast.error(e.message || 'Error');
+                    Toast.error(e.message || this.__('errors.deleteFailed'));
                 }
             },
         });
@@ -899,7 +899,7 @@ export class TenantBackupPage {
         const includeMedia = document.getElementById('import-media')?.checked ? '1' : '0';
 
         if (!fileInput?.files?.length) {
-            Toast.error('Dosya seçin');
+            Toast.error(this.__('import_modal.fileRequired'));
             return;
         }
 
@@ -911,14 +911,14 @@ export class TenantBackupPage {
         if (mode === 'new_company') {
             const name = document.getElementById('import-company-name')?.value?.trim();
             if (!name) {
-                Toast.error('Firma adı gerekli');
+                Toast.error(this.__('import_modal.companyNameRequired'));
                 return;
             }
             formData.append('company_name', name);
         } else {
             const companyId = document.getElementById('import-company')?.value;
             if (!companyId) {
-                Toast.error('Hedef firma seçin');
+                Toast.error(this.__('import_modal.targetCompanyRequired'));
                 return;
             }
             formData.append('company_id', companyId);

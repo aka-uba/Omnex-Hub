@@ -542,6 +542,7 @@
         "registered": "Registriert",
         "addDevice": "Hinzufügen",
         "ipRequired": "IP-Adresse ist erforderlich",
+        "gatewayNotReady": "Gateway ist nicht bereit",
         "failed": "Scan fehlgeschlagen",
         "deviceFound": "Gerät gefunden",
         "screenSize": "Bildschirmgröße",
@@ -788,7 +789,19 @@
             "ipReadFailed": "IP-Lese-Fehler: {error}",
             "macReadFailed": "MAC-Lese-Fehler: {error}",
             "screenReadFailed": "Bildschirmgrößen-Lese-Fehler: {error}",
-            "extraInfoReadFailed": "Zusatzinfo-Lese-Fehler: {error}"
+            "extraInfoReadFailed": "Zusatzinfo-Lese-Fehler: {error}",
+            "connectionRequired": "Gerät kann nicht hinzugefügt werden, ohne die Verbindung abzuschließen.",
+            "wifiConfigRequired": "Gerät kann nicht hinzugefügt werden, ohne WiFi-Einstellungen zu speichern.",
+            "protocolRequired": "Gerät kann nicht hinzugefügt werden, ohne die Protokollkonfiguration abzuschließen.",
+            "verificationRequired": "Gerät kann nicht hinzugefügt werden, ohne die abschließende Überprüfung durchzuführen.",
+            "localhostWarning": "Serveradresse ist localhost! Gerät kann diese Adresse nicht erreichen. Geben Sie die echte LAN-IP ein.",
+            "httpServerSwitching": "Gerät wechselt in den HTTP-SERVER-Modus. Bitte warten Sie ~60-90 Sekunden.",
+            "rebootingWait": "Gerät wird neu gestartet. Bitte warten Sie ~20 Sekunden.",
+            "rebootReadInfo": "Gerät wird neu gestartet. Klicken Sie nach ~20 Sekunden auf \"Informationen lesen\".",
+            "infoIncomplete": "Geräteinformationen waren unvollständig. Versuchen Sie den Schritt \"Informationen lesen\" erneut.",
+            "infoReadFailed": "Geräteinformationen konnten nicht gelesen werden",
+            "ipRequired": "Gerät kann ohne IP-Informationen nicht registriert werden.",
+            "completeStepsTooltip": "Schließen Sie die Schritte Verbindung, WiFi, Protokoll und Überprüfung ab, um das Gerät hinzuzufügen."
         }
     },
     "control": {
