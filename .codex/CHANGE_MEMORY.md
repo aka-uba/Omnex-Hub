@@ -3394,3 +3394,18 @@ Format:
   - Temp backup: .codex/tmp_backups/20260314_010548_refresh-edge-healthy
   - Not: edit oncesi "mevcut durum saglikli" notu backup klasorunde tutuldu.
   - Restore not required.
+
+## 2026-03-14 - Server container deploy verification
+- Request context:
+  - User requested pushing current changes to server container and confirming deployment status.
+- Changes:
+  - No local source files changed in this step.
+  - Remote server `/opt/omnex-hub` updated to commit `906e715` via `git pull --rebase --autostash origin main`.
+- Checks:
+  - Remote git head check: `git rev-parse --short HEAD` => `906e715`.
+  - Remote container status: `docker compose -p omnex -f docker-compose.yml -f docker-compose.standalone.yml ps` (all core services up, app/postgres/mqtt/transcode healthy).
+  - Health endpoint check: `curl -sk https://localhost/api/health` => HTTP 200 with `{"status":"ok"...}`.
+- Risks/Follow-up:
+  - First deploy command run was user-interrupted, but post-checks confirm stack is up and serving current commit.
+- Backup/Restore Safety:
+  - No file edit operation performed; backup not required.

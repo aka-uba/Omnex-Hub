@@ -1,8 +1,8 @@
 {
-  "versionCode": 29,
-  "versionName": "2.9.0",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=29",
-  "releaseNotes": "- Yeni animasyonlu splash ekrani (OmneX logo hareketi)\n- Ozel startup chime sesi (warm chord)\n- Baslik ve alt yazi animasyonlari eklendi\n- AnimatedVectorDrawable ile logo: C-arc donusu + 3 bar slide-in",
+  "versionCode": 30,
+  "versionName": "2.9.1",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=30",
+  "releaseNotes": "- Splash ekraninda gercek marka logosu (brand_logo.png) kullanildi\n- Logo giris animasyonu: scale overshoot + fade-in\n- Gereksiz baslik/altyazi TextView'lari kaldirildi (logo PNG icinde mevcut)\n- Startup chime sesi korundu (warm chord v2a)",
   "mandatory": false,
-  "sha256": "f67fcaa15ddb47d60972bccdb34ded5ab74925a1e883c813a3ed4792bf19cbc5"
+  "sha256": "2e46e34fded13281b9a54b4368212875f2b93adaa6d71c7f0a5195a9f454243c"
 }

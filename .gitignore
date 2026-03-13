@@ -170,9 +170,22 @@ tests/
 *.phpDEG
 *.php1
 *.bak
+*.bak_*
+*.bak-*
 
-# ---- Misc unnecessary root files ----
-"docs/
+# ---- Codex temp files ----
+.codex/tmp_backups/
+.codex/tmp_last_playlist.m3u
+.codex/plan_*.json
+.codex/pp_head.js
+
+# ---- Test & tool scripts ----
+scripts/test_*.php
+tools/test_*.php
+tools/soarfree_network_setup.bat
+
+# ---- Root-level reports/documents ----
+Omnex_Display_Hub_Proje_Degerlendirme_Raporu.pdf
 
 # ---- PHP temp ----
 *.cache
