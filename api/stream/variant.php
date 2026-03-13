@@ -73,8 +73,9 @@ $segmentDuration = defined('STREAM_SEGMENT_DURATION') ? STREAM_SEGMENT_DURATION 
 $basePath = streamResolveBasePath();
 $baseUrl = streamResolveBaseUrl();
 
-// Global segment listesi: her eleman { duration, url }
+// Global segment listesi: her eleman { duration, url, discontinuity }
 $allSegments = [];
+$videoCount = 0;
 
 foreach ($playlistItems as $item) {
     $itemType = $item['type'] ?? '';
@@ -94,6 +95,10 @@ foreach ($playlistItems as $item) {
 
     $variantContent = file_get_contents($variantPlaylistPath);
     $variantLines = explode("\n", $variantContent);
+
+    // Discontinuity: farkli video gecislerinde
+    $needsDiscontinuity = ($videoCount > 0);
+    $videoCount++;
 
     $pendingDuration = null;
 
@@ -123,9 +128,12 @@ foreach ($playlistItems as $item) {
             $dur = $pendingDuration ?? (float)$segmentDuration;
 
             $allSegments[] = [
-                'duration' => $dur,
-                'url' => $segmentUrl,
+                'duration'       => $dur,
+                'url'            => $segmentUrl,
+                'discontinuity'  => $needsDiscontinuity,
             ];
+            // Sadece ilk segment'te discontinuity
+            $needsDiscontinuity = false;
             $pendingDuration = null;
             continue;
         }
@@ -211,6 +219,11 @@ for ($w = 0; $w < $windowSize; $w++) {
     // Dongusel index: negatif veya tasma durumunda modulo ile sar
     $idx = (($windowStart + $w) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
     $seg = $allSegments[$idx];
+
+    // Discontinuity: video gecisleri veya dongu basi (idx=0 ve ilk segment degil)
+    if ($seg['discontinuity'] || ($w > 0 && $idx === 0)) {
+        $lines[] = "#EXT-X-DISCONTINUITY";
+    }
 
     $lines[] = "#EXTINF:{$seg['duration']},";
     $lines[] = $seg['url'];

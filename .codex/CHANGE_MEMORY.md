@@ -3026,3 +3026,17 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_035803-vlc-discontinuity-iptv-parser-fix`
   - Restore not required.
+## 2026-03-13 - Revert VLC transition freeze change
+- Request context:
+  - Kullanici VLC'de son degisiklikten sonra video gecislerinin dondugunu bildirdi ve VLC ile ilgili degisikligin geri alinmasini istedi.
+- Changes:
+  - `api/stream/variant.php`
+    - Son hardening adiminda kaldirilan `#EXT-X-DISCONTINUITY` enjeksiyonu geri alindi.
+    - Segment birlestirme onceki calisan akisina restore edildi (video gecisi ve dongu basi discontinuity davranisi).
+- Checks:
+  - `php -l api/stream/variant.php`
+- Risks/Follow-up:
+  - VLC gecis overlay metni sorunu tekrar gorulebilir; donma sorunu cozulduktan sonra client-tipine gore kosullu playlist varyanti dusunulebilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_040246-revert-vlc-transition-freeze`
+  - Restore applied from git source: `546fd45` (only `api/stream/variant.php`).
