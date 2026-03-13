@@ -1291,6 +1291,11 @@ $router->group(['prefix' => '/api/transcode', 'middleware' => ['auth']], functio
     $router->get('/{id}/status', function($request) {
         require API_PATH . '/transcode/status.php';
     });
+
+    // Re-encode all variants (admin only - fixes VLC transition issues)
+    $router->post('/re-encode-all', function($request) {
+        require API_PATH . '/transcode/re-encode-all.php';
+    });
 });
 
 // =====================================================

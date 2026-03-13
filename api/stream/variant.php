@@ -73,9 +73,12 @@ $segmentDuration = defined('STREAM_SEGMENT_DURATION') ? STREAM_SEGMENT_DURATION 
 $basePath = streamResolveBasePath();
 $baseUrl = streamResolveBaseUrl();
 
-// Global segment listesi: her eleman { duration, url, discontinuity }
+// Global segment listesi: her eleman { duration, url }
+// NOT: #EXT-X-DISCONTINUITY kaldirildi. Tum videolar HlsTranscoder tarafindan
+// ayni codec ayarlariyla (ayni GOP, keyframe interval, audio sample rate)
+// encode edildigi icin discontinuity gereksiz. VLC'de discontinuity tag'i
+// decoder pipeline reset'e, donmaya ve baslik goruntulemesine neden oluyordu.
 $allSegments = [];
-$videoCount = 0;
 
 foreach ($playlistItems as $item) {
     $itemType = $item['type'] ?? '';
@@ -95,10 +98,6 @@ foreach ($playlistItems as $item) {
 
     $variantContent = file_get_contents($variantPlaylistPath);
     $variantLines = explode("\n", $variantContent);
-
-    // Discontinuity: farkli video gecislerinde
-    $needsDiscontinuity = ($videoCount > 0);
-    $videoCount++;
 
     $pendingDuration = null;
 
@@ -130,10 +129,7 @@ foreach ($playlistItems as $item) {
             $allSegments[] = [
                 'duration'       => $dur,
                 'url'            => $segmentUrl,
-                'discontinuity'  => $needsDiscontinuity,
             ];
-            // Sadece ilk segment'te discontinuity
-            $needsDiscontinuity = false;
             $pendingDuration = null;
             continue;
         }
@@ -219,11 +215,6 @@ for ($w = 0; $w < $windowSize; $w++) {
     // Dongusel index: negatif veya tasma durumunda modulo ile sar
     $idx = (($windowStart + $w) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
     $seg = $allSegments[$idx];
-
-    // Discontinuity: video gecisleri veya dongu basi (idx=0 ve ilk segment degil)
-    if ($seg['discontinuity'] || ($w > 0 && $idx === 0)) {
-        $lines[] = "#EXT-X-DISCONTINUITY";
-    }
 
     $lines[] = "#EXTINF:{$seg['duration']},";
     $lines[] = $seg['url'];

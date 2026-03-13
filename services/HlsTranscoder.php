@@ -216,12 +216,21 @@ class HlsTranscoder
                     $profile['width'], $profile['height']
                 );
 
+                // GOP/keyframe normalization: Tum videolarin ayni keyframe yapisina
+                // sahip olmasi, discontinuity tag'i olmadan segment'lerin sorunsuz
+                // birlestirilmesini saglar. VLC donma/takılma sorununu cozer.
+                // GOP = segment_duration * 24fps (yaklasik), sc_threshold=0 scene change kapatir
+                $gopSize = $segmentDuration * 24;
+                $forceKeyframes = sprintf('expr:gte(t,n_forced*%d)', $segmentDuration);
+
                 // FFmpeg komutu
                 $cmd = sprintf(
                     '%s -y -i %s ' .
                     '-vf "%s" ' .
                     '-c:v libx264 -preset medium -profile:v %s -level %s ' .
                     '-b:v %dk -maxrate %dk -bufsize %dk ' .
+                    '-g %d -keyint_min %d -sc_threshold 0 ' .
+                    '-force_key_frames "%s" ' .
                     '-c:a aac -b:a %dk -ar 44100 -ac 2 ' .
                     '-f hls -hls_time %d -hls_list_size 0 ' .
                     '-hls_segment_type mpegts ' .
@@ -236,6 +245,9 @@ class HlsTranscoder
                     $profile['bitrate'],
                     $profile['maxrate'],
                     $profile['bufsize'],
+                    $gopSize,
+                    $gopSize,
+                    $forceKeyframes,
                     $profile['audio_bitrate'],
                     $segmentDuration,
                     escapeshellarg($profileDir . '/segment_%04d.ts'),

@@ -411,4 +411,47 @@ class TranscodeQueueService
         $this->db->query("DELETE FROM transcode_variants WHERE media_id = ?", [$mediaId]);
         $this->db->query("DELETE FROM transcode_queue WHERE media_id = ?", [$mediaId]);
     }
+
+    /**
+     * Mevcut transcode edilmis videolari yeniden encode kuyruguna ekler.
+     * Yeni FFmpeg keyframe/GOP ayarlari ile re-encode yapilir.
+     * VLC gecis donma sorununu cozmek icin mevcut variant'lar temizlenip yeniden olusturulur.
+     *
+     * @param string $companyId Firma ID (tumu icin null)
+     * @return array ['queued' => int, 'skipped' => int, 'errors' => string[]]
+     */
+    public function reEncodeAll(?string $companyId = null): array
+    {
+        $result = ['queued' => 0, 'skipped' => 0, 'errors' => []];
+
+        // Mevcut ready variant'lari olan medya ID'lerini bul
+        $query = "SELECT DISTINCT media_id, company_id FROM transcode_variants WHERE status = 'ready'";
+        $params = [];
+
+        if ($companyId !== null) {
+            $query .= " AND company_id = ?";
+            $params[] = $companyId;
+        }
+
+        $variants = $this->db->fetchAll($query, $params);
+
+        foreach ($variants as $v) {
+            try {
+                $mid = $v['media_id'];
+                $cid = $v['company_id'];
+
+                // Mevcut variant dosyalarini ve DB kayitlarini temizle
+                $this->cleanupVariants($mid);
+
+                // Yeni transcode kuyruğuna ekle
+                $this->enqueue($mid, $cid, null);
+                $result['queued']++;
+            } catch (\Throwable $e) {
+                $result['skipped']++;
+                $result['errors'][] = ($v['media_id'] ?? '?') . ': ' . $e->getMessage();
+            }
+        }
+
+        return $result;
+    }
 }

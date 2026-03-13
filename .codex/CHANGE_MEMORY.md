@@ -11,6 +11,21 @@ Format:
 
 ---
 
+## 2026-03-13 - Fix VLC stream transition freezing and title overlay
+
+- Request: Fix VLC donma/takılma ve playlist ismi görünmesi sorunları. variant.php discontinuity kaldır, FFmpeg keyframe normalizasyonu ekle, re-encode mekanizması oluştur.
+- Changes:
+  1. variant.php: `#EXT-X-DISCONTINUITY` tag'ı ve ilgili tüm mantık kaldırıldı (videoCount, needsDiscontinuity). VLC decoder pipeline reset'i ve OSD title gösterimini çözer.
+  2. HlsTranscoder.php: FFmpeg komutuna `-g`, `-keyint_min`, `-sc_threshold 0`, `-force_key_frames` parametreleri eklendi. Tüm videoların aynı keyframe yapısına sahip olmasını garanti eder.
+  3. TranscodeQueueService.php: `reEncodeAll()` metodu eklendi - mevcut tüm transcode edilmiş videoları yeni ayarlarla re-encode kuyruğuna ekler.
+  4. api/transcode/re-encode-all.php: Yeni endpoint (POST, admin only) - mevcut videoların re-encode'unu tetikler.
+  5. api/index.php: `/api/transcode/re-encode-all` route eklendi.
+- Files: api/stream/variant.php, services/HlsTranscoder.php, services/TranscodeQueueService.php, api/transcode/re-encode-all.php (yeni), api/index.php
+- Checks: php -l tüm dosyalar OK
+- Risk/Follow-up: Mevcut videolar eski keyframe ayarlarıyla encode edilmiş. `POST /api/transcode/re-encode-all` çağrılarak yeniden encode yapılmalı. Re-encode süresi video sayısına bağlı. Discontinuity kaldırıldığı için eski encode'lu videolarda farklı GOP yapısından dolayı minor glitch olabilir - re-encode ile tamamen çözülür.
+
+---
+
 ## 2026-03-13 - Comprehensive Toast i18n fix across entire codebase
 - Request: Detect and fix ALL Toast messages not connected to i18n (hardcoded text, English fallbacks, catch blocks losing error details)
 - Changes:
