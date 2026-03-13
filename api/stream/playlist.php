@@ -237,7 +237,12 @@ $selectedProfile = streamPlaylistSelectProfile($availableProfiles, $requestedPro
 $targetUrl = $baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8';
 $showLabelRaw = strtolower((string)$request->query('label', '1'));
 $showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
-$extInfTitle = $showLabel ? $streamLabel : '';
+$channelTitleRaw = $showLabel ? $streamLabel : 'Omnex Live';
+$channelTitle = trim((string)preg_replace('/[\r\n]+/', ' ', (string)$channelTitleRaw));
+if ($channelTitle === '') {
+    $channelTitle = 'Omnex Live';
+}
+$channelTitleEscaped = str_replace(['"', ','], ["'", ' '], $channelTitle);
 
 $downloadRaw = strtolower((string)$request->query('download', '0'));
 $isDownload = in_array($downloadRaw, ['1', 'true', 'yes', 'download'], true);
@@ -288,7 +293,7 @@ try {
 
 $lines = [
     '#EXTM3U',
-    '#EXTINF:-1,' . $extInfTitle,
+    '#EXTINF:-1 tvg-id="" tvg-name="' . $channelTitleEscaped . '" group-title="Omnex",' . $channelTitleEscaped,
     $targetUrl,
     '',
 ];

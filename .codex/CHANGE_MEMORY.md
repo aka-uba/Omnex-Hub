@@ -3002,3 +3002,27 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_034936-iptvsmarters-vlc-title-fix`
   - Restore not required.
+## 2026-03-13 - VLC transition overlay root-cause fix + URL M3U parser hardening
+- Request context:
+  - VLC'de video gecislerinde playlist/metin overlay'i devam ediyor; onceki gecici ayarlar kalici cozum olmadi.
+  - IPTV Smarters URL import'ta kanal/icerik parse davranisi tutarsiz.
+- Root cause:
+  - `variant` playlistte her medya gecisinde `#EXT-X-DISCONTINUITY` eklenmesi VLC'de yeni medya/title overlay tetikleyebiliyor.
+  - URL tabanli `playlist.m3u` cikti satiri IPTV parser beklentisi icin zayif kalabiliyor.
+- Changes:
+  - `api/stream/variant.php`
+    - Segment birlestirmede medya-gecis `DISCONTINUITY` enjeksiyonu kaldirildi.
+    - Playlist artik segmentleri kesintisiz canli akis gibi sunuyor (VLC gecis overlay azalmasi hedefi).
+  - `api/stream/playlist.php`
+    - URL M3U cikti satiri parser-uyumlu hale getirildi:
+      - `#EXTINF:-1 tvg-id="" tvg-name="..." group-title="Omnex",...`
+    - Kanal adi sanitize/escape islemi eklendi.
+- Checks:
+  - `php -l api/stream/variant.php`
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Farkli codec parametreleri olan transcode segmentlerinde discontinuity kaldirilmasi nadiren senkron gecis etkisi yapabilir; gozlemlenirse kosullu discontinuity stratejisi eklenir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_035803-vlc-discontinuity-iptv-parser-fix`
+  - Restore not required.
