@@ -43,35 +43,54 @@ if ($isSystemTemplate) {
     }
 }
 
-// İlişkili kayıtları temizle (foreign key constraint hatalarını önle)
 try {
-    // render_queue tablosundaki referansları temizle
-    $db->query("UPDATE render_queue SET template_id = NULL WHERE template_id = ?", [$id]);
+    $db->beginTransaction();
 
-    // devices tablosundaki referansları temizle
-    $db->query("UPDATE devices SET current_template_id = NULL WHERE current_template_id = ?", [$id]);
+    // İlişkili kayıtları temizle (foreign key constraint hatalarını önle)
+    try {
+        // render_queue tablosundaki referansları temizle
+        $db->query("UPDATE render_queue SET template_id = NULL WHERE template_id = ?", [$id]);
 
-    // products tablosundaki referansları temizle
-    $db->query("UPDATE products SET assigned_template_id = NULL WHERE assigned_template_id = ?", [$id]);
+        // devices tablosundaki referansları temizle
+        $db->query("UPDATE devices SET current_template_id = NULL WHERE current_template_id = ?", [$id]);
 
-    // hanshow_esls tablosundaki referansları temizle
-    $db->query("UPDATE hanshow_esls SET current_template_id = NULL WHERE current_template_id = ?", [$id]);
+        // products tablosundaki referansları temizle
+        $db->query("UPDATE products SET assigned_template_id = NULL WHERE assigned_template_id = ?", [$id]);
 
-    // hanshow_queue tablosundaki referansları temizle
-    $db->query("UPDATE hanshow_queue SET template_id = NULL WHERE template_id = ?", [$id]);
+        // hanshow_esls tablosundaki referansları temizle
+        $db->query("UPDATE hanshow_esls SET current_template_id = NULL WHERE current_template_id = ?", [$id]);
 
-    // product_renders tablosundaki referansları temizle
-    $db->query("UPDATE product_renders SET template_id = NULL WHERE template_id = ?", [$id]);
+        // hanshow_queue tablosundaki referansları temizle
+        $db->query("UPDATE hanshow_queue SET template_id = NULL WHERE template_id = ?", [$id]);
 
-    // Alt şablonların parent_id'sini temizle
-    $db->query("UPDATE templates SET parent_id = NULL WHERE parent_id = ?", [$id]);
-} catch (Exception $e) {
-    // Hata olsa bile devam et (tablolar mevcut olmayabilir)
-    error_log('[templates/delete] İlişkili kayıtlar temizlenirken hata: ' . $e->getMessage());
+        // product_renders tablosundaki referansları temizle
+        $db->query("UPDATE product_renders SET template_id = NULL WHERE template_id = ?", [$id]);
+
+        // Alt şablonların parent_id'sini temizle
+        $db->query("UPDATE templates SET parent_id = NULL WHERE parent_id = ?", [$id]);
+    } catch (Throwable $cleanupError) {
+        // Hata olsa bile devam et (tablolar mevcut olmayabilir)
+        error_log('[templates/delete] İlişkili kayıtlar temizlenirken hata: ' . $cleanupError->getMessage());
+    }
+
+    $db->delete('templates', 'id = ?', [$id]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Template delete error', [
+        'template_id' => $id,
+        'company_id' => $companyId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
-$db->delete('templates', 'id = ?', [$id]);
-
-Logger::audit('delete', 'templates', ['template_id' => $id]);
+try {
+    Logger::audit('delete', 'templates', ['template_id' => $id]);
+} catch (Throwable $auditError) {
+    error_log('Template delete audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success(null, 'Şablon silindi');

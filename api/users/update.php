@@ -76,37 +76,52 @@ $oldRole = $existingUser['role'];
 $newStatus = $data['status'] ?? $oldStatus;
 $newRole = $data['role'] ?? $oldRole;
 
-$db->update('users', $data, 'id = ?', [$id]);
+try {
+    $db->beginTransaction();
 
-// Handle branch assignments
-if ($request->has('branch_ids')) {
-    $branchIds = $request->input('branch_ids');
-    $defaultBranchId = $request->input('default_branch_id');
-    $targetCompanyId = $data['company_id'] ?? $existingUser['company_id'] ?? null;
+    $db->update('users', $data, 'id = ?', [$id]);
 
-    $db->delete('user_branch_access', 'user_id = ?', [$id]);
+    // Handle branch assignments
+    if ($request->has('branch_ids')) {
+        $branchIds = $request->input('branch_ids');
+        $defaultBranchId = $request->input('default_branch_id');
+        $targetCompanyId = $data['company_id'] ?? $existingUser['company_id'] ?? null;
 
-    if (is_array($branchIds) && !empty($branchIds) && $targetCompanyId) {
-        foreach ($branchIds as $branchId) {
-            $branch = $db->fetch(
-                "SELECT id FROM branches WHERE id = ? AND company_id = ?",
-                [$branchId, $targetCompanyId]
-            );
-            if (!$branch) {
-                continue;
+        $db->delete('user_branch_access', 'user_id = ?', [$id]);
+
+        if (is_array($branchIds) && !empty($branchIds) && $targetCompanyId) {
+            foreach ($branchIds as $branchId) {
+                $branch = $db->fetch(
+                    "SELECT id FROM branches WHERE id = ? AND company_id = ?",
+                    [$branchId, $targetCompanyId]
+                );
+                if (!$branch) {
+                    continue;
+                }
+
+                $db->insert('user_branch_access', [
+                    'id' => $db->generateUuid(),
+                    'user_id' => $id,
+                    'branch_id' => $branchId,
+                    'access_level' => 'full',
+                    'is_default' => ($branchId === $defaultBranchId) ? 1 : 0,
+                    'granted_by' => $currentUser['id'],
+                    'granted_at' => date('Y-m-d H:i:s')
+                ]);
             }
-
-            $db->insert('user_branch_access', [
-                'id' => $db->generateUuid(),
-                'user_id' => $id,
-                'branch_id' => $branchId,
-                'access_level' => 'full',
-                'is_default' => ($branchId === $defaultBranchId) ? 1 : 0,
-                'granted_by' => $currentUser['id'],
-                'granted_at' => date('Y-m-d H:i:s')
-            ]);
         }
     }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('User update error', [
+        'user_id' => $id,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
 // Send notifications for status and role changes
@@ -135,18 +150,22 @@ $user = $db->fetch("SELECT id, first_name, last_name, email, role, status, phone
 $user['name'] = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
 
 // Audit log
-Logger::audit('update', 'user', [
-    'id' => $id,
-    'old' => [
-        'email' => $existingUser['email'],
-        'role' => $existingUser['role'],
-        'status' => $existingUser['status']
-    ],
-    'new' => [
-        'email' => $user['email'],
-        'role' => $user['role'],
-        'status' => $user['status']
-    ]
-]);
+try {
+    Logger::audit('update', 'user', [
+        'id' => $id,
+        'old' => [
+            'email' => $existingUser['email'],
+            'role' => $existingUser['role'],
+            'status' => $existingUser['status']
+        ],
+        'new' => [
+            'email' => $user['email'],
+            'role' => $user['role'],
+            'status' => $user['status']
+        ]
+    ]);
+} catch (Throwable $auditError) {
+    error_log('User update audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success($user, 'Kullanici guncellendi');

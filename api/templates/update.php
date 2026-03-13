@@ -245,22 +245,38 @@ foreach ($renderImpactFields as $field) {
     }
 }
 
-$db->update('templates', $data, 'id = ?', [$id]);
+try {
+    $db->beginTransaction();
 
-// Tek ortak şablon kuralı (label_printer)
-if (
-    isset($data['is_default']) &&
-    $data['is_default'] == 1 &&
-    (($data['category'] ?? $template['category']) === 'label_printer')
-) {
-    $targetCompanyId = $template['company_id'] ?? $companyId;
-    if ($targetCompanyId) {
-        $db->query(
-            "UPDATE templates SET is_default = 0
-             WHERE company_id = ? AND category = 'label_printer' AND id != ?",
-            [$targetCompanyId, $id]
-        );
+    $db->update('templates', $data, 'id = ?', [$id]);
+
+    // Tek ortak şablon kuralı (label_printer)
+    if (
+        isset($data['is_default']) &&
+        $data['is_default'] == 1 &&
+        (($data['category'] ?? $template['category']) === 'label_printer')
+    ) {
+        $targetCompanyId = $template['company_id'] ?? $companyId;
+        if ($targetCompanyId) {
+            $db->query(
+                "UPDATE templates SET is_default = 0
+                 WHERE company_id = ? AND category = 'label_printer' AND id != ?",
+                [$targetCompanyId, $id]
+            );
+        }
     }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Template update error', [
+        'template_id' => $id,
+        'company_id' => $companyId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
 // Render-impact degisikliginde cache'i stale yap ve yeni render job'larini tetikle
@@ -359,6 +375,10 @@ $template['layout_type'] = $template['layout_type'] ?? 'full';
 $template['template_file'] = $template['template_file'] ?? null;
 $template['slots'] = $template['slots'] ? json_decode($template['slots'], true) : null;
 
-Logger::audit('update', 'templates', ['template_id' => $id]);
+try {
+    Logger::audit('update', 'templates', ['template_id' => $id]);
+} catch (Throwable $auditError) {
+    error_log('Template update audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success($template, 'Şablon güncellendi');

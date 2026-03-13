@@ -149,6 +149,9 @@ if ($vatChanged && $hasVatUpdatedAtColumn) {
 // ========================================
 // BRANCH-SPECIFIC VS MASTER UPDATE
 // ========================================
+try {
+    $db->beginTransaction();
+
 if ($isBranchUpdate) {
     // Branch-specific update: Use ProductPriceResolver to create/update override
     $branchOverrideFields = [
@@ -197,7 +200,7 @@ if ($isBranchUpdate) {
         ]);
 
         if (!$overrideResult['success']) {
-            Response::error($overrideResult['error'] ?? 'Şube override kaydedilemedi', 500);
+            throw new RuntimeException($overrideResult['error'] ?? 'Branch override save failed');
         }
 
         Logger::info('Branch override saved', [
@@ -236,6 +239,18 @@ if ($isBranchUpdate) {
         $data['version'] = ($product['version'] ?? 0) + 1;
     }
     $db->update('products', $data, 'id = ?', [$productId]);
+}
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Product update error', [
+        'product_id' => $productId,
+        'company_id' => $companyId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
 // ========================================
@@ -279,22 +294,33 @@ try {
 // Log price change
 // Note: Branch price changes are logged by ProductPriceResolver::setOverride() to branch_price_history
 if ($priceChanged && !$isBranchUpdate) {
-    // Master price change - log to central price_history
-    $db->insert('price_history', [
-        'id' => $db->generateUuid(),
-        'product_id' => $productId,
-        'old_price' => $product['current_price'],
-        'new_price' => $newPrice,
-        'changed_at' => date('Y-m-d H:i:s'),
-        'source' => 'manual'
-    ]);
+    try {
+        // Master price change - log to central price_history
+        $db->insert('price_history', [
+            'id' => $db->generateUuid(),
+            'product_id' => $productId,
+            'old_price' => $product['current_price'],
+            'new_price' => $newPrice,
+            'changed_at' => date('Y-m-d H:i:s'),
+            'source' => 'manual'
+        ]);
+    } catch (Throwable $priceHistoryError) {
+        Logger::error('Price history insert failed', [
+            'product_id' => $productId,
+            'error' => $priceHistoryError->getMessage()
+        ]);
+    }
 }
 
 // Log update
-Logger::audit('update', 'products', [
-    'product_id' => $productId,
-    'changes' => array_keys($data)
-]);
+try {
+    Logger::audit('update', 'products', [
+        'product_id' => $productId,
+        'changes' => array_keys($data)
+    ]);
+} catch (Throwable $auditError) {
+    error_log('Product update audit skipped: ' . $auditError->getMessage());
+}
 
 // Get updated product
 $updated = $db->fetch("SELECT * FROM products WHERE id = ?", [$productId]);

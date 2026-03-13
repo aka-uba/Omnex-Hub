@@ -205,73 +205,98 @@ if ($request->has('bt_password')) {
 
 $data['updated_at'] = date('Y-m-d H:i:s');
 
-$db->update('devices', $data, 'id = ?', [$id]);
+$updatedDevice = null;
 
-// Keep gateway mapping in sync when device IP changes from UI.
-if ($ipChanged) {
-    $db->update('gateway_devices', [
-        'local_ip' => $newIpAddress,
-        'updated_at' => date('Y-m-d H:i:s')
-    ], 'device_id = ?', [$id]);
-}
+try {
+    $db->beginTransaction();
 
-// Keep pending gateway command payloads in sync with edited device identity.
-if ($ipChanged || $clientIdChanged) {
-    $pendingCommands = $db->fetchAll(
-        "SELECT id, parameters
-         FROM gateway_commands
-         WHERE device_id = ? AND status = 'pending'",
-        [$id]
-    );
+    $db->update('devices', $data, 'id = ?', [$id]);
 
-    foreach ($pendingCommands as $command) {
-        $params = json_decode($command['parameters'] ?? '', true);
-        if (!is_array($params)) {
-            continue;
-        }
+    // Keep gateway mapping in sync when device IP changes from UI.
+    if ($ipChanged) {
+        $db->update('gateway_devices', [
+            'local_ip' => $newIpAddress,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], 'device_id = ?', [$id]);
+    }
 
-        $changed = false;
+    // Keep pending gateway command payloads in sync with edited device identity.
+    if ($ipChanged || $clientIdChanged) {
+        $pendingCommands = $db->fetchAll(
+            "SELECT id, parameters
+             FROM gateway_commands
+             WHERE device_id = ? AND status = 'pending'",
+            [$id]
+        );
 
-        if ($ipChanged) {
-            foreach (['device_ip', 'ip', 'ip_address'] as $ipKey) {
-                if (array_key_exists($ipKey, $params)) {
-                    $params[$ipKey] = $newIpAddress;
-                    $changed = true;
+        foreach ($pendingCommands as $command) {
+            $params = json_decode($command['parameters'] ?? '', true);
+            if (!is_array($params)) {
+                continue;
+            }
+
+            $changed = false;
+
+            if ($ipChanged) {
+                foreach (['device_ip', 'ip', 'ip_address'] as $ipKey) {
+                    if (array_key_exists($ipKey, $params)) {
+                        $params[$ipKey] = $newIpAddress;
+                        $changed = true;
+                    }
                 }
             }
-        }
 
-        if ($clientIdChanged) {
-            foreach (['client_id', 'clientid'] as $clientKey) {
-                if (array_key_exists($clientKey, $params)) {
-                    $params[$clientKey] = $newClientId;
-                    $changed = true;
+            if ($clientIdChanged) {
+                foreach (['client_id', 'clientid'] as $clientKey) {
+                    if (array_key_exists($clientKey, $params)) {
+                        $params[$clientKey] = $newClientId;
+                        $changed = true;
+                    }
                 }
             }
-        }
 
-        if ($changed) {
-            $db->update('gateway_commands', [
-                'parameters' => json_encode($params, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-            ], 'id = ?', [$command['id']]);
+            if ($changed) {
+                $db->update('gateway_commands', [
+                    'parameters' => json_encode($params, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                ], 'id = ?', [$command['id']]);
+            }
         }
     }
+
+    $updatedDevice = $db->fetch("SELECT * FROM devices WHERE id = ?", [$id]);
+    if (!$updatedDevice) {
+        throw new Exception('Updated device not found');
+    }
+
+    // Map back for frontend - use original_type from metadata if available
+    $metadata = $updatedDevice['metadata'] ? json_decode($updatedDevice['metadata'], true) : [];
+    $updatedDevice['serial_number'] = $updatedDevice['device_id'];
+
+    // Return original_type if stored, otherwise map from db type
+    if (!empty($metadata['original_type'])) {
+        $updatedDevice['type'] = $metadata['original_type'];
+    } else {
+        $typeMapReverse = ['android_tv' => 'android_tv', 'esl' => 'esl', 'panel' => 'panel', 'web_display' => 'web_display'];
+        $updatedDevice['type'] = $typeMapReverse[$updatedDevice['type']] ?? $updatedDevice['type'];
+    }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+
+    Logger::error('Device update error', [
+        'device_id' => $id,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
-$device = $db->fetch("SELECT * FROM devices WHERE id = ?", [$id]);
-
-// Map back for frontend - use original_type from metadata if available
-$metadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];
-$device['serial_number'] = $device['device_id'];
-
-// Return original_type if stored, otherwise map from db type
-if (!empty($metadata['original_type'])) {
-    $device['type'] = $metadata['original_type'];
-} else {
-    $typeMapReverse = ['android_tv' => 'android_tv', 'esl' => 'esl', 'panel' => 'panel', 'web_display' => 'web_display'];
-    $device['type'] = $typeMapReverse[$device['type']] ?? $device['type'];
+try {
+    Logger::audit('update', 'devices', ['device_id' => $id]);
+} catch (Throwable $auditError) {
+    error_log('Device update audit skipped: ' . $auditError->getMessage());
 }
 
-Logger::audit('update', 'devices', ['device_id' => $id]);
-
-Response::success($device, 'Cihaz güncellendi');
+Response::success($updatedDevice, 'Cihaz güncellendi');

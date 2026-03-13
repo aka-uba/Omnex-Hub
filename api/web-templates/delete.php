@@ -55,19 +55,36 @@ if ($activeAssignments['count'] > 0) {
     Response::error('Bu şablon aktif cihazlara atanmış. Önce atamaları kaldırın.', 400);
 }
 
-// Soft delete
-$db->update('web_templates', [
-    'deleted_at' => date('Y-m-d H:i:s'),
-    'updated_by' => $user['id']
-], 'id = ?', [$templateId]);
+try {
+    $db->beginTransaction();
+    // Soft delete
+    $db->update('web_templates', [
+        'deleted_at' => date('Y-m-d H:i:s'),
+        'updated_by' => $user['id']
+    ], 'id = ?', [$templateId]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Web template delete error', [
+        'template_id' => $templateId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
 
 // Audit log
 if (class_exists('Logger')) {
-    Logger::audit('web_template_deleted', [
-        'template_id' => $templateId,
-        'name' => $template['name'],
-        'user_id' => $user['id']
-    ]);
+    try {
+        Logger::audit('web_template_deleted', [
+            'template_id' => $templateId,
+            'name' => $template['name'],
+            'user_id' => $user['id']
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('Web template delete audit skipped: ' . $auditError->getMessage());
+    }
 }
 
 Response::success(null, 'Şablon silindi');

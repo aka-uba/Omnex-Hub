@@ -34,15 +34,32 @@ if (($currentUser['role'] ?? '') !== 'SuperAdmin') {
     }
 }
 
-$db->delete('users', 'id = ?', [$id]);
+try {
+    $db->beginTransaction();
+    $db->delete('users', 'id = ?', [$id]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('User delete error', [
+        'user_id' => $id,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
 
 // Audit log
-Logger::audit('delete', 'user', [
-    'id' => $id,
-    'old' => [
-        'email' => $user['email'],
-        'role' => $user['role']
-    ]
-]);
+try {
+    Logger::audit('delete', 'user', [
+        'id' => $id,
+        'old' => [
+            'email' => $user['email'],
+            'role' => $user['role']
+        ]
+    ]);
+} catch (Throwable $auditError) {
+    error_log('User delete audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success(null, 'Kullanici silindi');

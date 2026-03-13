@@ -18,14 +18,30 @@ if (!$product) {
     Response::notFound('Ürün bulunamadı');
 }
 
-// Hard delete - permanently remove from database
-$db->delete('products', 'id = ?', [$productId]);
+try {
+    $db->beginTransaction();
+    // Hard delete - permanently remove from database
+    $db->delete('products', 'id = ?', [$productId]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Product delete error', [
+        'product_id' => $productId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
 
-// Log
-Logger::audit('delete', 'products', [
-    'product_id' => $productId,
-    'sku' => $product['sku'],
-    'name' => $product['name']
-]);
+try {
+    Logger::audit('delete', 'products', [
+        'product_id' => $productId,
+        'sku' => $product['sku'],
+        'name' => $product['name']
+    ]);
+} catch (Throwable $auditError) {
+    error_log('Product delete audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success(null, 'Ürün kalıcı olarak silindi');

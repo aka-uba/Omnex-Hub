@@ -100,55 +100,67 @@ try {
 
     $updateData['updated_at'] = date('Y-m-d H:i:s');
 
-    // Handle device pricing update if provided
-    $validCategories = ['esl_rf', 'esl_tablet', 'esl_pos', 'signage_fiyatgor', 'signage_tv'];
-    $devicePricing = $data['device_pricing'] ?? null;
+    $db->beginTransaction();
+    try {
+        // Handle device pricing update if provided
+        $validCategories = ['esl_rf', 'esl_tablet', 'esl_pos', 'signage_fiyatgor', 'signage_tv'];
+        $devicePricing = $data['device_pricing'] ?? null;
 
-    if ($devicePricing !== null && is_array($devicePricing)) {
-        $totalMonthly = 0;
+        if ($devicePricing !== null && is_array($devicePricing)) {
+            $totalMonthly = 0;
 
-        // Clear existing pricing
-        $db->getConnection()->exec(
-            "DELETE FROM license_device_pricing WHERE license_id = " . $db->getConnection()->quote($id)
-        );
+            // Clear existing pricing
+            $db->getConnection()->exec(
+                "DELETE FROM license_device_pricing WHERE license_id = " . $db->getConnection()->quote($id)
+            );
 
-        foreach ($devicePricing as $cat) {
-            $category = $cat['device_category'] ?? '';
-            if (!in_array($category, $validCategories)) continue;
+            foreach ($devicePricing as $cat) {
+                $category = $cat['device_category'] ?? '';
+                if (!in_array($category, $validCategories)) continue;
 
-            $count = max(0, (int)($cat['device_count'] ?? 0));
-            $unitPrice = max(0, (float)($cat['unit_price'] ?? 0));
-            $currency = $cat['currency'] ?? ($data['base_currency'] ?? $license['base_currency'] ?? 'USD');
+                $count = max(0, (int)($cat['device_count'] ?? 0));
+                $unitPrice = max(0, (float)($cat['unit_price'] ?? 0));
+                $currency = $cat['currency'] ?? ($data['base_currency'] ?? $license['base_currency'] ?? 'USD');
 
-            if ($count > 0 || $unitPrice > 0) {
-                $db->insert('license_device_pricing', [
-                    'id' => $db->generateUuid(),
-                    'license_id' => $id,
-                    'device_category' => $category,
-                    'device_count' => $count,
-                    'unit_price' => $unitPrice,
-                    'currency' => $currency,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'updated_at' => date('Y-m-d H:i:s')
-                ]);
-                $totalMonthly += $count * $unitPrice;
+                if ($count > 0 || $unitPrice > 0) {
+                    $db->insert('license_device_pricing', [
+                        'id' => $db->generateUuid(),
+                        'license_id' => $id,
+                        'device_category' => $category,
+                        'device_count' => $count,
+                        'unit_price' => $unitPrice,
+                        'currency' => $currency,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+                    $totalMonthly += $count * $unitPrice;
+                }
             }
+
+            $updateData['total_monthly_price'] = $totalMonthly;
         }
 
-        $updateData['total_monthly_price'] = $totalMonthly;
+        $db->update('licenses', $updateData, 'id = ?', [$id]);
+        $db->commit();
+    } catch (Throwable $txError) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        throw $txError;
     }
 
-    $db->update('licenses', $updateData, 'id = ?', [$id]);
-
-    // Log
-    Logger::audit('update', 'license', [
-        'id' => $id,
-        'old' => $license,
-        'new' => $data
-    ]);
+    try {
+        Logger::audit('update', 'license', [
+            'id' => $id,
+            'old' => $license,
+            'new' => $data
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('License update audit skipped: ' . $auditError->getMessage());
+    }
 
     Response::success(['message' => 'Lisans guncellendi']);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     Logger::error('License update error', ['error' => $e->getMessage()]);
     Response::serverError('Lisans guncellenemedi');
 }

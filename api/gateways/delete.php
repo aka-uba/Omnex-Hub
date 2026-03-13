@@ -29,9 +29,22 @@ if (!$gateway) {
 }
 
 // İlişkili kayıtları sil
-$db->delete('gateway_commands', 'gateway_id = ?', [$gatewayId]);
-$db->delete('gateway_devices', 'gateway_id = ?', [$gatewayId]);
-$db->delete('gateways', 'id = ?', [$gatewayId]);
+try {
+    $db->beginTransaction();
+    $db->delete('gateway_commands', 'gateway_id = ?', [$gatewayId]);
+    $db->delete('gateway_devices', 'gateway_id = ?', [$gatewayId]);
+    $db->delete('gateways', 'id = ?', [$gatewayId]);
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Gateway delete error', [
+        'gateway_id' => $gatewayId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
 
 Response::success([
     'id' => $gatewayId,

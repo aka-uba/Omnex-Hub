@@ -66,23 +66,43 @@ if (preg_match('/^[A-Za-z]:[\\\\\/]/', $filepath) || strpos($filepath, '\\\\') =
     }
 }
 
-// Delete from database
-$db->delete('media', 'id = ?', [$id]);
+try {
+    $db->beginTransaction();
 
-// ========================================
-// UPDATE STORAGE USAGE (v2.0.14)
-// ========================================
-if (!$isPublicMedia && $mediaCompanyId && $fileSize > 0) {
-    $storageService = new StorageService();
-    $storageService->decrementUsage($mediaCompanyId, $fileSize, 'media');
+    // Delete from database
+    $db->delete('media', 'id = ?', [$id]);
+
+    // ========================================
+    // UPDATE STORAGE USAGE (v2.0.14)
+    // ========================================
+    if (!$isPublicMedia && $mediaCompanyId && $fileSize > 0) {
+        $storageService = new StorageService();
+        $storageService->decrementUsage($mediaCompanyId, $fileSize, 'media');
+    }
+
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Media delete error', [
+        'media_id' => $id,
+        'company_id' => $companyId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
 }
 
-Logger::audit('delete', 'media', [
-    'media_id' => $id,
-    'scope' => $media['scope'] ?? 'company',
-    'file_size' => $fileSize,
-    'company_id' => $mediaCompanyId,
-    'file_deleted' => $deleted
-]);
+try {
+    Logger::audit('delete', 'media', [
+        'media_id' => $id,
+        'scope' => $media['scope'] ?? 'company',
+        'file_size' => $fileSize,
+        'company_id' => $mediaCompanyId,
+        'file_deleted' => $deleted
+    ]);
+} catch (Throwable $auditError) {
+    error_log('Media delete audit skipped: ' . $auditError->getMessage());
+}
 
 Response::success(null, 'Dosya silindi');

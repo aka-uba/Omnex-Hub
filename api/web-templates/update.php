@@ -109,7 +109,9 @@ if (isset($data['html_content']) && $data['html_content'] !== $template['html_co
 }
 
 // Güncelle
-$db->update('web_templates', $updateData, 'id = ?', [$templateId]);
+try {
+    $db->beginTransaction();
+    $db->update('web_templates', $updateData, 'id = ?', [$templateId]);
 
 // İçerik değiştiyse yeni versiyon kaydet
 if ($contentChanged) {
@@ -125,14 +127,29 @@ if ($contentChanged) {
         'created_by' => $user['id']
     ]);
 }
+    $db->commit();
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Web template update error', [
+        'template_id' => $templateId,
+        'error' => $e->getMessage()
+    ]);
+    Response::serverError();
+}
 
 // Audit log
 if (class_exists('Logger')) {
-    Logger::audit('web_template_updated', [
-        'template_id' => $templateId,
-        'changes' => array_keys($updateData),
-        'user_id' => $user['id']
-    ]);
+    try {
+        Logger::audit('web_template_updated', [
+            'template_id' => $templateId,
+            'changes' => array_keys($updateData),
+            'user_id' => $user['id']
+        ]);
+    } catch (Throwable $auditError) {
+        error_log('Web template update audit skipped: ' . $auditError->getMessage());
+    }
 }
 
 // Güncellenmiş şablonu getir

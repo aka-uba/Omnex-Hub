@@ -2932,7 +2932,7 @@ Format:
     - M3U satiri `#EXTINF:-1` ve content-type `audio/x-mpegurl` olarak duzenlendi.
   - `public/assets/js/pages/devices/DeviceList.js`
     - Stream copy aksiyonu `playlist.m3u` linkini direkt kopyalayacak sekilde guncellendi (redirect parametresi kaldirildi).
-    - Stream download aksiyonu `playlist.m3u?download=1` akisina sadeleþtirildi.
+    - Stream download aksiyonu `playlist.m3u?download=1` akisina sadeleï¿½tirildi.
 - Checks:
   - `php -l api/stream/playlist.php`
   - `node --check public/assets/js/pages/devices/DeviceList.js`
@@ -2952,7 +2952,7 @@ Format:
     - `copyStreamUrl()` artik resolved direct variant URL'i kopyaliyor.
     - `downloadStreamPlaylist()` artik client-side `.m3u` dosyasi uretiyor ve icine direct variant URL yaziyor (nested wrapper bagimliligi kaldirildi).
   - `api/stream/playlist.php`
-    - M3U satiri `#EXTINF:0` olarak sadeleþtirildi.
+    - M3U satiri `#EXTINF:0` olarak sadeleï¿½tirildi.
     - Satir sonlari `\n` yapildi.
     - Content-Type `application/x-mpegURL; charset=utf-8` oldu.
     - `Content-Disposition` sadece `download=1` durumunda set ediliyor.
@@ -3040,3 +3040,49 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_040246-revert-vlc-transition-freeze`
   - Restore applied from git source: `546fd45` (only `api/stream/variant.php`).
+
+## 2026-03-13 - CRUD update/delete transaction hardening pass (devices/products/templates/users/media)
+- Request context:
+  - Kullanici onceki listelenen update/delete endpointlerinde sunucuda gorulen 500/exception risklerini transaction, rollback ve audit izolasyonu ile sertlestirmemi istedi.
+  - Ek olarak encode bozulmasi riski nedeniyle temp yedekli ilerleme istendi.
+- Changes:
+  - Transaction + rollback + error logging eklendi:
+    - api/device-groups/update.php
+    - api/device-groups/delete.php
+    - api/devices/update.php
+    - api/licenses/update.php
+    - api/products/update.php
+    - api/products/delete.php
+    - api/templates/update.php
+    - api/templates/delete.php
+    - api/users/update.php
+    - api/users/delete.php
+    - api/web-templates/update.php
+    - api/web-templates/delete.php
+    - api/media/delete.php
+    - api/render-queue/delete.php
+    - api/gateways/delete.php
+  - Audit log cagrilari islem sonucunu bozmayacak sekilde try/catch ile izole edildi.
+  - api/devices/update.php once HEAD'den geri alinip transaction yapisi encode bozulmadan yeniden uygulandi.
+- Checks:
+  - php -l api/device-groups/update.php
+  - php -l api/device-groups/delete.php
+  - php -l api/devices/update.php
+  - php -l api/licenses/update.php
+  - php -l api/products/update.php
+  - php -l api/products/delete.php
+  - php -l api/templates/update.php
+  - php -l api/templates/delete.php
+  - php -l api/users/update.php
+  - php -l api/users/delete.php
+  - php -l api/web-templates/update.php
+  - php -l api/web-templates/delete.php
+  - php -l api/media/delete.php
+  - php -l api/render-queue/delete.php
+  - php -l api/gateways/delete.php
+- Risks/Follow-up:
+  - Bu pass agirlikla API yazma atomikligini guclendirir; uygulama seviyesi endpoint smoke test (create/update/delete) ile davranis dogrulamasi hala gerekli.
+  - api/products/update.php icinde branch override servisinin ic implementasyonu ayrica integration test ile dogrulanmali.
+- Backup/Restore Safety:
+  - Temp backup: .codex/tmp_backups/20260313_042030-crud-hardening-pass2
+  - Restore not required.

@@ -45,6 +45,7 @@ if (!empty($data['ids']) && is_array($data['ids'])) {
         }
 
         try {
+            $db->beginTransaction();
             // Önce queue items'ı sil
             $db->delete('render_queue_items', 'queue_id = ?', [$id]);
 
@@ -52,11 +53,18 @@ if (!empty($data['ids']) && is_array($data['ids'])) {
             $rowCount = $db->delete('render_queue', 'id = ?', [$id]);
 
             if ($rowCount > 0) {
+                $db->commit();
                 $deleted++;
             } else {
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
                 $errors[] = "Job $id silinemedi (satır bulunamadı)";
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
             $errors[] = "Job $id silme hatası: " . $e->getMessage();
         }
     }
@@ -90,6 +98,8 @@ if (!in_array($job['status'], ['completed', 'cancelled', 'failed'])) {
 }
 
 try {
+    $db->beginTransaction();
+
     // Önce queue items'ı sil
     $db->delete('render_queue_items', 'queue_id = ?', [$jobId]);
 
@@ -97,13 +107,25 @@ try {
     $rowCount = $db->delete('render_queue', 'id = ?', [$jobId]);
 
     if ($rowCount > 0) {
+        $db->commit();
         Response::success([
             'id' => $jobId,
             'deleted' => true
         ], 'İş başarıyla silindi');
     } else {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         Response::error('Silme işlemi başarısız - kayıt bulunamadı');
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
+    Logger::error('Render queue delete error', [
+        'job_id' => $jobId,
+        'company_id' => $companyId,
+        'error' => $e->getMessage()
+    ]);
     Response::error('Silme hatası: ' . $e->getMessage());
 }
