@@ -2920,3 +2920,24 @@ Format:
 - Backup/Restore Safety:
   - Temp backup: `.codex/tmp_backups/20260313_023518-iptv-absolute-url-fix`
   - Restore not required.
+## 2026-03-13 - Stream playlist compatibility fix (master regression follow-up)
+- Request context:
+  - `master.m3u8` gecisi sonrasinda IPTV/link akisinda sorunlar olustu; kullanici stream icin indirilebilir playlist dosyasi akisini tekrar istedi.
+- Changes:
+  - `api/stream/playlist.php`
+    - `streamPlaylistResolveAvailableProfiles()` schedule tabanli aktif playlist fallback'i eklendi (assignment disinda da profile cozumleme).
+    - Availability verisi yoksa otomatik secimde 1080p yerine uyumluluk fallback'i 720p yapildi.
+    - Varsayilan cikis modu yeniden `m3u` yapildi; redirect sadece `mode=redirect` ile aktif.
+    - Varsayilan etiket gosterimi yeniden acildi (`label=1` default).
+    - M3U satiri `#EXTINF:-1` ve content-type `audio/x-mpegurl` olarak duzenlendi.
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Stream copy aksiyonu `playlist.m3u` linkini direkt kopyalayacak sekilde guncellendi (redirect parametresi kaldirildi).
+    - Stream download aksiyonu `playlist.m3u?download=1` akisina sadeleþtirildi.
+- Checks:
+  - `php -l api/stream/playlist.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+- Risks/Follow-up:
+  - Bazi IPTV istemcilerinde `master.m3u8` adaptif secim yerine direct variant gerekebilir; bu durumda `playlist.m3u` uzerinden profile pin eklenebilir.
+- Backup/Restore Safety:
+  - Temp backup: `.codex/tmp_backups/20260313_030838-stream-master-regression-fix`
+  - Restore not required.

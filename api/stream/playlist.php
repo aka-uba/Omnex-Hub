@@ -76,6 +76,9 @@ if (!function_exists('streamPlaylistResolveAvailableProfiles')) {
         $assignmentPlaylistJoin = $db->isPostgres()
             ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
             : "LEFT JOIN playlists p ON dca.content_id = p.id";
+        $schedulePlaylistJoin = $db->isPostgres()
+            ? "LEFT JOIN playlists p ON CAST(s.content_id AS TEXT) = CAST(p.id AS TEXT)"
+            : "LEFT JOIN playlists p ON s.content_id = p.id";
 
         $playlistItems = [];
 
@@ -89,6 +92,27 @@ if (!function_exists('streamPlaylistResolveAvailableProfiles')) {
 
         if ($assignment) {
             $playlistItems = json_decode($assignment['items'] ?? '[]', true) ?: [];
+        }
+
+        if (empty($playlistItems)) {
+            $now = date('Y-m-d H:i:s');
+            $currentTime = date('H:i:s');
+            $schedule = $db->fetch(
+                "SELECT p.items FROM schedules s
+                 JOIN schedule_devices sd ON s.id = sd.schedule_id
+                 $schedulePlaylistJoin
+                 WHERE sd.device_id = ? AND s.status = 'active'
+                 AND (s.start_date IS NULL OR s.start_date <= ?)
+                 AND (s.end_date IS NULL OR s.end_date >= ?)
+                 AND (s.start_time IS NULL OR s.start_time <= ?)
+                 AND (s.end_time IS NULL OR s.end_time >= ?)
+                 ORDER BY s.priority DESC LIMIT 1",
+                [$device['id'], $now, $now, $currentTime, $currentTime]
+            );
+
+            if ($schedule) {
+                $playlistItems = json_decode($schedule['items'] ?? '[]', true) ?: [];
+            }
         }
 
         if (empty($playlistItems) && !empty($device['current_playlist_id'])) {
@@ -146,7 +170,11 @@ if (!function_exists('streamPlaylistSelectProfile')) {
         }
 
         if (empty($availableProfiles)) {
-            return in_array($requested, $allowed, true) ? $requested : $auto;
+            if (in_array($requested, $allowed, true)) {
+                return $requested;
+            }
+            // Availability data bulunamazsa uyumluluk icin 1080p yerine 720p'e in.
+            return $auto === '1080p' ? '720p' : $auto;
         }
 
         if (in_array($requested, $allowed, true) && isset($availableProfiles[$requested])) {
@@ -207,13 +235,13 @@ $autoProfile = streamPlaylistResolveProfile($device, '');
 $availableProfiles = streamPlaylistResolveAvailableProfiles($db, $device);
 $selectedProfile = streamPlaylistSelectProfile($availableProfiles, $requestedProfile, $autoProfile);
 $targetUrl = $baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8';
-$showLabelRaw = strtolower((string)$request->query('label', '0'));
+$showLabelRaw = strtolower((string)$request->query('label', '1'));
 $showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
 $extInfTitle = $showLabel ? $streamLabel : '';
 
 $downloadRaw = strtolower((string)$request->query('download', '0'));
 $isDownload = in_array($downloadRaw, ['1', 'true', 'yes', 'download'], true);
-$modeRaw = strtolower((string)$request->query('mode', $isDownload ? 'm3u' : 'redirect'));
+$modeRaw = strtolower((string)$request->query('mode', 'm3u'));
 $isRedirectMode = !$isDownload && ($modeRaw === 'redirect' || $modeRaw === 'stream' || $modeRaw === 'direct');
 $contentDisposition = $isDownload ? 'attachment' : 'inline';
 
@@ -260,12 +288,12 @@ try {
 
 $lines = [
     '#EXTM3U',
-    '#EXTINF:0,' . $extInfTitle,
+    '#EXTINF:-1,' . $extInfTitle,
     $targetUrl,
     '',
 ];
 
-header('Content-Type: application/x-mpegURL; charset=utf-8');
+header('Content-Type: audio/x-mpegurl');
 header('Content-Disposition: ' . $contentDisposition . '; filename="' . streamBuildSafeFilename($streamLabel, 'm3u') . '"');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Access-Control-Allow-Origin: *');

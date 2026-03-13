@@ -1108,8 +1108,7 @@ export class DeviceListPage {
             Toast.error(this.__('stream.noToken'));
             return;
         }
-        // Always copy through resolver endpoint so backend can choose available profile fallback.
-        const streamUrl = this.getStreamPlaylistUrl(device, { mode: 'redirect', label: false });
+        const streamUrl = this.getStreamPlaylistUrl(device);
         navigator.clipboard.writeText(streamUrl).then(() => {
             Toast.success(this.__('stream.copied'));
         }).catch(() => {
@@ -1130,10 +1129,7 @@ export class DeviceListPage {
             return;
         }
 
-        const playlistUrl = this.getStreamPlaylistUrl(device, {
-            download: true,
-            label: false
-        });
+        const playlistUrl = this.getStreamPlaylistUrl(device, { download: true });
         const anchor = document.createElement('a');
         anchor.href = playlistUrl;
         anchor.target = '_blank';
