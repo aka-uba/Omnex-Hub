@@ -345,29 +345,49 @@ export class SystemStatusPage {
      * Render quick stats cards
      */
     renderQuickStats(data) {
+        // Store static values for live refresh
+        this._staticCpuCores = data?.cpu?.cores || null;
+        this._staticMemoryLimit = data?.memory?.limit_formatted || null;
+        this._staticDiskTotal = data?.disk?.partition_total_formatted || null;
+
         // Uptime
         const uptimeEl = document.getElementById('uptime-value');
         if (uptimeEl) uptimeEl.textContent = data?.uptime?.formatted || 'N/A';
 
-        // CPU
-        const cpuValue = data?.cpu?.usage_percent !== null && data?.cpu?.usage_percent !== undefined
-            ? `${data.cpu.usage_percent}%`
-            : (data?.cpu?.load_average ? `${data.cpu.load_average['1min']}` : 'N/A');
+        // CPU - show percentage + cores
         const cpuEl = document.getElementById('cpu-value');
-        if (cpuEl) cpuEl.textContent = cpuValue;
+        if (cpuEl) {
+            const cpuPercent = data?.cpu?.usage_percent !== null && data?.cpu?.usage_percent !== undefined
+                ? `${data.cpu.usage_percent}%`
+                : (data?.cpu?.load_average ? `${data.cpu.load_average['1min']}` : 'N/A');
+            const cores = data?.cpu?.cores;
+            cpuEl.innerHTML = cores
+                ? `${cpuPercent} <span class="stat-detail">/ ${cores} ${this.__('systemStatus.metrics.cores')}</span>`
+                : cpuPercent;
+        }
 
-        // Memory
+        // Memory - show used / total
         const memoryEl = document.getElementById('memory-value');
-        if (memoryEl) memoryEl.textContent = `${data?.memory?.usage_percent || 0}%`;
+        if (memoryEl) {
+            const memCurrent = data?.memory?.current_formatted || '0 B';
+            const memLimit = data?.memory?.limit_formatted || '?';
+            memoryEl.innerHTML = `${memCurrent} <span class="stat-detail">/ ${memLimit}</span>`;
+        }
 
-        // Disk (now shows app storage used)
+        // Disk - show used / total partition
         const diskEl = document.getElementById('disk-value');
-        if (diskEl) diskEl.textContent = data?.disk?.app_used_formatted || '0 B';
+        if (diskEl) {
+            const diskUsed = data?.disk?.app_used_formatted || '0 B';
+            const diskTotal = data?.disk?.partition_total_formatted;
+            diskEl.innerHTML = diskTotal && diskTotal !== 'N/A'
+                ? `${diskUsed} <span class="stat-detail">/ ${diskTotal}</span>`
+                : diskUsed;
+        }
 
         // Update stat card colors based on values
         this.updateStatCardColor('stat-cpu', data?.cpu?.usage_percent || 0);
         this.updateStatCardColor('stat-memory', data?.memory?.usage_percent || 0);
-        // Disk card doesn't need color warning since it shows absolute size, not percentage
+        this.updateStatCardColor('stat-disk', data?.disk?.partition_usage_percent || 0);
     }
 
     /**
@@ -382,17 +402,42 @@ export class SystemStatusPage {
             uptimeEl.textContent = liveQuick.uptime.formatted;
         }
 
-        const cpuValue = liveQuick?.cpu?.usage_percent !== null && liveQuick?.cpu?.usage_percent !== undefined
-            ? `${liveQuick.cpu.usage_percent}%`
-            : (liveQuick?.cpu?.load_average ? `${liveQuick.cpu.load_average['1min']}` : null);
+        // CPU - show percentage + cores (cores from live or cached)
         const cpuEl = document.getElementById('cpu-value');
-        if (cpuEl && cpuValue !== null) {
-            cpuEl.textContent = cpuValue;
+        if (cpuEl) {
+            const cpuPercent = liveQuick?.cpu?.usage_percent !== null && liveQuick?.cpu?.usage_percent !== undefined
+                ? `${liveQuick.cpu.usage_percent}%`
+                : (liveQuick?.cpu?.load_average ? `${liveQuick.cpu.load_average['1min']}` : null);
+            if (cpuPercent !== null) {
+                const cores = liveQuick?.cpu?.cores || this._staticCpuCores;
+                cpuEl.innerHTML = cores
+                    ? `${cpuPercent} <span class="stat-detail">/ ${cores} ${this.__('systemStatus.metrics.cores')}</span>`
+                    : cpuPercent;
+            }
         }
 
+        // Memory - show used / total
         const memoryEl = document.getElementById('memory-value');
-        if (memoryEl && liveQuick?.memory?.usage_percent !== undefined) {
-            memoryEl.textContent = `${liveQuick.memory.usage_percent || 0}%`;
+        if (memoryEl && liveQuick?.memory) {
+            const memCurrent = liveQuick.memory.current_formatted || null;
+            const memLimit = liveQuick.memory.limit_formatted || this._staticMemoryLimit;
+            if (memCurrent && memLimit) {
+                memoryEl.innerHTML = `${memCurrent} <span class="stat-detail">/ ${memLimit}</span>`;
+            } else if (liveQuick.memory.usage_percent !== undefined) {
+                memoryEl.textContent = `${liveQuick.memory.usage_percent || 0}%`;
+            }
+        }
+
+        // Disk - update from live if available
+        const diskEl = document.getElementById('disk-value');
+        if (diskEl && liveQuick?.disk) {
+            const diskTotal = liveQuick.disk.partition_total_formatted || this._staticDiskTotal;
+            const diskFree = liveQuick.disk.partition_free_formatted;
+            if (diskTotal && diskTotal !== 'N/A' && diskFree) {
+                // Show partition used / total from live data
+                const diskPercent = liveQuick.disk.partition_usage_percent || 0;
+                diskEl.innerHTML = `${diskPercent}% <span class="stat-detail">/ ${diskTotal}</span>`;
+            }
         }
 
         this.updateStatCardColor('stat-cpu', liveQuick?.cpu?.usage_percent || 0);

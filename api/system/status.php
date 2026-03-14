@@ -665,16 +665,29 @@ function collectQuickStatsForLiveCards(int $cacheTtlSeconds = 5): array
     $memoryLimitBytes = convertToBytes((string)ini_get('memory_limit'));
     $memoryUsage = memory_get_usage(true);
 
+    // Disk partition info for live cards
+    $storagePath = BASE_PATH . '/storage';
+    $diskFree = @disk_free_space($storagePath);
+    $diskTotal = @disk_total_space($storagePath);
+
     $result = [
         'uptime' => [
             'formatted' => (string)(getSystemUptime()['formatted'] ?? 'N/A')
         ],
         'cpu' => [
             'usage_percent' => $cpu['usage_percent'] ?? null,
-            'load_average' => $cpu['load_average'] ?? null
+            'load_average' => $cpu['load_average'] ?? null,
+            'cores' => $cpu['cores'] ?? null
         ],
         'memory' => [
-            'usage_percent' => $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 2) : 0
+            'usage_percent' => $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 2) : 0,
+            'current_formatted' => formatBytes($memoryUsage),
+            'limit_formatted' => ini_get('memory_limit')
+        ],
+        'disk' => [
+            'partition_total_formatted' => $diskTotal ? formatBytes($diskTotal) : 'N/A',
+            'partition_free_formatted' => $diskFree ? formatBytes($diskFree) : 'N/A',
+            'partition_usage_percent' => ($diskTotal && $diskFree) ? round((($diskTotal - $diskFree) / $diskTotal) * 100, 2) : 0
         ]
     ];
 

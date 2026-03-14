@@ -702,7 +702,8 @@
             "uptime": "Ã„Â°Ã…Å¸ vaxtÃ„Â±",
             "cpu": "CPU",
             "memory": "YaddaÃ…Å¸",
-            "disk": "Disk"
+            "disk": "Disk",
+            "cores": "أنوية"
         },
         "sections": {
             "server": "Server mÃ‰â„¢lumatÃ„Â±",

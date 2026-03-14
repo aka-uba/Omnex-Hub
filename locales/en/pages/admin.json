@@ -682,7 +682,8 @@
             "uptime": "Uptime",
             "cpu": "CPU",
             "memory": "Memory",
-            "disk": "Disk"
+            "disk": "Disk",
+            "cores": "Cores"
         },
         "sections": {
             "server": "Server Information",

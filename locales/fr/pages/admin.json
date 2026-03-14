@@ -682,7 +682,8 @@
             "uptime": "Temps de fonctionnement",
             "cpu": "CPU",
             "memory": "MÃƒÂ©moire",
-            "disk": "Disque"
+            "disk": "Disque",
+            "cores": "Cœurs"
         },
         "sections": {
             "server": "Informations serveur",

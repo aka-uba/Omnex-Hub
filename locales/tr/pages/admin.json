@@ -702,7 +702,8 @@
             "uptime": "Çalışma Süresi",
             "cpu": "İşlemci",
             "memory": "Bellek",
-            "disk": "Disk"
+            "disk": "Disk",
+            "cores": "Çekirdek"
         },
         "sections": {
             "server": "Sunucu Bilgileri",
