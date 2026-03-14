@@ -733,6 +733,8 @@
             "phpVersion": "PHP-versie",
             "sapi": "SAPI",
             "memoryLimit": "Geheugenlimiet",
+            "phpMemoryUsage": "PHP Geheugengebruik",
+            "phpMemoryPeak": "PHP Geheugenpiek",
             "maxExecutionTime": "Maximale uitvoeringstijd",
             "uploadMaxFilesize": "Maximale uploadgrootte",
             "postMaxSize": "Maximale POSTgrootte",

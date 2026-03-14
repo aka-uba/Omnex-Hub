@@ -78,20 +78,37 @@ $metrics['php'] = [
     ]
 ];
 
-// 3. Memory Usage
-$memoryUsage = memory_get_usage(true);
-$memoryPeak = memory_get_peak_usage(true);
-$memoryLimit = ini_get('memory_limit');
-$memoryLimitBytes = convertToBytes($memoryLimit);
+// 3. System Memory (RAM)
+$systemMemory = getSystemMemory();
 
 $metrics['memory'] = [
-    'current' => $memoryUsage,
-    'current_formatted' => formatBytes($memoryUsage),
-    'peak' => $memoryPeak,
-    'peak_formatted' => formatBytes($memoryPeak),
-    'limit' => $memoryLimitBytes,
-    'limit_formatted' => $memoryLimit,
-    'usage_percent' => $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 2) : 0
+    'total' => $systemMemory['total'],
+    'total_formatted' => $systemMemory['total_formatted'],
+    'used' => $systemMemory['used'],
+    'used_formatted' => $systemMemory['used_formatted'],
+    'available' => $systemMemory['available'],
+    'available_formatted' => $systemMemory['available_formatted'],
+    'usage_percent' => $systemMemory['usage_percent'],
+    'swap_total' => $systemMemory['swap_total'],
+    'swap_total_formatted' => $systemMemory['swap_total_formatted'],
+    'swap_used' => $systemMemory['swap_used'],
+    'swap_used_formatted' => $systemMemory['swap_used_formatted'],
+];
+
+// 3b. PHP Process Memory (moved here, separate from system RAM)
+$phpMemoryUsage = memory_get_usage(true);
+$phpMemoryPeak = memory_get_peak_usage(true);
+$phpMemoryLimit = ini_get('memory_limit');
+$phpMemoryLimitBytes = convertToBytes($phpMemoryLimit);
+
+$metrics['php_memory'] = [
+    'current' => $phpMemoryUsage,
+    'current_formatted' => formatBytes($phpMemoryUsage),
+    'peak' => $phpMemoryPeak,
+    'peak_formatted' => formatBytes($phpMemoryPeak),
+    'limit' => $phpMemoryLimitBytes,
+    'limit_formatted' => $phpMemoryLimit,
+    'usage_percent' => $phpMemoryLimitBytes > 0 ? round(($phpMemoryUsage / $phpMemoryLimitBytes) * 100, 2) : 0
 ];
 
 // 4. Storage Usage (measures actual storage folder size, not entire disk partition)
@@ -662,8 +679,7 @@ function collectQuickStatsForLiveCards(int $cacheTtlSeconds = 5): array
     }
 
     $cpu = getCpuUsage();
-    $memoryLimitBytes = convertToBytes((string)ini_get('memory_limit'));
-    $memoryUsage = memory_get_usage(true);
+    $systemMemory = getSystemMemory();
 
     // Disk partition info for live cards
     $storagePath = BASE_PATH . '/storage';
@@ -680,9 +696,9 @@ function collectQuickStatsForLiveCards(int $cacheTtlSeconds = 5): array
             'cores' => $cpu['cores'] ?? null
         ],
         'memory' => [
-            'usage_percent' => $memoryLimitBytes > 0 ? round(($memoryUsage / $memoryLimitBytes) * 100, 2) : 0,
-            'current_formatted' => formatBytes($memoryUsage),
-            'limit_formatted' => ini_get('memory_limit')
+            'usage_percent' => $systemMemory['usage_percent'],
+            'used_formatted' => $systemMemory['used_formatted'],
+            'total_formatted' => $systemMemory['total_formatted']
         ],
         'disk' => [
             'partition_total_formatted' => $diskTotal ? formatBytes($diskTotal) : 'N/A',
@@ -804,5 +820,80 @@ function getFolderSize($path) {
     }
 
     return $size;
+}
+
+/**
+ * Get system (OS) memory information.
+ * Returns total RAM, used, available, swap - NOT PHP process memory.
+ */
+function getSystemMemory(): array {
+    $result = [
+        'total' => 0,
+        'total_formatted' => 'N/A',
+        'used' => 0,
+        'used_formatted' => 'N/A',
+        'available' => 0,
+        'available_formatted' => 'N/A',
+        'usage_percent' => 0,
+        'swap_total' => 0,
+        'swap_total_formatted' => 'N/A',
+        'swap_used' => 0,
+        'swap_used_formatted' => 'N/A',
+    ];
+
+    if (PHP_OS_FAMILY === 'Windows') {
+        // Windows: wmic
+        $output = @shell_exec('wmic OS get TotalVisibleMemorySize,FreePhysicalMemory /value 2>nul');
+        if ($output) {
+            preg_match('/TotalVisibleMemorySize=(\d+)/i', $output, $totalMatch);
+            preg_match('/FreePhysicalMemory=(\d+)/i', $output, $freeMatch);
+            if (!empty($totalMatch[1]) && !empty($freeMatch[1])) {
+                $totalKB = (int)$totalMatch[1];
+                $freeKB = (int)$freeMatch[1];
+                $usedKB = $totalKB - $freeKB;
+                $result['total'] = $totalKB * 1024;
+                $result['total_formatted'] = formatBytes($totalKB * 1024);
+                $result['used'] = $usedKB * 1024;
+                $result['used_formatted'] = formatBytes($usedKB * 1024);
+                $result['available'] = $freeKB * 1024;
+                $result['available_formatted'] = formatBytes($freeKB * 1024);
+                $result['usage_percent'] = $totalKB > 0 ? round(($usedKB / $totalKB) * 100, 1) : 0;
+            }
+        }
+    } else {
+        // Linux: /proc/meminfo
+        if (is_readable('/proc/meminfo')) {
+            $meminfo = @file_get_contents('/proc/meminfo');
+            if ($meminfo) {
+                $parsed = [];
+                foreach (explode("\n", $meminfo) as $line) {
+                    if (preg_match('/^(\w+):\s+(\d+)\s+kB/', $line, $m)) {
+                        $parsed[$m[1]] = (int)$m[2] * 1024; // Convert kB to bytes
+                    }
+                }
+
+                $total = $parsed['MemTotal'] ?? 0;
+                $available = $parsed['MemAvailable'] ?? ($parsed['MemFree'] ?? 0);
+                $used = $total - $available;
+                $swapTotal = $parsed['SwapTotal'] ?? 0;
+                $swapFree = $parsed['SwapFree'] ?? 0;
+                $swapUsed = $swapTotal - $swapFree;
+
+                $result['total'] = $total;
+                $result['total_formatted'] = formatBytes($total);
+                $result['used'] = $used;
+                $result['used_formatted'] = formatBytes($used);
+                $result['available'] = $available;
+                $result['available_formatted'] = formatBytes($available);
+                $result['usage_percent'] = $total > 0 ? round(($used / $total) * 100, 1) : 0;
+                $result['swap_total'] = $swapTotal;
+                $result['swap_total_formatted'] = formatBytes($swapTotal);
+                $result['swap_used'] = $swapUsed;
+                $result['swap_used_formatted'] = formatBytes($swapUsed);
+            }
+        }
+    }
+
+    return $result;
 }
 

@@ -319,8 +319,8 @@ export class SystemStatusPage {
         // Server info
         this.renderServerInfo(data.server);
 
-        // PHP info
-        this.renderPhpInfo(data.php);
+        // PHP info (includes PHP process memory)
+        this.renderPhpInfo(data.php, data.php_memory);
 
         // Database info
         this.renderDatabaseInfo(data.database);
@@ -347,7 +347,7 @@ export class SystemStatusPage {
     renderQuickStats(data) {
         // Store static values for live refresh
         this._staticCpuCores = data?.cpu?.cores || null;
-        this._staticMemoryLimit = data?.memory?.limit_formatted || null;
+        this._staticMemoryTotal = data?.memory?.total_formatted || null;
         this._staticDiskTotal = data?.disk?.partition_total_formatted || null;
 
         // Uptime
@@ -366,12 +366,12 @@ export class SystemStatusPage {
                 : cpuPercent;
         }
 
-        // Memory - show used / total
+        // Memory - show system RAM used / total
         const memoryEl = document.getElementById('memory-value');
         if (memoryEl) {
-            const memCurrent = data?.memory?.current_formatted || '0 B';
-            const memLimit = data?.memory?.limit_formatted || '?';
-            memoryEl.innerHTML = `${memCurrent} <span class="stat-detail">/ ${memLimit}</span>`;
+            const memUsed = data?.memory?.used_formatted || '0 B';
+            const memTotal = data?.memory?.total_formatted || '?';
+            memoryEl.innerHTML = `${memUsed} <span class="stat-detail">/ ${memTotal}</span>`;
         }
 
         // Disk - show used / total partition
@@ -416,13 +416,13 @@ export class SystemStatusPage {
             }
         }
 
-        // Memory - show used / total
+        // Memory - show system RAM used / total
         const memoryEl = document.getElementById('memory-value');
         if (memoryEl && liveQuick?.memory) {
-            const memCurrent = liveQuick.memory.current_formatted || null;
-            const memLimit = liveQuick.memory.limit_formatted || this._staticMemoryLimit;
-            if (memCurrent && memLimit) {
-                memoryEl.innerHTML = `${memCurrent} <span class="stat-detail">/ ${memLimit}</span>`;
+            const memUsed = liveQuick.memory.used_formatted || null;
+            const memTotal = liveQuick.memory.total_formatted || this._staticMemoryTotal;
+            if (memUsed && memTotal) {
+                memoryEl.innerHTML = `${memUsed} <span class="stat-detail">/ ${memTotal}</span>`;
             } else if (liveQuick.memory.usage_percent !== undefined) {
                 memoryEl.textContent = `${liveQuick.memory.usage_percent || 0}%`;
             }
@@ -434,7 +434,6 @@ export class SystemStatusPage {
             const diskTotal = liveQuick.disk.partition_total_formatted || this._staticDiskTotal;
             const diskFree = liveQuick.disk.partition_free_formatted;
             if (diskTotal && diskTotal !== 'N/A' && diskFree) {
-                // Show partition used / total from live data
                 const diskPercent = liveQuick.disk.partition_usage_percent || 0;
                 diskEl.innerHTML = `${diskPercent}% <span class="stat-detail">/ ${diskTotal}</span>`;
             }
@@ -501,11 +500,11 @@ export class SystemStatusPage {
     /**
      * Render PHP information
      */
-    renderPhpInfo(php) {
+    renderPhpInfo(php, phpMemory) {
         const container = document.getElementById('php-info');
         if (!container || !php) return;
 
-        container.innerHTML = `
+        let html = `
             <div class="info-row">
                 <span class="info-label">${this.__('systemStatus.fields.phpVersion')}</span>
                 <span class="info-value">
@@ -519,7 +518,22 @@ export class SystemStatusPage {
             <div class="info-row">
                 <span class="info-label">${this.__('systemStatus.fields.memoryLimit')}</span>
                 <span class="info-value">${php.memory_limit || 'N/A'}</span>
+            </div>`;
+
+        // PHP process memory usage
+        if (phpMemory) {
+            html += `
+            <div class="info-row">
+                <span class="info-label">${this.__('systemStatus.fields.phpMemoryUsage')}</span>
+                <span class="info-value">${phpMemory.current_formatted || '0 B'} / ${phpMemory.limit_formatted || '?'}</span>
             </div>
+            <div class="info-row">
+                <span class="info-label">${this.__('systemStatus.fields.phpMemoryPeak')}</span>
+                <span class="info-value">${phpMemory.peak_formatted || '0 B'}</span>
+            </div>`;
+        }
+
+        html += `
             <div class="info-row">
                 <span class="info-label">${this.__('systemStatus.fields.maxExecutionTime')}</span>
                 <span class="info-value">${php.max_execution_time || 'N/A'}s</span>
@@ -531,8 +545,9 @@ export class SystemStatusPage {
             <div class="info-row">
                 <span class="info-label">${this.__('systemStatus.fields.postMaxSize')}</span>
                 <span class="info-value">${php.post_max_size || 'N/A'}</span>
-            </div>
-        `;
+            </div>`;
+
+        container.innerHTML = html;
     }
 
     /**

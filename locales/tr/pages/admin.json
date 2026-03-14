@@ -733,6 +733,8 @@
             "phpVersion": "PHP Sürümü",
             "sapi": "SAPI",
             "memoryLimit": "Bellek Limiti",
+            "phpMemoryUsage": "PHP Bellek Kullanımı",
+            "phpMemoryPeak": "PHP Bellek Tepe",
             "maxExecutionTime": "Maks. Çalışma Süresi",
             "uploadMaxFilesize": "Maks. Yükleme Boyutu",
             "postMaxSize": "Maks. POST Boyutu",

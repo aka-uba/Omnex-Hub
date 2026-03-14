@@ -733,6 +733,8 @@
             "phpVersion": "PHP VersiyasÃ„Â±",
             "sapi": "SAPI",
             "memoryLimit": "YaddaÃ…Å¸ Limiti",
+            "phpMemoryUsage": "PHP Yaddas Istifadasi",
+            "phpMemoryPeak": "PHP Yaddas Pik",
             "maxExecutionTime": "Maksimum icra mÃƒÂ¼ddÃ‰â„¢ti",
             "uploadMaxFilesize": "Maksimum yÃƒÂ¼klÃ‰â„¢mÃ‰â„¢ ÃƒÂ¶lÃƒÂ§ÃƒÂ¼sÃƒÂ¼",
             "postMaxSize": "Maksimum POST Ãƒâ€“lÃƒÂ§ÃƒÂ¼sÃƒÂ¼",
