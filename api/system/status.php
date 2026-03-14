@@ -702,6 +702,7 @@ function collectQuickStatsForLiveCards(int $cacheTtlSeconds = 5): array
         ],
         'disk' => [
             'partition_total_formatted' => $diskTotal ? formatBytes($diskTotal) : 'N/A',
+            'partition_used_formatted' => ($diskTotal && $diskFree) ? formatBytes($diskTotal - $diskFree) : 'N/A',
             'partition_free_formatted' => $diskFree ? formatBytes($diskFree) : 'N/A',
             'partition_usage_percent' => ($diskTotal && $diskFree) ? round((($diskTotal - $diskFree) / $diskTotal) * 100, 2) : 0
         ]

@@ -374,10 +374,10 @@ export class SystemStatusPage {
             memoryEl.innerHTML = `${memUsed} <span class="stat-detail">/ ${memTotal}</span>`;
         }
 
-        // Disk - show used / total partition
+        // Disk - show partition used / total
         const diskEl = document.getElementById('disk-value');
         if (diskEl) {
-            const diskUsed = data?.disk?.app_used_formatted || '0 B';
+            const diskUsed = data?.disk?.partition_used_formatted || '0 B';
             const diskTotal = data?.disk?.partition_total_formatted;
             diskEl.innerHTML = diskTotal && diskTotal !== 'N/A'
                 ? `${diskUsed} <span class="stat-detail">/ ${diskTotal}</span>`
@@ -428,14 +428,13 @@ export class SystemStatusPage {
             }
         }
 
-        // Disk - update from live if available
+        // Disk - show used / total (consistent with initial load)
         const diskEl = document.getElementById('disk-value');
         if (diskEl && liveQuick?.disk) {
+            const diskUsed = liveQuick.disk.partition_used_formatted;
             const diskTotal = liveQuick.disk.partition_total_formatted || this._staticDiskTotal;
-            const diskFree = liveQuick.disk.partition_free_formatted;
-            if (diskTotal && diskTotal !== 'N/A' && diskFree) {
-                const diskPercent = liveQuick.disk.partition_usage_percent || 0;
-                diskEl.innerHTML = `${diskPercent}% <span class="stat-detail">/ ${diskTotal}</span>`;
+            if (diskUsed && diskTotal && diskTotal !== 'N/A') {
+                diskEl.innerHTML = `${diskUsed} <span class="stat-detail">/ ${diskTotal}</span>`;
             }
         }
 
