@@ -3852,3 +3852,29 @@ Format:
     - `channel/{profile}/segment_*.ts` => 200 with `Content-Type: video/MP2T` (previously 403)
 - Risks/Follow-up:
   - External devices cannot use `localhost`; for phone/TV tests device must use host LAN IP/domain URL.
+
+## 2026-03-14 - Notifications bulk delete visual mute (toast/browser spam fix)
+- Request context:
+  - User reported that on `#/notifications`, bulk delete triggers multiple toasts/browser notifications, making it unclear what was deleted.
+- Findings:
+  - Bulk delete removes many items quickly; NotificationManager polling can treat list reflow items as "new" and show visual notifications.
+- Changes:
+  - `public/assets/js/core/NotificationManager.js`
+    - Added temporary visual mute window (`visualMuteUntil`).
+    - Added `suppressVisualNotifications(durationMs)` API.
+    - In `enqueueNotificationDisplay`, skip toast/desktop rendering while mute window is active (still marks IDs as seen to avoid later replay).
+  - `public/assets/js/pages/notifications/NotificationList.js`
+    - Added `getNotificationManager()` helper.
+    - Added mute calls before delete actions:
+      - single delete: `suppressVisualNotifications(12000)`
+      - bulk delete: `suppressVisualNotifications(15000)`
+- Temp backup safety:
+  - Created `.temp-backups/notifications-bulk-delete-silent-20260314_0550/`
+  - Backups:
+    - `NotificationManager.js.bak`
+    - `NotificationList.js.bak`
+- Checks run:
+  - `node --check public/assets/js/core/NotificationManager.js`
+  - `node --check public/assets/js/pages/notifications/NotificationList.js`
+- Risks/Follow-up:
+  - During mute window, truly new notifications are intentionally not shown as visual toast/desktop popups; this is expected and scoped to short duration.

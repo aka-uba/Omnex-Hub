@@ -20,6 +20,7 @@ export class NotificationManager {
         this.shownNotificationIds = new Set();
         this.recentVisualSignatures = new Map();
         this.visualDedupMs = 120000;
+        this.visualMuteUntil = 0;
         this.boundVisibilityHandler = this.handleVisibilityChange.bind(this);
         this.boundFocusHandler = this.handleWindowFocus.bind(this);
         this.displayQueue = Promise.resolve();
@@ -172,6 +173,12 @@ export class NotificationManager {
                     this.shownNotificationIds.add(notification.id);
                 }
 
+                // During local destructive actions (bulk delete/archive), suppress
+                // visual notifications to avoid false "new" popups from list reflow.
+                if (Date.now() < this.visualMuteUntil) {
+                    return;
+                }
+
                 const visualDecision = this.shouldDisplayVisualNotification(notification);
                 if (!visualDecision.show) {
                     return;
@@ -193,6 +200,16 @@ export class NotificationManager {
             .catch((error) => {
                 Logger.error('Notification display queue error:', error);
             });
+    }
+
+    /**
+     * Temporarily suppress toast/desktop visual notifications.
+     * Useful when local bulk actions reorder the top list and can look like "new" items.
+     * @param {number} durationMs
+     */
+    suppressVisualNotifications(durationMs = 8000) {
+        const ms = Number.isFinite(Number(durationMs)) ? Math.max(0, Number(durationMs)) : 0;
+        this.visualMuteUntil = Date.now() + ms;
     }
 
     sleep(ms) {

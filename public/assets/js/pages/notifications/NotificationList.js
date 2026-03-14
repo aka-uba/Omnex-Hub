@@ -330,6 +330,10 @@ export class NotificationListPage {
         return trimmed;
     }
 
+    getNotificationManager() {
+        return this.app?.layout?.notificationManager || null;
+    }
+
     /**
      * Bind events
      */
@@ -797,6 +801,7 @@ export class NotificationListPage {
             confirmText: this.__('actions.delete'),
             onConfirm: async () => {
                 try {
+                    this.getNotificationManager()?.suppressVisualNotifications?.(12000);
                     await this.app.api.delete(`/notifications/${encodeURIComponent(id)}`);
                     Toast.success(this.__('messages.deleted'));
                     this.table?.refresh();
@@ -884,6 +889,7 @@ export class NotificationListPage {
             confirmText: this.__('confirm.bulkDeleteBtn', { count }),
             onConfirm: async () => {
                 try {
+                    this.getNotificationManager()?.suppressVisualNotifications?.(15000);
                     const ids = this.selectedNotifications.map(n => n.id);
                     const results = await Promise.allSettled(
                         ids.map(id => this.app.api.delete(`/notifications/${encodeURIComponent(id)}`))
