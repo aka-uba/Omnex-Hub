@@ -44,6 +44,7 @@ $deviceType = $data['type'] ?? 'esl';
 $location = $data['location'] ?? null;
 $requestId = $data['request_id'] ?? null;
 $communicationMode = $data['communication_mode'] ?? null; // 'mqtt', 'http-server', 'http'
+$targetDeviceId = trim((string)($data['target_device_id'] ?? $data['targetDeviceId'] ?? ''));
 
 // Validate required fields
 if (empty($syncCode) && empty($requestId)) {
@@ -114,6 +115,18 @@ if (!$syncRequest) {
     Response::notFound('Invalid sync code or request ID. Please check and try again.');
 }
 
+$targetDevice = null;
+if ($targetDeviceId !== '') {
+    $targetDevice = $db->fetch(
+        "SELECT * FROM devices WHERE id = ? AND company_id = ?",
+        [$targetDeviceId, $companyId]
+    );
+
+    if (!$targetDevice) {
+        Response::notFound('Target device not found');
+    }
+}
+
 // Determine if this is a PWA player or ESL registration
 $isPwaPlayer = !empty($syncRequest['fingerprint']) || !empty($syncRequest['browser']);
 $deviceIdentifier = $isPwaPlayer
@@ -131,22 +144,30 @@ if ($existingDevice) {
         Response::forbidden('Device is already paired with another company');
     }
 
-    // Update sync request status
-    $db->query(
-        "UPDATE device_sync_requests
-         SET company_id = COALESCE(company_id, ?),
-             status = 'approved',
-             device_id = ?,
-             approved_by = ?,
-             approved_at = CURRENT_TIMESTAMP,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?",
-        [$companyId, $existingDevice['id'], $user['id'], $syncRequest['id']]
-    );
+    if ($targetDevice && $existingDevice['id'] !== $targetDevice['id']) {
+        Response::error('Device already exists', 409, [
+            'deviceId' => $existingDevice['id']
+        ]);
+    }
 
-    Response::error('Device already exists', 409, [
-        'deviceId' => $existingDevice['id']
-    ]);
+    if (!$targetDevice) {
+        // Update sync request status
+        $db->query(
+            "UPDATE device_sync_requests
+             SET company_id = COALESCE(company_id, ?),
+                 status = 'approved',
+                 device_id = ?,
+                 approved_by = ?,
+                 approved_at = CURRENT_TIMESTAMP,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?",
+            [$companyId, $existingDevice['id'], $user['id'], $syncRequest['id']]
+        );
+
+        Response::error('Device already exists', 409, [
+            'deviceId' => $existingDevice['id']
+        ]);
+    }
 }
 
 // Validate group if provided
@@ -226,8 +247,9 @@ try {
         }
     }
 
-    // Create device
-    $deviceId = $db->generateUuid();
+    // Create new device or relink existing one
+    $isRelink = $targetDevice !== null;
+    $deviceId = $isRelink ? $targetDevice['id'] : $db->generateUuid();
 
     // Map frontend device types to database-compatible types
     // Database CHECK constraint: 'esl', 'android_tv', 'panel', 'web_display'
@@ -281,11 +303,11 @@ try {
     }
 
     // MQTT modu icin communication_mode ve mqtt_client_id ayarla
-    $actualCommMode = $communicationMode ?? 'http-server';
+    $actualCommMode = $communicationMode ?? ($targetDevice['communication_mode'] ?? 'http-server');
     $mqttClientId = null;
     $mqttTopic = null;
 
-    if ($actualCommMode === 'mqtt') {
+    if ($actualCommMode === 'mqtt' && ($communicationMode !== null || !$isRelink)) {
         require_once BASE_PATH . '/services/MqttBrokerService.php';
         $mqttService = new MqttBrokerService();
         $mqttClientId = $syncRequest['serial_number'] ?? $deviceIdentifier;
@@ -295,31 +317,65 @@ try {
         $metadata['mqtt_client_id'] = $mqttClientId;
     }
 
-    $db->query(
-        "INSERT INTO devices (id, company_id, group_id, store_id, name, type, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-        [
-            $deviceId,
-            $companyId,
-            $groupId,
-            $storeId,
-            $name,
-            $actualDeviceType,
-            $syncRequest['mac_address'] ?? null,
-            $syncRequest['ip_address'] ?? null,
-            $deviceIdentifier,
-            $syncRequest['fingerprint'] ?? null,
-            $syncRequest['manufacturer'] ?? ($isPwaPlayer ? 'PWA Browser' : null),
-            $syncRequest['firmware'] ?? null,
-            $screenWidth,
-            $screenHeight,
-            $location,
-            json_encode($metadata),
-            $actualCommMode,
-            $mqttClientId,
-            $mqttTopic
-        ]
-    );
+    if ($isRelink) {
+        $targetMetadata = json_decode($targetDevice['metadata'] ?? '[]', true);
+        if (!is_array($targetMetadata)) {
+            $targetMetadata = [];
+        }
+        $mergedMetadata = array_merge($targetMetadata, $metadata);
+
+        $updatePayload = [
+            'name' => $name,
+            'group_id' => $groupId,
+            'store_id' => $storeId,
+            'type' => $actualDeviceType,
+            'mac_address' => $syncRequest['mac_address'] ?? ($targetDevice['mac_address'] ?? null),
+            'ip_address' => $syncRequest['ip_address'] ?? ($targetDevice['ip_address'] ?? null),
+            'device_id' => $deviceIdentifier,
+            'fingerprint' => $syncRequest['fingerprint'] ?? ($targetDevice['fingerprint'] ?? null),
+            'manufacturer' => $syncRequest['manufacturer'] ?? ($isPwaPlayer ? 'PWA Browser' : ($targetDevice['manufacturer'] ?? null)),
+            'firmware_version' => $syncRequest['firmware'] ?? ($targetDevice['firmware_version'] ?? null),
+            'screen_width' => $screenWidth ?: ($targetDevice['screen_width'] ?? null),
+            'screen_height' => $screenHeight ?: ($targetDevice['screen_height'] ?? null),
+            'location' => $location,
+            'metadata' => json_encode($mergedMetadata),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($communicationMode !== null) {
+            $updatePayload['communication_mode'] = $actualCommMode;
+            $updatePayload['mqtt_client_id'] = $mqttClientId;
+            $updatePayload['mqtt_topic'] = $mqttTopic;
+        }
+
+        $db->update('devices', $updatePayload, 'id = ? AND company_id = ?', [$deviceId, $companyId]);
+    } else {
+        $db->query(
+            "INSERT INTO devices (id, company_id, group_id, store_id, name, type, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+            [
+                $deviceId,
+                $companyId,
+                $groupId,
+                $storeId,
+                $name,
+                $actualDeviceType,
+                $syncRequest['mac_address'] ?? null,
+                $syncRequest['ip_address'] ?? null,
+                $deviceIdentifier,
+                $syncRequest['fingerprint'] ?? null,
+                $syncRequest['manufacturer'] ?? ($isPwaPlayer ? 'PWA Browser' : null),
+                $syncRequest['firmware'] ?? null,
+                $screenWidth,
+                $screenHeight,
+                $location,
+                json_encode($metadata),
+                $actualCommMode,
+                $mqttClientId,
+                $mqttTopic
+            ]
+        );
+    }
 
     // Update sync request
     $db->query(
@@ -379,7 +435,7 @@ try {
     // Generate device token
     $tokenData = DeviceAuthMiddleware::generateJwtToken([
         'id' => $deviceId,
-        'device_id' => $syncRequest['serial_number'],
+        'device_id' => $deviceIdentifier,
         'company_id' => $companyId
     ], 365); // 1 year expiry
 
@@ -436,7 +492,7 @@ try {
         $responsePayload['warning'] = $playlistWarning;
     }
 
-    Response::success($responsePayload, 201);
+    Response::success($responsePayload, $isRelink ? 200 : 201);
 
 } catch (Exception $e) {
     $db->rollBack();
@@ -450,4 +506,3 @@ try {
 
     Response::serverError('Failed to approve device: ' . $e->getMessage());
 }
-

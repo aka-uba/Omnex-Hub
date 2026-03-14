@@ -254,7 +254,8 @@
             "fingerprint": "Vingerafdruk van apparaat",
             "previewImage": "Voorbeeldafbeelding",
             "uploadPreview": "Afbeelding uploaden",
-            "branch": "Tak"
+            "branch": "Tak",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Voorbeeld: Plank-A1-ESL",
@@ -272,7 +273,8 @@
         "hints": {
             "syncCode": "Voer de code van het PWA- of ESL-apparaat in",
             "autoFields": "Deze velden worden automatisch ingevuld door het apparaat",
-            "previewImage": "Voorbeeldafbeelding voor apparaat. Maximaal 2 MB, PNG/JPG/WEBP"
+            "previewImage": "Voorbeeldafbeelding voor apparaat. Maximaal 2 MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Apparaatnaam is vereist",
@@ -461,6 +463,7 @@
         "approveFailed": "Goedkeuring mislukt",
         "rejectFailed": "Afwijzing is mislukt",
         "syncCodeInvalid": "Ongeldige koppelingscode",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Koppelingscode verlopen",
         "statusRefreshed": "Status vernieuwd",
         "commandSent": "Commando verzonden",
@@ -878,6 +881,9 @@
         "error": "Er is een fout opgetreden",
         "loading": "Laden...",
         "unknownDevice": "Onbekend apparaat",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "Dit IP-adres is al in gebruik ({name})",
         "invalidIpFormat": "Ongeldig IP-adresformaat",
         "invalidDeviceData": "Ongeldige apparaatgegevens",

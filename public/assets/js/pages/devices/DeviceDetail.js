@@ -118,7 +118,7 @@ export class DeviceDetailPage {
                     </div>
                     <div class="dd-hero-meta">
                         ${d.serial_number || d.device_id ? `<span class="dd-hero-meta-item"><i class="ti ti-hash"></i> ${escapeHTML(d.serial_number || d.device_id)}</span>` : ''}
-                        ${d.ip_address ? `<span class="dd-hero-meta-item"><i class="ti ti-network"></i> ${escapeHTML(d.ip_address)}</span>` : ''}
+                        ${d.ip_address ? `<span class="dd-hero-meta-item"><i class="ti ti-network"></i> ${escapeHTML(this.normalizeLoopbackIp(d.ip_address))}</span>` : ''}
                         ${d.mac_address ? `<span class="dd-hero-meta-item"><i class="ti ti-antenna-bars-5"></i> ${escapeHTML(d.mac_address)}</span>` : ''}
                         ${d.location ? `<span class="dd-hero-meta-item"><i class="ti ti-map-pin"></i> ${escapeHTML(d.location)}</span>` : ''}
                     </div>
@@ -184,7 +184,7 @@ export class DeviceDetailPage {
                                     ${d.ip_address ? `
                                         <div class="dd-prop-item">
                                             <span class="dd-prop-label">${this.__('columns.ipAddress')}</span>
-                                            <span class="dd-prop-value font-mono">${escapeHTML(d.ip_address)}</span>
+                                            <span class="dd-prop-value font-mono">${escapeHTML(this.normalizeLoopbackIp(d.ip_address))}</span>
                                         </div>
                                     ` : ''}
                                     ${d.location ? `
@@ -1239,6 +1239,13 @@ export class DeviceDetailPage {
         }
     }
 
+    normalizeLoopbackIp(value) {
+        const ip = String(value || '').trim();
+        if (!ip) return '';
+        if (ip === '::1' || ip === '::ffff:127.0.0.1') return 'localhost';
+        return ip;
+    }
+
     /**
      * Preload translations before render
      */
@@ -1369,6 +1376,35 @@ export class DeviceDetailPage {
                 }
             });
         });
+    }
+
+    mapResyncErrorMessage(error) {
+        const message = String(error?.message || '');
+
+        if (error?.status === 409 && /already exists/i.test(message)) {
+            return this.__('messages.deviceAlreadyRegisteredDetailed', {
+                name: this.device?.name || this.__('messages.unknownDevice')
+            });
+        }
+
+        return message || this.__('toast.approveFailed');
+    }
+
+    async relinkDeviceWithSyncCode(syncCode, payload = {}) {
+        try {
+            await this.app.api.post('/esl/approve', {
+                sync_code: syncCode,
+                target_device_id: this.deviceId,
+                name: payload.name,
+                type: payload.type,
+                group_id: payload.group_id,
+                location: payload.location
+            });
+            Toast.success(this.__('toast.resynced'));
+        } catch (error) {
+            Toast.error(this.mapResyncErrorMessage(error));
+            throw error;
+        }
     }
 
     async sendCommand(command) {
@@ -1893,8 +1929,13 @@ export class DeviceDetailPage {
                     <input type="text" id="edit-serial" class="form-input" value="${escapeHTML(d.serial_number || '')}" placeholder="${this.__('form.placeholders.serialNumber')}">
                 </div>
                 <div class="form-group">
+                    <label class="form-label">${this.__('form.fields.resyncCode')}</label>
+                    <input type="text" id="edit-resync-code" class="form-input" maxlength="6" placeholder="${this.__('form.placeholders.syncCode')}">
+                    <p class="form-hint">${this.__('form.hints.resyncCodeOptional')}</p>
+                </div>
+                <div class="form-group">
                     <label class="form-label">${this.__('form.fields.ipAddress')}</label>
-                    <input type="text" id="edit-ip" class="form-input" value="${escapeHTML(d.ip_address || '')}" placeholder="${this.__('form.placeholders.ipAddress')}">
+                    <input type="text" id="edit-ip" class="form-input" value="${escapeHTML(this.normalizeLoopbackIp(d.ip_address || ''))}" placeholder="${this.__('form.placeholders.ipAddress')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">${this.__('form.fields.location')}</label>
@@ -1926,8 +1967,13 @@ export class DeviceDetailPage {
             cancelText: this.__('modal.cancel'),
             onConfirm: async () => {
                 const name = document.getElementById('edit-name')?.value?.trim();
+                const resyncCode = document.getElementById('edit-resync-code')?.value?.trim();
                 if (!name) {
                     Toast.error(this.__('validation.nameRequired'));
+                    throw new Error('Validation failed');
+                }
+                if (resyncCode && !/^\d{6}$/.test(resyncCode)) {
+                    Toast.error(this.__('toast.syncCodeInvalid'));
                     throw new Error('Validation failed');
                 }
 
@@ -1942,7 +1988,7 @@ export class DeviceDetailPage {
                     group_id: document.getElementById('edit-group')?.value || null,
                     branch_id: document.getElementById('edit-branch')?.value || null,
                     serial_number: document.getElementById('edit-serial')?.value?.trim(),
-                    ip_address: document.getElementById('edit-ip')?.value?.trim(),
+                    ip_address: this.normalizeLoopbackIp(document.getElementById('edit-ip')?.value?.trim()),
                     mac_address: document.getElementById('edit-mac')?.value?.trim(),
                     screen_width,
                     screen_height
@@ -1953,6 +1999,15 @@ export class DeviceDetailPage {
                 const currentPreviewUrl = document.getElementById('device-preview-url')?.value;
 
                 try {
+                    if (resyncCode) {
+                        await this.relinkDeviceWithSyncCode(resyncCode, {
+                            name,
+                            type: data.type,
+                            group_id: data.group_id,
+                            location: data.location
+                        });
+                    }
+
                     await this.app.api.put(`/devices/${this.deviceId}`, data);
 
                     // Handle preview image upload/delete if changed

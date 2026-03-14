@@ -253,7 +253,8 @@
             "fingerprint": "Empreinte de l'appareil",
             "previewImage": "Image d'aperçu",
             "uploadPreview": "Téléverser une image",
-            "branch": "Succursale"
+            "branch": "Succursale",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Exemple : Étagère-A1-ESL",
@@ -271,7 +272,8 @@
         "hints": {
             "syncCode": "Entrez le code depuis PWA ou l'appareil ESL",
             "autoFields": "Ces champs sont automatiquement remplis par l'appareil",
-            "previewImage": "Image d'aperçu pour l'appareil. Max 2 Mo, PNG/JPG/WEBP"
+            "previewImage": "Image d'aperçu pour l'appareil. Max 2 Mo, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Le nom de l'appareil est obligatoire",
@@ -460,6 +462,7 @@
         "approveFailed": "Échec de l'approbation",
         "rejectFailed": "Échec du rejet",
         "syncCodeInvalid": "Code d'appariement invalide",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Code d'appariement expiré",
         "statusRefreshed": "Statut actualisé",
         "commandSent": "Commande envoyée",
@@ -837,6 +840,9 @@
         "error": "Une erreur s'est produite",
         "loading": "Chargement...",
         "unknownDevice": "Appareil inconnu",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "Cette adresse IP est déjà utilisée ({name})",
         "invalidIpFormat": "Format d'adresse IP invalide",
         "invalidDeviceData": "Données d'appareil invalides",

@@ -26,6 +26,23 @@ class ApprovalFlow {
         this._playlistsCache = null;
     }
 
+    normalizeLoopbackIp(value) {
+        const ip = String(value || '').trim();
+        if (!ip) return '';
+        if (ip === '::1' || ip === '::ffff:127.0.0.1') return 'localhost';
+        return ip;
+    }
+
+    mapApproveErrorMessage(error, context = {}) {
+        const message = String(error?.message || '');
+        if (error?.status === 409 && /device already exists/i.test(message)) {
+            return this.__('messages.deviceAlreadyRegisteredDetailed', {
+                name: context.deviceName || this.__('messages.unknownDevice')
+            });
+        }
+        return message || this.__('toast.approveFailed');
+    }
+
     /**
      * Show pending sync requests modal
      */
@@ -88,7 +105,7 @@ class ApprovalFlow {
                     screenInfo = req.resolution || req.screenResolution;
                 }
 
-                const ipAddress = req.ipAddress || '-';
+                const ipAddress = this.normalizeLoopbackIp(req.ipAddress) || '-';
                 const syncCode = req.syncCode || '-';
                 const createdAt = req.createdAt ? new Date(req.createdAt).toLocaleString('tr-TR') : '-';
                 const isExpired = req.isExpired;
@@ -116,7 +133,7 @@ class ApprovalFlow {
                         </td>
                         <td><code>${syncCode}</code></td>
                         <td>${screenInfo}</td>
-                        <td>${ipAddress}</td>
+                        <td>${this.escapeHtml(ipAddress)}</td>
                         <td>${statusBadge}</td>
                         <td><small>${createdAt}</small></td>
                         <td>
@@ -355,7 +372,7 @@ class ApprovalFlow {
                     <div class="form-group">
                         <label class="form-label">${this.__('form.fields.ipAddress')}</label>
                         <input type="text" id="approve-req-ip" class="form-input"
-                            value="${requestData.ipAddress || ''}" placeholder="${this.__('form.placeholders.ipAddress')}" readonly>
+                            value="${this.escapeHtml(this.normalizeLoopbackIp(requestData.ipAddress || ''))}" placeholder="${this.__('form.placeholders.ipAddress')}" readonly>
                     </div>
                 </div>
                 <div class="form-group">
@@ -425,7 +442,11 @@ class ApprovalFlow {
                         Modal.close(parentModal.id);
                     }
                 } catch (error) {
-                    Toast.error(error.message || this.__('toast.approveFailed'));
+                    if (error?.status === 409) {
+                        Toast.warning(this.mapApproveErrorMessage(error, { deviceName: name }));
+                    } else {
+                        Toast.error(this.mapApproveErrorMessage(error, { deviceName: name }));
+                    }
                     throw error;
                 }
             }

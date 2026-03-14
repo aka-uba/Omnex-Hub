@@ -259,7 +259,8 @@
             "fingerprint": "Device Fingerprint",
             "previewImage": "Preview Image",
             "uploadPreview": "Upload Image",
-            "branch": "Branch"
+            "branch": "Branch",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Example: Shelf-A1-ESL",
@@ -277,7 +278,8 @@
         "hints": {
             "syncCode": "Enter the code from PWA or ESL device",
             "autoFields": "These fields are automatically filled by the device",
-            "previewImage": "Preview image for device. Max 2MB, PNG/JPG/WEBP"
+            "previewImage": "Preview image for device. Max 2MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Device name is required",
@@ -466,6 +468,7 @@
         "approveFailed": "Approval failed",
         "rejectFailed": "Rejection failed",
         "syncCodeInvalid": "Invalid pairing code",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Pairing code expired",
         "statusRefreshed": "Status refreshed",
         "commandSent": "Command sent",
@@ -866,6 +869,9 @@
         "error": "An error occurred",
         "loading": "Loading...",
         "unknownDevice": "Unknown device",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "This IP address is already in use ({name})",
         "invalidIpFormat": "Invalid IP address format",
         "invalidDeviceData": "Invalid device data",

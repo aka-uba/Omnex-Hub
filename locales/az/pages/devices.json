@@ -254,7 +254,8 @@
             "fingerprint": "Cihaz Barmaq İzi",
             "previewImage": "Şəkilə ön baxış",
             "uploadPreview": "Şəkil Yüklə",
-            "branch": "Filial"
+            "branch": "Filial",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Nümunə: Shelf-A1-ESL",
@@ -272,7 +273,8 @@
         "hints": {
             "syncCode": "PWA və ya ESL cihazından kodu daxil edin",
             "autoFields": "Bu sahələr cihaz tərəfindən avtomatik doldurulur",
-            "previewImage": "Cihaz üçün şəkilə ön baxış. Maksimum 2MB, PNG/JPG/WEBP"
+            "previewImage": "Cihaz üçün şəkilə ön baxış. Maksimum 2MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Cihaz adı tələb olunur",
@@ -461,6 +463,7 @@
         "approveFailed": "Təsdiq alınmadı",
         "rejectFailed": "Rədd edilmədi",
         "syncCodeInvalid": "Yanlış cütləşdirmə kodu",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Cütləşdirmə kodunun vaxtı keçib",
         "statusRefreshed": "Status yeniləndi",
         "commandSent": "Komanda göndərildi",
@@ -878,6 +881,9 @@
         "error": "Xəta baş verdi",
         "loading": "Yüklənir...",
         "unknownDevice": "Naməlum cihaz",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "Bu IP ünvanı artıq istifadə olunur ({name})",
         "invalidIpFormat": "Yanlış IP ünvanı formatı",
         "invalidDeviceData": "Yanlış cihaz datası",

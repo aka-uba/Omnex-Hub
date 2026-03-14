@@ -3756,3 +3756,68 @@ Format:
 - Risks/Follow-up:
   - During first bootstrap window a client may briefly observe fallback until channel playlist is available; after build it converges to channel pipeline.
   - Per-item mute semantics are not currently preserved in single continuous channel output (current model is global no-audio in channel pipeline).
+
+## 2026-03-14 - IPTV multi-screen analiz dokumani (kod degisimi yok)
+- Request context:
+  - User asked to inspect phone IPTV app multi-screen capability and prepare a new documentation for adding similar feature to Omnex APK later, without touching current player/stream flow, with per-screen file or link input.
+- Findings:
+  - ADB/UI dump analysis confirmed multi-screen UX pattern: layout selection + slot-based source assignment.
+  - Evidence observed in dumps includes `NSTIJKPlayerMultiActivity`, `id/multiscreen`, layout ids (`deafult`, `screen1..screen5`), slot containers (`rl_video_box_*`, `app_video_box_*`, `ll_add_channel`), and source entry ids (`rl_login_with_m3u`, `rl_play_single_stream`, `rl_play_from_device`).
+- Changes:
+  - Added `docs/IPTV_MULTI_SCREEN_INTEGRATION_PLAN_2026-03-14.md`
+    - Scope/sinirlar, mimari, veri modeli, UI akisi, performans profili limiti, test matrisi, riskler ve rollout plani.
+    - Explicitly preserves existing `MainActivity` + player/stream pipeline and proposes isolated `MultiScreenActivity` module.
+- Checks run:
+  - No QUICK_CHECKS command matched (docs-only markdown change, no `.php`/`.js`/Android code edit).
+- Backup/restore safety:
+  - Not required (new documentation file added; no high-risk encoding edit).
+- Risks/Follow-up:
+  - This is design documentation only; implementation phase should add feature flag + regression tests to guarantee zero impact on existing single-screen playback.
+
+## 2026-03-14 - Device modal IP normalize + relink sync + non-stream m3u/m3u8 actions
+- Request context:
+  - User asked to keep backup-safe workflow and fix pending/edit modal loopback IP display, improve duplicate-device i18n toasts, add edit modal resync code flow for reset clients, and expose stream link/download actions (m3u + m3u8) on non-stream player devices too.
+- Changes:
+  - `public/assets/js/pages/devices/DeviceList.js`
+    - Added loopback IP normalization helper (`::1`/`::ffff:127.0.0.1` -> `localhost`) for modal display and IP conflict checks.
+    - Added richer duplicate error mapping to i18n key `messages.deviceAlreadyRegisteredDetailed`.
+    - Added stream action expansion for player devices (not only stream_mode):
+      - copy m3u
+      - download m3u
+      - copy m3u8 variant
+      - download m3u8 variant
+    - Added lazy stream token provisioning call before actions (`ensure_stream_token`).
+  - `public/assets/js/pages/devices/list/ApprovalFlow.js`
+    - Normalized loopback IP display in pending/approve modals.
+    - Added duplicate 409 error mapping to i18n key `messages.deviceAlreadyRegisteredDetailed`.
+  - `public/assets/js/pages/devices/DeviceDetail.js`
+    - Normalized IP display in detail hero/properties and edit form.
+    - Added edit modal field `form.fields.resyncCode` (+ hint) for optional 6-digit resync.
+    - Added relink call to `/esl/approve` with `target_device_id` before normal update flow.
+  - `api/esl/approve.php`
+    - Added `target_device_id` support to approve/relink an existing device with a new sync request instead of hard 409 in relink path.
+    - Added guarded duplicate behavior: allow when duplicate resolves to selected target, block otherwise.
+    - Added relink update branch (metadata/device identity refresh) and returns 200 for relink, 201 for new create.
+  - `api/devices/update.php`
+    - Added `ensure_stream_token` / `ensureStreamToken` request support to generate/reuse stream token without forcing stream mode.
+  - `locales/{tr,en,ru,az,de,nl,fr,ar}/pages/devices.json`
+    - Added all required keys:
+      - `form.fields.resyncCode`
+      - `form.hints.resyncCodeOptional`
+      - `toast.resynced`
+      - `messages.deviceAlreadyRegisteredDetailed`
+      - `messages.streamTokenRequired`
+      - `messages.streamVariantUnavailable`
+- Temp backup safety:
+  - Used existing backup folder: `.temp-backups/device-ui-stream-fixes-20260314_051526/`
+  - Added backup: `.temp-backups/device-ui-stream-fixes-20260314_051526/approve.php.bak`
+- Checks run:
+  - `php -l api/devices/update.php`
+  - `php -l api/esl/approve.php`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+  - `node --check public/assets/js/pages/devices/list/ApprovalFlow.js`
+  - `node --check public/assets/js/pages/devices/DeviceDetail.js`
+  - locale JSON parse check for all 8 language files via Node (`locales ok`)
+- Risks/Follow-up:
+  - New locale keys for non-TR languages are functional but wording was kept generic; language-owner review can refine phrasing later.
+  - `storage/streams/` remains runtime-generated/untracked and should stay out of git history.

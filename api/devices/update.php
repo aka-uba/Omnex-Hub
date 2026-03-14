@@ -178,6 +178,14 @@ if ($request->has('stream_mode')) {
         }
     }
 }
+if ((int)$request->input('ensure_stream_token', $request->input('ensureStreamToken', 0)) === 1) {
+    if (empty($device['stream_token'])) {
+        $tokenLength = defined('STREAM_TOKEN_LENGTH') ? STREAM_TOKEN_LENGTH : 32;
+        $data['stream_token'] = bin2hex(random_bytes($tokenLength));
+    } else {
+        $data['stream_token'] = $device['stream_token'];
+    }
+}
 if ($request->has('device_profile')) {
     $dp = $request->input('device_profile');
     if (is_string($dp) && in_array($dp, ['360p', '540p', '720p', '1080p'])) {

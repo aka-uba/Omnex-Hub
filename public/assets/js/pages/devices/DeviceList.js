@@ -587,7 +587,7 @@ export class DeviceListPage {
                     icon: 'ti-copy',
                     label: this.__('stream.copyUrl'),
                     class: 'btn-ghost text-purple',
-                    visible: (row) => (row.model === 'stream_player' || Number(row.stream_mode) === 1) && row.stream_token,
+                    visible: (row) => this.isPlayerDevice(row),
                     onClick: (row) => this.copyStreamUrl(row)
                 },
                 {
@@ -595,8 +595,24 @@ export class DeviceListPage {
                     icon: 'ti-download',
                     label: `${this.__('actions.download')} M3U`,
                     class: 'btn-ghost text-info',
-                    visible: (row) => (row.model === 'stream_player' || Number(row.stream_mode) === 1) && row.stream_token,
+                    visible: (row) => this.isPlayerDevice(row),
                     onClick: (row) => this.downloadStreamPlaylist(row)
+                },
+                {
+                    name: 'copy-stream-url-m3u8',
+                    icon: 'ti-link',
+                    label: `${this.__('stream.copyUrl')} M3U8`,
+                    class: 'btn-ghost text-primary',
+                    visible: (row) => this.isPlayerDevice(row),
+                    onClick: (row) => this.copyStreamVariantUrl(row)
+                },
+                {
+                    name: 'download-stream-playlist-m3u8',
+                    icon: 'ti-download',
+                    label: `${this.__('actions.download')} M3U8`,
+                    class: 'btn-ghost text-info',
+                    visible: (row) => this.isPlayerDevice(row),
+                    onClick: (row) => this.downloadStreamVariantPlaylist(row)
                 },
                 {
                     name: 'history',
@@ -1023,6 +1039,73 @@ export class DeviceListPage {
         return `${Math.floor(seconds / 86400)}g`;
     }
 
+    normalizeLoopbackIp(value) {
+        const ip = String(value || '').trim();
+        if (!ip) return '';
+        if (ip === '::1' || ip === '::ffff:127.0.0.1') return 'localhost';
+        return ip;
+    }
+
+    isPlayerDevice(device) {
+        if (!device || device.approval_status === 'pending') return false;
+
+        return (
+            device.model === 'stream_player' ||
+            device.model === 'pwa_player' ||
+            device.type === 'tv' ||
+            device.type === 'android_tv' ||
+            device.type === 'web_display' ||
+            device.original_type === 'android_tv' ||
+            device.original_type === 'web_display'
+        );
+    }
+
+    async ensureStreamToken(device) {
+        if (device?.stream_token) return device.stream_token;
+        if (!device?.id || !this.isPlayerDevice(device)) return null;
+
+        try {
+            const response = await this.app.api.put(`/devices/${device.id}`, {
+                ensure_stream_token: 1
+            });
+            const token = response?.data?.stream_token || response?.stream_token || null;
+            if (token) {
+                device.stream_token = token;
+                return token;
+            }
+        } catch (error) {
+            Logger.warn('Failed to ensure stream token', error);
+        }
+
+        return null;
+    }
+
+    mapDeviceErrorMessage(error, context = {}) {
+        const message = String(error?.message || '');
+
+        if (error?.status === 409 && /device already exists/i.test(message)) {
+            return this.__('messages.deviceAlreadyRegisteredDetailed', {
+                name: context.deviceName || this.__('messages.unknownDevice')
+            });
+        }
+
+        return message || this.__('toast.saveFailed');
+    }
+
+    copyToClipboard(text, successMessage) {
+        return navigator.clipboard.writeText(text).then(() => {
+            Toast.success(successMessage);
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            Toast.success(successMessage);
+        });
+    }
+
     getStreamPlaylistUrl(device, options = {}) {
         const basePath = window.OmnexConfig?.basePath || '';
         const baseUrl = `${window.location.origin}${basePath}`;
@@ -1146,28 +1229,19 @@ export class DeviceListPage {
     }
 
     async copyStreamUrl(device) {
-        if (!device.stream_token) {
-            Toast.error(this.__('stream.noToken'));
+        const token = await this.ensureStreamToken(device);
+        if (!token) {
+            Toast.error(this.__('messages.streamTokenRequired'));
             return;
         }
         const streamUrl = await this.resolveDirectStreamUrl(device);
-        navigator.clipboard.writeText(streamUrl).then(() => {
-            Toast.success(this.__('stream.copied'));
-        }).catch(() => {
-            // Fallback
-            const ta = document.createElement('textarea');
-            ta.value = streamUrl;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            Toast.success(this.__('stream.copied'));
-        });
+        await this.copyToClipboard(streamUrl, this.__('stream.copied'));
     }
 
     async downloadStreamPlaylist(device) {
-        if (!device.stream_token) {
-            Toast.error(this.__('stream.noToken'));
+        const token = await this.ensureStreamToken(device);
+        if (!token) {
+            Toast.error(this.__('messages.streamTokenRequired'));
             return;
         }
 
@@ -1193,6 +1267,64 @@ export class DeviceListPage {
         const anchor = document.createElement('a');
         anchor.href = objectUrl;
         anchor.download = `${safeName || 'omnex-stream'}.m3u`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(objectUrl);
+    }
+
+    async copyStreamVariantUrl(device) {
+        const token = await this.ensureStreamToken(device);
+        if (!token) {
+            Toast.error(this.__('messages.streamTokenRequired'));
+            return;
+        }
+
+        const profile = this.resolveStreamProfile(device);
+        const variantUrl = this.getStreamVariantUrl(device, profile);
+        if (!variantUrl) {
+            Toast.error(this.__('messages.streamVariantUnavailable'));
+            return;
+        }
+
+        await this.copyToClipboard(variantUrl, this.__('stream.copied'));
+    }
+
+    async downloadStreamVariantPlaylist(device) {
+        const token = await this.ensureStreamToken(device);
+        if (!token) {
+            Toast.error(this.__('messages.streamTokenRequired'));
+            return;
+        }
+
+        const profile = this.resolveStreamProfile(device);
+        const variantUrl = this.getStreamVariantUrl(device, profile);
+        if (!variantUrl) {
+            Toast.error(this.__('messages.streamVariantUnavailable'));
+            return;
+        }
+
+        const streamTitleRaw = String(device?.name || 'Omnex Live')
+            .replace(/[\r\n]+/g, ' ')
+            .trim();
+        const streamTitle = (streamTitleRaw || 'Omnex Live').replace(/"/g, '\'');
+        const lines = [
+            '#EXTM3U',
+            `#EXTINF:-1 tvg-id="" tvg-name="${streamTitle}" group-title="Omnex",${streamTitle}`,
+            variantUrl,
+            ''
+        ];
+        const content = lines.join('\n');
+        const blob = new Blob([content], { type: 'application/x-mpegURL;charset=utf-8' });
+        const objectUrl = URL.createObjectURL(blob);
+        const safeName = String(device?.name || 'omnex-stream')
+            .toLowerCase()
+            .replace(/[^a-z0-9-_]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        const anchor = document.createElement('a');
+        anchor.href = objectUrl;
+        anchor.download = `${safeName || 'omnex-stream'}-variant.m3u8`;
         document.body.appendChild(anchor);
         anchor.click();
         document.body.removeChild(anchor);
@@ -1319,7 +1451,7 @@ export class DeviceListPage {
                 <div class="form-group">
                     <label class="form-label">${this.__('form.fields.ipAddress')}</label>
                     <input type="text" id="device-ip" class="form-input"
-                        value="${escapeHTML(device?.ip_address || '')}" placeholder="${this.__('form.placeholders.ipAddress')}">
+                        value="${escapeHTML(this.normalizeLoopbackIp(device?.ip_address || ''))}" placeholder="${this.__('form.placeholders.ipAddress')}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">${this.__('form.fields.location')}</label>
@@ -1547,7 +1679,7 @@ export class DeviceListPage {
     }
 
     async findDeviceByIp(ipAddress, excludeDeviceId = null) {
-        const ip = String(ipAddress || '').trim();
+        const ip = this.normalizeLoopbackIp(ipAddress);
         if (!ip) return null;
 
         try {
@@ -1558,7 +1690,7 @@ export class DeviceListPage {
             const devices = Array.isArray(response?.data) ? response.data : [];
 
             return devices.find(device => {
-                const sameIp = String(device?.ip_address || '').trim() === ip;
+                const sameIp = this.normalizeLoopbackIp(device?.ip_address) === ip;
                 const sameDevice = excludeDeviceId && String(device?.id) === String(excludeDeviceId);
                 return sameIp && !sameDevice;
             }) || null;
@@ -1577,7 +1709,8 @@ export class DeviceListPage {
         const group_id = document.getElementById('device-group')?.value || null;
         const branch_id = document.getElementById('device-branch')?.value || null;
         const serial_number = document.getElementById('device-serial')?.value?.trim();
-        const ip_address = document.getElementById('device-ip')?.value?.trim();
+        const rawIpAddress = document.getElementById('device-ip')?.value?.trim();
+        const ip_address = this.normalizeLoopbackIp(rawIpAddress);
         const location = document.getElementById('device-location')?.value?.trim();
         const mac_address = document.getElementById('device-mac')?.value?.trim();
         const screen_width = document.getElementById('device-screen-width')?.value ? parseInt(document.getElementById('device-screen-width').value) : null;
@@ -1682,7 +1815,11 @@ export class DeviceListPage {
 
             this.dataTable?.refresh();
         } catch (error) {
-            Toast.error(error.message || this.__('toast.saveFailed'));
+            if (error?.status === 409) {
+                Toast.warning(this.mapDeviceErrorMessage(error, { deviceName: name }));
+            } else {
+                Toast.error(this.mapDeviceErrorMessage(error, { deviceName: name }));
+            }
             throw error;
         }
     }
@@ -1699,7 +1836,7 @@ export class DeviceListPage {
                     <div>
                         <strong>${this.__('pendingDevices.deviceInfo')}</strong>
                         <p>${this.__('pendingDevices.syncCode')}: <code>${escapeHTML(device.sync_code || '-')}</code></p>
-                        <p>${this.__('columns.ipAddress')}: ${escapeHTML(device.ip_address || '-')}</p>
+                        <p>${this.__('columns.ipAddress')}: ${escapeHTML(this.normalizeLoopbackIp(device.ip_address || '-') || '-')}</p>
                         <p>${this.__('pendingDevices.createdAt')}: ${device.created_at ? new Date(device.created_at).toLocaleString() : '-'}</p>
                     </div>
                 </div>

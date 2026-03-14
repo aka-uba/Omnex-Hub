@@ -259,7 +259,8 @@
             "fingerprint": "Cihaz Parmak İzi",
             "previewImage": "Önizleme Görseli",
             "uploadPreview": "Görsel Yükle",
-            "branch": "Şube"
+            "branch": "Şube",
+            "resyncCode": "Player Esitleme Kodu"
         },
         "placeholders": {
             "name": "Örnek: Raf-A1-ESL",
@@ -277,7 +278,8 @@
         "hints": {
             "syncCode": "PWA veya ESL cihazdan gelen kodu girin",
             "autoFields": "Bu alanlar cihaz tarafından otomatik doldurulur",
-            "previewImage": "Cihaz için önizleme görseli. Max 2MB, PNG/JPG/WEBP"
+            "previewImage": "Cihaz için önizleme görseli. Max 2MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Opsiyonel: mevcut cihazi yeniden eslemek icin yeni 6 haneli kod girin."
         },
         "errors": {
             "nameRequired": "Cihaz adı zorunludur",
@@ -466,6 +468,7 @@
         "approveFailed": "Onaylama başarısız",
         "rejectFailed": "Reddetme başarısız",
         "syncCodeInvalid": "Geçersiz eşleştirme kodu",
+        "resynced": "Cihaz yeniden eslendi",
         "syncCodeExpired": "Eşleştirme kodunun süresi dolmuş",
         "statusRefreshed": "Durum yenilendi",
         "commandSent": "Komut gönderildi",
@@ -866,6 +869,9 @@
         "error": "Bir hata oluştu",
         "loading": "Yükleniyor...",
         "unknownDevice": "Bilinmeyen cihaz",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Bu cihaz icin stream token olusturulamadi.",
+        "streamVariantUnavailable": "Varyant stream URL olusturulamadi.",
         "ipAlreadyInUse": "Bu IP adresi zaten kullanımda ({name})",
         "invalidIpFormat": "IP adresi formatı geçersiz",
         "invalidDeviceData": "Geçersiz cihaz verisi",

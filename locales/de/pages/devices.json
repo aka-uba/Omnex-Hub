@@ -253,7 +253,8 @@
             "fingerprint": "Geräte-Fingerabdruck",
             "previewImage": "Vorschaubild",
             "uploadPreview": "Bild hochladen",
-            "branch": "Filiale"
+            "branch": "Filiale",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Beispiel: Regal-A1-ESL",
@@ -271,7 +272,8 @@
         "hints": {
             "syncCode": "Geben Sie den Code vom PWA oder ESL-Gerät ein",
             "autoFields": "Diese Felder werden automatisch vom Gerät ausgefüllt",
-            "previewImage": "Vorschaubild für Gerät. Max. 2MB, PNG/JPG/WEBP"
+            "previewImage": "Vorschaubild für Gerät. Max. 2MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Gerätename ist erforderlich",
@@ -460,6 +462,7 @@
         "approveFailed": "Genehmigung fehlgeschlagen",
         "rejectFailed": "Ablehnung fehlgeschlagen",
         "syncCodeInvalid": "Ungültiger Kopplungscode",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Kopplungscode abgelaufen",
         "statusRefreshed": "Status aktualisiert",
         "commandSent": "Befehl gesendet",
@@ -837,6 +840,9 @@
         "error": "Ein Fehler ist aufgetreten",
         "loading": "Wird geladen...",
         "unknownDevice": "Unbekanntes Gerät",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "Diese IP-Adresse wird bereits verwendet ({name})",
         "invalidIpFormat": "Ungültiges IP-Adressformat",
         "invalidDeviceData": "Ungültige Gerätedaten",

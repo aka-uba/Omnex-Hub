@@ -253,7 +253,8 @@
             "fingerprint": "Отпечаток устройства",
             "previewImage": "Изображение предпросмотра",
             "uploadPreview": "Загрузить изображение",
-            "branch": "Филиал"
+            "branch": "Филиал",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "Пример: Shelf-A1-ESL",
@@ -271,7 +272,8 @@
         "hints": {
             "syncCode": "Введите код с PWA или ESL‑устройства",
             "autoFields": "Эти поля автоматически заполняются устройством",
-            "previewImage": "Изображение предпросмотра для устройства. Макс. 2MB, PNG/JPG/WEBP"
+            "previewImage": "Изображение предпросмотра для устройства. Макс. 2MB, PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "Название устройства обязательно",
@@ -460,6 +462,7 @@
         "approveFailed": "Одобрение не удалось",
         "rejectFailed": "Отклонение не удалось",
         "syncCodeInvalid": "Неверный код сопряжения",
+        "resynced": "Device relinked",
         "syncCodeExpired": "Срок действия кода сопряжения истёк",
         "statusRefreshed": "Статус обновлён",
         "commandSent": "Команда отправлена",
@@ -837,6 +840,9 @@
         "error": "Произошла ошибка",
         "loading": "Загрузка...",
         "unknownDevice": "Неизвестное устройство",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "Этот IP‑адрес уже используется ({name})",
         "invalidIpFormat": "Неверный формат IP‑адреса",
         "invalidDeviceData": "Неверные данные устройства",

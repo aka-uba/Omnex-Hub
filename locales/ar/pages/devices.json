@@ -254,7 +254,8 @@
             "fingerprint": "بصمة الجهاز",
             "previewImage": "معاينة الصورة",
             "uploadPreview": "تحميل الصورة",
-            "branch": "فرع"
+            "branch": "فرع",
+            "resyncCode": "Player Sync Code"
         },
         "placeholders": {
             "name": "مثال: الرف-A1-ESL",
@@ -272,7 +273,8 @@
         "hints": {
             "syncCode": "أدخل الرمز من جهاز PWA أو ESL",
             "autoFields": "يتم ملء هذه الحقول تلقائيًا بواسطة الجهاز",
-            "previewImage": "معاينة الصورة للجهاز. الحد الأقصى 2 ميجابايت، PNG/JPG/WEBP"
+            "previewImage": "معاينة الصورة للجهاز. الحد الأقصى 2 ميجابايت، PNG/JPG/WEBP",
+            "resyncCodeOptional": "Optional: enter a new 6-digit code to relink this existing device."
         },
         "errors": {
             "nameRequired": "اسم الجهاز مطلوب",
@@ -461,6 +463,7 @@
         "approveFailed": "فشلت الموافقة",
         "rejectFailed": "فشل الرفض",
         "syncCodeInvalid": "رمز الاقتران غير صالح",
+        "resynced": "Device relinked",
         "syncCodeExpired": "انتهت صلاحية رمز الاقتران",
         "statusRefreshed": "تم تحديث الحالة",
         "commandSent": "تم إرسال الأمر",
@@ -878,6 +881,9 @@
         "error": "حدث خطأ",
         "loading": "تحميل...",
         "unknownDevice": "جهاز غير معروف",
+        "deviceAlreadyRegisteredDetailed": "Another registration already exists for \"{name}\". If this is the same screen after reset, use Player Sync Code in Edit to relink.",
+        "streamTokenRequired": "Stream token could not be generated for this device.",
+        "streamVariantUnavailable": "Variant stream URL could not be generated.",
         "ipAlreadyInUse": "عنوان IP هذا قيد الاستخدام بالفعل ({name})",
         "invalidIpFormat": "تنسيق عنوان IP غير صالح",
         "invalidDeviceData": "بيانات الجهاز غير صالحة",
