@@ -50,10 +50,16 @@ function getFolderNameKey(?string $path): ?string {
     // Normalize: lowercase, forward slashes
     $normalized = mb_strtolower(str_replace('\\', '/', trim($path)), 'UTF-8');
     // Replace Turkish special chars with ASCII equivalents
+    // Note: mb_strtolower('İ') produces 'i' + U+0307 (combining dot above)
+    // We must also strip that combining character for correct ASCII matching
     $ascii = str_replace(
         ['ı', 'ğ', 'ü', 'ş', 'ö', 'ç', 'İ', 'Ğ', 'Ü', 'Ş', 'Ö', 'Ç'],
         ['i', 'g', 'u', 's', 'o', 'c', 'i', 'g', 'u', 's', 'o', 'c'],
         $normalized
     );
+    // Remove Unicode combining marks (U+0300-U+036F) left by mb_strtolower
+    $ascii = preg_replace('/\x{0300}-\x{036F}/u', '', $ascii);
+    // Also remove combining dot above (U+0307) specifically - İ -> i̇ artifact
+    $ascii = str_replace("\xCC\x87", '', $ascii);
     return $FOLDER_NAME_KEY_MAP[$ascii] ?? null;
 }
