@@ -18,7 +18,14 @@ if (!$token) {
 }
 
 $device = $db->fetch(
-    "SELECT id, company_id, name, status FROM devices WHERE stream_token = ? AND stream_mode = true",
+    "SELECT id, company_id, name, status
+     FROM devices
+     WHERE stream_token = ?
+       AND (
+            stream_mode = true
+            OR model IN ('stream_player', 'pwa_player')
+            OR type IN ('android_tv', 'web_display')
+       )",
     [$token]
 );
 

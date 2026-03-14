@@ -160,7 +160,13 @@ class StreamChannelService
     public function getDeviceByToken(string $token): ?array
     {
         $device = $this->db->fetch(
-            "SELECT * FROM devices WHERE stream_token = ? AND stream_mode = true",
+            "SELECT * FROM devices
+             WHERE stream_token = ?
+               AND (
+                    stream_mode = true
+                    OR model IN ('stream_player', 'pwa_player')
+                    OR type IN ('android_tv', 'web_display')
+               )",
             [$token]
         );
 

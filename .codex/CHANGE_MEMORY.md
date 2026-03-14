@@ -3821,3 +3821,34 @@ Format:
 - Risks/Follow-up:
   - New locale keys for non-TR languages are functional but wording was kept generic; language-owner review can refine phrasing later.
   - `storage/streams/` remains runtime-generated/untracked and should stay out of git history.
+
+## 2026-03-14 - Variant/channel playback fix for non-stream-mode player tokens
+- Request context:
+  - User reported `variant/720p` and `variant/1080p` URLs return without explicit error but do not play.
+- Findings:
+  - Variant playlists returned 200 and referenced `/channel/{profile}/segment_*.ts`.
+  - Segment URL checks returned 403 because channel/token validation still required `stream_mode = true`.
+  - Stream endpoints were inconsistent with newly enabled non-stream player link actions.
+- Changes:
+  - `api/stream/variant.php`
+  - `api/stream/playlist.php`
+  - `api/stream/master.php`
+  - `api/stream/segment.php`
+  - `api/stream/heartbeat.php`
+  - `services/StreamChannelService.php`
+  - Updated token/device lookup condition to accept stream tokens for player-class devices as well:
+    - `stream_mode = true` OR `model IN ('stream_player','pwa_player')` OR `type IN ('android_tv','web_display')`.
+- Temp backup safety:
+  - Created `.temp-backups/stream-token-player-access-20260314_0544/` backups for all touched stream files.
+- Checks run:
+  - `php -l api/stream/variant.php`
+  - `php -l api/stream/playlist.php`
+  - `php -l api/stream/master.php`
+  - `php -l api/stream/segment.php`
+  - `php -l api/stream/heartbeat.php`
+  - `php -l services/StreamChannelService.php`
+  - HTTP spot checks:
+    - `variant/720p` and `variant/1080p` playlists => 200 with `X-Stream-Pipeline: channel`
+    - `channel/{profile}/segment_*.ts` => 200 with `Content-Type: video/MP2T` (previously 403)
+- Risks/Follow-up:
+  - External devices cannot use `localhost`; for phone/TV tests device must use host LAN IP/domain URL.
