@@ -175,20 +175,29 @@ class StreamChannelService
         }
 
         $profile = $this->normalizeProfile($profile);
-        $prepared = $this->prepareProgram($device, $profile, $force);
-        if (!($prepared['ok'] ?? false)) {
-            return $prepared;
+        $lockHandle = $this->acquireChannelLock($token, $profile, 15);
+        if (!is_resource($lockHandle)) {
+            return ['ok' => false, 'reason' => 'channel_lock_timeout'];
         }
 
-        $started = $this->ensureEncoderRunning(
-            $token,
-            $profile,
-            (string)$prepared['program_path'],
-            (string)$prepared['playlist_hash'],
-            (bool)($prepared['rebuild'] ?? false)
-        );
+        try {
+            $prepared = $this->prepareProgram($device, $profile, $force);
+            if (!($prepared['ok'] ?? false)) {
+                return $prepared;
+            }
 
-        return array_merge($prepared, $started);
+            $started = $this->ensureEncoderRunning(
+                $token,
+                $profile,
+                (string)$prepared['program_path'],
+                (string)$prepared['playlist_hash'],
+                (bool)($prepared['rebuild'] ?? false)
+            );
+
+            return array_merge($prepared, $started);
+        } finally {
+            $this->releaseChannelLock($lockHandle);
+        }
     }
 
     public function listChannelStates(): array
@@ -298,7 +307,8 @@ class StreamChannelService
 
         $state = $this->readState($token, $profile) ?: [];
         $programPath = $channelDir . '/program.mp4';
-        $sameHash = (($state['playlist_hash'] ?? '') === $playlistHash) && is_file($programPath);
+        $programValid = $this->isValidProgramFile($programPath);
+        $sameHash = (($state['playlist_hash'] ?? '') === $playlistHash) && $programValid;
         if (!$force && $sameHash) {
             return [
                 'ok' => true,
@@ -311,8 +321,14 @@ class StreamChannelService
             ];
         }
 
+        if (!$programValid && is_file($programPath)) {
+            @unlink($programPath);
+        }
+
         $tmpProgramPath = $channelDir . '/program.tmp.mp4';
-        @unlink($tmpProgramPath);
+        if (is_file($tmpProgramPath)) {
+            @unlink($tmpProgramPath);
+        }
 
         $buildResult = $this->buildProgramWithTransitions($sources, $profile, $transition, $transitionDuration, $tmpProgramPath);
         if (!($buildResult['ok'] ?? false)) {
@@ -321,6 +337,9 @@ class StreamChannelService
         }
         if (!($buildResult['ok'] ?? false)) {
             return ['ok' => false, 'reason' => 'program_build_failed', 'error' => (string)($buildResult['error'] ?? '')];
+        }
+        if (!$this->isValidProgramFile($tmpProgramPath)) {
+            return ['ok' => false, 'reason' => 'program_build_invalid'];
         }
 
         if (is_file($programPath)) {
@@ -759,7 +778,7 @@ class StreamChannelService
     {
         $output = [];
         $code = 0;
-        @exec($cmd, $output, $code);
+        @exec($cmd . ' 2>&1', $output, $code);
         if (!empty($output)) {
             @file_put_contents($logPath, "[" . date('c') . "]\n" . implode("\n", $output) . "\n\n", FILE_APPEND);
         }
@@ -897,6 +916,47 @@ class StreamChannelService
             $value = str_replace('%', '%%', $value);
         }
         return $this->escapeArg($value);
+    }
+
+    private function acquireChannelLock(string $token, string $profile, int $timeoutSeconds = 10)
+    {
+        $channelDir = $this->getChannelDir($token, $profile);
+        $this->ensureDir($channelDir);
+        $lockPath = $channelDir . '/channel.lock';
+
+        $deadline = microtime(true) + max(1, $timeoutSeconds);
+        do {
+            $handle = @fopen($lockPath, 'c+');
+            if (is_resource($handle)) {
+                if (@flock($handle, LOCK_EX | LOCK_NB)) {
+                    return $handle;
+                }
+                @fclose($handle);
+            }
+            usleep(100000);
+        } while (microtime(true) < $deadline);
+
+        return null;
+    }
+
+    private function releaseChannelLock($handle): void
+    {
+        if (is_resource($handle)) {
+            @flock($handle, LOCK_UN);
+            @fclose($handle);
+        }
+    }
+
+    private function isValidProgramFile(string $path): bool
+    {
+        if (!is_file($path)) {
+            return false;
+        }
+        if ((int)@filesize($path) < 262144) {
+            return false;
+        }
+
+        return $this->probeDuration($path) > 0.5;
     }
 
     private function ensureDir(string $dir): void
