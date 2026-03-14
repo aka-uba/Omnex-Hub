@@ -207,6 +207,85 @@ if (!function_exists('streamPlaylistSelectProfile')) {
     }
 }
 
+if (!function_exists('streamPlaylistResolveItems')) {
+    function streamPlaylistResolveItems($db, array $device): array
+    {
+        $assignmentPlaylistJoin = $db->isPostgres()
+            ? "LEFT JOIN playlists p ON CAST(dca.content_id AS TEXT) = CAST(p.id AS TEXT)"
+            : "LEFT JOIN playlists p ON dca.content_id = p.id";
+        $schedulePlaylistJoin = $db->isPostgres()
+            ? "LEFT JOIN playlists p ON CAST(s.content_id AS TEXT) = CAST(p.id AS TEXT)"
+            : "LEFT JOIN playlists p ON s.content_id = p.id";
+
+        $playlistItems = [];
+
+        $assignment = $db->fetch(
+            "SELECT p.items FROM device_content_assignments dca
+             $assignmentPlaylistJoin
+             WHERE dca.device_id = ? AND dca.status = 'active' AND dca.content_type = 'playlist'
+             ORDER BY dca.created_at DESC LIMIT 1",
+            [$device['id']]
+        );
+
+        if ($assignment) {
+            $playlistItems = json_decode($assignment['items'] ?? '[]', true) ?: [];
+        }
+
+        if (empty($playlistItems)) {
+            $now = date('Y-m-d H:i:s');
+            $currentTime = date('H:i:s');
+            $schedule = $db->fetch(
+                "SELECT p.items FROM schedules s
+                 JOIN schedule_devices sd ON s.id = sd.schedule_id
+                 $schedulePlaylistJoin
+                 WHERE sd.device_id = ? AND s.status = 'active'
+                 AND (s.start_date IS NULL OR s.start_date <= ?)
+                 AND (s.end_date IS NULL OR s.end_date >= ?)
+                 AND (s.start_time IS NULL OR s.start_time <= ?)
+                 AND (s.end_time IS NULL OR s.end_time >= ?)
+                 ORDER BY s.priority DESC LIMIT 1",
+                [$device['id'], $now, $now, $currentTime, $currentTime]
+            );
+
+            if ($schedule) {
+                $playlistItems = json_decode($schedule['items'] ?? '[]', true) ?: [];
+            }
+        }
+
+        if (empty($playlistItems) && !empty($device['current_playlist_id'])) {
+            $playlist = $db->fetch("SELECT items FROM playlists WHERE id = ?", [$device['current_playlist_id']]);
+            if ($playlist) {
+                $playlistItems = json_decode($playlist['items'] ?? '[]', true) ?: [];
+            }
+        }
+
+        return $playlistItems;
+    }
+}
+
+if (!function_exists('streamPlaylistBuildMediaUrl')) {
+    function streamPlaylistBuildMediaUrl($filePath, $baseUrl)
+    {
+        if (empty($filePath)) return null;
+
+        $normalized = str_replace('\\', '/', (string)$filePath);
+
+        if (preg_match('/^https?:\/\//i', $normalized)) {
+            return $normalized;
+        }
+
+        if (preg_match('/^[A-Za-z]:/', $normalized)) {
+            return $baseUrl . '/api/media/serve.php?path=' . urlencode((string)$filePath);
+        }
+
+        if (strpos($normalized, 'storage/') === 0) {
+            return $baseUrl . '/' . $normalized;
+        }
+
+        return $baseUrl . '/storage/' . ltrim($normalized, '/');
+    }
+}
+
 $token = $request->getRouteParam('token');
 if (!$token) {
     http_response_code(400);
@@ -234,7 +313,32 @@ $requestedProfile = (string)$request->query('profile', '');
 $autoProfile = streamPlaylistResolveProfile($device, '');
 $availableProfiles = streamPlaylistResolveAvailableProfiles($db, $device);
 $selectedProfile = streamPlaylistSelectProfile($availableProfiles, $requestedProfile, $autoProfile);
-$targetUrl = $baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8';
+$channelModeEnabled = class_exists('StreamChannelService') && StreamChannelService::isChannelModeEnabled();
+$hasReadyProfiles = !empty($availableProfiles);
+$userAgent = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+$isVlcClient = str_contains($userAgent, 'vlc');
+$streamModeRaw = strtolower((string)$request->query('stream_mode', ''));
+$forceFlatTarget = in_array($streamModeRaw, ['flat', 'm3u', 'vlc'], true);
+$flatModeRaw = strtolower((string)$request->query('flat', '0'));
+$isFlatMode = in_array($flatModeRaw, ['1', 'true', 'yes'], true);
+$canUseVariantTarget = ($hasReadyProfiles || $channelModeEnabled);
+$targetMode = ($canUseVariantTarget && !$forceFlatTarget)
+    ? ($channelModeEnabled ? 'variant-channel' : 'variant')
+    : 'flat-fallback';
+
+if ($channelModeEnabled && !$forceFlatTarget && class_exists('StreamChannelService')) {
+    try {
+        $channelService = new StreamChannelService($db);
+        $selectedProfile = $channelService->normalizeProfile($selectedProfile);
+        $channelService->touchChannelAccess($token, $selectedProfile);
+        $channelService->queueBuildRequest($device, $selectedProfile, false);
+    } catch (\Throwable $e) {
+        // Best effort only.
+    }
+}
+$targetUrl = ($canUseVariantTarget && !$forceFlatTarget)
+    ? ($baseUrl . '/api/stream/' . $token . '/variant/' . $selectedProfile . '/playlist.m3u8')
+    : ($baseUrl . '/api/stream/' . $token . '/playlist.m3u?flat=1');
 $showLabelRaw = strtolower((string)$request->query('label', '1'));
 $showLabel = !in_array($showLabelRaw, ['0', 'false', 'no'], true);
 $channelTitleRaw = $showLabel ? $streamLabel : 'Omnex Live';
@@ -270,6 +374,7 @@ if ($isRedirectMode) {
     header('Access-Control-Allow-Origin: *');
     header('X-Stream-Profile: ' . $selectedProfile);
     header('X-Stream-Target: ' . $targetUrl);
+    header('X-Stream-Target-Mode: ' . $targetMode);
     header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
     header('X-Stream-Profile-Auto: ' . $autoProfile);
     header('Location: ' . $targetUrl, true, 302);
@@ -291,6 +396,110 @@ try {
     // Best effort only.
 }
 
+if ($isFlatMode) {
+    $hideTitleRaw = strtolower((string)$request->query('hide_title', '1'));
+    $hideTitleOverlay = !in_array($hideTitleRaw, ['0', 'false', 'no'], true);
+
+    $playlistItems = streamPlaylistResolveItems($db, $device);
+    $directVideos = [];
+
+    foreach ($playlistItems as $item) {
+        $itemType = $item['type'] ?? '';
+        if ($itemType === 'stream') {
+            $streamUrl = (string)($item['url'] ?? '');
+            if ($streamUrl === '') {
+                continue;
+            }
+            $isMuted = isset($item['muted'])
+                ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+                : true;
+            $directVideos[] = [
+                'duration' => (int)($item['duration'] ?? -1),
+                'url' => $streamUrl,
+                'muted' => $isMuted,
+            ];
+            continue;
+        }
+
+        if ($itemType !== 'video') {
+            continue;
+        }
+
+        $mediaId = $item['media_id'] ?? $item['id'] ?? null;
+        if (!$mediaId) {
+            continue;
+        }
+
+        $media = $db->fetch("SELECT id, file_path FROM media WHERE id = ?", [$mediaId]);
+        if (!$media || empty($media['file_path'])) {
+            continue;
+        }
+
+        $url = streamPlaylistBuildMediaUrl($media['file_path'], $baseUrl);
+        if (!$url) {
+            continue;
+        }
+
+        $isMuted = isset($item['muted'])
+            ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+            : true;
+        $directVideos[] = [
+            'duration' => (int)($item['duration'] ?? -1),
+            'url' => $url,
+            'muted' => $isMuted,
+        ];
+    }
+
+    if (empty($directVideos)) {
+        http_response_code(404);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'No playable media found for fallback stream']);
+        exit;
+    }
+
+    $itemLines = [];
+    foreach ($directVideos as $video) {
+        $itemLines[] = '#EXTINF:' . (int)$video['duration'] . ',';
+        if ($hideTitleOverlay && $isVlcClient) {
+            // VLC OSD title/filename gostermesini engelle.
+            $itemLines[] = '#EXTVLCOPT:no-video-title-show';
+            $itemLines[] = '#EXTVLCOPT:input-title-format=';
+        }
+        if (!empty($video['muted'])) {
+            $itemLines[] = '#EXTVLCOPT:no-audio';
+        }
+        $itemLines[] = $video['url'];
+    }
+
+    $totalDuration = 0;
+    foreach ($directVideos as $video) {
+        $dur = (int)$video['duration'];
+        $totalDuration += $dur > 0 ? $dur : 30;
+    }
+    $targetSeconds = 604800; // 7 days
+    $repeatCount = $totalDuration > 0 ? (int)ceil($targetSeconds / $totalDuration) : 500;
+    $repeatCount = max(500, min(25000, $repeatCount));
+
+    $lines = ['#EXTM3U'];
+    for ($i = 0; $i < $repeatCount; $i++) {
+        foreach ($itemLines as $line) {
+            $lines[] = $line;
+        }
+    }
+
+    header('Content-Type: application/x-mpegURL; charset=utf-8');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Access-Control-Allow-Origin: *');
+    header('X-Stream-Label: ' . $streamLabel);
+    header('X-Stream-Profile: ' . $selectedProfile);
+    header('X-Stream-Target: flat-fallback');
+    header('X-Stream-Target-Mode: flat-fallback');
+    header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
+    header('X-Stream-Profile-Auto: ' . $autoProfile);
+    echo implode("\n", $lines) . "\n";
+    exit;
+}
+
 $lines = [
     '#EXTM3U',
     '#EXTINF:-1 tvg-id="" tvg-name="' . $channelTitleEscaped . '" group-title="Omnex",' . $channelTitleEscaped,
@@ -307,6 +516,7 @@ header('Access-Control-Allow-Origin: *');
 header('X-Stream-Label: ' . $streamLabel);
 header('X-Stream-Profile: ' . $selectedProfile);
 header('X-Stream-Target: ' . $targetUrl);
+header('X-Stream-Target-Mode: ' . $targetMode);
 header('X-Stream-Profile-Requested: ' . ($requestedProfile !== '' ? $requestedProfile : 'auto'));
 header('X-Stream-Profile-Auto: ' . $autoProfile);
 echo implode("\n", $lines);

@@ -3409,3 +3409,248 @@ Format:
   - First deploy command run was user-interrupted, but post-checks confirm stack is up and serving current commit.
 - Backup/Restore Safety:
   - No file edit operation performed; backup not required.
+## 2026-03-14 - Stream fallback format fix for single-channel VLC behavior
+- Request context:
+  - User reported fallback stream looked like separate items instead of one live channel.
+- Findings:
+  - Passthrough fallback was plain M3U (#EXTINF list only), so VLC playlist UI treated entries as item list.
+- Changes:
+  - api/stream/master.php
+    - Fallback output switched to HLS event style (#EXT-X-VERSION, #EXT-X-PLAYLIST-TYPE:EVENT, #EXT-X-TARGETDURATION, #EXT-X-MEDIA-SEQUENCE).
+    - Added X-Stream-Fallback-Format: hls-event response header.
+  - api/stream/variant.php
+    - Same HLS event fallback format applied for no-segment path.
+    - Added X-Stream-Fallback-Format: hls-event response header.
+- Checks:
+  - php -l api/stream/master.php
+  - php -l api/stream/variant.php
+  - curl -i /api/stream/{token}/variant/720p/playlist.m3u8 => HTTP 200, fallback headers present
+  - curl /api/stream/{token}/playlist.m3u => still single channel entry to master.m3u8
+- Risks/Follow-up:
+  - Muted-per-item behavior is not represented in HLS fallback mode; strict mute control still depends on transcode pipeline.## 2026-03-14 - VLC playback fix: m3u8 fallback target moved to flat m3u
+- Request context:
+  - User confirmed single-file view returned, but playback did not start.
+- Findings:
+  - No-transcode fallback target was .m3u8; VLC could treat it as HLS parse path and not play direct MP4 list reliably.
+- Changes:
+  - api/stream/playlist.php
+    - Added lat mode (playlist.m3u?flat=1) that returns direct repeated M3U media entries for fallback playback.
+    - Added helper functions to resolve active playlist items and media URLs in this endpoint.
+    - When no ready transcode profiles exist, channel target now points to playlist.m3u?flat=1 instead of master.m3u8.
+  - api/stream/master.php
+    - Kept passthrough fallback as plain M3U (X-Stream-Fallback-Format: m3u).
+  - api/stream/variant.php
+    - Kept passthrough fallback as plain M3U (X-Stream-Fallback-Format: m3u).
+- Checks:
+  - php -l api/stream/playlist.php
+  - php -l api/stream/master.php
+  - php -l api/stream/variant.php
+  - curl /api/stream/{token}/playlist.m3u => single channel target now playlist.m3u?flat=1
+  - curl -i /api/stream/{token}/playlist.m3u?flat=1 => HTTP 200, X-Stream-Target-Mode: flat-fallback
+- Risks/Follow-up:
+  - VLC can still show nested list entries inside the channel source, but playback compatibility in no-ffmpeg local mode is improved.## 2026-03-14 - Local ffmpeg install + HLS transcode recovery
+- Request context:
+  - User confirmed direct MP4 opened but stream links did not; requested local ffmpeg installation.
+- Findings:
+  - ffmpeg/ffprobe missing caused no variant generation.
+  - After install, transcode still failed due Windows escaping issue in HLS segment template argument.
+- Changes:
+  - .env.local
+    - Added FFMPEG_PATH and FFPROBE_PATH pointing to WinGet links.
+  - services/HlsTranscoder.php
+    - Added quoteShellArg() helper for Windows-safe argument quoting.
+    - Fixed HLS segment template argument to preserve %04d on Windows (-hls_segment_filename).
+  - Transcode queue processed locally to completion (completed=8, eady_variants=8).
+- Checks:
+  - php -l services/HlsTranscoder.php
+  - php workers/TranscodeWorker.php --status (before/after)
+  - php workers/TranscodeWorker.php --once (multiple runs until queue empty)
+  - curl -i /api/stream/{token}/playlist.m3u => X-Stream-Target-Mode: variant
+  - curl -i /api/stream/{token}/variant/720p/playlist.m3u8 => HTTP 200 (HLS playlist)
+  - ffprobe on variant playlist URL => video/audio streams detected
+- Risks/Follow-up:
+  - New terminal sessions may need PATH refresh for direct fmpeg command; app uses .env.local paths so runtime remains stable.## 2026-03-14 - VLC freeze triage and client-specific flat target
+- Request context:
+  - User reported both stream links opened but froze every 2-3 seconds in VLC.
+- Findings:
+  - Segment URLs were reachable (HTTP 200), but ffmpeg playback probe showed timestamp discontinuity and non-monotonic DTS on stitched variant stream.
+  - Variant stream started from mid-window segments in some responses, increasing VLC sensitivity.
+- Changes:
+  - api/stream/variant.php
+    - Added media_id tracking per stitched segment.
+    - Added #EXT-X-DISCONTINUITY between different media blocks.
+    - Aligned live window start to first segment of current media block.
+    - Added #EXT-X-DISCONTINUITY-SEQUENCE for sliding window continuity metadata.
+  - api/stream/playlist.php
+    - Added VLC client detection via user-agent and stream_mode query.
+    - VLC (or stream_mode=flat) now targets playlist.m3u?flat=1 instead of HLS variant.
+- Checks:
+  - php -l api/stream/variant.php
+  - php -l api/stream/playlist.php
+  - curl with VLC user-agent on playlist endpoint => X-Stream-Target-Mode: flat-fallback
+  - curl without VLC user-agent => X-Stream-Target-Mode: variant
+- Risks/Follow-up:
+  - Stitched live HLS may still show timestamp warnings with strict ffmpeg probe; VLC stability path is now flat M3U target.## 2026-03-14 - VLC title overlay suppression + stream behavior assessment
+- Request context:
+  - User requested hiding playlist/content name overlays in VLC and asked for transition/performance/HLS profile assessment.
+- Findings:
+  - Flat M3U output is used for VLC stability path; per-item title overlay can be controlled with VLC options.
+  - Stitched live HLS (ariant/*.m3u8) still emits DTS monotonicity warnings under ffmpeg long-read, indicating potential freeze risk on strict clients.
+  - Ready transcode profile inventory currently shows only 720p (8 items).
+- Changes:
+  - api/stream/playlist.php
+    - Added isVlcClient detection.
+    - Flat mode now injects VLC options per item to suppress title overlays:
+      - #EXTVLCOPT:no-video-title-show
+      - #EXTVLCOPT:input-title-format=
+    - Kept VLC auto-target behavior to flat fallback stream.
+- Checks:
+  - php -l api/stream/playlist.php
+  - curl (VLC user-agent) on playlist.m3u?flat=1 => VLC options present in output
+  - 180s ffmpeg read on variant HLS => non-monotonic DTS warnings observed
+  - profile inventory query => 720p|ready|8
+- Risks/Follow-up:
+  - Playlist transition effects are player-side visuals and are not encoded in current stream pipeline.
+  - For effect-faithful IPTV/VLC output, server-side compositing/re-encoding pipeline is required.## 2026-03-14 - Device-generated stream URL stabilization + profile rebuild
+- Request context:
+  - User asked whether single live stream with effects is possible, long-run DTS risk, device profile auto-selection status, and explicit local/server ffmpeg env safety.
+- Findings:
+  - Device UI still produced direct variant URLs in places, causing VLC to hit stitched HLS path.
+  - Stitched variant HLS continues to show non-monotonic DTS warnings in long ffmpeg read tests.
+  - Existing local variants were rebuilt as multi-profile; ready profiles now 360p/540p/720p.
+- Changes:
+  - public/assets/js/pages/devices/DeviceDetail.js
+    - Stream URL field switched from direct variant to playlist flat mode URL with hide_title.
+    - Download playlist link switched to flat mode + hide_title.
+  - public/assets/js/pages/devices/DeviceList.js
+    - getStreamPlaylistUrl() now supports stream_mode and hide_title query flags.
+    - esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), defaulting to flat mode fallback.
+    - Stream URL copy/download actions now resolve with stream_mode=flat by default for VLC-safe links.
+  - .env.postgresql.local.example
+    - Added explicit optional FFMPEG_PATH / FFPROBE_PATH examples for Windows local.
+  - .env.postgresql.server.example
+    - Added explicit optional FFMPEG_PATH / FFPROBE_PATH examples for server/container.
+- Operational actions:
+  - Re-encode all existing local ready variants queued and processed to completion.
+  - Local ready profile inventory after rebuild: 360p|ready|8, 540p|ready|8, 720p|ready|8.
+- Checks:
+  - node --check public/assets/js/pages/devices/DeviceDetail.js
+  - node --check public/assets/js/pages/devices/DeviceList.js
+  - php -l api/stream/playlist.php
+  - php workers/TranscodeWorker.php --status (before/after rebuild)
+  - playlist target checks for profile=360p/540p/720p (all variant targets valid)
+  - 90s ffmpeg read on stitched variant HLS still shows non-monotonic DTS warnings
+- Risks/Follow-up:
+  - For VLC/IPTV long uninterrupted playback, flat M3U path remains the reliable mode.
+  - Effect-faithful single-stream output requires server-side timeline compositing/re-encode architecture, not current stitched-playlist approach.
+
+## 2026-03-14 - Live server readback validation
+- Request context:
+  - User asked to read/check live server state too.
+- Findings:
+  - SSH access with `camlicayazilim@185.124.84.34` on port `2299` works.
+  - Compose stack in `/opt/omnex-hub/deploy` is up: app/postgres/mqtt/nginx/certbot/transcode-worker healthy/up.
+  - In `app` container: ffmpeg/ffprobe available (`7.1.3`), worker status clean (pending 0, failed 0, ready variants 161).
+  - Recent app logs show repeated successful `200` responses for playlist and segment fetches from Android TV user-agent.
+- Files changed:
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - ssh remote: host/date/path listing
+  - ssh remote: `docker compose ps`
+  - ssh remote: `docker compose exec -T app sh -lc ... ffmpeg/ffprobe/worker --status`
+  - ssh remote: `docker compose logs --tail 120 app | egrep -i 'stream|hls|ffmpeg|error|warning'`
+- Risks/Follow-up:
+  - VLC freeze diagnostics still require per-client playback probing (variant vs flat mode) and timestamp continuity validation under long-run read.
+
+## 2026-03-14 - Stream profile and DTS investigation (local)
+- Request context:
+  - User asked about long-run non-monotonic DTS risk, local IPTV/VLC playlist behavior, 3-profile auto-selection status, and whether current stream architecture differs from first live-stream commit.
+- Findings:
+  - Local stream endpoints return HTTP 200 for playlist wrapper, flat fallback, and variant HLS.
+  - Variant HLS still reproduces timestamp discontinuity + non-monotonic DTS warnings in 120s ffmpeg read.
+  - Flat fallback is plain M3U (direct MP4 list); suitable for VLC-style fallback but many IPTV players expect HLS/m3u8 and may reject it.
+  - Android native performance profile source is `android-player/.../PerformanceProfile.kt`; current detect logic resolves legacy (old/low) or balanced (Android 12+) by default; default profile is mainly override path.
+  - Web player receives native profile via query params (`perf_profile`, `heartbeat`, `sync`, `verify_ms`, `precache`, `sw`) from MainActivity `getPlayerLoadUrl()`.
+  - Stream video resolution profile selection is separate from performance profile and is handled in `api/player/init.php`, `api/player/sync.php`, and `api/stream/playlist.php` via device max-height + available transcode variants.
+  - Compared to first live-stream commit (`7055618`), core architecture remains HLS variant pipeline; current structure adds wrapper/fallback layer (`api/stream/playlist.php`) and significant client-target behavior changes.
+- Files changed:
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - curl -I for local stream endpoints (playlist/flat/variant)
+  - curl body inspection for flat M3U and variant M3U8
+  - ffmpeg 120s read on variant endpoint (warnings reproduced)
+  - source inspection: PerformanceProfile.kt, MainActivity.kt, player.js, api/stream/*.php, api/player/init.php, api/player/sync.php
+  - git log/show/diff comparisons around 7055618..HEAD and 1d0667a
+- Risks/Follow-up:
+  - Existing stitched variant HLS remains risky for long uninterrupted VLC/IPTV operation due repeated DTS discontinuity behavior.
+  - For IPTV compatibility, links should not be forced to `stream_mode=flat`; separate VLC and IPTV targets are needed.
+## 2026-03-14 - Live confirmation for performance profile + single-link behavior
+- Request context:
+  - User asked whether 3 performance profiles are really active in live, whether performance and video profiles work together, and why not a single universal IPTV+VLC link.
+- Findings:
+  - Live app logs show player loaded with `?perf_profile=balanced&heartbeat=7&sync=75&verify_ms=4000&precache=0&sw=1` repeatedly.
+  - Live VLC requests currently hit `/api/stream/{token}/variant/720p/playlist.m3u8` (not forced flat in observed flow).
+  - Performance profile system is active; current auto-detect logic maps to legacy or balanced (default mostly override path).
+  - Stream wrapper still has client-target split logic (`forceFlatTarget`) for VLC/stream_mode hints.
+- Files changed:
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - live server compose app log scan for `perf_profile`, heartbeat referrer, and stream playlist endpoints
+  - source checks in PerformanceProfile.kt and api/stream/playlist.php
+- Risks/Follow-up:
+  - Universal single-link behavior remains fragile without true continuous encoder timeline due client parser differences + DTS continuity constraints.
+
+## 2026-03-14 - Professional stream pipeline (single continuous channel timeline)
+- Request context:
+  - User requested permanent/professional model: temp-backed edits, single continuous encoder timeline, server-side transitions, and one live HLS stream target with monotonic timestamps.
+- Findings:
+  - Legacy stitched variant endpoint remained active and produced per-media segment stitching with DTS continuity risk.
+  - New channel service initially failed on Windows because `%06d` in HLS segment template was altered by `escapeshellarg`; fixed with Windows-safe detached runner and segment pattern escaping.
+  - After channel activation, variant endpoint serves channel HLS (`X-Stream-Pipeline: channel`) and 90s ffmpeg read produced no non-monotonic DTS warnings.
+- Changes:
+  - services/StreamChannelService.php
+    - Added channel timeline build/encoder orchestration fixes: duration trims in transition/concat builds, Windows-safe detached runner, HLS segment template escaping, ffmpeg timestamp flags, and legacy media lookup fallback.
+  - api/stream/channel.php (new)
+    - Added public channel playlist/segment serving endpoint with token validation and optional sync bootstrap.
+  - workers/ChannelWorker.php (new)
+    - Added daemon/once/status worker for queued channel build requests and idle channel pruning.
+  - api/index.php
+    - Added new public routes:
+      - `/api/stream/{token}/channel/{profile}/playlist.m3u8`
+      - `/api/stream/{token}/channel/{profile}/{filename}`
+  - api/stream/variant.php
+    - Added channel-first pipeline path (queue/touch/bootstrap/serve) with legacy stitched fallback when channel is unavailable.
+  - api/stream/playlist.php
+    - Channel mode now counts as variant-capable target (even without prebuilt transcode variants).
+    - Added channel prewarm queue from wrapper endpoint.
+    - Removed user-agent-based forced flat fallback; flat fallback now only via explicit `stream_mode=flat|m3u|vlc`.
+  - deploy/docker-compose.yml
+    - Added `channel-worker` service.
+  - deploy/docker-compose.local.yml
+    - Added local `channel-worker` service.
+  - deploy/.env.example
+    - Added channel pipeline env examples.
+  - .env.postgresql.local.example
+    - Added optional channel pipeline env examples.
+  - .env.postgresql.server.example
+    - Added optional channel pipeline env examples.
+- Temp backup safety:
+  - Created: `.temp-backups/channel-worker-20260314_034344/` before risky edits.
+- Checks run:
+  - `php -l api/index.php`
+  - `php -l api/stream/variant.php`
+  - `php -l api/stream/playlist.php`
+  - `php -l api/stream/channel.php`
+  - `php -l workers/ChannelWorker.php`
+  - `php -l services/StreamChannelService.php`
+  - `docker compose -f deploy/docker-compose.yml config --quiet` (with temporary required env vars)
+  - `docker compose -f deploy/docker-compose.local.yml config --quiet`
+  - `curl` smoke tests:
+    - wrapper playlist (`playlist.m3u`) returns `X-Stream-Target-Mode: variant-channel`
+    - variant playlist returns `X-Stream-Pipeline: channel` and `/channel/.../segment_*.ts` URLs
+    - direct channel playlist endpoint returns valid live m3u8
+  - `php workers/ChannelWorker.php --status` confirms running channel encoder
+  - `ffmpeg` 90s read (`variant/720p/playlist.m3u8`) showed no DTS/non-monotonic warnings
+- Risks/Follow-up:
+  - Existing Device UI JS currently contains prior forced-flat link defaults from earlier changes; for full one-link UX those defaults should be aligned to variant/channel mode.
+  - Windows detached ffmpeg PID is best-effort (`pid=0`); health is inferred from rolling playlist updates.

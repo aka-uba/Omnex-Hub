@@ -1034,6 +1034,8 @@ export class DeviceListPage {
         if (options.profile) params.set('profile', String(options.profile));
         if (options.label === false) params.set('label', '0');
         if (options.mode) params.set('mode', String(options.mode));
+        if (options.streamMode) params.set('stream_mode', String(options.streamMode));
+        if (options.hideTitle) params.set('hide_title', '1');
         const qs = params.toString();
 
         return `${baseUrl}/api/stream/${token}/playlist.m3u${qs ? `?${qs}` : ''}`;
@@ -1103,13 +1105,21 @@ export class DeviceListPage {
         return `${baseUrl}/api/stream/${token}/variant/${profile}/playlist.m3u8`;
     }
 
-    async resolveDirectStreamUrl(device) {
-        const fallbackProfile = this.resolveStreamProfile(device);
-        const fallbackVariantUrl = this.getStreamVariantUrl(device, fallbackProfile);
-        const resolverUrl = this.getStreamPlaylistUrl(device, { mode: 'redirect', label: false });
+    async resolveDirectStreamUrl(device, options = {}) {
+        const streamMode = typeof options.streamMode === 'string' ? options.streamMode.trim() : '';
+        const playlistOptions = { label: false };
+        const resolverOptions = { mode: 'redirect', label: false };
+
+        if (streamMode) {
+            playlistOptions.streamMode = streamMode;
+            resolverOptions.streamMode = streamMode;
+        }
+
+        const fallbackUrl = this.getStreamPlaylistUrl(device, playlistOptions);
+        const resolverUrl = this.getStreamPlaylistUrl(device, resolverOptions);
 
         if (!resolverUrl) {
-            return fallbackVariantUrl;
+            return fallbackUrl;
         }
 
         try {
@@ -1119,20 +1129,20 @@ export class DeviceListPage {
                 cache: 'no-store'
             });
 
-            const targetHeader = response.headers?.get('X-Stream-Target');
+            const targetHeader = (response.headers?.get('X-Stream-Target') || '').trim();
             const resolvedUrl = (response.url || '').trim();
 
-            if (resolvedUrl && resolvedUrl.includes('/variant/') && resolvedUrl.endsWith('/playlist.m3u8')) {
+            if (resolvedUrl) {
                 return resolvedUrl;
             }
-            if (targetHeader && targetHeader.includes('/variant/') && targetHeader.endsWith('/playlist.m3u8')) {
+            if (targetHeader) {
                 return targetHeader;
             }
         } catch (error) {
             Logger.warning('Stream resolver fallback used', error);
         }
 
-        return fallbackVariantUrl;
+        return fallbackUrl;
     }
 
     async copyStreamUrl(device) {
@@ -1169,8 +1179,6 @@ export class DeviceListPage {
         const lines = [
             '#EXTM3U',
             `#EXTINF:-1 tvg-id="" tvg-name="${streamTitle}" group-title="Omnex",${streamTitle}`,
-            '#EXTVLCOPT:no-video-title-show',
-            '#EXTVLCOPT:input-title-format=',
             directUrl,
             ''
         ];

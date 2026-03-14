@@ -158,6 +158,47 @@ services:
     networks:
       internal:
 
+  # ---- Channel Worker (continuous live timeline encoder) ----
+  channel-worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    mem_limit: 1g
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["php", "workers/ChannelWorker.php", "--daemon"]
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(0);"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      OMNEX_DB_DRIVER: pgsql
+      OMNEX_DB_HOST: postgres
+      OMNEX_DB_PORT: 5432
+      OMNEX_DB_NAME: ${OMNEX_DB_NAME:-omnex_hub}
+      OMNEX_DB_USER: ${OMNEX_DB_USER:-omnex}
+      OMNEX_DB_PASS: ${OMNEX_DB_PASS:?Database password is required}
+      OMNEX_PRODUCTION: "true"
+      OMNEX_JWT_SECRET: ${OMNEX_JWT_SECRET:?JWT secret is required}
+      OMNEX_FORCE_HTTPS: ${OMNEX_FORCE_HTTPS:-false}
+      OMNEX_TRUSTED_PROXIES: ${OMNEX_TRUSTED_PROXIES:-127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      STREAM_CHANNEL_MODE: ${STREAM_CHANNEL_MODE:-true}
+      STREAM_CHANNEL_SYNC_BOOTSTRAP: ${STREAM_CHANNEL_SYNC_BOOTSTRAP:-0}
+      STREAM_CHANNEL_PLAYLIST_SIZE: ${STREAM_CHANNEL_PLAYLIST_SIZE:-12}
+      STREAM_CHANNEL_IDLE_TIMEOUT: ${STREAM_CHANNEL_IDLE_TIMEOUT:-300}
+    volumes:
+      - app_storage:/var/www/html/storage
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    networks:
+      internal:
+
 volumes:
   postgres_data:
     driver: local

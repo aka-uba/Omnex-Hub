@@ -1256,6 +1256,14 @@ $router->group(['prefix' => '/api/stream'], function($router) {
         require API_PATH . '/stream/variant.php';
     });
 
+    // Channel pipeline playlist/segments (single continuous encoder timeline)
+    $router->get('/{token}/channel/{profile}/playlist.m3u8', function($request) {
+        require API_PATH . '/stream/channel.php';
+    });
+    $router->get('/{token}/channel/{profile}/{filename}', function($request) {
+        require API_PATH . '/stream/channel.php';
+    });
+
     // Segment serving (.ts files)
     $router->get('/{token}/segment/{mediaId}/{profile}/{filename}', function($request) {
         require API_PATH . '/stream/segment.php';

@@ -795,8 +795,8 @@ export class DeviceDetailPage {
     renderStreamModeCard(d) {
         const basePath = window.OmnexConfig?.basePath || '';
         const baseUrl = `${window.location.origin}${basePath}`;
-        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/variant/720p/playlist.m3u8` : '';
-        const streamDownloadUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u?download=1&profile=720p&label=0` : '';
+        const streamUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u` : '';
+        const streamDownloadUrl = d.stream_token ? `${baseUrl}/api/stream/${d.stream_token}/playlist.m3u?download=1&label=0` : '';
 
         // Stream status calculation
         let streamStatus = 'offline';

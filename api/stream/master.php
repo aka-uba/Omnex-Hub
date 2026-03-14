@@ -216,12 +216,79 @@ function buildMediaUrl($filePath, $baseUrl, $basePath) {
 }
 
 // ====================================================================
-// STRICT HLS MODE:
-// - Video item'lar yalnizca transcode edilmis HLS variant'lari ile sunulur.
-// - Variant hazir degilse istemciye "hazirlaniyor" yaniti verilir.
+// PASSTHROUGH FALLBACK MODE:
+// - Hazir HLS variant yoksa stream tamamen kesilmesin.
+// - VLC/IPTV icin dogrudan medya URL'lerinden M3U playlist olustur.
 // ====================================================================
 if (empty($streamVariants)) {
     $now = date('Y-m-d H:i:s');
+    $directVideos = [];
+
+    foreach ($playlistItems as $item) {
+        $itemType = $item['type'] ?? '';
+
+        if ($itemType === 'stream') {
+            $streamUrl = (string)($item['url'] ?? '');
+            if ($streamUrl === '') {
+                continue;
+            }
+
+            $isMuted = isset($item['muted'])
+                ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+                : true;
+
+            $directVideos[] = [
+                'duration' => (int)($item['duration'] ?? -1),
+                'url' => $streamUrl,
+                'muted' => $isMuted,
+            ];
+            continue;
+        }
+
+        if ($itemType !== 'video') {
+            continue;
+        }
+
+        $mediaId = $item['media_id'] ?? $item['id'] ?? null;
+        if (!$mediaId) {
+            continue;
+        }
+
+        $media = $db->fetch(
+            "SELECT id, file_path FROM media WHERE id = ?",
+            [$mediaId]
+        );
+        if (!$media || empty($media['file_path'])) {
+            continue;
+        }
+
+        $url = buildMediaUrl($media['file_path'], $baseUrl, $basePath);
+        if (!$url) {
+            continue;
+        }
+
+        $isMuted = isset($item['muted'])
+            ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+            : true;
+
+        $directVideos[] = [
+            'duration' => (int)($item['duration'] ?? -1),
+            'url' => $url,
+            'muted' => $isMuted,
+        ];
+    }
+
+    if (empty($directVideos)) {
+        http_response_code(404);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'error' => 'Stream is preparing',
+            'message' => 'HLS variants are not ready yet and no passthrough media found.',
+            'pending_media_ids' => $missingVariantMediaIds
+        ]);
+        exit;
+    }
+
     $db->query(
         "UPDATE devices SET last_stream_request_at = ?, last_seen = ?, status = 'online' WHERE id = ?",
         [$now, $now, $device['id']]
@@ -230,24 +297,44 @@ if (empty($streamVariants)) {
     try {
         $db->query(
             "INSERT INTO stream_access_logs (device_id, stream_token, request_type, request_path, ip_address, user_agent, response_status, created_at)
-             VALUES (?, ?, 'master_waiting_transcode', ?, ?, ?, 503, ?)",
+             VALUES (?, ?, 'master_passthrough', ?, ?, ?, 200, ?)",
             [$device['id'], $token, $_SERVER['REQUEST_URI'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $_SERVER['HTTP_USER_AGENT'] ?? '', $now]
         );
     } catch (\Exception $e) {
         // Log hatasi kritik degil.
     }
 
-    http_response_code(503);
-    header('Content-Type: application/json');
+    $itemLines = [];
+    foreach ($directVideos as $video) {
+        $itemLines[] = "#EXTINF:" . (int)$video['duration'] . ",";
+        if (!empty($video['muted'])) {
+            $itemLines[] = "#EXTVLCOPT:no-audio";
+        }
+        $itemLines[] = $video['url'];
+    }
+
+    $totalDuration = 0;
+    foreach ($directVideos as $video) {
+        $dur = (int)$video['duration'];
+        $totalDuration += $dur > 0 ? $dur : 30;
+    }
+    $targetSeconds = 604800; // 7 gun
+    $repeatCount = $totalDuration > 0 ? (int)ceil($targetSeconds / $totalDuration) : 500;
+    $repeatCount = max(500, min(25000, $repeatCount));
+
+    $lines = ["#EXTM3U"];
+    for ($i = 0; $i < $repeatCount; $i++) {
+        foreach ($itemLines as $line) {
+            $lines[] = $line;
+        }
+    }
+
+    header('Content-Type: application/x-mpegurl; charset=utf-8');
     header('Cache-Control: no-cache, no-store, must-revalidate');
-    header('Retry-After: 5');
     header('Access-Control-Allow-Origin: *');
-    echo json_encode([
-        'error' => 'Stream is preparing',
-        'message' => 'HLS variants are not ready yet. Please retry shortly.',
-        'retry_after_seconds' => 5,
-        'pending_media_ids' => $missingVariantMediaIds
-    ]);
+    header('X-Stream-Fallback: passthrough');
+    header('X-Stream-Fallback-Format: m3u');
+    echo implode("\n", $lines) . "\n";
     exit;
 }
 

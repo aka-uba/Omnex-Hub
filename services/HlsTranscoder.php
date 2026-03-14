@@ -48,6 +48,24 @@ class HlsTranscoder
     private ?string $ffmpegPath = null;
     private ?string $ffprobePath = null;
 
+    /**
+     * Cross-platform shell arg quote helper.
+     * Windows'ta escapeshellarg() "%" karakterini bosluga cevirdigi icin
+     * HLS segment template (%04d) argumaninda preservePercent=true kullanilir.
+     */
+    private function quoteShellArg(string $value, bool $preservePercent = false): string
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $escaped = str_replace('"', '\"', $value);
+            if (!$preservePercent) {
+                $escaped = str_replace('%', '%%', $escaped);
+            }
+            return '"' . $escaped . '"';
+        }
+
+        return escapeshellarg($value);
+    }
+
     public function __construct()
     {
         $this->ffmpegPath = defined('FFMPEG_PATH') ? FFMPEG_PATH : 'ffmpeg';
@@ -250,7 +268,7 @@ class HlsTranscoder
                     $forceKeyframes,
                     $profile['audio_bitrate'],
                     $segmentDuration,
-                    escapeshellarg($profileDir . '/segment_%04d.ts'),
+                    $this->quoteShellArg($profileDir . '/segment_%04d.ts', true),
                     escapeshellarg($profileDir . '/playlist.m3u8')
                 );
 

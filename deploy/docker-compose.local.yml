@@ -98,6 +98,44 @@ services:
     networks:
       - omnex-test
 
+  # ---- Channel Worker (local test) ----
+  channel-worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: omnex-test-channel-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["php", "workers/ChannelWorker.php", "--daemon"]
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(0);"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    environment:
+      OMNEX_DB_DRIVER: pgsql
+      OMNEX_DB_HOST: postgres
+      OMNEX_DB_PORT: 5432
+      OMNEX_DB_NAME: omnex_hub
+      OMNEX_DB_USER: omnex
+      OMNEX_DB_PASS: omnex_test_pass
+      OMNEX_PRODUCTION: "false"
+      OMNEX_JWT_SECRET: local-test-jwt-secret-do-not-use-in-production-1234567890
+      OMNEX_FORCE_HTTPS: "false"
+      OMNEX_SKIP_CSRF: "true"
+      OMNEX_TRUSTED_PROXIES: "127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+      STREAM_CHANNEL_MODE: "true"
+      STREAM_CHANNEL_SYNC_BOOTSTRAP: "1"
+      STREAM_CHANNEL_PLAYLIST_SIZE: "12"
+      STREAM_CHANNEL_IDLE_TIMEOUT: "300"
+    volumes:
+      - omnex_test_storage:/var/www/html/storage
+    networks:
+      - omnex-test
+
 volumes:
   omnex_test_pgdata:
     driver: local

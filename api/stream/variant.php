@@ -24,6 +24,14 @@ $assignmentPlaylistJoin = $db->isPostgres()
 $token = $request->getRouteParam('token');
 $profile = $request->getRouteParam('profile');
 
+if (!function_exists('streamVariantSyncBootstrapEnabled')) {
+    function streamVariantSyncBootstrapEnabled(): bool
+    {
+        $raw = strtolower(trim((string)(getenv('STREAM_CHANNEL_SYNC_BOOTSTRAP') ?: '1')));
+        return !in_array($raw, ['0', 'false', 'no', 'off'], true);
+    }
+}
+
 if (!$token || !$profile) {
     http_response_code(400);
     echo json_encode(['error' => 'Token and profile required']);
@@ -43,6 +51,47 @@ if (!$device) {
 }
 
 $companyId = $device['company_id'];
+$segmentDuration = defined('STREAM_SEGMENT_DURATION') ? STREAM_SEGMENT_DURATION : 6;
+$basePath = streamResolveBasePath();
+$baseUrl = streamResolveBaseUrl();
+
+if (class_exists('StreamChannelService') && StreamChannelService::isChannelModeEnabled()) {
+    $channelService = new StreamChannelService($db);
+    $profile = $channelService->normalizeProfile((string)$profile);
+    $channelService->touchChannelAccess($token, $profile);
+    $channelService->queueBuildRequest($device, $profile, false);
+
+    $channelPlaylist = $channelService->getPublicChannelPlaylist($token, $profile, $baseUrl);
+    if ($channelPlaylist === null && streamVariantSyncBootstrapEnabled()) {
+        $channelService->ensureChannel($device, $profile, false);
+        $channelPlaylist = $channelService->getPublicChannelPlaylist($token, $profile, $baseUrl);
+    }
+
+    if ($channelPlaylist !== null) {
+        $now = date('Y-m-d H:i:s');
+        $db->query(
+            "UPDATE devices SET last_stream_request_at = ?, last_seen = ? WHERE id = ?",
+            [$now, $now, $device['id']]
+        );
+
+        try {
+            $db->query(
+                "INSERT INTO stream_access_logs (device_id, stream_token, request_type, profile, ip_address, response_status, created_at)
+                 VALUES (?, ?, 'variant_channel', ?, ?, 200, ?)",
+                [$device['id'], $token, $profile, $_SERVER['REMOTE_ADDR'] ?? '', $now]
+            );
+        } catch (\Exception $e) {}
+
+        header('Content-Type: application/vnd.apple.mpegurl');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        header('Access-Control-Allow-Origin: *');
+        header('X-Stream-Pipeline: channel');
+        echo $channelPlaylist;
+        exit;
+    }
+}
 
 // Aktif playlist'i bul
 $playlistItems = [];
@@ -67,17 +116,32 @@ if (empty($playlistItems) && !empty($device['current_playlist_id'])) {
 }
 
 // ====================================================================
-// Tum video segmentlerini topla (global segment listesi)
+// Legacy stitched HLS fallback (channel pipeline not ready/disabled)
 // ====================================================================
-$segmentDuration = defined('STREAM_SEGMENT_DURATION') ? STREAM_SEGMENT_DURATION : 6;
-$basePath = streamResolveBasePath();
-$baseUrl = streamResolveBaseUrl();
 
-// Global segment listesi: her eleman { duration, url }
-// NOT: #EXT-X-DISCONTINUITY kaldirildi. Tum videolar HlsTranscoder tarafindan
-// ayni codec ayarlariyla (ayni GOP, keyframe interval, audio sample rate)
-// encode edildigi icin discontinuity gereksiz. VLC'de discontinuity tag'i
-// decoder pipeline reset'e, donmaya ve baslik goruntulemesine neden oluyordu.
+if (!function_exists('streamVariantBuildMediaUrl')) {
+    function streamVariantBuildMediaUrl($filePath, $baseUrl, $basePath)
+    {
+        if (empty($filePath)) return null;
+        $normalized = str_replace('\\', '/', $filePath);
+
+        if (preg_match('/^https?:\/\//i', $normalized)) return $normalized;
+
+        if (preg_match('/^[A-Za-z]:/', $normalized)) {
+            return $baseUrl . '/api/media/serve.php?path=' . urlencode($filePath);
+        }
+
+        if (strpos($normalized, 'storage/') === 0) {
+            return $baseUrl . '/' . $normalized;
+        }
+
+        return $baseUrl . '/storage/' . ltrim($normalized, '/');
+    }
+}
+
+// Global segment listesi: her eleman { duration, url, media_id }
+// Farkli kaynak videolar birlestirildiginde TS zaman damgalari sifirlanabildigi
+// icin gecislerde #EXT-X-DISCONTINUITY etiketi zorunludur (ozellikle VLC/ffmpeg).
 $allSegments = [];
 
 foreach ($playlistItems as $item) {
@@ -129,6 +193,7 @@ foreach ($playlistItems as $item) {
             $allSegments[] = [
                 'duration'       => $dur,
                 'url'            => $segmentUrl,
+                'media_id'       => (string)$mediaId,
             ];
             $pendingDuration = null;
             continue;
@@ -136,11 +201,112 @@ foreach ($playlistItems as $item) {
     }
 }
 
-// Segment yoksa 404
+// Segment yoksa passthrough fallback
 if (empty($allSegments)) {
-    http_response_code(404);
-    header('Content-Type: application/json');
-    echo json_encode(['error' => 'No transcoded segments found for this profile']);
+    $directVideos = [];
+
+    foreach ($playlistItems as $item) {
+        $itemType = $item['type'] ?? '';
+
+        if ($itemType === 'stream') {
+            $streamUrl = (string)($item['url'] ?? '');
+            if ($streamUrl === '') {
+                continue;
+            }
+
+            $isMuted = isset($item['muted'])
+                ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+                : true;
+
+            $directVideos[] = [
+                'duration' => (int)($item['duration'] ?? -1),
+                'url' => $streamUrl,
+                'muted' => $isMuted,
+            ];
+            continue;
+        }
+
+        if ($itemType !== 'video') {
+            continue;
+        }
+
+        $mediaId = $item['media_id'] ?? $item['id'] ?? null;
+        if (!$mediaId) {
+            continue;
+        }
+
+        $media = $db->fetch(
+            "SELECT id, file_path FROM media WHERE id = ?",
+            [$mediaId]
+        );
+        if (!$media || empty($media['file_path'])) {
+            continue;
+        }
+
+        $url = streamVariantBuildMediaUrl($media['file_path'], $baseUrl, $basePath);
+        if (!$url) {
+            continue;
+        }
+
+        $isMuted = isset($item['muted'])
+            ? ($item['muted'] !== false && $item['muted'] !== 0 && $item['muted'] !== '0')
+            : true;
+
+        $directVideos[] = [
+            'duration' => (int)($item['duration'] ?? -1),
+            'url' => $url,
+            'muted' => $isMuted,
+        ];
+    }
+
+    if (empty($directVideos)) {
+        http_response_code(404);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'No transcoded segments found for this profile']);
+        exit;
+    }
+
+    $itemLines = [];
+    foreach ($directVideos as $video) {
+        $itemLines[] = "#EXTINF:" . (int)$video['duration'] . ",";
+        if (!empty($video['muted'])) {
+            $itemLines[] = "#EXTVLCOPT:no-audio";
+        }
+        $itemLines[] = $video['url'];
+    }
+
+    $totalDuration = 0;
+    foreach ($directVideos as $video) {
+        $dur = (int)$video['duration'];
+        $totalDuration += $dur > 0 ? $dur : 30;
+    }
+    $targetSeconds = 604800; // 7 gun
+    $repeatCount = $totalDuration > 0 ? (int)ceil($targetSeconds / $totalDuration) : 500;
+    $repeatCount = max(500, min(25000, $repeatCount));
+
+    $lines = ["#EXTM3U"];
+    for ($i = 0; $i < $repeatCount; $i++) {
+        foreach ($itemLines as $line) {
+            $lines[] = $line;
+        }
+    }
+
+    try {
+        $db->query(
+            "INSERT INTO stream_access_logs (device_id, stream_token, request_type, profile, ip_address, response_status, created_at)
+             VALUES (?, ?, 'variant_passthrough', ?, ?, 200, ?)",
+            [$device['id'], $token, $profile, $_SERVER['REMOTE_ADDR'] ?? '', date('Y-m-d H:i:s')]
+        );
+    } catch (\Exception $e) {}
+
+    header('Content-Type: application/x-mpegurl; charset=utf-8');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+    header('Access-Control-Allow-Origin: *');
+    header('X-Stream-Fallback: passthrough');
+    header('X-Stream-Fallback-Format: m3u');
+    echo implode("\n", $lines) . "\n";
     exit;
 }
 
@@ -191,19 +357,46 @@ $completedLoops = (int)floor((float)$elapsed / $totalDuration);
 
 // Window boyutu: ~6 dakika = ~60 segment (6sn per segment)
 $windowSize = min(60, $totalSegmentCount);
-$halfWindow = (int)floor($windowSize / 2);
 
-// Pencere baslangici: current - halfWindow (geride biraz birakiyoruz)
-// Bos pencere yok - her zaman windowSize kadar segment goster
-$windowStart = $currentSegmentIndex - $halfWindow;
+// VLC stabilitesi icin pencereyi aktif videonun ilk segmentine hizala.
+// Boylece playlist segment_0001/0002 ile baslamaz.
+$windowStart = $currentSegmentIndex;
+$currentMediaId = $allSegments[$currentSegmentIndex]['media_id'] ?? '';
+for ($step = 0; $step < $totalSegmentCount; $step++) {
+    $prevIdx = (($windowStart - 1) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
+    if (($allSegments[$prevIdx]['media_id'] ?? '') !== $currentMediaId) {
+        break;
+    }
+    $windowStart = $prevIdx;
+}
 
-// Global media sequence: monoton artan (HLS spec gereksinimi)
-// windowStart negatif olabilir (currentSegmentIndex < halfWindow),
-// ama global sequence her zaman pozitif ve artan olmali.
-// Burada sequence'i gercek segment ilerleyisi ile esitliyoruz.
-// Ortalama sure kullanimi degisken segmentlerde drift olusturur.
-$elapsedSegments = ($completedLoops * $totalSegmentCount) + $currentSegmentIndex;
-$globalMediaSequence = max(0, $elapsedSegments - $halfWindow);
+// Global media sequence: dongu + pencere baslangic index'i
+$globalMediaSequence = max(0, ($completedLoops * $totalSegmentCount) + $windowStart);
+
+// Live sliding window'da discontinuity offset'i de monoton olmalidir.
+$isDiscontinuityBoundary = static function (int $index) use ($allSegments, $totalSegmentCount): bool {
+    $prevIdx = (($index - 1) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
+    return (($allSegments[$prevIdx]['media_id'] ?? '') !== ($allSegments[$index]['media_id'] ?? ''));
+};
+
+$discontinuitiesPerLoop = 0;
+for ($i = 0; $i < $totalSegmentCount; $i++) {
+    if ($isDiscontinuityBoundary($i)) {
+        $discontinuitiesPerLoop++;
+    }
+}
+
+$discontinuitiesBeforeWindowStart = 0;
+for ($i = 0; $i < $windowStart; $i++) {
+    if ($isDiscontinuityBoundary($i)) {
+        $discontinuitiesBeforeWindowStart++;
+    }
+}
+
+$globalDiscontinuitySequence = max(
+    0,
+    ($completedLoops * $discontinuitiesPerLoop) + $discontinuitiesBeforeWindowStart
+);
 
 // ====================================================================
 // HLS playlist ciktisi (LIVE mod - EXT-X-ENDLIST YOK)
@@ -222,6 +415,7 @@ $lines = [
     "#EXT-X-VERSION:3",
     "#EXT-X-TARGETDURATION:{$targetDuration}",
     "#EXT-X-MEDIA-SEQUENCE:{$globalMediaSequence}",
+    "#EXT-X-DISCONTINUITY-SEQUENCE:{$globalDiscontinuitySequence}",
     ""
 ];
 
@@ -229,6 +423,15 @@ for ($w = 0; $w < $windowSize; $w++) {
     // Dongusel index: negatif veya tasma durumunda modulo ile sar
     $idx = (($windowStart + $w) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
     $seg = $allSegments[$idx];
+
+    // Farkli kaynak video segmentine geciste decoder'a zaman tabani reset ipucu ver.
+    if ($w > 0) {
+        $prevIdx = (($windowStart + $w - 1) % $totalSegmentCount + $totalSegmentCount) % $totalSegmentCount;
+        $prevSeg = $allSegments[$prevIdx];
+        if (($prevSeg['media_id'] ?? '') !== ($seg['media_id'] ?? '')) {
+            $lines[] = "#EXT-X-DISCONTINUITY";
+        }
+    }
 
     $lines[] = "#EXTINF:{$seg['duration']},";
     $lines[] = $seg['url'];
