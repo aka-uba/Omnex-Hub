@@ -31,16 +31,24 @@ class ChannelWorker
         if (function_exists('pcntl_signal')) {
             pcntl_signal(SIGTERM, function (): void { $this->running = false; });
             pcntl_signal(SIGINT, function (): void { $this->running = false; });
+            // Auto-reap zombie child processes (ffmpeg)
+            pcntl_signal(SIGCHLD, SIG_DFL);
         }
 
         while ($this->running) {
             try {
+                // Reap any zombie child processes
+                if (function_exists('pcntl_waitpid')) {
+                    while (pcntl_waitpid(-1, $wstatus, WNOHANG) > 0) {
+                        // reaped a zombie
+                    }
+                }
+
                 $processed = $this->processQueuedRequests();
                 $pruned = $this->channelService->pruneIdleChannels();
 
-                if ($processed === 0 && $pruned === 0) {
-                    sleep($this->pollInterval);
-                }
+                // Always sleep - prevents tight CPU loop when channels are active
+                sleep($this->pollInterval);
             } catch (\Throwable $e) {
                 $this->log('Worker error: ' . $e->getMessage(), 'error');
                 sleep($this->pollInterval * 2);

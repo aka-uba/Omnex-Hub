@@ -860,6 +860,23 @@ class StreamChannelService
         if ($pid <= 0) {
             return false;
         }
+
+        // Check /proc/{pid}/status to detect zombie processes
+        // kill -0 returns true for zombies, but they are not actually running
+        $statusFile = "/proc/{$pid}/status";
+        if (is_file($statusFile)) {
+            $status = @file_get_contents($statusFile);
+            if ($status !== false && preg_match('/^State:\s+Z/m', $status)) {
+                // Process is a zombie - try to reap it
+                if (function_exists('pcntl_waitpid')) {
+                    @pcntl_waitpid($pid, $wstatus, WNOHANG);
+                }
+                return false;
+            }
+            return true;
+        }
+
+        // Fallback: kill -0 check (for systems without /proc)
         @exec('kill -0 ' . (int)$pid . ' 2>/dev/null', $out, $code);
         return $code === 0;
     }
