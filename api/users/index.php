@@ -53,6 +53,16 @@ if ($status) {
 
 $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
+// Sorting support
+$allowedSortColumns = ['first_name', 'last_name', 'email', 'role', 'status', 'created_at', 'last_login', 'company_name'];
+$sortBy = $_GET['sort_by'] ?? 'first_name';
+$sortDir = strtoupper($_GET['sort_dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+if (!in_array($sortBy, $allowedSortColumns)) {
+    $sortBy = 'first_name';
+}
+$sortColumn = ($sortBy === 'company_name') ? 'c.name' : "u.{$sortBy}";
+$orderClause = "ORDER BY {$sortColumn} {$sortDir}";
+
 // Total count
 $total = $db->fetchColumn("SELECT COUNT(*) FROM users u $whereClause", $params);
 
@@ -78,7 +88,7 @@ $users = $db->fetchAll(
      FROM users u
      LEFT JOIN companies c ON u.company_id = c.id
      $whereClause
-     ORDER BY u.first_name ASC
+     {$orderClause}
      LIMIT ? OFFSET ?",
     array_merge($params, [$perPage, $offset])
 );
