@@ -7,7 +7,7 @@
  * Cache is auto-cleared when build hash changes.
  */
 
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const STATIC_CACHE = 'omnex-static-' + CACHE_VERSION;
 const DYNAMIC_CACHE = 'omnex-dynamic-' + CACHE_VERSION;
 
