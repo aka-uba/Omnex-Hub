@@ -367,6 +367,18 @@ $router->group(['prefix' => '/api/templates', 'middleware' => ['auth']], functio
 });
 
 // =====================================================
+// Field Binding Routes
+// =====================================================
+$router->group(['prefix' => '/api/field-binding', 'middleware' => ['auth']], function($router) {
+    $router->post('/lookup', function($request) {
+        require API_PATH . '/field-binding/lookup.php';
+    });
+    $router->get('/templates', function($request) {
+        require API_PATH . '/field-binding/templates.php';
+    });
+});
+
+// =====================================================
 // Web Template Routes (VvvebJs HTML Şablonları)
 // =====================================================
 $router->group(['prefix' => '/api/web-templates', 'middleware' => ['auth', 'csrf']], function($router) {
