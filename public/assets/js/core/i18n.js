@@ -238,6 +238,12 @@ export class i18n {
             if (value === null || value === undefined) return undefined;
             value = value[k];
         }
+        // Only return leaf values (string, number, boolean).
+        // Returning intermediate objects would falsely match partial key paths
+        // and prevent fallthrough to common translations.
+        if (value !== null && value !== undefined && typeof value === 'object') {
+            return undefined;
+        }
         return value;
     }
 
@@ -274,6 +280,42 @@ export class i18n {
         if (typeof value === 'string' && Object.keys(params).length > 0) {
             for (const [param, val] of Object.entries(params)) {
                 // Escape special regex characters in param name
+                const escapedParam = String(param).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                value = value.replace(new RegExp(`\\{${escapedParam}\\}`, 'g'), val);
+            }
+        }
+
+        return value;
+    }
+
+    /**
+     * Get translation from common translations only (skips page translations).
+     * Use for keys that are always in common.json (e.g. mediaLibrary.folders.*).
+     * @param {string} key - Translation key (dot notation)
+     * @param {Object} params - Parameters for interpolation
+     */
+    tc(key, params = {}) {
+        const keys = key.split('.');
+        let value;
+
+        // Try common translations (current locale)
+        if (this.translations[this.locale]) {
+            value = this.getNestedValue(this.translations[this.locale], keys);
+        }
+
+        // Try common translations (fallback locale)
+        if (value === undefined && this.locale !== this.fallback && this.translations[this.fallback]) {
+            value = this.getNestedValue(this.translations[this.fallback], keys);
+        }
+
+        // Return key if not found
+        if (value === undefined) {
+            return key;
+        }
+
+        // Replace parameters
+        if (typeof value === 'string' && Object.keys(params).length > 0) {
+            for (const [param, val] of Object.entries(params)) {
                 const escapedParam = String(param).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 value = value.replace(new RegExp(`\\{${escapedParam}\\}`, 'g'), val);
             }

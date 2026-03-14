@@ -11,6 +11,21 @@ Format:
 
 ---
 
+## 2026-03-14 - Fix i18n folder name translations in media library
+- Request: Sub-folder names in Ortak Kütüphane always showed Turkish regardless of selected language
+- Root cause: `$FOLDER_NAME_KEY_MAP` in `_folder_i18n.php` was defined at file scope. When loaded via `require` inside a Router closure (`api/index.php`), the variable lived in the closure's local scope. `getFolderNameKey()` used `global $FOLDER_NAME_KEY_MAP` which searched PHP's global scope and found nothing → returned null for ALL paths.
+- Changes:
+  1. Moved `$FOLDER_NAME_KEY_MAP` inside `getFolderNameKey()` as a `static` variable — eliminates global scope dependency
+  2. Added `tc()` method to i18n.js for common-only translation lookup (skips page translations)
+  3. Added object type guard in `getNestedValue()` to prevent partial key match shadowing
+  4. Updated `getFolderDisplayName()` in MediaLibrary.js, MediaPicker.js, PlaylistDetail.js to use `tc()` instead of `__()`
+  5. Removed all debug logs from i18n.js, MediaLibrary.js, and index.php
+- Files: api/media/_folder_i18n.php, api/media/index.php, public/assets/js/core/i18n.js, public/assets/js/pages/media/MediaLibrary.js, public/assets/js/pages/products/form/MediaPicker.js, public/assets/js/pages/signage/PlaylistDetail.js
+- Checks: PHP syntax OK (_folder_i18n.php, index.php), standalone test OK (all 15 folder paths return correct i18n keys), user confirmed fix in browser (all 14 sub-folders returning name_key)
+- Risk/Follow-up: Hard refresh needed on client side to pick up cleaned-up JS. Deploy to Docker server (git pull + rebuild).
+
+---
+
 ## 2026-03-14 - Resource exhaustion protection (cron flock, ffmpeg timeout, worker maxRuntime)
 - Request: Investigate and fix CPU/RAM exhaustion risks similar to ChannelWorker zombie issue
 - Changes:
@@ -4142,3 +4157,47 @@ Format:
 - Risks/Follow-up:
   - Auto-SKU `PRD-XXXXXX` formatı firma bazlı benzersizlik backend'de kontrol ediliyor (store.php satır 25-31)
   - ERP/import ile gelen ürünlerin SKU'su korunur — sadece elle eklenen yeni ürünlerde auto-generate çalışır
+
+## 2026-03-14 - i18n folder name translation fix + resource exhaustion fixes
+
+### Resource Exhaustion Fixes
+- Request: CPU/RAM tüketimi risklerini tespit et ve düzelt (zombie process, sonsuz çalışma, lock koruması)
+- Changes:
+  - 4 cron script'e flock overlap koruması eklendi (tamsoft-auto-sync, device-heartbeat, check-device-status, tenant-backup)
+  - HlsTranscoder.php: blocking exec() yerine proc_open() + 30dk wallclock timeout + SIGTERM/SIGKILL escalation
+  - TranscodeWorker.php: 4 saat maxRuntime guard + pcntl zombie reaping (SIGCHLD)
+- Changed files: cron/tamsoft-auto-sync.php, cron/device-heartbeat.php, cron/check-device-status.php, cron/tenant-backup.php, services/HlsTranscoder.php, workers/TranscodeWorker.php
+
+### Docker Turkish Filename Fix
+- Request: Sunucuda (Docker) Ortak Kütüphane altındaki Türkçe karakterli dizinler görünmüyordu
+- Changes:
+  - Dockerfile'a UTF-8 locale desteği eklendi (locales paketi + en_US.UTF-8)
+  - Sunucudaki Windows-1254 kodlu dosya isimleri UTF-8'e dönüştürüldü (iconv rename)
+- Changed files: deploy/Dockerfile
+
+### i18n Folder Name Translation Fix
+- Request: Ortak Kütüphane alt dizin isimleri (Manav, Kasap vb.) dil değiştirildiğinde çevrilmiyordu
+- Root cause: i18n.t() page translation chain'de products.json/templates.json'daki mediaLibrary key'i, common.json'daki mediaLibrary.folders lookup'ını gölgeleyebiliyordu. getNestedValue() intermediate object döndüğünde bu valid match olarak sayılıyordu.
+- Changes:
+  1. **i18n.js**: `tc()` metodu eklendi — sadece common.json'dan çeviri arar (page translations atlar)
+  2. **i18n.js**: `getNestedValue()` artık sadece leaf değerler (string/number/boolean) döner, intermediate object'ler undefined döner → partial key match'lerde fallthrough sağlar
+  3. **MediaLibrary.js**: `getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  4. **MediaPicker.js**: `_getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  5. **PlaylistDetail.js**: `_getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  6. **_folder_i18n.php**: preg_replace regex düzeltildi (eksik `[]` karakter sınıfı)
+- Changed files:
+  - public/assets/js/core/i18n.js
+  - public/assets/js/pages/media/MediaLibrary.js
+  - public/assets/js/pages/products/form/MediaPicker.js
+  - public/assets/js/pages/signage/PlaylistDetail.js
+  - api/media/_folder_i18n.php
+- Checks run:
+  - i18n.js brace balance: OK
+  - tc() method presence: OK
+  - getNestedValue object type guard: OK
+  - All 3 consumer files use i18n.tc(): OK
+  - Backend: All 15 folder name_keys resolve correctly (PHP test)
+  - All 8 locale common.json files verified: valid JSON, mediaLibrary.folders section with 15 entries each
+- Risks/Follow-up:
+  - getNestedValue object type guard might affect code that intentionally looks up object subtrees (not expected in current codebase)
+  - Sunucuya deploy gerekli (Docker rebuild + git pull)

@@ -189,7 +189,9 @@ export class MediaLibraryPage {
      */
     getFolderDisplayName(folder) {
         if (folder.name_key) {
-            const translated = this.__( folder.name_key);
+            // Use tc() (common-only) to avoid page translation shadowing.
+            // Folder name_keys (mediaLibrary.folders.*) are always in common.json.
+            const translated = this.app.i18n.tc(folder.name_key);
             // If translation found (not returning the key itself), use it
             if (translated && translated !== folder.name_key) {
                 return translated;
