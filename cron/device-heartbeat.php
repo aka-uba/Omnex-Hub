@@ -16,6 +16,16 @@
 require_once __DIR__ . '/../config.php';
 require_once BASE_PATH . '/services/PavoDisplayGateway.php';
 
+// Lock dosyası - aynı anda birden fazla çalışmayı engelle
+$lockFile = BASE_PATH . '/storage/device-heartbeat.lock';
+$lockFp = fopen($lockFile, 'c');
+if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo "[" . date('Y-m-d H:i:s') . "] UYARI: Başka bir device-heartbeat işlemi zaten çalışıyor.\n";
+    exit(0);
+}
+ftruncate($lockFp, 0);
+fwrite($lockFp, (string)getmypid());
+
 $startTime = microtime(true);
 $db = Database::getInstance();
 $gateway = new PavoDisplayGateway();
@@ -96,5 +106,10 @@ if ($duration > 30000) {
         'suggestion' => 'Consider reducing check interval or optimizing ping method'
     ]);
 }
+
+// Lock serbest bırak
+flock($lockFp, LOCK_UN);
+fclose($lockFp);
+@unlink($lockFile);
 
 echo "[" . date('Y-m-d H:i:s') . "] Heartbeat completed: {$onlineCount} online, {$offlineCount} offline, {$statusChangedCount} changed ({$duration}ms)\n";

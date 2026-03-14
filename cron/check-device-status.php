@@ -15,6 +15,16 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../core/Database.php';
 
+// Lock dosyası - aynı anda birden fazla çalışmayı engelle
+$lockFile = BASE_PATH . '/storage/check-device-status.lock';
+$lockFp = fopen($lockFile, 'c');
+if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo "[" . date('Y-m-d H:i:s') . "] UYARI: Başka bir check-device-status işlemi zaten çalışıyor.\n";
+    exit(0);
+}
+ftruncate($lockFp, 0);
+fwrite($lockFp, (string)getmypid());
+
 $db = Database::getInstance();
 $now = date('Y-m-d H:i:s');
 
@@ -102,6 +112,11 @@ try {
     echo "❌ ERROR: " . $e->getMessage() . "\n";
     exit(1);
 }
+
+// Lock serbest bırak
+flock($lockFp, LOCK_UN);
+fclose($lockFp);
+@unlink($lockFile);
 
 echo "[" . date('Y-m-d H:i:s') . "] Device status check completed\n";
 exit(0);

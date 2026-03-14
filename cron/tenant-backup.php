@@ -26,6 +26,16 @@ require_once __DIR__ . '/../services/NotificationTriggers.php';
 
 echo "[" . date('Y-m-d H:i:s') . "] Tenant backup cron started\n";
 
+// Lock dosyası - aynı anda birden fazla çalışmayı engelle
+$lockFile = BASE_PATH . '/storage/tenant-backup.lock';
+$lockFp = fopen($lockFile, 'c');
+if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo "UYARI: Başka bir tenant-backup işlemi zaten çalışıyor.\n";
+    exit(0);
+}
+ftruncate($lockFp, 0);
+fwrite($lockFp, (string)getmypid());
+
 $service = TenantBackupService::getInstance();
 $db = Database::getInstance();
 
@@ -110,5 +120,10 @@ if ($failCount > 0) {
         '#/admin/backups'
     );
 }
+
+// Lock serbest bırak
+flock($lockFp, LOCK_UN);
+fclose($lockFp);
+@unlink($lockFile);
 
 exit($failCount > 0 ? 1 : 0);

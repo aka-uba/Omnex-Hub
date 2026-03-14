@@ -27,6 +27,16 @@ require_once BASE_PATH . '/services/TamsoftGateway.php';
 echo "=== TAMSOFT Otomatik Senkronizasyon ===\n";
 echo "Tarih: " . date('Y-m-d H:i:s') . "\n\n";
 
+// Lock dosyası - aynı anda birden fazla çalışmayı engelle
+$lockFile = BASE_PATH . '/storage/tamsoft-auto-sync.lock';
+$lockFp = fopen($lockFile, 'c');
+if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+    echo "UYARI: Başka bir tamsoft-auto-sync işlemi zaten çalışıyor.\n";
+    exit(0);
+}
+ftruncate($lockFp, 0);
+fwrite($lockFp, (string)getmypid());
+
 try {
     $db = Database::getInstance();
 
@@ -170,5 +180,10 @@ try {
     echo "KRİTİK HATA: " . $e->getMessage() . "\n";
     exit(1);
 }
+
+// Lock serbest bırak
+flock($lockFp, LOCK_UN);
+fclose($lockFp);
+@unlink($lockFile);
 
 echo "\n=== TAMSOFT Otomatik Senkronizasyon Tamamlandı ===\n";

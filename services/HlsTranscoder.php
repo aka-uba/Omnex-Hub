@@ -272,12 +272,82 @@ class HlsTranscoder
                     escapeshellarg($profileDir . '/playlist.m3u8')
                 );
 
-                // FFmpeg calistir
-                $ffOutput = [];
-                $ffReturn = 0;
-                exec($cmd, $ffOutput, $ffReturn);
+                // FFmpeg calistir (proc_open ile timeout destegi)
+                $maxTranscodeSeconds = defined('FFMPEG_MAX_TRANSCODE_SECONDS')
+                    ? FFMPEG_MAX_TRANSCODE_SECONDS
+                    : 1800; // 30 dakika varsayilan
+
+                $descriptors = [
+                    0 => ['pipe', 'r'],   // stdin
+                    1 => ['pipe', 'w'],   // stdout
+                    2 => ['pipe', 'w'],   // stderr
+                ];
+
+                $proc = proc_open($cmd, $descriptors, $pipes);
+                if (!is_resource($proc)) {
+                    throw new \Exception("FFmpeg proc_open basarisiz");
+                }
+                fclose($pipes[0]); // stdin kapatilir
+
+                // Non-blocking okuma icin stream'leri ayarla
+                stream_set_blocking($pipes[1], false);
+                stream_set_blocking($pipes[2], false);
+
+                $ffOutputStr = '';
+                $startWall = time();
+                $timedOut = false;
+
+                while (true) {
+                    $status = proc_get_status($proc);
+                    if (!$status['running']) {
+                        break;
+                    }
+
+                    // Timeout kontrolu
+                    if ((time() - $startWall) > $maxTranscodeSeconds) {
+                        $timedOut = true;
+                        // FFmpeg'e SIGTERM gonder (graceful stop)
+                        $ffPid = $status['pid'];
+                        if (DIRECTORY_SEPARATOR !== '\\') {
+                            @posix_kill($ffPid, 15); // SIGTERM
+                            usleep(500000); // 0.5sn bekle
+                            // Hala calisiyorsa SIGKILL
+                            $status2 = proc_get_status($proc);
+                            if ($status2['running']) {
+                                @posix_kill($ffPid, 9); // SIGKILL
+                            }
+                        } else {
+                            @proc_terminate($proc, 9);
+                        }
+                        break;
+                    }
+
+                    // Pipe overflow onlemi - ciktiyi oku
+                    $chunk = @stream_get_contents($pipes[1]);
+                    if ($chunk) $ffOutputStr .= $chunk;
+                    $chunk = @stream_get_contents($pipes[2]);
+                    if ($chunk) $ffOutputStr .= $chunk;
+
+                    usleep(250000); // 250ms bekle
+                }
+
+                // Kalan ciktiyi oku
+                $chunk = @stream_get_contents($pipes[1]);
+                if ($chunk) $ffOutputStr .= $chunk;
+                $chunk = @stream_get_contents($pipes[2]);
+                if ($chunk) $ffOutputStr .= $chunk;
+
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+
+                $ffReturn = proc_close($proc);
+
+                if ($timedOut) {
+                    throw new \Exception("FFmpeg timeout ({$maxTranscodeSeconds}sn asild). Profil: {$profileName}");
+                }
 
                 if ($ffReturn !== 0) {
+                    $ffOutput = explode("\n", $ffOutputStr);
                     $errorOutput = implode("\n", array_slice($ffOutput, -10));
                     throw new \Exception("FFmpeg hata (code $ffReturn): $errorOutput");
                 }

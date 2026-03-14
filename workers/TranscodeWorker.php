@@ -20,6 +20,8 @@ class TranscodeWorker
     private bool $running = true;
     private int $pollInterval = 5; // saniye
     private int $processedCount = 0;
+    private int $maxRuntime = 14400; // 4 saat maksimum calisma suresi (saniye)
+    private int $startTime = 0;
 
     public function __construct()
     {
@@ -32,7 +34,8 @@ class TranscodeWorker
      */
     public function runDaemon(): void
     {
-        $this->log("TranscodeWorker baslatildi (daemon modu)");
+        $this->startTime = time();
+        $this->log("TranscodeWorker baslatildi (daemon modu, maxRuntime={$this->maxRuntime}sn)");
 
         // FFmpeg kontrolu
         $ffInfo = $this->transcoder->detectFfmpeg();
@@ -42,14 +45,30 @@ class TranscodeWorker
         }
         $this->log("FFmpeg bulundu: {$ffInfo['version']}");
 
-        // Graceful shutdown
+        // Graceful shutdown + zombie reaping
         if (function_exists('pcntl_signal')) {
             pcntl_signal(SIGTERM, function () { $this->running = false; });
             pcntl_signal(SIGINT, function () { $this->running = false; });
+            // Auto-reap zombie child processes (ffmpeg)
+            pcntl_signal(SIGCHLD, SIG_DFL);
         }
 
         while ($this->running) {
             try {
+                // Zombie child process reaping
+                if (function_exists('pcntl_waitpid')) {
+                    while (pcntl_waitpid(-1, $wstatus, WNOHANG) > 0) {
+                        // reaped a zombie
+                    }
+                }
+
+                // maxRuntime kontrolu - sonsuz calismayi onle
+                if ((time() - $this->startTime) > $this->maxRuntime) {
+                    $this->log("maxRuntime ({$this->maxRuntime}sn) asildi, worker durduruluyor", 'warning');
+                    $this->running = false;
+                    break;
+                }
+
                 $processed = $this->processOne();
                 if (!$processed) {
                     sleep($this->pollInterval);
@@ -64,7 +83,8 @@ class TranscodeWorker
             }
         }
 
-        $this->log("Worker durduruluyor. Toplam islenen: {$this->processedCount}");
+        $runtime = time() - $this->startTime;
+        $this->log("Worker durduruluyor. Toplam islenen: {$this->processedCount}, calisma suresi: {$runtime}sn");
     }
 
     /**

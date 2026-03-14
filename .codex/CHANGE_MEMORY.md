@@ -11,6 +11,73 @@ Format:
 
 ---
 
+## 2026-03-14 - Resource exhaustion protection (cron flock, ffmpeg timeout, worker maxRuntime)
+- Request: Investigate and fix CPU/RAM exhaustion risks similar to ChannelWorker zombie issue
+- Changes:
+  1. Added flock overlap protection to 4 cron scripts (tamsoft-auto-sync, device-heartbeat, check-device-status, tenant-backup) using auto-import.php pattern
+  2. Replaced blocking exec() in HlsTranscoder.php with proc_open() + wallclock timeout (30min default, configurable via FFMPEG_MAX_TRANSCODE_SECONDS)
+  3. Added maxRuntime guard (4h) + zombie child reaping (pcntl_waitpid WNOHANG + SIGCHLD SIG_DFL) to TranscodeWorker daemon loop
+  4. ChannelWorker already fixed in prior task (zombie reaping + always-sleep pattern)
+- Files: cron/tamsoft-auto-sync.php, cron/device-heartbeat.php, cron/check-device-status.php, cron/tenant-backup.php, services/HlsTranscoder.php, workers/TranscodeWorker.php
+- Checks: PHP syntax OK (all 7 files)
+- Risk/Follow-up: Deploy to server. FFMPEG_MAX_TRANSCODE_SECONDS can be tuned in config.php if 30min is insufficient for very long videos
+
+---
+
+## 2026-03-14 - Backup/restore fixes + disk stat card consistency
+- Request: Fix restore test FK errors, orphan records, disk stat card format inconsistency
+- Changes:
+  1. Cleaned 45 orphan render_queue records (referenced deleted templates) from production
+  2. Updated FK constraints: render_queue→templates ON DELETE CASCADE, render_queue→products ON DELETE SET NULL
+  3. Improved restore script: --dry-run, --yes flags, archive verification, --single-transaction, error reporting, health retry
+  4. Added pre-dump orphan cleanup to backup script
+  5. Fixed disk stat card: was showing app storage size on initial load but partition percent on live refresh - now consistently shows partition used/total
+  6. Added partition_used_formatted to live endpoint response
+- Files: deploy/scripts/03-restore-backup.sh, deploy/scripts/04-backup.sh, database/postgresql/v2/30_constraints.sql, api/system/status.php, public/assets/js/pages/admin/SystemStatus.js, public/sw.js (v14)
+- Checks: PHP syntax OK, restore test verified (0 errors, all row counts match production), dry-run flag tested
+- Risk/Follow-up: None - restore system fully functional
+
+---
+
+## 2026-03-14 - PHP/OPcache production optimization + system RAM display
+- Request: Optimize PHP config for multi-tenant production, show system RAM instead of PHP memory
+- Changes:
+  1. Memory stat card now shows actual server RAM (e.g. "1.04 GB / 15.6 GB") via /proc/meminfo
+  2. PHP process memory moved to PHP Bilgileri card (phpMemoryUsage, phpMemoryPeak)
+  3. Added getSystemMemory() helper (Linux /proc/meminfo + Windows wmic)
+  4. Dockerfile optimized: opcache 128→192, interned_strings 8→16, JIT tracing enabled
+  5. max_input_vars 1000→3000, realpath_cache_ttl 120→600
+  6. Security: session.cookie_httponly/secure/strict_mode enabled
+  7. Added phpMemoryUsage/phpMemoryPeak i18n keys (8 langs), SW cache v13
+- Files: deploy/Dockerfile, api/system/status.php, SystemStatus.js, locales/*/pages/admin.json, sw.js
+- Checks: PHP syntax OK, deployed, verified settings with php -i in container
+- Risk/Follow-up: JIT tracing might cause issues on edge cases - monitor for stability
+
+---
+
+## 2026-03-14 - System status stat cards with detailed values
+- Request: CPU/Memory/Disk stat cards only show bare numbers, need context (cores, totals)
+- Changes:
+  1. CPU card: "45% / 4 Çekirdek" (percentage + core count)
+  2. Memory card: "12.5 MB / 256M" (used / limit)
+  3. Disk card: "5.2 GB / 50 GB" (app used / partition total)
+  4. Backend live endpoint updated with cores, memory details, disk partition info
+  5. Added `.stat-detail` CSS, "cores" i18n key (8 langs), SW cache v12
+- Files: api/system/status.php, SystemStatus.js, system-status.css, sw.js, locales/*/pages/admin.json
+- Checks: PHP syntax OK, deployed to server
+- Risk/Follow-up: None
+
+---
+
+## 2026-03-14 - Users API server-side sorting fix
+- Request: Fix table header sorting on admin/users page (clicking column headers didn't change sort order)
+- Changes: Replaced hardcoded `ORDER BY u.first_name ASC` with dynamic `{$orderClause}` using sort_by/sort_dir GET params with whitelist validation
+- Files: api/users/index.php
+- Checks: Deployed to server, container rebuilt successfully
+- Risk/Follow-up: None, same pattern as companies/branches fixes
+
+---
+
 ## 2026-03-14 - PlaylistDetail form validation improvements
 - Request: Fix generic validation messages, add form-label-required CSS class to required field labels, add .error class highlighting to invalid inputs
 - Changes:
