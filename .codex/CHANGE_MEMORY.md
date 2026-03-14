@@ -3654,3 +3654,40 @@ Format:
 - Risks/Follow-up:
   - Existing Device UI JS currently contains prior forced-flat link defaults from earlier changes; for full one-link UX those defaults should be aligned to variant/channel mode.
   - Windows detached ffmpeg PID is best-effort (`pid=0`); health is inferred from rolling playlist updates.
+
+## 2026-03-14 - Device generated link alignment + commit/push/deploy
+- Request context:
+  - User asked to change device-generated stream link to the correct default mode, keep downloaded playlist compatible, then commit/push and deploy to server.
+- Findings:
+  - Device UI was still forcing `stream_mode=flat`, so generated links did not follow new channel-first pipeline.
+  - Stream channel pipeline itself was already working locally (`variant` => `X-Stream-Pipeline: channel`).
+- Changes:
+  - public/assets/js/pages/devices/DeviceDetail.js
+    - Stream URL switched from `playlist.m3u?stream_mode=flat&hide_title=1` to `playlist.m3u`.
+    - Download URL switched from forced-flat to `playlist.m3u?download=1&label=0`.
+  - public/assets/js/pages/devices/DeviceList.js
+    - `resolveDirectStreamUrl()` no longer defaults to `flat`; stream mode now optional.
+    - `copyStreamUrl()` now resolves default channel/variant target.
+    - `downloadStreamPlaylist()` now resolves default channel/variant target and removed VLC-only title options from generated M3U.
+- Git/Release:
+  - Commit: `71ed06e` (`feat(stream): add channel pipeline and switch device links to variant-channel`)
+  - Pushed to `origin/main`.
+  - Local pull/rebase check: up to date.
+- Server deploy:
+  - `/opt/omnex-hub` pulled to `71ed06e`.
+  - Rebuilt/restarted `app`, `transcode-worker`, `channel-worker` via:
+    - `docker compose -f docker-compose.yml -f docker-compose.standalone.yml up -d --build app transcode-worker channel-worker`
+  - Post-deploy all core services healthy/up.
+  - Nginx had temporary upstream 502 (app container IP change after recreate); fixed with:
+    - `docker compose -f docker-compose.yml -f docker-compose.standalone.yml restart nginx`
+  - Domain health after fix: `https://hub.omnexcore.com/` => HTTP 200.
+- Checks:
+  - `node --check public/assets/js/pages/devices/DeviceDetail.js`
+  - `node --check public/assets/js/pages/devices/DeviceList.js`
+  - `php -l api/stream/master.php`
+  - `php -l services/HlsTranscoder.php`
+  - git: `push`, `pull --rebase`
+  - server: `docker compose ps`, `php workers/ChannelWorker.php --status`, `php workers/TranscodeWorker.php --status`
+  - server HTTP probe: domain root 200 after nginx restart
+- Risks/Follow-up:
+  - Existing IPTV app behavior can still differ by client parser; user should validate on target IPTV client after this deployment.
