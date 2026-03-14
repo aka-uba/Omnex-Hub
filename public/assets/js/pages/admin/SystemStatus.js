@@ -354,12 +354,10 @@ export class SystemStatusPage {
         const uptimeEl = document.getElementById('uptime-value');
         if (uptimeEl) uptimeEl.textContent = data?.uptime?.formatted || 'N/A';
 
-        // CPU - show percentage + cores
+        // CPU - show percentage / cores
         const cpuEl = document.getElementById('cpu-value');
         if (cpuEl) {
-            const cpuPercent = data?.cpu?.usage_percent !== null && data?.cpu?.usage_percent !== undefined
-                ? `${data.cpu.usage_percent}%`
-                : (data?.cpu?.load_average ? `${data.cpu.load_average['1min']}` : 'N/A');
+            const cpuPercent = data?.cpu?.usage_percent != null ? `${data.cpu.usage_percent}%` : 'N/A';
             const cores = data?.cpu?.cores;
             cpuEl.innerHTML = cores
                 ? `${cpuPercent} <span class="stat-detail">/ ${cores} ${this.__('systemStatus.metrics.cores')}</span>`
@@ -402,18 +400,14 @@ export class SystemStatusPage {
             uptimeEl.textContent = liveQuick.uptime.formatted;
         }
 
-        // CPU - show percentage + cores (cores from live or cached)
+        // CPU - show percentage / cores
         const cpuEl = document.getElementById('cpu-value');
-        if (cpuEl) {
-            const cpuPercent = liveQuick?.cpu?.usage_percent !== null && liveQuick?.cpu?.usage_percent !== undefined
-                ? `${liveQuick.cpu.usage_percent}%`
-                : (liveQuick?.cpu?.load_average ? `${liveQuick.cpu.load_average['1min']}` : null);
-            if (cpuPercent !== null) {
-                const cores = liveQuick?.cpu?.cores || this._staticCpuCores;
-                cpuEl.innerHTML = cores
-                    ? `${cpuPercent} <span class="stat-detail">/ ${cores} ${this.__('systemStatus.metrics.cores')}</span>`
-                    : cpuPercent;
-            }
+        if (cpuEl && liveQuick?.cpu?.usage_percent != null) {
+            const cpuPercent = `${liveQuick.cpu.usage_percent}%`;
+            const cores = liveQuick?.cpu?.cores || this._staticCpuCores;
+            cpuEl.innerHTML = cores
+                ? `${cpuPercent} <span class="stat-detail">/ ${cores} ${this.__('systemStatus.metrics.cores')}</span>`
+                : cpuPercent;
         }
 
         // Memory - show system RAM used / total

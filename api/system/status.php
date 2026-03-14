@@ -510,16 +510,6 @@ function getCpuUsage() {
         }
     } else {
         // Linux: Read from /proc/cpuinfo and /proc/loadavg
-        if (file_exists('/proc/loadavg')) {
-            $load = file_get_contents('/proc/loadavg');
-            $loadParts = explode(' ', $load);
-            $cpu['load_average'] = [
-                '1min' => (float) $loadParts[0],
-                '5min' => (float) $loadParts[1],
-                '15min' => (float) $loadParts[2]
-            ];
-        }
-
         if (file_exists('/proc/cpuinfo')) {
             $cpuInfo = file_get_contents('/proc/cpuinfo');
             preg_match('/model name\s*:\s*(.+)/i', $cpuInfo, $modelMatch);
@@ -529,6 +519,22 @@ function getCpuUsage() {
                 $cpu['model'] = trim($modelMatch[1]);
             }
             $cpu['cores'] = count($coreMatches[0]);
+        }
+
+        if (file_exists('/proc/loadavg')) {
+            $load = file_get_contents('/proc/loadavg');
+            $loadParts = explode(' ', $load);
+            $cpu['load_average'] = [
+                '1min' => (float) $loadParts[0],
+                '5min' => (float) $loadParts[1],
+                '15min' => (float) $loadParts[2]
+            ];
+
+            // Convert load average to usage percentage based on core count
+            // load_avg / cores * 100 = usage% (capped at 100)
+            $cores = $cpu['cores'] ?: 1;
+            $loadPercent = round(((float) $loadParts[0] / $cores) * 100, 1);
+            $cpu['usage_percent'] = min($loadPercent, 100);
         }
     }
 
