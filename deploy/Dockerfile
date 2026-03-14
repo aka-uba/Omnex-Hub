@@ -8,7 +8,7 @@ FROM php:8.4-apache
 LABEL maintainer="aka-uba <ugurbakagunduz@gmail.com>"
 LABEL description="Omnex Display Hub - ESL & Digital Signage Platform"
 
-# Install system dependencies
+# Install system dependencies + UTF-8 locale for Turkish filenames
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libzip-dev \
@@ -20,7 +20,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cron \
     curl \
     unzip \
+    locales \
+    && sed -i 's/# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
