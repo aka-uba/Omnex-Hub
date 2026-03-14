@@ -144,6 +144,7 @@ export class CompanyManagementPage {
     async init() {
         await this.loadLicensePlans();
         this.initDataTable();
+        this.initImageHoverPreview();
         this.bindEvents();
         await this.loadStats();
     }
@@ -199,10 +200,18 @@ export class CompanyManagementPage {
                         // Use icon (PWA icon-192) for table preview
                         const iconPath = row.icon || row.logo;
                         if (iconPath) {
-                            return `<img src="${basePath}/${iconPath}" class="data-table-image" alt="${escapeHTML(row.name)}">`;
+                            const fullUrl = `${basePath}/${iconPath}`;
+                            return `
+                                <div class="product-table-thumb"
+                                     data-preview-url="${escapeHTML(fullUrl)}"
+                                     data-product-name="${escapeHTML(row.name || '')}">
+                                    <img src="${escapeHTML(fullUrl)}" alt="${escapeHTML(row.name)}" loading="lazy"
+                                         onerror="this.parentElement.innerHTML='<i class=\\'ti ti-building\\'></i>'">
+                                </div>
+                            `;
                         }
                         return `
-                            <div class="data-table-icon-cell">
+                            <div class="product-table-thumb product-table-thumb-empty">
                                 <i class="ti ti-building"></i>
                             </div>
                         `;
@@ -400,6 +409,62 @@ export class CompanyManagementPage {
         if (trendExpired) {
             trendExpired.style.display = this.stats.expired > 0 ? 'inline-flex' : 'none';
         }
+    }
+
+    /**
+     * Image hover preview (same pattern as ProductList)
+     */
+    initImageHoverPreview() {
+        if (!document.getElementById('image-preview-popup')) {
+            const popup = document.createElement('div');
+            popup.id = 'image-preview-popup';
+            popup.className = 'product-image-preview-popup';
+            popup.innerHTML = `
+                <img src="" alt="Preview">
+                <div class="preview-popup-name"></div>
+            `;
+            document.body.appendChild(popup);
+        }
+
+        const popup = document.getElementById('image-preview-popup');
+        const popupImg = popup.querySelector('img');
+        const popupName = popup.querySelector('.preview-popup-name');
+
+        const tableContainer = document.getElementById('companies-table');
+        if (!tableContainer) return;
+
+        tableContainer.addEventListener('mouseenter', (e) => {
+            const thumb = e.target.closest('.product-table-thumb[data-preview-url]');
+            if (!thumb) return;
+
+            const previewUrl = thumb.dataset.previewUrl;
+            const name = thumb.dataset.productName;
+            if (!previewUrl) return;
+
+            popupImg.src = previewUrl;
+            popupName.textContent = name || '';
+
+            const rect = thumb.getBoundingClientRect();
+            const padding = 12;
+            let left = rect.right + padding;
+            let top = rect.top;
+
+            if (left + 250 > window.innerWidth - padding) {
+                left = rect.left - 250 - padding;
+            }
+            left = Math.max(padding, left);
+            top = Math.max(padding, Math.min(top, window.innerHeight - 280 - padding));
+
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.classList.add('visible');
+        }, true);
+
+        tableContainer.addEventListener('mouseleave', (e) => {
+            const thumb = e.target.closest('.product-table-thumb[data-preview-url]');
+            if (!thumb) return;
+            popup.classList.remove('visible');
+        }, true);
     }
 
     bindEvents() {

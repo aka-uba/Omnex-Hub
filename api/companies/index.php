@@ -10,6 +10,17 @@ require_once BASE_PATH . '/services/LicenseService.php';
 
 $db = Database::getInstance();
 
+// Sorting support
+$allowedSortColumns = ['name', 'status', 'created_at', 'license_expires_at', 'user_count', 'device_count', 'region_count', 'branch_count', 'plan_name'];
+$sortBy = $_GET['sort_by'] ?? 'created_at';
+$sortDir = strtoupper($_GET['sort_dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+if (!in_array($sortBy, $allowedSortColumns)) {
+    $sortBy = 'created_at';
+}
+// Prefix with c. for company table columns, leave subquery aliases as-is
+$sortColumn = in_array($sortBy, ['name', 'status', 'created_at', 'code']) ? "c.{$sortBy}" : $sortBy;
+$orderClause = "ORDER BY {$sortColumn} {$sortDir}";
+
 // Check if branches table exists
 $branchesTableExists = false;
 try {
@@ -46,7 +57,7 @@ if ($branchesTableExists) {
          FROM companies c
          LEFT JOIN licenses l ON c.id = l.company_id AND l.status = 'active'
          LEFT JOIN license_plans p ON l.plan_id = p.id
-         ORDER BY c.created_at ASC"
+         {$orderClause}"
     );
 } else {
     // Fallback query without branches
@@ -75,7 +86,7 @@ if ($branchesTableExists) {
          FROM companies c
          LEFT JOIN licenses l ON c.id = l.company_id AND l.status = 'active'
          LEFT JOIN license_plans p ON l.plan_id = p.id
-         ORDER BY c.created_at ASC"
+         {$orderClause}"
     );
 }
 
