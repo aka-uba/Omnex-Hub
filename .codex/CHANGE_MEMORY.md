@@ -3727,3 +3727,32 @@ Format:
   - `git pull --rebase origin main` (local) => up to date.
 - Risks/Follow-up:
   - ADB ile uygulamayi komutla otomatik URL acma denemesi host policy tarafindan engellendi; cihazda manuel IPTV play dogrulamasi kullanicidan alinmali.
+
+## 2026-03-14 - Channel fallback/audio-effect recovery (race lock + invalid program self-heal)
+- Request context:
+  - User reported stream opens but all items are audible and transition effects seem absent on IPTV/VLC path.
+- Findings:
+  - Variant endpoint was intermittently falling back to legacy stitched pipeline (`/segment/{mediaId}/...`) instead of channel pipeline.
+  - Channel state/log showed repeated `moov atom not found` on `program.mp4` (invalid/corrupted timeline file), causing encoder start failures and fallback behavior.
+  - Concurrent channel build/start paths (request sync bootstrap + worker) had no per-channel lock; this risked timeline file corruption.
+- Changes:
+  - services/StreamChannelService.php
+    - Added per-token/profile file lock (`channel.lock`) around `ensureChannel()` critical section.
+    - Added program validity check (`isValidProgramFile`) using file-size + ffprobe duration.
+    - Added self-heal path: if cached `program.mp4` is invalid, force rebuild instead of reusing hash state.
+    - Added post-build validity gate for `program.tmp.mp4` before swap.
+    - Captured stderr in `runCommand()` logs (`2>&1`) for actionable ffmpeg diagnostics.
+- Temp backup safety:
+  - Created: `.temp-backups/channel-race-fix-20260314_044408/StreamChannelService.php.bak` before edit.
+- Release:
+  - Commit: `c977f54` (`fix(stream): lock channel build and auto-heal invalid program file`)
+  - Pushed to `origin/main`, deployed to server (`app` + `channel-worker` rebuild/restart).
+  - Post-deploy nginx upstream refreshed by restarting `nginx` service.
+- Verification:
+  - `php -l services/StreamChannelService.php`
+  - `docker compose ps` on server -> app/channel-worker healthy.
+  - Variant URL now returns `X-Stream-Pipeline: channel` and `/channel/720p/segment_*.ts` URLs.
+  - Channel segment ffprobe confirms video-only stream (no audio track).
+- Risks/Follow-up:
+  - During first bootstrap window a client may briefly observe fallback until channel playlist is available; after build it converges to channel pipeline.
+  - Per-item mute semantics are not currently preserved in single continuous channel output (current model is global no-audio in channel pipeline).
