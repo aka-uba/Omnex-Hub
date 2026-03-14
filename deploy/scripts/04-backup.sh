@@ -139,7 +139,14 @@ if ! $COMPOSE_CMD exec -T postgres pg_isready -U "$DB_USER" >/dev/null 2>&1; the
     fi
 fi
 
-# ---- 1. PostgreSQL Full Dump ----
+# ---- 1. Pre-Dump Cleanup (orphan records) ----
+log "Cleaning orphan records before dump..."
+$COMPOSE_CMD exec -T postgres psql -U "$DB_USER" -d "$DB_NAME" -c "
+    DELETE FROM labels.render_queue_items WHERE queue_id NOT IN (SELECT id FROM labels.render_queue);
+    DELETE FROM labels.render_queue WHERE template_id IS NOT NULL AND template_id NOT IN (SELECT id FROM labels.templates);
+" >/dev/null 2>&1 || warn "Orphan cleanup skipped (non-critical)"
+
+# ---- 2. PostgreSQL Full Dump ----
 log "Dumping PostgreSQL database: $DB_NAME ..."
 $COMPOSE_CMD exec -T postgres \
     pg_dump -U "$DB_USER" -d "$DB_NAME" \
@@ -154,7 +161,7 @@ DB_SIZE=$(du -sh "$TEMP_DIR/database.sql" | cut -f1)
 DB_LINES=$(wc -l < "$TEMP_DIR/database.sql")
 log "Database dump: $DB_SIZE ($DB_LINES lines)"
 
-# ---- 2. Storage Volume ----
+# ---- 3. Storage Volume ----
 log "Backing up storage files..."
 CONTAINER_ID=$($COMPOSE_CMD ps -q app 2>/dev/null || true)
 
@@ -171,14 +178,14 @@ else
     mkdir -p "$TEMP_DIR/storage"
 fi
 
-# ---- 3. Environment Snapshot ----
+# ---- 4. Environment Snapshot ----
 if [ -f "$ENV_FILE" ]; then
     # Mask sensitive values for safety
     sed -E 's/(PASSWORD|SECRET|PASS)=.*/\1=***MASKED***/g' "$ENV_FILE" > "$TEMP_DIR/env.backup"
     log "Environment snapshot saved (passwords masked)"
 fi
 
-# ---- 4. Active Nginx Config (if exists) ----
+# ---- 5. Active Nginx Config (if exists) ----
 NGINX_CONF="$PROJECT_DIR/nginx/conf.d/default.conf"
 if [ -f "$NGINX_CONF" ]; then
     mkdir -p "$TEMP_DIR/config"
@@ -186,7 +193,7 @@ if [ -f "$NGINX_CONF" ]; then
     log "Nginx config backed up"
 fi
 
-# ---- 5. Backup Metadata ----
+# ---- 6. Backup Metadata ----
 cat > "$TEMP_DIR/backup-info.json" <<METAEOF
 {
     "version": "1.0",
@@ -211,7 +218,7 @@ cat > "$TEMP_DIR/backup-info.json" <<METAEOF
 }
 METAEOF
 
-# ---- 6. Compress Archive ----
+# ---- 7. Compress Archive ----
 log "Compressing backup archive..."
 ARCHIVE="$BACKUP_SUBDIR/${BACKUP_NAME}.tar.gz"
 tar -czf "$ARCHIVE" -C "$TEMP_DIR" .
@@ -219,7 +226,7 @@ tar -czf "$ARCHIVE" -C "$TEMP_DIR" .
 ARCHIVE_SIZE=$(du -sh "$ARCHIVE" | cut -f1)
 log "Archive created: $ARCHIVE ($ARCHIVE_SIZE)"
 
-# ---- 7. Verify Archive ----
+# ---- 8. Verify Archive ----
 log "Verifying archive integrity..."
 if tar -tzf "$ARCHIVE" >/dev/null 2>&1; then
     log "Archive integrity OK"
@@ -227,10 +234,10 @@ else
     error "Archive verification failed! Backup may be corrupted."
 fi
 
-# ---- 8. Cleanup Temp ----
+# ---- 9. Cleanup Temp ----
 rm -rf "$TEMP_DIR"
 
-# ---- 9. Retention Policy ----
+# ---- 10. Retention Policy ----
 log "Applying retention policy: keep last $RETENTION_DAYS days..."
 DELETED=0
 while IFS= read -r old_backup; do
@@ -243,7 +250,7 @@ if [ $DELETED -gt 0 ]; then
     log "Removed $DELETED old backup(s)"
 fi
 
-# ---- 10. Summary ----
+# ---- 11. Summary ----
 BACKUP_COUNT=$(find "$BACKUP_SUBDIR" -name "${PROJECT_NAME}_*.tar.gz" -type f 2>/dev/null | wc -l)
 TOTAL_SIZE=$(du -sh "$BACKUP_SUBDIR" 2>/dev/null | cut -f1 || echo "0")
 

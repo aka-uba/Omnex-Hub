@@ -278,10 +278,10 @@ ALTER TABLE "labels"."render_queue"
   ADD CONSTRAINT "fk_render_queue_created_by_users" FOREIGN KEY ("created_by") REFERENCES "core"."users" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 
 ALTER TABLE "labels"."render_queue"
-  ADD CONSTRAINT "fk_render_queue_product_id_products" FOREIGN KEY ("product_id") REFERENCES "catalog"."products" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
+  ADD CONSTRAINT "fk_render_queue_product_id_products" FOREIGN KEY ("product_id") REFERENCES "catalog"."products" ("id") ON UPDATE NO ACTION ON DELETE SET NULL;
 
 ALTER TABLE "labels"."render_queue"
-  ADD CONSTRAINT "fk_render_queue_template_id_templates" FOREIGN KEY ("template_id") REFERENCES "labels"."templates" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
+  ADD CONSTRAINT "fk_render_queue_template_id_templates" FOREIGN KEY ("template_id") REFERENCES "labels"."templates" ("id") ON UPDATE NO ACTION ON DELETE CASCADE;
 
 ALTER TABLE "labels"."render_queue"
   ADD CONSTRAINT "fk_render_queue_company_id_companies" FOREIGN KEY ("company_id") REFERENCES "core"."companies" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
