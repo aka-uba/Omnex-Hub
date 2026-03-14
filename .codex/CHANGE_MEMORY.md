@@ -3710,3 +3710,20 @@ Format:
 - Risks/Follow-up:
   - Fix is local until commit/deploy; remote IPTV clients will keep seeing 500 until server update is applied.
   - After deploy, retest on phone IPTV app and confirm 500 is gone.
+
+## 2026-03-14 - IPTV 500 fix deployed to production
+- Request context:
+  - User asked to debug Android IPTV app link over ADB and restore playback.
+- Root cause confirmed:
+  - Production `variant/720p/playlist.m3u8` returned HTTP 500 due to missing-file unlink path in channel startup.
+- Release:
+  - Commit: `4f36f18` (`fix(stream): avoid missing-file unlink errors in channel startup`)
+  - Pushed to `origin/main` and pulled on `/opt/omnex-hub`.
+  - Rebuilt/restarted `app` and `channel-worker` containers.
+- Verification:
+  - `docker compose ... ps` => `app` and `channel-worker` healthy.
+  - `curl -I https://hub.omnexcore.com/api/stream/<token>/variant/720p/playlist.m3u8` => HTTP 200 (previously 500).
+  - `curl -I https://hub.omnexcore.com/api/stream/<token>/playlist.m3u` => HTTP 200.
+  - `git pull --rebase origin main` (local) => up to date.
+- Risks/Follow-up:
+  - ADB ile uygulamayi komutla otomatik URL acma denemesi host policy tarafindan engellendi; cihazda manuel IPTV play dogrulamasi kullanicidan alinmali.
