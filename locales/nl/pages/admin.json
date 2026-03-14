@@ -114,6 +114,7 @@
             "region": "Regio",
             "branch": "Tak",
             "status": "Status",
+            "createdAt": "Aanmaakdatum",
             "licenseExpiry": "Licentie verlopen"
         },
         "actions": {

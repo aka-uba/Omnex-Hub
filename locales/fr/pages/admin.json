@@ -114,6 +114,7 @@
             "region": "RÃƒÂ©gion",
             "branch": "Succursale",
             "status": "Statut",
+            "createdAt": "Date de création",
             "licenseExpiry": "Expiration de la licence"
         },
         "actions": {

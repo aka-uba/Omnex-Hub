@@ -114,6 +114,7 @@
             "region": "Region",
             "branch": "Branch",
             "status": "Status",
+            "createdAt": "Created Date",
             "licenseExpiry": "License Expiry"
         },
         "actions": {

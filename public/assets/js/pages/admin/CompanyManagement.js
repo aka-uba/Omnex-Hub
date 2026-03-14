@@ -279,6 +279,11 @@ export class CompanyManagementPage {
                     }
                 },
                 {
+                    key: 'created_at',
+                    label: this.__('companies.columns.createdAt'),
+                    type: 'date'
+                },
+                {
                     key: 'license_expires_at',
                     label: this.__('companies.columns.licenseExpiry'),
                     type: 'date'

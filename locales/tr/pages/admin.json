@@ -114,6 +114,7 @@
             "region": "Bölge",
             "branch": "Şube",
             "status": "Durum",
+            "createdAt": "Kayıt Tarihi",
             "licenseExpiry": "Lisans Bitiş"
         },
         "actions": {

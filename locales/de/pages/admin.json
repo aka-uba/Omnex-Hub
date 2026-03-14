@@ -114,6 +114,7 @@
             "region": "Region",
             "branch": "Filiale",
             "status": "Status",
+            "createdAt": "Erstellungsdatum",
             "licenseExpiry": "Lizenzablauf"
         },
         "actions": {

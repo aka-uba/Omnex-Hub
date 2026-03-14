@@ -114,6 +114,7 @@
             "region": "Region",
             "branch": "Filial",
             "status": "VÃ‰â„¢ziyyÃ‰â„¢t",
+            "createdAt": "Yaradılış tarixi",
             "licenseExpiry": "LisenziyanÃ„Â±n mÃƒÂ¼ddÃ‰â„¢ti"
         },
         "actions": {

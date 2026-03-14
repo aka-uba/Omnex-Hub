@@ -46,7 +46,7 @@ if ($branchesTableExists) {
          FROM companies c
          LEFT JOIN licenses l ON c.id = l.company_id AND l.status = 'active'
          LEFT JOIN license_plans p ON l.plan_id = p.id
-         ORDER BY c.name ASC"
+         ORDER BY c.created_at ASC"
     );
 } else {
     // Fallback query without branches
@@ -75,7 +75,7 @@ if ($branchesTableExists) {
          FROM companies c
          LEFT JOIN licenses l ON c.id = l.company_id AND l.status = 'active'
          LEFT JOIN license_plans p ON l.plan_id = p.id
-         ORDER BY c.name ASC"
+         ORDER BY c.created_at ASC"
     );
 }
 
