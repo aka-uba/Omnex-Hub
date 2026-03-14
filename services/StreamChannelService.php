@@ -379,9 +379,13 @@ class StreamChannelService
         $playlistArg = $this->escapeArg($playlistPath);
         $segmentPatternArg = $this->escapeSegmentPatternArg($segmentPattern);
 
-        @unlink($playlistPath);
+        if (is_file($playlistPath)) {
+            @unlink($playlistPath);
+        }
         foreach (glob($channelDir . '/segment_*.ts') ?: [] as $oldSeg) {
-            @unlink($oldSeg);
+            if (is_file($oldSeg)) {
+                @unlink($oldSeg);
+            }
         }
 
         $cmd = implode(' ', [

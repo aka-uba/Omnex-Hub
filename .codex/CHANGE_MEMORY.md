@@ -3691,3 +3691,22 @@ Format:
   - server HTTP probe: domain root 200 after nginx restart
 - Risks/Follow-up:
   - Existing IPTV app behavior can still differ by client parser; user should validate on target IPTV client after this deployment.
+
+## 2026-03-14 - IPTV 500 fix for channel variant playlist (safe unlink)
+- Request context:
+  - User asked to inspect why IPTV app on Android (ADB-connected device) could not play stream links.
+- Findings:
+  - IPTV app logs showed HTTP 500 on `/api/stream/{token}/variant/720p/playlist.m3u8`.
+  - Server logs pointed to `unlink(.../playlist.m3u8): No such file or directory` inside `StreamChannelService::ensureEncoderRunning`.
+- Changes:
+  - services/StreamChannelService.php
+    - Wrapped playlist cleanup in `is_file()` guard before `@unlink`.
+    - Wrapped segment cleanup unlink calls in `is_file()` guard to avoid race/missing-file notices.
+- Temp backup safety:
+  - Created: `.temp-backups/stream-fix-20260314_043235/StreamChannelService.php.bak` before edit.
+- Checks run:
+  - `php -l services/StreamChannelService.php`
+  - Local HTTP probes (`curl`) for stream URLs (returned 403 in local env due token/access context, so not used as functional pass criteria).
+- Risks/Follow-up:
+  - Fix is local until commit/deploy; remote IPTV clients will keep seeing 500 until server update is applied.
+  - After deploy, retest on phone IPTV app and confirm 500 is gone.
