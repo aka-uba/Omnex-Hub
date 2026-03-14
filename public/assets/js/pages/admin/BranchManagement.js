@@ -217,10 +217,10 @@ export class BranchManagementPage {
         try {
             const queryParams = new URLSearchParams({
                 page: params.page,
-                per_page: params.perPage,
+                per_page: params.limit,
                 search: params.search || '',
-                sort_by: params.sortBy || 'sort_order',
-                sort_dir: params.sortDir || 'ASC',
+                sort_by: params.sort_by || 'sort_order',
+                sort_dir: params.sort_dir || 'ASC',
                 hierarchy: '1'
             });
 

@@ -49,11 +49,20 @@ if ($activeOnly) {
 
 $whereClause = implode(' AND ', $where);
 
+// Sorting support
+$allowedSortColumns = ['name', 'type', 'code', 'sort_order', 'is_active', 'created_at', 'city', 'address'];
+$sortBy = $_GET['sort_by'] ?? 'sort_order';
+$sortDir = strtoupper($_GET['sort_dir'] ?? 'ASC') === 'DESC' ? 'DESC' : 'ASC';
+if (!in_array($sortBy, $allowedSortColumns)) {
+    $sortBy = 'sort_order';
+}
+$orderClause = "ORDER BY b.{$sortBy} {$sortDir}" . ($sortBy !== 'name' ? ', b.name' : '');
+
 $branches = $db->fetchAll(
     "SELECT b.*, p.name as parent_name
      FROM branches b
      LEFT JOIN branches p ON b.parent_id = p.id
-     WHERE $whereClause ORDER BY b.sort_order, b.name",
+     WHERE $whereClause {$orderClause}",
     $params
 );
 
