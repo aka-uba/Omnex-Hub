@@ -502,24 +502,39 @@ export class LicenseManagementPage {
         }
     }
 
+    /**
+     * Check if license has a lifetime/unlimited plan (no expiry)
+     */
+    isLifetimeLicense(license) {
+        const planType = (license.plan_type || license.type || '').toLowerCase();
+        const isUnlimitedPlan = ['enterprise', 'ultimate', 'unlimited'].includes(planType);
+        const hasNoExpiry = !license.expires_at && !license.valid_until;
+        return isUnlimitedPlan || hasNoExpiry;
+    }
+
     updateStatsFromData(licenses) {
         const now = new Date();
         const isRevoked = (l) => l.status === 'revoked' || l.status === 'cancelled';
 
         const active = licenses.filter(l => {
+            if (isRevoked(l)) return false;
+            if (this.isLifetimeLicense(l)) return true;
             const expires = new Date(l.expires_at);
-            return expires > now && !isRevoked(l);
+            return expires > now;
         });
 
         const expiring = active.filter(l => {
+            if (this.isLifetimeLicense(l)) return false;
             const expires = new Date(l.expires_at);
             const daysLeft = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
             return daysLeft < 30 && daysLeft >= 0;
         });
 
         const expired = licenses.filter(l => {
+            if (isRevoked(l)) return true;
+            if (this.isLifetimeLicense(l)) return false;
             const expires = new Date(l.expires_at);
-            return expires < now || isRevoked(l);
+            return expires < now;
         });
 
         this.stats = {
@@ -545,14 +560,20 @@ export class LicenseManagementPage {
     }
 
     getStatusInfo(license) {
-        const now = new Date();
-        const expires = new Date(license.expires_at);
-        const daysLeft = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
-
         // Check for revoked or cancelled status (backward compatibility)
         if (license.status === 'revoked' || license.status === 'cancelled') {
             return { badge: 'badge-danger', text: this.__('licenses.statuses.revoked') };
         }
+
+        // Lifetime/unlimited licenses are always active
+        if (this.isLifetimeLicense(license)) {
+            return { badge: 'badge-success', text: this.__('licenses.statuses.active') };
+        }
+
+        const now = new Date();
+        const expires = new Date(license.expires_at);
+        const daysLeft = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+
         if (daysLeft < 0) return { badge: 'badge-danger', text: this.__('licenses.statuses.expired') };
         if (daysLeft < 30) return { badge: 'badge-warning', text: this.__('licenses.statuses.daysLeft', { count: daysLeft }) };
         return { badge: 'badge-success', text: this.__('licenses.statuses.active') };
@@ -898,14 +919,14 @@ export class LicenseManagementPage {
         const formContent = `
             <form id="license-form" class="space-y-4">
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.fields.company')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.fields.company')}</label>
                     <select id="license-company" class="form-select" required>
                         <option value="">${this.__('licenses.placeholders.selectCompany')}</option>
                         ${companyOptions}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.fields.plan')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.fields.plan')}</label>
                     <select id="license-plan" class="form-select" required>
                         ${planOptions}
                     </select>
@@ -913,12 +934,12 @@ export class LicenseManagementPage {
                 <div id="plan-limits-info" class="plan-limits-info-card" style="display: none;"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.fields.startDate')} *</label>
+                        <label class="form-label form-label-required">${this.__('licenses.fields.startDate')}</label>
                         <input type="date" id="license-starts" class="form-input" required
                             value="${today}">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.fields.endDate')} *</label>
+                        <label class="form-label">${this.__('licenses.fields.endDate')} <span class="text-danger">*</span></label>
                         <input type="date" id="license-expires" class="form-input" required
                             value="${oneYearLater.toISOString().split('T')[0]}">
                     </div>
@@ -950,11 +971,13 @@ export class LicenseManagementPage {
                 planSelect.addEventListener('change', (e) => {
                     this.showPlanLimitsInfo(e.target.value, 'plan-limits-info');
                     this._showDevicePricingForPlan(e.target.value, 'create');
+                    this._toggleEndDateRequirement(e.target.value, 'license-expires');
                 });
                 // İlk yüklemede de göster
                 if (planSelect.value) {
                     this.showPlanLimitsInfo(planSelect.value, 'plan-limits-info');
                     this._showDevicePricingForPlan(planSelect.value, 'create');
+                    this._toggleEndDateRequirement(planSelect.value, 'license-expires');
                 }
             }
         }, 100);
@@ -979,12 +1002,21 @@ export class LicenseManagementPage {
         const expires_at = document.getElementById('license-expires')?.value;
         const note = document.getElementById('license-note')?.value?.trim();
 
-        if (!company_id) {
-            Toast.error(this.__('validation.required'));
-            throw new Error('Validation failed');
-        }
-        if (!starts_at || !expires_at) {
-            Toast.error(this.__('validation.required'));
+        // Check if selected plan is lifetime/unlimited
+        const selectedPlanForCheck = this.licensePlans?.find(p => p.slug === planSlug || p.name === planSlug);
+        const isLifetime = ['enterprise', 'ultimate', 'unlimited'].includes(selectedPlanForCheck?.plan_type?.toLowerCase());
+
+        const missing = [];
+        if (!company_id) missing.push(this.__('licenses.fields.company'));
+        if (!starts_at) missing.push(this.__('licenses.fields.startDate'));
+        if (!isLifetime && !expires_at) missing.push(this.__('licenses.fields.endDate'));
+
+        if (missing.length > 0) {
+            Toast.error(this.__('validation.requiredField', { field: missing.join(', ') }));
+            // Highlight missing fields
+            if (!company_id) document.getElementById('license-company')?.classList.add('error');
+            if (!starts_at) document.getElementById('license-starts')?.classList.add('error');
+            if (!isLifetime && !expires_at) document.getElementById('license-expires')?.classList.add('error');
             throw new Error('Validation failed');
         }
 
@@ -1043,14 +1075,14 @@ export class LicenseManagementPage {
         const formContent = `
             <form id="edit-license-form" class="space-y-4">
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.fields.company')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.fields.company')}</label>
                     <select id="edit-license-company" class="form-select" required>
                         <option value="">${this.__('licenses.placeholders.selectCompany')}</option>
                         ${companyOptions}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.fields.plan')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.fields.plan')}</label>
                     <select id="edit-license-plan" class="form-select" required>
                         ${planOptions}
                     </select>
@@ -1058,12 +1090,12 @@ export class LicenseManagementPage {
                 <div id="edit-plan-limits-info" class="plan-limits-info-card" style="display: none;"></div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.fields.startDate')} *</label>
+                        <label class="form-label form-label-required">${this.__('licenses.fields.startDate')}</label>
                         <input type="date" id="edit-license-starts" class="form-input" required
                             value="${license.starts_at ? license.starts_at.split('T')[0].split(' ')[0] : (license.valid_from ? license.valid_from.split('T')[0].split(' ')[0] : '')}">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.fields.endDate')} *</label>
+                        <label class="form-label">${this.__('licenses.fields.endDate')} <span class="text-danger">*</span></label>
                         <input type="date" id="edit-license-expires" class="form-input" required
                             value="${license.expires_at ? license.expires_at.split('T')[0].split(' ')[0] : (license.valid_until ? license.valid_until.split('T')[0].split(' ')[0] : '')}">
                     </div>
@@ -1098,11 +1130,13 @@ export class LicenseManagementPage {
                 planSelect.addEventListener('change', (e) => {
                     this.showPlanLimitsInfo(e.target.value, 'edit-plan-limits-info');
                     this._showDevicePricingForPlan(e.target.value, 'edit');
+                    this._toggleEndDateRequirement(e.target.value, 'edit-license-expires');
                 });
                 // İlk yüklemede de göster
                 if (planSelect.value) {
                     this.showPlanLimitsInfo(planSelect.value, 'edit-plan-limits-info');
                     this._showDevicePricingForPlan(planSelect.value, 'edit', license);
+                    this._toggleEndDateRequirement(planSelect.value, 'edit-license-expires');
                 }
             }
         }, 100);
@@ -1127,12 +1161,20 @@ export class LicenseManagementPage {
         const expires_at = document.getElementById('edit-license-expires')?.value;
         const status = document.getElementById('edit-license-status')?.value;
 
-        if (!company_id) {
-            Toast.error(this.__('validation.required'));
-            throw new Error('Validation failed');
-        }
-        if (!starts_at || !expires_at) {
-            Toast.error(this.__('validation.required'));
+        // Check if selected plan is lifetime/unlimited
+        const selectedPlanForCheck = this.licensePlans?.find(p => p.slug === planSlug || p.name === planSlug);
+        const isLifetime = ['enterprise', 'ultimate', 'unlimited'].includes(selectedPlanForCheck?.plan_type?.toLowerCase());
+
+        const missing = [];
+        if (!company_id) missing.push(this.__('licenses.fields.company'));
+        if (!starts_at) missing.push(this.__('licenses.fields.startDate'));
+        if (!isLifetime && !expires_at) missing.push(this.__('licenses.fields.endDate'));
+
+        if (missing.length > 0) {
+            Toast.error(this.__('validation.requiredField', { field: missing.join(', ') }));
+            if (!company_id) document.getElementById('edit-license-company')?.classList.add('error');
+            if (!starts_at) document.getElementById('edit-license-starts')?.classList.add('error');
+            if (!isLifetime && !expires_at) document.getElementById('edit-license-expires')?.classList.add('error');
             throw new Error('Validation failed');
         }
 
@@ -1189,7 +1231,7 @@ export class LicenseManagementPage {
                     <p class="font-medium">${license.expires_at ? new Date(license.expires_at).toLocaleDateString('tr-TR') : '-'}</p>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.fields.newExpiry')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.fields.newExpiry')}</label>
                     <input type="date" id="new-expiry-date" class="form-input" required
                         value="${newExpiry.toISOString().split('T')[0]}">
                 </div>
@@ -1212,7 +1254,8 @@ export class LicenseManagementPage {
             onConfirm: async () => {
                 const newExpiryDate = document.getElementById('new-expiry-date')?.value;
                 if (!newExpiryDate) {
-                    Toast.error(this.__('validation.required'));
+                    Toast.error(this.__('validation.requiredField', { field: this.__('licenses.fields.newExpiry') }));
+                    document.getElementById('new-expiry-date')?.classList.add('error');
                     throw new Error('Validation failed');
                 }
                 try {
@@ -1483,7 +1526,7 @@ export class LicenseManagementPage {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">${this.__('licenses.payment.plan')} *</label>
+                    <label class="form-label form-label-required">${this.__('licenses.payment.plan')}</label>
                     <select id="payment-plan" class="form-select" required>
                         ${planOptions}
                     </select>
@@ -2158,7 +2201,7 @@ export class LicenseManagementPage {
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.plans.form.name')} *</label>
+                        <label class="form-label form-label-required">${this.__('licenses.plans.form.name')}</label>
                         <input type="text" id="plan-name" class="form-input" value="${escapeHTML(plan?.name || '')}" required>
                     </div>
                     <div class="form-group">
@@ -2174,7 +2217,7 @@ export class LicenseManagementPage {
 
                 <div class="grid grid-cols-4 gap-4">
                     <div class="form-group">
-                        <label class="form-label">${this.__('licenses.plans.form.price')} *</label>
+                        <label class="form-label form-label-required">${this.__('licenses.plans.form.price')}</label>
                         <input type="number" id="plan-price" class="form-input" value="${plan?.price || 0}" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
@@ -2352,6 +2395,7 @@ export class LicenseManagementPage {
 
         if (!name) {
             Toast.error(this.__('licenses.plans.validation.nameRequired'));
+            document.getElementById('plan-name')?.classList.add('error');
             throw new Error('Validation failed');
         }
 
@@ -2467,6 +2511,27 @@ export class LicenseManagementPage {
      * @param {string} prefix - 'create' or 'edit'
      * @param {object} license - Existing license data (for edit mode)
      */
+    /**
+     * Toggle end date field requirement based on plan type
+     */
+    _toggleEndDateRequirement(planSlug, inputId) {
+        const plan = this.licensePlans?.find(p => p.slug === planSlug || p.name === planSlug);
+        const isLifetime = ['enterprise', 'ultimate', 'unlimited'].includes(plan?.plan_type?.toLowerCase());
+        const input = document.getElementById(inputId);
+        const label = input?.closest('.form-group')?.querySelector('.form-label');
+        if (input) {
+            if (isLifetime) {
+                input.removeAttribute('required');
+                input.placeholder = this.__('licenses.plans.lifetime');
+                if (label) label.innerHTML = `${this.__('licenses.fields.endDate')} <span class="text-muted text-xs">(${this.__('licenses.plans.lifetime')})</span>`;
+            } else {
+                input.setAttribute('required', 'required');
+                input.placeholder = '';
+                if (label) label.innerHTML = `${this.__('licenses.fields.endDate')} <span class="text-danger">*</span>`;
+            }
+        }
+    }
+
     _showDevicePricingForPlan(planSlug, prefix, license = null) {
         const plan = this.licensePlans?.find(p => p.slug === planSlug || p.name === planSlug);
         const section = document.getElementById(`${prefix}-device-pricing-section`);

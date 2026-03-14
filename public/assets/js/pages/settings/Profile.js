@@ -136,15 +136,15 @@ export class ProfilePage {
                             <form id="profile-form">
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('profile.form.firstName')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.firstName')}</label>
                                         <input type="text" id="first-name" class="form-input" value="${this.user.first_name || ''}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('profile.form.lastName')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.lastName')}</label>
                                         <input type="text" id="last-name" class="form-input" value="${this.user.last_name || ''}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('profile.form.email')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.email')}</label>
                                         <input type="email" id="email" class="form-input" value="${this.user.email || ''}" required>
                                     </div>
                                     <div class="form-group">
@@ -178,15 +178,15 @@ export class ProfilePage {
                             <form id="password-form">
                                 <div class="form-grid">
                                     <div class="form-group full-width">
-                                        <label class="form-label">${this.__('profile.form.currentPassword')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.currentPassword')}</label>
                                         <input type="password" id="current-password" class="form-input" required>
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('profile.form.newPassword')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.newPassword')}</label>
                                         <input type="password" id="new-password" class="form-input" required minlength="8">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('profile.form.confirmPassword')}</label>
+                                        <label class="form-label form-label-required">${this.__('profile.form.confirmPassword')}</label>
                                         <input type="password" id="confirm-password" class="form-input" required minlength="8">
                                     </div>
                                 </div>
@@ -486,13 +486,28 @@ export class ProfilePage {
     }
 
     async updateProfile() {
-        const firstName = document.getElementById('first-name').value.trim();
-        const lastName = document.getElementById('last-name').value.trim();
-        const email = document.getElementById('email').value.trim();
+        const firstNameEl = document.getElementById('first-name');
+        const lastNameEl = document.getElementById('last-name');
+        const emailEl = document.getElementById('email');
+        const firstName = firstNameEl.value.trim();
+        const lastName = lastNameEl.value.trim();
+        const email = emailEl.value.trim();
         const phone = document.getElementById('phone').value.trim();
 
+        // Clear previous error highlights
+        [firstNameEl, lastNameEl, emailEl].forEach(el => el.classList.remove('error'));
+
         if (!firstName || !lastName || !email) {
-            Toast.error(this.__('validation.required'));
+            if (!firstName) {
+                firstNameEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.firstName') }));
+            } else if (!lastName) {
+                lastNameEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.lastName') }));
+            } else if (!email) {
+                emailEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.email') }));
+            }
             return;
         }
 
@@ -529,21 +544,38 @@ export class ProfilePage {
     }
 
     async changePassword() {
-        const currentPassword = document.getElementById('current-password').value;
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
+        const currentPasswordEl = document.getElementById('current-password');
+        const newPasswordEl = document.getElementById('new-password');
+        const confirmPasswordEl = document.getElementById('confirm-password');
+        const currentPassword = currentPasswordEl.value;
+        const newPassword = newPasswordEl.value;
+        const confirmPassword = confirmPasswordEl.value;
+
+        // Clear previous error highlights
+        [currentPasswordEl, newPasswordEl, confirmPasswordEl].forEach(el => el.classList.remove('error'));
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            Toast.error(this.__('validation.required'));
+            if (!currentPassword) {
+                currentPasswordEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.currentPassword') }));
+            } else if (!newPassword) {
+                newPasswordEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.newPassword') }));
+            } else if (!confirmPassword) {
+                confirmPasswordEl.classList.add('error');
+                Toast.error(this.__('validation.requiredField', { field: this.__('profile.form.confirmPassword') }));
+            }
             return;
         }
 
         if (newPassword !== confirmPassword) {
+            confirmPasswordEl.classList.add('error');
             Toast.error(this.__('validation.passwordMismatch'));
             return;
         }
 
         if (newPassword.length < 8) {
+            newPasswordEl.classList.add('error');
             Toast.error(this.__('validation.minLength', { min: 8 }));
             return;
         }

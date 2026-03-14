@@ -204,7 +204,7 @@ export class PlaylistDetailPage {
                         <div class="card-body">
                             <form id="playlist-form" class="space-y-4">
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('playlists.form.fields.name')} *</label>
+                                    <label class="form-label form-label-required">${this.__('playlists.form.fields.name')}</label>
                                     <input type="text" id="playlist-name" class="form-input"
                                         placeholder="${this.__('playlists.form.namePlaceholder')}" required>
                                 </div>
@@ -1235,7 +1235,7 @@ export class PlaylistDetailPage {
                 <p class="webpage-form-hint">${this.__('playlists.form.webpageHint')}</p>
 
                 <div class="form-group">
-                    <label class="form-label">${this.__('playlists.form.webpageUrl')}</label>
+                    <label class="form-label form-label-required">${this.__('playlists.form.webpageUrl')}</label>
                     <input type="url" id="webpage-url" class="form-input"
                         placeholder="https://example.com" required>
                 </div>
@@ -1279,6 +1279,7 @@ export class PlaylistDetailPage {
 
         if (!url) {
             Toast.error(this.__('playlists.form.webpageUrlRequired'));
+            if (urlInput) urlInput.classList.add('error');
             urlInput?.focus();
             return;
         }
@@ -1286,9 +1287,13 @@ export class PlaylistDetailPage {
         // Basic URL validation
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             Toast.error(this.__('playlists.form.webpageUrlInvalid'));
+            if (urlInput) urlInput.classList.add('error');
             urlInput?.focus();
             return;
         }
+
+        // Clear error state on valid input
+        if (urlInput) urlInput.classList.remove('error');
 
         // Check if already added
         const existingIndex = this.items.findIndex(i => i.url === url && i.type === 'html');
@@ -1343,7 +1348,7 @@ export class PlaylistDetailPage {
                 <h3>${this.__('playlists.form.streamTitle')}</h3>
                 <p class="stream-form-hint">${this.__('playlists.form.streamHint')}</p>
                 <div class="form-group">
-                    <label class="form-label">${this.__('playlists.form.streamUrl')}</label>
+                    <label class="form-label form-label-required">${this.__('playlists.form.streamUrl')}</label>
                     <input type="url" id="stream-url" class="form-input"
                         placeholder="http://192.168.1.x:8080/master.m3u8">
                 </div>
@@ -1384,6 +1389,8 @@ export class PlaylistDetailPage {
         const url = urlInput?.value.trim();
         if (!url) {
             Toast.error(this.__('playlists.form.streamUrlRequired'));
+            if (urlInput) urlInput.classList.add('error');
+            urlInput?.focus();
             return;
         }
 
@@ -1392,8 +1399,13 @@ export class PlaylistDetailPage {
             new URL(url);
         } catch {
             Toast.error(this.__('playlists.form.streamUrlInvalid'));
+            if (urlInput) urlInput.classList.add('error');
+            urlInput?.focus();
             return;
         }
+
+        // Clear error state on valid input
+        if (urlInput) urlInput.classList.remove('error');
 
         // Check duplicate
         const existingIndex = this.items.findIndex(i => i.url === url && (i.type === 'stream' || i.type === 'video'));
@@ -1551,12 +1563,12 @@ export class PlaylistDetailPage {
             content: `
                 <form id="edit-item-form" class="edit-item-form">
                     <div class="form-group">
-                        <label class="form-label">${this.__('playlists.form.itemName')}</label>
+                        <label class="form-label form-label-required">${this.__('playlists.form.itemName')}</label>
                         <input type="text" id="edit-item-name" class="form-input" value="${escapeHTML(item.name || '')}" required>
                     </div>
                     ${isHtml || isStream ? `
                         <div class="form-group">
-                            <label class="form-label">${isStream ? this.__('playlists.form.streamUrl') : this.__('playlists.form.webpageUrl')}</label>
+                            <label class="form-label form-label-required">${isStream ? this.__('playlists.form.streamUrl') : this.__('playlists.form.webpageUrl')}</label>
                             <input type="url" id="edit-item-url" class="form-input" value="${escapeHTML(item.url || '')}" required>
                         </div>
                     ` : ''}
@@ -1588,7 +1600,10 @@ export class PlaylistDetailPage {
                 const duration = parseInt(document.getElementById('edit-item-duration').value) || null;
 
                 if (!name) {
-                    Toast.error(this.__('form.required'));
+                    Toast.error(this.__('validation.requiredField', { field: this.__('playlists.form.itemName') }));
+                    const nameInput = document.getElementById('edit-item-name');
+                    if (nameInput) nameInput.classList.add('error');
+                    nameInput?.focus();
                     throw new Error('Validation failed');
                 }
 
@@ -1601,6 +1616,9 @@ export class PlaylistDetailPage {
                     const url = document.getElementById('edit-item-url').value.trim();
                     if (!url) {
                         Toast.error(isStream ? this.__('playlists.form.streamUrlRequired') : this.__('playlists.form.webpageUrlRequired'));
+                        const urlEl = document.getElementById('edit-item-url');
+                        if (urlEl) urlEl.classList.add('error');
+                        urlEl?.focus();
                         throw new Error('Validation failed');
                     }
                     this.items[index].url = url;
@@ -1784,7 +1802,10 @@ export class PlaylistDetailPage {
         Logger.log('[DEBUG] Form values:', { name, description, status, defaultDuration, orientation, layoutType, transitionType, transitionDuration });
 
         if (!name) {
-            Toast.error(this.__('form.required', { field: this.__('playlists.form.fields.name') }));
+            Toast.error(this.__('validation.requiredField', { field: this.__('playlists.form.fields.name') }));
+            const nameInput = document.getElementById('playlist-name');
+            if (nameInput) nameInput.classList.add('error');
+            nameInput?.focus();
             return;
         }
 

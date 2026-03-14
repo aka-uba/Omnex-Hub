@@ -75,7 +75,7 @@ export class CategoryListPage {
                         <div class="card-body">
                             <form id="category-form" class="space-y-4">
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('categories.fields.name')} *</label>
+                                    <label class="form-label form-label-required">${this.__('categories.fields.name')}</label>
                                     <input type="text" id="category-name" class="form-input"
                                         placeholder="${this.__('categories.placeholders.name')}" required>
                                 </div>
@@ -312,6 +312,10 @@ export class CategoryListPage {
             this.save();
         });
 
+        document.getElementById('category-name')?.addEventListener('input', () => {
+            document.getElementById('category-name')?.classList.remove('error');
+        });
+
         document.getElementById('category-search')?.addEventListener('input', (e) => {
             document.getElementById('categories-container').innerHTML = this.renderCategories(e.target.value);
         });
@@ -332,6 +336,7 @@ export class CategoryListPage {
         document.getElementById('form-title').textContent = this.__('categories.newCategory');
         document.getElementById('category-id').value = '';
         document.getElementById('category-name').value = '';
+        document.getElementById('category-name').classList.remove('error');
         document.getElementById('category-parent').value = '';
         document.getElementById('category-description').value = '';
         document.getElementById('category-color').value = '#228be6';
@@ -390,7 +395,9 @@ export class CategoryListPage {
         const isActive = document.getElementById('category-active')?.checked;
 
         if (!name) {
-            Toast.error(this.__('validation.required'));
+            const nameInput = document.getElementById('category-name');
+            if (nameInput) nameInput.classList.add('error');
+            Toast.error(this.__('validation.requiredField', { field: this.__('categories.fields.name') }));
             return;
         }
 

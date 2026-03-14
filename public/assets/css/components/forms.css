@@ -154,8 +154,17 @@
     color: var(--text-muted);
 }
 
-.form-input.error {
+.form-input.error,
+.form-select.error,
+.form-input-error,
+.form-select.form-input-error {
     border-color: var(--color-danger);
+}
+
+.form-error-message {
+    margin-top: 4px;
+    font-size: var(--text-xs);
+    color: var(--color-danger);
 }
 
 .form-input:disabled,

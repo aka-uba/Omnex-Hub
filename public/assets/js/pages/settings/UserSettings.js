@@ -219,30 +219,30 @@ export class UserSettingsPage {
             <form id="user-form" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.firstName')}</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.firstName')}</label>
                         <input type="text" id="user-first-name" class="form-input"
                             value="${user?.first_name || ''}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.lastName')}</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.lastName')}</label>
                         <input type="text" id="user-last-name" class="form-input"
                             value="${user?.last_name || ''}" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">${this.__('users.fields.email')}</label>
+                    <label class="form-label form-label-required">${this.__('users.fields.email')}</label>
                     <input type="email" id="user-email" class="form-input"
                         value="${user?.email || ''}" required>
                 </div>
                 ${!isEdit ? `
                 <div class="form-group">
-                    <label class="form-label">${this.__('users.fields.password')}</label>
+                    <label class="form-label form-label-required">${this.__('users.fields.password')}</label>
                     <input type="password" id="user-password" class="form-input"
                         minlength="8" required>
                 </div>
                 ` : ''}
                 <div class="form-group">
-                    <label class="form-label">${this.__('users.fields.role')}</label>
+                    <label class="form-label form-label-required">${this.__('users.fields.role')}</label>
                     <select id="user-role" class="form-select" required>
                         <option value="">${this.__('users.placeholders.selectRole')}</option>
                         <option value="Admin" ${user?.role === 'Admin' ? 'selected' : ''}>${this.__('users.roles.admin')}</option>
@@ -275,8 +275,34 @@ export class UserSettingsPage {
         const password = document.getElementById('user-password')?.value;
         const role = document.getElementById('user-role')?.value;
 
-        if (!firstName || !lastName || !email || !role) {
-            Toast.error(this.__('validation.required'));
+        // Clear previous error highlights
+        document.querySelectorAll('#user-form .form-input.error, #user-form .form-select.error')
+            .forEach(el => el.classList.remove('error'));
+
+        const missing = [];
+        if (!firstName) {
+            missing.push(this.__('users.fields.firstName'));
+            document.getElementById('user-first-name')?.classList.add('error');
+        }
+        if (!lastName) {
+            missing.push(this.__('users.fields.lastName'));
+            document.getElementById('user-last-name')?.classList.add('error');
+        }
+        if (!email) {
+            missing.push(this.__('users.fields.email'));
+            document.getElementById('user-email')?.classList.add('error');
+        }
+        if (!id && !password) {
+            missing.push(this.__('users.fields.password'));
+            document.getElementById('user-password')?.classList.add('error');
+        }
+        if (!role) {
+            missing.push(this.__('users.fields.role'));
+            document.getElementById('user-role')?.classList.add('error');
+        }
+
+        if (missing.length > 0) {
+            Toast.error(this.__('validation.requiredField', { field: missing.join(', ') }));
             return;
         }
 

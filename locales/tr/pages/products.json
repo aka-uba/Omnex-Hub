@@ -351,6 +351,7 @@
         "update": "Güncelle",
         "save": "Kaydet",
         "cancel": "İptal",
+        "generateSku": "Otomatik SKU Oluştur",
         "fields": {
             "sku": "Stok Kodu",
             "barcode": "Barkod",

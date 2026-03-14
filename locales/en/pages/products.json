@@ -353,6 +353,7 @@
         "update": "Update",
         "save": "Save",
         "cancel": "Cancel",
+        "generateSku": "Auto-generate SKU",
         "fields": {
             "sku": "Stock Code",
             "barcode": "Barcode",

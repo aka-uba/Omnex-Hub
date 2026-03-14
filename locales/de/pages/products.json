@@ -353,6 +353,7 @@
         "update": "Aktualisieren",
         "save": "Speichern",
         "cancel": "Abbrechen",
+        "generateSku": "SKU automatisch generieren",
         "fields": {
             "sku": "Lagercode",
             "barcode": "Barcode",

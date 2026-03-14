@@ -356,7 +356,7 @@ export class PlaylistListPage {
         const content = `
             <form id="playlist-form" class="space-y-4">
                 <div class="form-group">
-                    <label class="form-label">${this.__('playlists.form.fields.name')} *</label>
+                    <label class="form-label form-label-required">${this.__('playlists.form.fields.name')}</label>
                     <input type="text" id="playlist-name" class="form-input"
                         value="${escapeHTML(playlist?.name || '')}" required>
                 </div>
@@ -488,7 +488,9 @@ export class PlaylistListPage {
         const status = document.getElementById('playlist-status')?.value;
 
         if (!name) {
-            Toast.error(this.__('form.required', { field: this.__('playlists.form.fields.name') }));
+            const nameInput = document.getElementById('playlist-name');
+            if (nameInput) nameInput.classList.add('error');
+            Toast.error(this.__('validation.requiredField', { field: this.__('playlists.form.fields.name') }));
             throw new Error('Name required');
         }
 

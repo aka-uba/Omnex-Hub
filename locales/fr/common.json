@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "Ce champ est obligatoire",
+        "requiredField": "{field} est obligatoire",
         "email": "Entrez une adresse e-mail valide",
         "minLength": "Doit contenir au moins {min} caractères",
         "maxLength": "Ne peut pas dépasser {max} caractères",

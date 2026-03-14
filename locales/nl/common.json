@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "Dit veld is verplicht",
+        "requiredField": "{field} is verplicht",
         "email": "Voer een geldig e-mailadres in",
         "minLength": "Moet minimaal {min} tekens bevatten",
         "maxLength": "Mag niet meer dan {max} tekens bevatten",

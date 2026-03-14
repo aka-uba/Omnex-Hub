@@ -296,13 +296,13 @@ export class BranchManagementPage {
             <form id="branch-form" class="form">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">${this.__('form.regionCode')} <span class="text-danger">*</span></label>
+                        <label class="form-label form-label-required">${this.__('form.regionCode')}</label>
                         <input type="text" id="branch-code" class="form-input"
                             placeholder="${this.__('form.regionCodeHint')}"
                             value="${escapeHTML(branch?.code || '')}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('form.regionName')} <span class="text-danger">*</span></label>
+                        <label class="form-label form-label-required">${this.__('form.regionName')}</label>
                         <input type="text" id="branch-name" class="form-input"
                             value="${escapeHTML(branch?.name || '')}" required>
                     </div>
@@ -355,13 +355,13 @@ export class BranchManagementPage {
             <form id="branch-form" class="form">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">${this.__('form.code')} <span class="text-danger">*</span></label>
+                        <label class="form-label form-label-required">${this.__('form.code')}</label>
                         <input type="text" id="branch-code" class="form-input"
                             placeholder="${this.__('form.codeHint')}"
                             value="${escapeHTML(branch?.code || '')}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('form.name')} <span class="text-danger">*</span></label>
+                        <label class="form-label form-label-required">${this.__('form.name')}</label>
                         <input type="text" id="branch-name" class="form-input"
                             value="${escapeHTML(branch?.name || '')}" required>
                     </div>
@@ -483,26 +483,29 @@ export class BranchManagementPage {
         const is_active = document.getElementById('branch-active')?.checked ? 1 : 0;
 
         // Zorunlu alan kontrolü ve görsel geri bildirim
-        let hasError = false;
+        const errors = [];
 
         // Önce hata class'larını temizle
-        codeInput?.classList.remove('is-invalid');
-        nameInput?.classList.remove('is-invalid');
+        codeInput?.classList.remove('is-invalid', 'error');
+        nameInput?.classList.remove('is-invalid', 'error');
+
+        const isRegion = type === 'region';
+        const codeLabel = isRegion ? this.__('form.regionCode') : this.__('form.code');
+        const nameLabel = isRegion ? this.__('form.regionName') : this.__('form.name');
 
         if (!code) {
-            codeInput?.classList.add('is-invalid');
-            codeInput?.focus();
-            hasError = true;
+            codeInput?.classList.add('is-invalid', 'error');
+            errors.push(this.__('validation.requiredField', { field: codeLabel }));
         }
 
         if (!name) {
-            nameInput?.classList.add('is-invalid');
-            if (!hasError) nameInput?.focus();
-            hasError = true;
+            nameInput?.classList.add('is-invalid', 'error');
+            errors.push(this.__('validation.requiredField', { field: nameLabel }));
         }
 
-        if (hasError) {
-            Toast.error(this.__('form.requiredFields'));
+        if (errors.length > 0) {
+            errors.forEach(msg => Toast.error(msg));
+            ((!code ? codeInput : nameInput))?.focus();
             throw new Error('Required fields missing');
         }
 

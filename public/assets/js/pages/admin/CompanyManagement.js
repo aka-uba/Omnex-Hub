@@ -515,7 +515,7 @@ export class CompanyManagementPage {
                 <!-- Info Tab -->
                 <div id="modal-tab-info" class="modal-tab-content active">
                     <div class="form-group">
-                        <label class="form-label">${this.__('companies.fields.name')} *</label>
+                        <label class="form-label form-label-required">${this.__('companies.fields.name')}</label>
                         <input type="text" id="company-name" class="form-input" required
                             value="${escapeHTML(company?.name || '')}" placeholder="${this.__('companies.placeholders.name')}">
                     </div>
@@ -668,6 +668,11 @@ export class CompanyManagementPage {
             if (isEdit) {
                 this.loadCompanyBranding(company.id);
             }
+            // Clear error highlight on input change
+            const nameInput = document.getElementById('company-name');
+            if (nameInput) {
+                nameInput.addEventListener('input', () => nameInput.classList.remove('error'));
+            }
         }, 100);
     }
 
@@ -818,7 +823,9 @@ export class CompanyManagementPage {
         const license_expires_at = document.getElementById('company-license-expires')?.value;
 
         if (!name) {
-            Toast.error(this.__('companies.toast.nameRequired'));
+            const nameInput = document.getElementById('company-name');
+            if (nameInput) nameInput.classList.add('error');
+            Toast.error(this.__('validation.requiredField', { field: this.__('companies.fields.name') }));
             throw new Error('Validation failed');
         }
 

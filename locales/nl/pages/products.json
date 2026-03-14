@@ -487,6 +487,7 @@
         "update": "Update",
         "save": "Redden",
         "cancel": "Annuleren",
+        "generateSku": "SKU automatisch genereren",
         "fields": {
             "sku": "Voorraadcode",
             "barcode": "Streepjescode",

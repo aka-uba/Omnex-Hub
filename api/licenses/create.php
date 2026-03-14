@@ -20,7 +20,8 @@ $isSuperAdmin = strcasecmp((string)($user['role'] ?? ''), 'SuperAdmin') === 0;
 $companyId = $data['company_id'] ?? null;
 $planId = $data['plan_id'] ?? null;
 $startsAt = $data['starts_at'] ?? date('Y-m-d');
-$expiresAt = $data['expires_at'] ?? null;
+$expiresAt = !empty($data['expires_at']) ? $data['expires_at'] : null;
+// Note: null expiresAt is only allowed for unlimited plans (checked below at line 63-68)
 
 if (!$companyId && !$isSuperAdmin) {
     $companyId = $user['company_id'] ?? null;

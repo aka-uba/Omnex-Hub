@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "Это поле обязательно",
+        "requiredField": "Поле {field} обязательно для заполнения",
         "email": "Введите корректный email",
         "minLength": "Минимум {min} символов",
         "maxLength": "Максимум {max} символов",

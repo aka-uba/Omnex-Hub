@@ -75,13 +75,13 @@ export class ScheduleFormPage {
                         <div class="card-body">
                             <form id="schedule-form" class="space-y-4">
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('schedules.form.fields.name')} *</label>
+                                    <label class="form-label form-label-required">${this.__('schedules.form.fields.name')}</label>
                                     <input type="text" id="schedule-name" class="form-input"
                                         placeholder="${this.__('schedules.form.placeholders.name')}" required>
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">${this.__('schedules.form.fields.playlist')} *</label>
+                                    <label class="form-label form-label-required">${this.__('schedules.form.fields.playlist')}</label>
                                     <select id="schedule-playlist" class="form-select" required>
                                         <option value="">${this.__('schedules.form.placeholders.selectPlaylist')}</option>
                                     </select>
@@ -89,7 +89,7 @@ export class ScheduleFormPage {
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('schedules.form.fields.startDate')} *</label>
+                                        <label class="form-label form-label-required">${this.__('schedules.form.fields.startDate')}</label>
                                         <input type="date" id="schedule-start-date" class="form-input" required>
                                     </div>
                                     <div class="form-group">
@@ -328,6 +328,12 @@ export class ScheduleFormPage {
             document.getElementById('weekdays-group').style.display =
                 e.target.value === 'weekly' ? 'block' : 'none';
         });
+
+        // Clear error highlight on input
+        document.querySelectorAll('#schedule-form .form-input, #schedule-form .form-select').forEach(el => {
+            el.addEventListener('input', () => el.classList.remove('error'));
+            el.addEventListener('change', () => el.classList.remove('error'));
+        });
     }
 
     toggleDevice(deviceId) {
@@ -361,8 +367,25 @@ export class ScheduleFormPage {
         const status = document.getElementById('schedule-status')?.value;
         const priority = parseInt(document.getElementById('schedule-priority')?.value) || 0;
 
-        if (!name || !playlistId || !startDate) {
-            Toast.error(this.__('schedules.toast.requiredFields'));
+        // Clear previous error highlights
+        document.querySelectorAll('#schedule-form .error').forEach(el => el.classList.remove('error'));
+
+        // Field-specific validation
+        const missing = [];
+        if (!name) {
+            missing.push(this.__('schedules.form.fields.name'));
+            document.getElementById('schedule-name')?.classList.add('error');
+        }
+        if (!playlistId) {
+            missing.push(this.__('schedules.form.fields.playlist'));
+            document.getElementById('schedule-playlist')?.classList.add('error');
+        }
+        if (!startDate) {
+            missing.push(this.__('schedules.form.fields.startDate'));
+            document.getElementById('schedule-start-date')?.classList.add('error');
+        }
+        if (missing.length > 0) {
+            Toast.error(this.__('validation.requiredField', { field: missing.join(', ') }));
             return;
         }
 

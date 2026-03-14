@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "هذه الخانة مطلوبه",
+        "requiredField": "حقل {field} مطلوب",
         "email": "أدخل عنوان بريد إلكتروني صالحًا",
         "minLength": "يجب أن لا يقل عن {min} حرفًا",
         "maxLength": "لا يمكن أن يتجاوز {max} حرفًا",

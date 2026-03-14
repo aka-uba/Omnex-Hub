@@ -117,12 +117,17 @@ export class ProductFormPage {
                             <div class="chart-card-body">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="form-group md:col-span-2">
-                                        <label class="form-label">${this.__('form.fields.name')} *</label>
+                                        <label class="form-label form-label-required">${this.__('form.fields.name')}</label>
                                         <input type="text" id="name" class="form-input" required placeholder="${this.__('form.placeholders.name')}">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('form.fields.sku')} *</label>
-                                        <input type="text" id="sku" class="form-input" required placeholder="${this.__('form.placeholders.sku')}">
+                                        <label class="form-label form-label-required">${this.__('form.fields.sku')}</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="sku" class="form-input flex-1" required placeholder="${this.__('form.placeholders.sku')}">
+                                            <button type="button" id="generate-sku-btn" class="btn btn-outline" title="${this.__('form.generateSku')}">
+                                                <i class="ti ti-refresh"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">${this.__('form.fields.barcode')}</label>
@@ -358,7 +363,7 @@ export class ProductFormPage {
                             <div class="chart-card-body">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="form-group">
-                                        <label class="form-label">${this.__('form.fields.salePrice')} *</label>
+                                        <label class="form-label form-label-required">${this.__('form.fields.salePrice')}</label>
                                         <div class="relative">
                                             <input type="number" id="current_price" class="form-input pr-12" step="0.01" required placeholder="0.00">
                                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 currency-symbol">${this.app.i18n.getCurrencySymbol()}</span>
@@ -624,9 +629,34 @@ export class ProductFormPage {
         // Show branch indicator for new products if a branch is active
         if (!this.productId) {
             this._showBranchIndicatorForNew();
+            // Auto-generate SKU for new products
+            this._autoGenerateSku();
         }
 
         this.bindEvents();
+    }
+
+    /**
+     * Generate a unique SKU value
+     * Format: PRD-XXXXXX (6 digit random alphanumeric)
+     */
+    _generateSkuValue() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars (0,O,1,I)
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return `PRD-${code}`;
+    }
+
+    /**
+     * Auto-generate SKU for new product form
+     */
+    _autoGenerateSku() {
+        const skuInput = document.getElementById('sku');
+        if (skuInput && !skuInput.value) {
+            skuInput.value = this._generateSkuValue();
+        }
     }
 
     /**
@@ -2022,6 +2052,15 @@ export class ProductFormPage {
             this.updateSubcategories(e.target.value);
         });
 
+        // SKU auto-generate button
+        document.getElementById('generate-sku-btn')?.addEventListener('click', () => {
+            const skuInput = document.getElementById('sku');
+            if (skuInput) {
+                skuInput.value = this._generateSkuValue();
+                skuInput.classList.remove('error', 'form-input-error');
+            }
+        });
+
         // Slug generation
         document.getElementById('name')?.addEventListener('input', (e) => {
             const slugField = document.getElementById('slug');
@@ -2265,7 +2304,7 @@ export class ProductFormPage {
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="form-group mb-0">
-                            <label class="form-label text-sm">${this.__('categories.fields.name')} *</label>
+                            <label class="form-label form-label-required text-sm">${this.__('categories.fields.name')}</label>
                             <input type="text" id="cat-name" class="form-input form-input-sm" placeholder="${this.__('categories.placeholders.name')}">
                         </div>
                         <div class="form-group mb-0">
@@ -2563,7 +2602,8 @@ export class ProductFormPage {
         const editId = document.getElementById('cat-edit-id')?.value;
 
         if (!name) {
-            Toast.error(this.__('validation.required'));
+            Toast.error(this.__('validation.requiredField', { field: this.__('categories.fields.name') }));
+            document.getElementById('cat-name')?.classList.add('error');
             return;
         }
 
@@ -2869,7 +2909,7 @@ export class ProductFormPage {
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="form-group mb-0">
-                            <label class="form-label text-sm">${this.__('productionTypes.fields.name')} *</label>
+                            <label class="form-label form-label-required text-sm">${this.__('productionTypes.fields.name')}</label>
                             <input type="text" id="pt-name" class="form-input form-input-sm" placeholder="${this.__('productionTypes.placeholders.name')}">
                         </div>
                         <div class="form-group mb-0">
@@ -3034,7 +3074,8 @@ export class ProductFormPage {
         const editId = document.getElementById('pt-edit-id')?.value;
 
         if (!name) {
-            Toast.error(this.__('productionTypes.toast.required'));
+            Toast.error(this.__('validation.requiredField', { field: this.__('productionTypes.fields.name') }));
+            document.getElementById('pt-name')?.classList.add('error');
             return;
         }
 

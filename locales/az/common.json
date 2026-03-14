@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "Bu sahə tələb olunur",
+        "requiredField": "{field} sahəsi tələb olunur",
         "email": "Etibarlı e-poçt ünvanı daxil edin",
         "minLength": "Ən azı {min} simvol olmalıdır",
         "maxLength": "{max} simvoldan çox ola bilməz",

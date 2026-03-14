@@ -11,6 +11,130 @@ Format:
 
 ---
 
+## 2026-03-14 - PlaylistDetail form validation improvements
+- Request: Fix generic validation messages, add form-label-required CSS class to required field labels, add .error class highlighting to invalid inputs
+- Changes:
+  1. Replaced manual ` *` text with `form-label-required` CSS class on playlist name label
+  2. Added `form-label-required` CSS class to webpage URL, stream URL, edit modal item name, and edit modal URL labels
+  3. Changed generic `form.required` Toast in edit modal to field-specific `validation.requiredField` with field name parameter
+  4. Changed `form.required` Toast in save() to `validation.requiredField` with field name parameter
+  5. Added `.error` class highlighting and `.focus()` to all invalid inputs: playlist name, webpage URL (add + edit), stream URL (add + edit), edit item name
+  6. Added `classList.remove('error')` to clear error state after successful validation for webpage and stream URL inputs
+- Files: public/assets/js/pages/signage/PlaylistDetail.js
+- Checks: node --check passed
+- Risk/Follow-up: None. All i18n keys (validation.requiredField, playlists.form.itemName, etc.) already exist. CSS class form-label-required already defined in forms.css.
+
+---
+
+## 2026-03-14 - UserSettings form validation improvements
+- Request: Fix generic validation Toast, add form-label-required CSS class, add .error highlighting in UserSettings.js
+- Changes:
+  1. Replaced generic `Toast.error(this.__('validation.required'))` with per-field checks using `validation.requiredField`
+  2. Added `form-label-required` CSS class to 5 required field labels
+  3. Added `.error` class to invalid inputs with cleanup on re-validation
+  4. Added password required check for new user creation
+- Files: public/assets/js/pages/settings/UserSettings.js
+- Checks: node --check passed
+- Risk/Follow-up: None.
+
+---
+
+## 2026-03-14 - Profile.js form validation improvements
+- Request: Fix generic validation messages, add form-label-required CSS class, add .error highlighting on invalid inputs
+- Changes:
+  1. Profile form (updateProfile): replaced generic `Toast.error(this.__('validation.required'))` with field-specific `validation.requiredField` messages for firstName, lastName, email. Added `.error` class to the first invalid input.
+  2. Password form (changePassword): same pattern for currentPassword, newPassword, confirmPassword. Also added `.error` class on passwordMismatch and minLength failures.
+  3. Added `form-label-required` CSS class to all 6 required field labels (firstName, lastName, email, currentPassword, newPassword, confirmPassword).
+  4. Both forms clear `.error` classes at the start of validation before re-checking.
+- Files: public/assets/js/pages/settings/Profile.js
+- Checks: node --check passed
+- Risk/Follow-up: None. i18n key `validation.requiredField` already exists in all languages.
+
+---
+
+## 2026-03-14 - ScheduleForm field-specific validation
+
+- Request: Replace generic Toast validation with field-specific messages, use form-label-required CSS class, add .error highlighting on invalid inputs.
+- Changes:
+  1. Replaced manual ` *` text in 3 required field labels with `form-label-required` CSS class (name, playlist, startDate).
+  2. Replaced single generic `Toast.error(requiredFields)` with per-field validation: collects missing field labels, highlights each with `.error` class, shows `validation.requiredField` with field names.
+  3. Added input/change listeners on form inputs to clear `.error` class when user corrects the field.
+- Files: public/assets/js/pages/signage/ScheduleForm.js
+- Checks: node --check passed
+- Risk/Follow-up: None. Uses existing CSS classes and existing i18n key.
+
+---
+
+## 2026-03-14 - UserManagement form validation improvements
+- Request: Fix validation in UserManagement.js modal: use field-specific i18n messages, CSS required label class, error highlighting on inputs, clear error on input change
+- Changes:
+  1. Replaced manual ` *` text on 6 required field labels with `form-label-required` CSS class
+  2. Replaced generic `Toast.error(this.__('users.validation.requiredFields'))` with field-specific messages using `this.__('validation.requiredField', { field: ... })`
+  3. Added `.error` class highlighting to invalid form inputs/selects on validation failure
+  4. Added `bindValidationClear()` method with input/change event listeners to remove `.error` class when user modifies fields
+  5. Added `.form-select.error` CSS rule alongside existing `.form-input.error` in forms.css
+- Files: public/assets/js/pages/admin/UserManagement.js, public/assets/css/components/forms.css
+- Checks: node --check UserManagement.js passed
+- Risk/Follow-up: None. Existing i18n key `validation.requiredField` used, available in all 8 languages.
+
+---
+
+## 2026-03-14 - PlaylistList form validation improvements
+
+- Request: Fix validation in PlaylistList.js modal: use field-specific i18n messages, CSS required label class, and error highlighting on inputs.
+- Changes:
+  1. Replaced manual ` *` suffix on name label with `form-label-required` CSS class
+  2. Changed `form.required` Toast to `validation.requiredField` with field-specific `{field}` parameter
+  3. Added `.error` class to playlist-name input on validation failure
+- Files: public/assets/js/pages/signage/PlaylistList.js
+- Checks: node --check passed
+- Risk/Follow-up: None. Minimal change, existing i18n key and CSS class.
+
+---
+
+## 2026-03-14 - CompanyManagement form validation improvements
+
+- Request: Fix generic validation Toast, add form-label-required CSS class, add .error highlighting on invalid inputs, clear error on input change
+- Changes:
+  1. Replaced manual ` *` text on company name label with `form-label-required` CSS class
+  2. Replaced generic `companies.toast.nameRequired` Toast with field-specific `validation.requiredField` pattern
+  3. Added `.error` CSS class to company-name input on validation failure
+  4. Added `input` event listener to clear `.error` class when user types
+- Files: public/assets/js/pages/admin/CompanyManagement.js
+- Checks: node --check passed
+- Risk/Follow-up: None. Uses existing i18n keys and CSS classes.
+
+---
+
+## 2026-03-14 - CategoryList form validation improvements
+
+- Request: Fix generic validation Toast, add form-label-required CSS class, add .error highlighting on invalid inputs
+- Changes:
+  1. Replaced manual ` *` text on name label with `form-label-required` CSS class
+  2. Replaced generic `Toast.error(this.__('validation.required'))` with field-specific `validation.requiredField` using field name parameter
+  3. Added `.error` class to name input on validation failure
+  4. Added input listener to clear `.error` class when user starts typing
+  5. Clear `.error` class in `resetForm()` method
+- Files: public/assets/js/pages/categories/CategoryList.js
+- Checks: node --check passed
+- Risk/Follow-up: None. Minimal change, no new i18n keys needed (validation.requiredField and form-label-required already exist).
+
+---
+
+## 2026-03-14 - BranchManagement form validation improvements
+
+- Request: Fix validation in BranchManagement.js to use field-specific messages, form-label-required CSS class, and .error class on inputs
+- Changes:
+  1. Replaced 4x manual `<span class="text-danger">*</span>` with `form-label-required` CSS class on required field labels (regionCode, regionName, code, name)
+  2. Replaced generic `Toast.error(this.__('form.requiredFields'))` with per-field `Toast.error(this.__('validation.requiredField', { field: ... }))` messages
+  3. Added `.error` CSS class alongside existing `is-invalid` on invalid inputs
+  4. Uses correct field labels (regionCode/regionName vs code/name) based on type
+- Files: public/assets/js/pages/admin/BranchManagement.js
+- Checks: node --check passed
+- Risk/Follow-up: None. Uses existing i18n keys (validation.requiredField in common.json) and CSS classes (form-label-required in forms.css, .error in forms.css).
+
+---
+
 ## 2026-03-13 - Fix VLC stream transition freezing and title overlay
 
 - Request: Fix VLC donma/takılma ve playlist ismi görünmesi sorunları. variant.php discontinuity kaldır, FFmpeg keyframe normalizasyonu ekle, re-encode mekanizması oluştur.
@@ -3266,7 +3390,7 @@ Format:
 - Changes:
   - public/player/assets/js/player.js
     - Sync race engeli icin `_syncInFlight`, `_queuedSyncPending`, `_queuedSyncForceRestart` eklendi.
-    - In-flight iken gelen sync istekleri tek bir kuyru�a birlestirildi (coalesced follow-up sync).
+    - In-flight iken gelen sync istekleri tek bir kuyru�a birlestirildi (coalesced follow-up sync).
     - Karsilastirma snapshot'i tek noktadan alinacak sekilde current playlist/hash/signature hesaplamasi normalize edildi.
 - Checks:
   - node --check public/player/assets/js/player.js
@@ -3294,7 +3418,7 @@ Format:
 - Checks:
   - node --check public/player/assets/js/player.js
 - Risks/Follow-up:
-  - Debug mode acikken log hacmi yuksek olur; sorun tespitinden sonra bu enstrumantasyon sadele�tirilmeli.
+  - Debug mode acikken log hacmi yuksek olur; sorun tespitinden sonra bu enstrumantasyon sadele�tirilmeli.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
   - Restore not required.
@@ -3316,7 +3440,7 @@ Format:
 - Checks:
   - node --check public/player/assets/js/player.js
 - Risks/Follow-up:
-  - Debug enstrumantasyonu halen acik; kok neden kapandiktan sonra loglar sadele�tirilmeli.
+  - Debug enstrumantasyonu halen acik; kok neden kapandiktan sonra loglar sadele�tirilmeli.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
   - Restore not required.
@@ -3878,3 +4002,76 @@ Format:
   - `node --check public/assets/js/pages/notifications/NotificationList.js`
 - Risks/Follow-up:
   - During mute window, truly new notifications are intentionally not shown as visual toast/desktop popups; this is expected and scoped to short duration.
+
+## 2026-03-14 - Form validation UX: required field indicators + lifetime license bug fix
+- Request: Zorunlu alan uyarıları genel/belirsiz, hangi alanın eksik olduğu toast'ta belli değil. Ömür boyu lisanslar "Süresi Doldu" gösteriyor.
+- Changes:
+  **Lisans Yönetimi (LicenseManagement.js):**
+  - `isLifetimeLicense()` helper eklendi - plan_type (enterprise/ultimate/unlimited) veya null expires_at kontrolü
+  - `getStatusInfo()` lifetime lisansları her zaman "Aktif" gösteriyor (eskiden new Date(null) → epoch → expired)
+  - `updateStatsFromData()` lifetime lisansları active sayar, expired/expiring saymaz
+  - `_toggleEndDateRequirement()` metodu: plan lifetime olduğunda bitiş tarihi zorunluluğu kalkar, label "(Ömür Boyu)" gösterir
+  - Create/Edit modal validation: alan-spesifik Toast mesajları (`validation.requiredField` key), hatalı inputlara `.error` class
+  - `form-label-required` CSS class'ı ile kırmızı `*` göstergesi (plan name, price, company, dates)
+  **Backend (api/licenses/):**
+  - `update.php`: Boş `expires_at` sadece unlimited/lifetime planlarda null olarak kabul edilir; diğer planlarda "Bitiş tarihi zorunludur" hatası döner
+  - `create.php`: Boş `expires_at` null olarak alınır (unlimited plan kontrolü mevcut satır 63-68)
+  **Diğer sayfalar (validation UX):**
+  - `UserManagement.js`: Alan-spesifik validation, `form-label-required` class, `.error` highlight
+  - `CompanyManagement.js`: Alan-spesifik validation, `form-label-required` class
+  - `BranchManagement.js`: Alan-spesifik validation, `form-label-required` class
+  - `CategoryList.js`: Alan-spesifik validation, `.error` highlight
+  - `ScheduleForm.js`: Alan-spesifik validation, `form-label-required` class
+  - `Profile.js`: Alan-spesifik validation, `form-label-required` class, `.error` highlight
+  - `UserSettings.js`: Alan-spesifik validation, `form-label-required` class
+  - `PlaylistDetail.js`: Alan-spesifik validation
+  - `PlaylistList.js`: Alan-spesifik validation
+  **i18n (8 dil):**
+  - `validation.requiredField` key eklendi: tr, en, de, fr, nl, ru, az, ar
+- Changed files:
+  - `public/assets/js/pages/admin/LicenseManagement.js`
+  - `public/assets/js/pages/admin/UserManagement.js`
+  - `public/assets/js/pages/admin/CompanyManagement.js`
+  - `public/assets/js/pages/admin/BranchManagement.js`
+  - `public/assets/js/pages/categories/CategoryList.js`
+  - `public/assets/js/pages/signage/ScheduleForm.js`
+  - `public/assets/js/pages/signage/PlaylistDetail.js`
+  - `public/assets/js/pages/signage/PlaylistList.js`
+  - `public/assets/js/pages/settings/Profile.js`
+  - `public/assets/js/pages/settings/UserSettings.js`
+  - `api/licenses/update.php`
+  - `api/licenses/create.php`
+  - `locales/{tr,en,de,fr,nl,ru,az,ar}/common.json`
+- Checks run:
+  - `node -c` for all 10 JS files: OK
+  - `php -l` for both API files: OK
+  - JSON validation for all 8 common.json: OK
+- Risks/Follow-up:
+  - forms.css'de `.form-input.error` stili mevcut (border-color: danger), ek CSS gerekmedi
+
+## 2026-03-14 - ProductForm: validation label fix + auto-generate SKU for new products
+- Request: Ürün formundaki zorunlu alan label'larını düzelt, yeni üründe SKU otomatik üretilsin.
+- Changes:
+  **ProductForm.js:**
+  - Label'larda manual ` *` → `form-label-required` CSS class'ına dönüştürüldü (name, sku, salePrice, cat-name, pt-name)
+  - Kategori inline modal: genel `validation.required` → alan-spesifik `validation.requiredField` + `.error` highlight
+  - Üretim şekli inline modal: genel `productionTypes.toast.required` → alan-spesifik `validation.requiredField` + `.error` highlight
+  - `_generateSkuValue()`: `PRD-XXXXXX` formatında 6 haneli alfanümerik SKU üretir (karıştırılabilir 0/O/1/I karakterleri hariç)
+  - `_autoGenerateSku()`: Yeni ürün formunda (`!this.productId`) SKU alanını otomatik doldurur
+  - SKU input'u yanına yenile butonu (`generate-sku-btn`) eklendi — istediğinde yeni SKU üretir
+  - Düzenle modunda SKU alanı doluysa auto-generate çalışmaz, ERP/import ile gelen SKU korunur
+  **forms.css:**
+  - `.form-input-error` class tanımı eklendi (ProductValidator.js'in kullandığı class)
+  - `.form-error-message` class tanımı eklendi (input altı hata mesajı div'i)
+  **i18n (8 dil):**
+  - `form.generateSku` key eklendi: tr, en, de, fr, nl, ru, az, ar
+- Changed files:
+  - `public/assets/js/pages/products/ProductForm.js`
+  - `public/assets/css/components/forms.css`
+  - `locales/{tr,en,de,fr,nl,ru,az,ar}/pages/products.json`
+- Checks run:
+  - `node -c ProductForm.js`: OK
+  - JSON validation for all 8 products.json: OK
+- Risks/Follow-up:
+  - Auto-SKU `PRD-XXXXXX` formatı firma bazlı benzersizlik backend'de kontrol ediliyor (store.php satır 25-31)
+  - ERP/import ile gelen ürünlerin SKU'su korunur — sadece elle eklenen yeni ürünlerde auto-generate çalışır

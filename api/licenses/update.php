@@ -64,9 +64,29 @@ try {
         $updateData['company_id'] = $data['company_id'];
     }
 
+    // Determine the effective plan (new or existing) for unlimited check
+    $effectivePlanId = $data['plan_id'] ?? $license['plan_id'] ?? null;
+    $effectivePlan = $plan; // Already fetched if plan changed
+    if (!$effectivePlan && $effectivePlanId) {
+        $effectivePlan = $db->fetch("SELECT * FROM license_plans WHERE id = ?", [$effectivePlanId]);
+    }
+    $isUnlimitedPlan = $effectivePlan && (
+        (int)($effectivePlan['is_unlimited'] ?? 0) === 1 ||
+        in_array($effectivePlan['plan_type'] ?? '', ['enterprise', 'ultimate', 'unlimited'])
+    );
+
     // Map frontend field names to database column names
-    if (isset($data['expires_at'])) $updateData['valid_until'] = $data['expires_at'];
-    if (isset($data['valid_until'])) $updateData['valid_until'] = $data['valid_until'];
+    if (isset($data['expires_at']) || isset($data['valid_until'])) {
+        $expiryValue = $data['expires_at'] ?? $data['valid_until'] ?? '';
+        if (!empty($expiryValue)) {
+            $updateData['valid_until'] = $expiryValue;
+        } elseif ($isUnlimitedPlan) {
+            // Only allow null expiry for unlimited/lifetime plans
+            $updateData['valid_until'] = null;
+        } else {
+            Response::badRequest('Bitiş tarihi zorunludur');
+        }
+    }
     if (isset($data['starts_at'])) $updateData['valid_from'] = $data['starts_at'];
     if (isset($data['valid_from'])) $updateData['valid_from'] = $data['valid_from'];
     if (isset($data['status'])) $updateData['status'] = $data['status'];
@@ -80,11 +100,7 @@ try {
 
     // Plan değiştirildiyse ve valid_until belirlenmemişse, plan süresinden hesapla
     if ($plan && !isset($updateData['valid_until'])) {
-        // Sınırsız plan kontrolü
-        $isUnlimited = (int)($plan['is_unlimited'] ?? 0) === 1 ||
-                       in_array($plan['plan_type'], ['enterprise', 'ultimate', 'unlimited']);
-
-        if ($isUnlimited) {
+        if ($isUnlimitedPlan) {
             // Sınırsız plan ise valid_until null olmalı
             $updateData['valid_until'] = null;
         } elseif (!empty($plan['duration_months']) && (int)$plan['duration_months'] > 0) {

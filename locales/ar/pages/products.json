@@ -351,6 +351,7 @@
         "update": "تحديث",
         "save": "يحفظ",
         "cancel": "يلغي",
+        "generateSku": "إنشاء SKU تلقائياً",
         "fields": {
             "sku": "رمز المخزون",
             "barcode": "الباركود",

@@ -177,6 +177,7 @@
     },
     "validation": {
         "required": "Bu alan zorunludur",
+        "requiredField": "{field} alanı zorunludur",
         "email": "Geçerli bir e-posta adresi girin",
         "minLength": "En az {min} karakter olmalı",
         "maxLength": "En fazla {max} karakter olabilir",

@@ -444,31 +444,31 @@ export class UserManagementPage {
                 <div id="modal-tab-info" class="modal-tab-content active">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
-                            <label class="form-label">${this.__('users.fields.firstName')} *</label>
+                            <label class="form-label form-label-required">${this.__('users.fields.firstName')}</label>
                             <input type="text" id="user-first-name" class="form-input"
                                 value="${escapeHTML(user?.first_name || '')}" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">${this.__('users.fields.lastName')} *</label>
+                            <label class="form-label form-label-required">${this.__('users.fields.lastName')}</label>
                             <input type="text" id="user-last-name" class="form-input"
                                 value="${escapeHTML(user?.last_name || '')}" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.email')} *</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.email')}</label>
                         <input type="email" id="user-email" class="form-input"
                             value="${escapeHTML(user?.email || '')}" required>
                     </div>
                     ${!isEdit ? `
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.password')} *</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.password')}</label>
                         <input type="password" id="user-password" class="form-input"
                             minlength="8" required>
                     </div>
                     ` : ''}
                     ${currentUserRole === 'SuperAdmin' && companies.length > 0 ? `
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.company')} *</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.company')}</label>
                         <select id="user-company" class="form-select" required>
                             <option value="">${this.__('users.placeholders.selectCompany')}</option>
                             ${companies.map(c => `<option value="${c.id}" ${user?.company_id === c.id ? 'selected' : ''}>${escapeHTML(c.name)}</option>`).join('')}
@@ -476,7 +476,7 @@ export class UserManagementPage {
                     </div>
                     ` : ''}
                     <div class="form-group">
-                        <label class="form-label">${this.__('users.fields.role')} *</label>
+                        <label class="form-label form-label-required">${this.__('users.fields.role')}</label>
                         <select id="user-role" class="form-select" required>
                             <option value="">${this.__('users.placeholders.selectRole')}</option>
                             ${currentUserRole === 'SuperAdmin' ? `<option value="SuperAdmin" ${user?.role === 'SuperAdmin' ? 'selected' : ''}>${this.__('users.roles.superadmin')}</option>` : ''}
@@ -595,6 +595,7 @@ export class UserManagementPage {
         setTimeout(() => {
             this.bindModalTabs();
             this.bindBranchCheckboxes(branches);
+            this.bindValidationClear();
             if (isEdit) {
                 this.bindAvatarUpload(user.id);
             }
@@ -671,6 +672,17 @@ export class UserManagementPage {
         }
     }
 
+    bindValidationClear() {
+        const ids = ['user-first-name', 'user-last-name', 'user-email', 'user-role'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', () => el.classList.remove('error'));
+                el.addEventListener('change', () => el.classList.remove('error'));
+            }
+        });
+    }
+
     async handleAvatarUpload(file, userId) {
         if (!file) return;
 
@@ -737,8 +749,27 @@ export class UserManagementPage {
         ).map(cb => cb.value);
         const defaultBranchId = document.getElementById('user-default-branch')?.value;
 
-        if (!firstName || !lastName || !email || !role) {
-            Toast.error(this.__('users.validation.requiredFields'));
+        // Field-specific validation with error highlighting
+        const validationErrors = [];
+        const fieldsToValidate = [
+            { id: 'user-first-name', value: firstName, label: this.__('users.fields.firstName') },
+            { id: 'user-last-name', value: lastName, label: this.__('users.fields.lastName') },
+            { id: 'user-email', value: email, label: this.__('users.fields.email') },
+            { id: 'user-role', value: role, label: this.__('users.fields.role') }
+        ];
+
+        fieldsToValidate.forEach(f => {
+            const el = document.getElementById(f.id);
+            if (!f.value) {
+                validationErrors.push(f.label);
+                el?.classList.add('error');
+            } else {
+                el?.classList.remove('error');
+            }
+        });
+
+        if (validationErrors.length > 0) {
+            Toast.error(this.__('validation.requiredField', { field: validationErrors.join(', ') }));
             throw new Error('Validation failed');
         }
 

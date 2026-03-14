@@ -351,6 +351,7 @@
         "update": "Yeniləyin",
         "save": "Saxla",
         "cancel": "Ləğv et",
+        "generateSku": "Avtomatik SKU yarat",
         "fields": {
             "sku": "Fond kodu",
             "barcode": "Barkod",
