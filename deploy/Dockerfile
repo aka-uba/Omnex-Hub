@@ -34,19 +34,22 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # Enable Apache modules
 RUN a2enmod rewrite headers expires deflate ssl
 
-# Configure OPcache for production
+# Configure OPcache for production (optimized for multi-tenant workload)
 RUN { \
-    echo 'opcache.memory_consumption=128'; \
-    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.memory_consumption=192'; \
+    echo 'opcache.interned_strings_buffer=16'; \
     echo 'opcache.max_accelerated_files=10000'; \
     echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.validate_timestamps=0'; \
     echo 'opcache.save_comments=1'; \
     echo 'opcache.enable_cli=0'; \
     echo 'opcache.enable=1'; \
+    echo 'opcache.enable_file_override=1'; \
+    echo 'opcache.jit=tracing'; \
+    echo 'opcache.jit_buffer_size=64M'; \
 } > /usr/local/etc/php/conf.d/opcache.ini
 
-# PHP production configuration
+# PHP production configuration (optimized for multi-tenant workload)
 RUN { \
     echo 'display_errors=Off'; \
     echo 'log_errors=On'; \
@@ -55,8 +58,14 @@ RUN { \
     echo 'post_max_size=55M'; \
     echo 'memory_limit=256M'; \
     echo 'max_execution_time=120'; \
+    echo 'max_input_vars=3000'; \
     echo 'date.timezone=Europe/Istanbul'; \
     echo 'expose_php=Off'; \
+    echo 'realpath_cache_size=4096K'; \
+    echo 'realpath_cache_ttl=600'; \
+    echo 'session.cookie_httponly=1'; \
+    echo 'session.cookie_secure=1'; \
+    echo 'session.use_strict_mode=1'; \
 } > /usr/local/etc/php/conf.d/production.ini
 
 # Apache configuration - DocumentRoot at project root (like XAMPP)
