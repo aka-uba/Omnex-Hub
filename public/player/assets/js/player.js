@@ -536,10 +536,7 @@ class OmnexPlayer {
         modal.innerHTML = `
             <div class="pwa-install-content">
                 <div class="pwa-install-icon">
-                    <svg viewBox="0 0 100 100" width="60" height="60">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="#18c8c8" stroke-width="3"/>
-                        <circle cx="50" cy="50" r="25" fill="#18c8c8"/>
-                    </svg>
+                    <img src="../branding/icon-192.png?v=2" alt="Omnex" width="60" height="60" style="border-radius: 12px;">
                 </div>
                 <h2>Kurulum Seçenekleri</h2>
                 <p>Tarayıcı için PWA kurabilir veya Android cihazlar için APK indirebilirsiniz.</p>
