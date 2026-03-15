@@ -81,6 +81,8 @@ class OmnexPlayer {
         this._transitionType = 'none';   // Transition type from playlist
         this._transitionDuration = 500;  // Transition duration in ms
         this._runtimeTransitionType = null; // Resolved transition for the current swap
+        this._htmlPrefetchUrl = null;
+        this._htmlPrefetchController = null;
 
         // Timers
         this.heartbeatInterval = null;
@@ -143,7 +145,8 @@ class OmnexPlayer {
 
         // Dual video element ping-pong for seamless video-to-video crossfade
         this._activeVideoSlot = 'primary'; // 'primary' or 'alt'
-        this._pendingExitElement = null;   // Deferred exit transition (video→video)
+        this._activeHtmlSlot = 'primary';  // 'primary' or 'alt'
+        this._pendingExitElement = null;   // Deferred exit transition until next content is ready
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
@@ -963,6 +966,7 @@ class OmnexPlayer {
             videoContent: document.getElementById('video-content'),
             videoContentAlt: document.getElementById('video-content-alt'),
             htmlContent: document.getElementById('html-content'),
+            htmlContentAlt: document.getElementById('html-content-alt'),
             fallbackContent: document.getElementById('fallback-content'),
             fallbackMessage: document.getElementById('fallback-message'),
             statusBar: document.getElementById('status-bar'),
@@ -2209,6 +2213,101 @@ class OmnexPlayer {
         this.nextMediaWarmupUrl = null;
     }
 
+    cleanupHtmlPrefetch() {
+        if (this._htmlPrefetchController && typeof this._htmlPrefetchController.abort === 'function') {
+            try {
+                this._htmlPrefetchController.abort();
+            } catch (e) {
+                // Silent abort
+            }
+        }
+        this._htmlPrefetchController = null;
+        this._htmlPrefetchUrl = null;
+    }
+
+    resolveHtmlPlaybackUrl(item) {
+        const originalUrl = this.normalizeLocalhostUrl(item?.url || (item?.template && item.template.url) || '');
+        if (!originalUrl) {
+            return { originalUrl: '', finalUrl: '', isVideoEmbed: false };
+        }
+
+        let finalUrl = this.convertToEmbedUrl(originalUrl);
+        const isVideoEmbed = !!finalUrl;
+
+        if (!finalUrl) {
+            finalUrl = originalUrl;
+            const useProxy = item?.useProxy !== false; // Default: use proxy for external pages
+
+            try {
+                const urlObj = new URL(originalUrl);
+                const currentHost = window.location.hostname;
+                const targetHost = urlObj.hostname;
+
+                if (useProxy && targetHost !== currentHost && targetHost !== 'localhost' && targetHost !== '127.0.0.1') {
+                    const apiBasePath = window.PLAYER_BASE_PATH || '';
+                    finalUrl = `${apiBasePath}/api/proxy/fetch.php?url=${encodeURIComponent(originalUrl)}`;
+                }
+            } catch (e) {
+                // Could not parse URL, use as-is
+            }
+        }
+
+        return { originalUrl, finalUrl, isVideoEmbed };
+    }
+
+    prefetchHtmlDocument(item) {
+        const htmlTarget = this.resolveHtmlPlaybackUrl(item);
+        if (!htmlTarget.finalUrl) {
+            this.cleanupHtmlPrefetch();
+            return;
+        }
+
+        if (this._htmlPrefetchUrl === htmlTarget.finalUrl) {
+            return;
+        }
+
+        this.cleanupHtmlPrefetch();
+
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        this._htmlPrefetchController = controller;
+        this._htmlPrefetchUrl = htmlTarget.finalUrl;
+
+        let requestMode = 'cors';
+        let requestCredentials = 'omit';
+        try {
+            const parsedUrl = new URL(htmlTarget.finalUrl, window.location.href);
+            if (parsedUrl.origin === window.location.origin) {
+                requestMode = 'same-origin';
+                requestCredentials = 'include';
+            } else if (htmlTarget.finalUrl.includes('/api/proxy/fetch.php?')) {
+                requestCredentials = 'include';
+            } else {
+                requestMode = 'no-cors';
+            }
+        } catch (e) {
+            requestMode = 'no-cors';
+        }
+
+        const requestOptions = {
+            method: 'GET',
+            cache: 'force-cache',
+            credentials: requestCredentials,
+            mode: requestMode
+        };
+
+        if (controller && controller.signal) {
+            requestOptions.signal = controller.signal;
+        }
+
+        fetch(htmlTarget.finalUrl, requestOptions)
+            .catch(() => {})
+            .finally(() => {
+                if (this._htmlPrefetchUrl === htmlTarget.finalUrl) {
+                    this._htmlPrefetchController = null;
+                }
+            });
+    }
+
     prepareNextMedia() {
         if (!this.playlist || !this.playlist.items || this.playlist.items.length < 2) return;
 
@@ -2243,6 +2342,7 @@ class OmnexPlayer {
             const immType = immNext.type || '';
             const immMime = immNext.mime_type || '';
             const isImage = immType === 'image' || immMime.indexOf('image/') === 0;
+            const isHtml = immType === 'html';
 
             if (isImage) {
                 const nextUrl = api.getMediaUrl(immNext.url || (immNext.media && immNext.media.url));
@@ -2255,6 +2355,14 @@ class OmnexPlayer {
                     this.nextMediaWarmupUrl = nextUrl;
                 }
             }
+
+            if (isHtml) {
+                this.prefetchHtmlDocument(immNext);
+            } else {
+                this.cleanupHtmlPrefetch();
+            }
+        } else {
+            this.cleanupHtmlPrefetch();
         }
 
         // ExoPlayer preload: find the next video item in playlist and preload it.
@@ -2564,22 +2672,27 @@ class OmnexPlayer {
         this._pendingExitElement = null;
 
         if (prevElement && hasTransition && !sameElementReuse) {
-            // Video → Video crossfade: DEFER the exit transition until new video is ready.
-            // This prevents black screen gaps when the new video takes time to load.
-            // The old video stays visible (playing) until revealVideoElement triggers exit.
-            const isVideoToVideo = this._isVideoElement(prevElement) && this._isVideoElement(nextElement);
+            const shouldDeferExit =
+                nextContentType === 'video' ||
+                nextContentType === 'stream' ||
+                nextContentType === 'html';
 
-            if (isVideoToVideo) {
-                // Don't exit-animate yet. Keep old video visible.
-                // revealVideoElement() will trigger exit transition when new video is ready.
+            if (shouldDeferExit) {
+                // Keep previous content visible until the next content is actually ready.
+                // This avoids black/flash gaps on slower Android TV/WebView devices.
                 this._pendingExitElement = prevElement;
             } else {
-                // Non-video transitions: start exit animation immediately
                 this.applyExitTransition(prevElement);
             }
 
             // Hide ONLY elements that are NOT the current one and NOT the next one
-            const allContent = [this.elements.imageContent, this.elements.videoContent, this.elements.videoContentAlt, this.elements.htmlContent];
+            const allContent = [
+                this.elements.imageContent,
+                this.elements.videoContent,
+                this.elements.videoContentAlt,
+                this.elements.htmlContent,
+                this.elements.htmlContentAlt
+            ];
             for (const el of allContent) {
                 if (el && el !== prevElement && el !== nextElement) {
                     el.style.display = 'none';
@@ -2589,7 +2702,13 @@ class OmnexPlayer {
             }
         } else {
             // No transition, or same-element reuse - hide other elements
-            const allContent = [this.elements.imageContent, this.elements.videoContent, this.elements.videoContentAlt, this.elements.htmlContent];
+            const allContent = [
+                this.elements.imageContent,
+                this.elements.videoContent,
+                this.elements.videoContentAlt,
+                this.elements.htmlContent,
+                this.elements.htmlContentAlt
+            ];
             for (const el of allContent) {
                 if (!el) continue;
                 // For same-element reuse, keep that element visible (don't flash black)
@@ -2614,15 +2733,24 @@ class OmnexPlayer {
         // (not for html→html transitions — playHtml will set new src directly)
         if (this._currentContentType === 'html' && nextContentType !== 'html') {
             // Delay clearing iframe to allow exit transition to play
-            if (hasTransition && prevElement === this.elements.htmlContent) {
-                setTimeout(() => {
-                    // Only clear if we've moved past html content
-                    if (this._currentContentType !== 'html') {
+            const clearIframes = () => {
+                // Only clear if we've moved past html content
+                if (this._currentContentType !== 'html') {
+                    if (this.elements.htmlContent) {
                         this.elements.htmlContent.src = 'about:blank';
                     }
+                    if (this.elements.htmlContentAlt) {
+                        this.elements.htmlContentAlt.src = 'about:blank';
+                    }
+                }
+            };
+
+            if (hasTransition && (prevElement === this.elements.htmlContent || prevElement === this.elements.htmlContentAlt)) {
+                setTimeout(() => {
+                    clearIframes();
                 }, this._transitionDuration + 50);
             } else {
-                this.elements.htmlContent.src = 'about:blank';
+                clearIframes();
             }
         }
 
@@ -2713,6 +2841,7 @@ class OmnexPlayer {
 
             // Track current element
             this._currentElement = element;
+            this.flushPendingExitTransition(element);
 
             // Remove transition classes after animation completes
             const enterElement = element;
@@ -2731,7 +2860,18 @@ class OmnexPlayer {
             this._enterTransitionTimers.set(enterElement, enterTimerId);
         } else {
             this._currentElement = element;
+            this.flushPendingExitTransition(element);
         }
+    }
+
+    flushPendingExitTransition(currentElement) {
+        if (!this._pendingExitElement || this._pendingExitElement === currentElement) {
+            return;
+        }
+
+        const exitEl = this._pendingExitElement;
+        this._pendingExitElement = null;
+        this.applyExitTransition(exitEl);
     }
 
     /**
@@ -2752,6 +2892,17 @@ class OmnexPlayer {
         return this.getActiveVideoElement();
     }
 
+    getActiveHtmlElement() {
+        return this._activeHtmlSlot === 'alt'
+            ? this.elements.htmlContentAlt
+            : this.elements.htmlContent;
+    }
+
+    getNextHtmlElement() {
+        this._activeHtmlSlot = this._activeHtmlSlot === 'alt' ? 'primary' : 'alt';
+        return this.getActiveHtmlElement();
+    }
+
     /**
      * Get the DOM element that will be used for a given content type.
      * For video, returns the NEXT (alternate) video element if switching from video.
@@ -2770,7 +2921,10 @@ class OmnexPlayer {
                 }
                 return this.getActiveVideoElement();
             case 'html':
-                return this.elements.htmlContent;
+                if (this._currentContentType === 'html') {
+                    return this.getNextHtmlElement();
+                }
+                return this.getActiveHtmlElement();
             default:
                 return null;
         }
@@ -3274,14 +3428,8 @@ class OmnexPlayer {
             (wasLoading || previousCurrentElement !== video || hasPendingExit);
         if (shouldRunEnterTransition) {
             this.applyEnterTransition(video);
-        }
-
-        // Trigger deferred exit transition on previous video element (video→video crossfade).
-        // The old video kept playing until this new video was ready - now fade it out.
-        if (this._pendingExitElement && this._pendingExitElement !== video) {
-            const exitEl = this._pendingExitElement;
-            this._pendingExitElement = null;
-            this.applyExitTransition(exitEl);
+        } else {
+            this.flushPendingExitTransition(video);
         }
 
     }
@@ -3943,47 +4091,102 @@ class OmnexPlayer {
         return null; // No conversion available
     }
 
+    hardenSameOriginIframeContent(iframe) {
+        if (!iframe) return;
+
+        let doc = null;
+        try {
+            doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+        } catch (e) {
+            // Cross-origin iframe, cannot mutate safely
+            return;
+        }
+
+        if (!doc) {
+            return;
+        }
+
+        try {
+            const styleId = 'omnex-player-iframe-guard-style';
+            if (!doc.getElementById(styleId)) {
+                const style = doc.createElement('style');
+                style.id = styleId;
+                style.textContent = `
+                    html, body { margin: 0 !important; padding: 0 !important; background: #000 !important; overflow: hidden !important; }
+                    video::-webkit-media-controls,
+                    video::-webkit-media-controls-panel,
+                    video::-webkit-media-controls-play-button,
+                    video::-webkit-media-controls-start-playback-button,
+                    video::-webkit-media-controls-overlay-play-button,
+                    video::-webkit-media-controls-overlay-enclosure,
+                    video::-webkit-media-controls-enclosure {
+                        display: none !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                    }
+                `;
+                const parentNode = doc.head || doc.documentElement || doc.body;
+                if (parentNode) {
+                    parentNode.appendChild(style);
+                }
+            }
+
+            const videos = doc.querySelectorAll('video');
+            videos.forEach((video) => {
+                video.controls = false;
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+                if (!video.getAttribute('preload')) {
+                    video.setAttribute('preload', 'auto');
+                }
+                if (video.paused && video.autoplay) {
+                    const playPromise = video.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {});
+                    }
+                }
+            });
+        } catch (e) {
+            // Best-effort hardening only
+        }
+    }
+
+    finalizeHtmlPlayback(iframe, item, duration) {
+        if (!iframe) return;
+
+        this.hardenSameOriginIframeContent(iframe);
+        this.applyEnterTransition(iframe);
+
+        // Small paint buffer avoids timer starting before first stable frame.
+        setTimeout(() => {
+            if (this.isPlaying && this._currentElement === iframe) {
+                this.scheduleNext(duration);
+            }
+        }, 120);
+    }
+
     /**
      * Play HTML/webpage content in iframe
      */
     playHtml(item) {
         this.setNativeVideoMode(false);
-        const iframe = this.elements.htmlContent;
-
-        // Don't force-hide elements mid-exit-transition (crossfade)
-        this.elements.fallbackContent.style.display = 'none';
-
-        const originalUrl = this.normalizeLocalhostUrl(item.url || (item.template && item.template.url) || '');
-
-        if (!originalUrl) {
+        const iframe = this.getActiveHtmlElement();
+        if (!iframe) {
             this.scheduleNext(this.getScheduledDuration(item));
             return;
         }
 
-        // First, check if URL can be converted to embed format (YouTube, Vimeo, etc.)
-        let finalUrl = this.convertToEmbedUrl(originalUrl);
-        const isVideoEmbed = finalUrl !== null; // If converted, it's a video embed
+        // Don't force-hide elements mid-exit-transition (crossfade)
+        this.elements.fallbackContent.style.display = 'none';
 
-        // If no embed conversion, check if we need proxy for external URLs
-        if (!finalUrl) {
-            finalUrl = originalUrl;
-            const useProxy = item.useProxy !== false; // Default to using proxy
-
-            try {
-                const urlObj = new URL(originalUrl);
-                const currentHost = window.location.hostname;
-                const targetHost = urlObj.hostname;
-
-                // If external URL, use proxy to bypass X-Frame-Options
-                if (useProxy && targetHost !== currentHost && targetHost !== 'localhost' && targetHost !== '127.0.0.1') {
-                    // Use PLAYER_BASE_PATH which is set in index.html
-                    const apiBasePath = window.PLAYER_BASE_PATH || '';
-                    finalUrl = `${apiBasePath}/api/proxy/fetch.php?url=${encodeURIComponent(originalUrl)}`;
-                }
-            } catch (e) {
-                // Could not parse URL, using as-is
-            }
+        const resolvedTarget = this.resolveHtmlPlaybackUrl(item);
+        if (!resolvedTarget.originalUrl || !resolvedTarget.finalUrl) {
+            this.scheduleNext(this.getScheduledDuration(item));
+            return;
         }
+        let finalUrl = resolvedTarget.finalUrl;
+        const originalUrl = resolvedTarget.originalUrl;
+        const isVideoEmbed = resolvedTarget.isVideoEmbed;
 
         // Get content container for overlay mask
         const contentContainer = document.getElementById('content-container');
@@ -4000,45 +4203,80 @@ class OmnexPlayer {
         iframe.style.height = '100%';
         iframe.style.border = 'none';
         iframe.style.backgroundColor = '#000';
+        iframe.style.display = 'block';
+        iframe.style.visibility = 'hidden';
+        iframe.style.opacity = '1';
+        iframe.style.zIndex = '2';
 
         // Clear previous handlers
         iframe.onload = null;
         iframe.onerror = null;
 
         let loaded = false;
+        const loadToken = `${Date.now()}_${Math.random()}`;
+        iframe.dataset.loadToken = loadToken;
         const duration = this.getScheduledDuration(item);
 
-        iframe.onload = () => {
-            if (loaded) return; // Prevent double-fire
+        const finalizeLoad = () => {
+            if (loaded) return;
+            if (iframe.dataset.loadToken !== loadToken) return;
             loaded = true;
-            // Show iframe with transition AFTER content is loaded (like playImage)
-            this.applyEnterTransition(iframe);
-            this.scheduleNext(duration);
+            this.finalizeHtmlPlayback(iframe, item, duration);
+        };
+
+        iframe.onload = () => {
+            finalizeLoad();
         };
 
         iframe.onerror = () => {
             if (loaded) return;
+            if (iframe.dataset.loadToken !== loadToken) return;
+
             // Handle load errors - try direct URL as fallback if proxy failed
             if (finalUrl !== originalUrl) {
+                finalUrl = originalUrl;
                 iframe.src = originalUrl;
                 return;
             }
-            loaded = true;
-            this.applyEnterTransition(iframe);
-            this.scheduleNext(duration);
+            finalizeLoad();
         };
 
-        // Set URL (proxied or direct) — triggers load
-        iframe.src = finalUrl;
+        const sameTarget =
+            (() => {
+                try {
+                    return new URL(iframe.src, window.location.href).toString() ===
+                        new URL(finalUrl, window.location.href).toString();
+                } catch (e) {
+                    return false;
+                }
+            })();
 
-        // Safety timeout: if onload doesn't fire within 5s, show anyway
+        let canFinalizeImmediately = false;
+        if (sameTarget) {
+            try {
+                const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+                canFinalizeImmediately = !!doc && doc.readyState === 'complete';
+            } catch (e) {
+                // Cross-origin iframe cannot be inspected; assume ready if same src is already mounted.
+                canFinalizeImmediately = true;
+            }
+        }
+
+        // Set URL (proxied or direct) — triggers load when source differs.
+        if (!sameTarget) {
+            iframe.src = finalUrl;
+        } else if (canFinalizeImmediately) {
+            setTimeout(() => {
+                finalizeLoad();
+            }, 0);
+        }
+
+        // Safety timeout: if onload doesn't fire, show anyway.
         setTimeout(() => {
             if (!loaded) {
-                loaded = true;
-                this.applyEnterTransition(iframe);
-                this.scheduleNext(duration);
+                finalizeLoad();
             }
-        }, 5000);
+        }, 7000);
     }
 
     /**
@@ -4129,9 +4367,12 @@ class OmnexPlayer {
         // Clean up video when stopping playback
         this.cleanupVideo();
         this.cleanupNextMediaWarmup();
+        this.cleanupHtmlPrefetch();
 
         // Reset content type tracking
         this._currentContentType = null;
+        this._activeHtmlSlot = 'primary';
+        this._pendingExitElement = null;
 
         this.hideAllContent();
     }

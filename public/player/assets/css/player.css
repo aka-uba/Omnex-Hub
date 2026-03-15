@@ -692,19 +692,22 @@ video::poster {
 }
 
 /* Iframe - hide any browser chrome and prevent interaction */
-#html-content {
+#html-content,
+#html-content-alt {
     border: none !important;
     outline: none !important;
     /* Disable pointer events to prevent clicking on YouTube/Vimeo controls */
     pointer-events: none;
 }
 
-#html-content:focus {
+#html-content:focus,
+#html-content-alt:focus {
     outline: none !important;
 }
 
 /* For iframes that need interaction (non-video content), add a class */
-#html-content.interactive {
+#html-content.interactive,
+#html-content-alt.interactive {
     pointer-events: auto;
 }
 
@@ -1210,8 +1213,16 @@ video::poster {
     z-index: 0; /* Base katman - gecis sonrasi icerik arka plana dusmesin */
 }
 
-.content-item.transition-enter,
-.content-item.transition-exit {
+#player-screen .content-item.transition-enter,
+#player-screen .content-item.transition-exit {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
     animation-duration: var(--transition-duration, 500ms);
     animation-timing-function: ease;
     animation-fill-mode: both;
@@ -1220,11 +1231,11 @@ video::poster {
     -webkit-backface-visibility: hidden;
 }
 
-.content-item.transition-enter {
+#player-screen .content-item.transition-enter {
     z-index: 2;
 }
 
-.content-item.transition-exit {
+#player-screen .content-item.transition-exit {
     z-index: 1;
     pointer-events: none;
 }

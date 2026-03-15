@@ -64,7 +64,7 @@
             window.PLAYER_PATH = playerPath;
 
             document.write('<base href="' + playerPath + '">');
-            document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=33">');
+            document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=34">');
             document.write('<link rel="manifest" href="' + playerPath + 'manifest.json?v=5">');
         })();
     </script>
@@ -325,6 +325,9 @@
             <iframe id="html-content" class="content-item" style="display: none; background: #000;"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe id="html-content-alt" class="content-item" style="display: none; background: #000;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
 
             <!-- Fallback/Error Content -->
             <div id="fallback-content" class="content-item fallback" style="display: none;">
@@ -384,7 +387,7 @@
     <script type="module">
         // Dynamic import of player module with full path
         const playerPath = window.PLAYER_PATH || '/player/';
-        const scriptUrl = playerPath + 'assets/js/player.js?v=47';
+        const scriptUrl = playerPath + 'assets/js/player.js?v=48';
 
         try {
             import(scriptUrl);

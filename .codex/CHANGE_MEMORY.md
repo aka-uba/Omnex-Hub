@@ -4492,3 +4492,32 @@ Format:
 - Files changed: services/FabricToHtmlConverter.php
 - Checks: PHP syntax OK
 - Risk: Slot objelerinin `slotId` prop'u doğru atanmış olmalı (editör bu prop'u otomatik atar)
+
+## 2026-03-16 - Player HTML gecis/preload stabilizasyonu (TV/Android)
+
+- Request: Playlist icinde video + image + html/template karmasinda (ozellikle Android TV/mobil) html iceriklerin hazir olmadan acilmasi, gecislerde flash/siyah bosluk, preload icon gorunmesi ve hizalama bozulmalarinin duzeltilmesi.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - HTML oynatimi icin URL cozumleme `resolveHtmlPlaybackUrl()` ortaklastirildi (embed/proxy kurallari tek yerde)
+     - Sonraki item HTML ise dokuman prefetch eklendi (`prefetchHtmlDocument`) ve eski prefetch temizligi eklendi
+     - Gecis motorunda eski icerigi yeni icerik hazir olana kadar tutan deferred-exit mantigi HTML/video icin genisletildi
+     - `applyEnterTransition()` icine `flushPendingExitTransition()` baglandi (tek noktadan cikis tetikleme)
+     - HTML icerik icin dual-slot altyapisi eklendi (`_activeHtmlSlot`, `getActiveHtmlElement`, `getNextHtmlElement`) ve html->html gecisleri ayni element reuse yerine alternatife alindi
+     - `playHtml()` yeniden duzenlendi: load token korumasi, same-target hizli path, timeout fallback, `finalizeHtmlPlayback()` ile stabil timer baslatma
+     - Same-origin iframe icin video controls/play-overlay baskilama ve autoplay/playsinline hardening eklendi (`hardenSameOriginIframeContent`)
+     - `stopPlayback()` icinde html prefetch temizligi + html slot/pending exit reset eklendi
+  2. **public/player/assets/css/player.css**
+     - `#html-content-alt` icin iframe interaction/outline kurallari eklendi
+     - Transition siniflarina `#player-screen` scoped specificity + position/size override geri eklendi (mobil/TV orientation kaynakli kayma/flash etkisini bastirmak icin)
+  3. **public/player/index.html**
+     - Ikinci iframe katmani eklendi: `#html-content-alt`
+     - Cache-bust parametreleri guncellendi (`player.css?v=34`, `player.js?v=48`)
+- Files changed: public/player/assets/js/player.js, public/player/assets/css/player.css, public/player/index.html
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+- Risks/Follow-up:
+  - Cross-origin iframe iceriklerinde (same-origin degilse) video controls hardening tarayici guvenlik siniri nedeniyle uygulanamaz.
+  - HTML icindeki agir script/video yukleri tamamen kaldirilamaz; prefetch + deferred-exit etkisini sahada Android TV cihazlarinda dogrulamak gerekir.
+- Backup/Restore safety:
+  - Edit oncesi gecici backup alindi: `player.js.bak_html_stability_20260316_003339`, `player.css.bak_html_stability_20260316_003339`, `index.html.bak_html_stability_20260316_003339`
+  - Restore gerekmemesi nedeniyle backup dosyalari tutuldu (temp backup adimi uygulandi).
