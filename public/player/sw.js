@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const CACHE_VERSION = 'v1.3.1';
+const CACHE_VERSION = 'v1.3.2';
 const CACHE_NAME = `omnex-player-${CACHE_VERSION}`;
 const MEDIA_CACHE_NAME = `omnex-player-media-${CACHE_VERSION}`;
 
@@ -20,8 +20,9 @@ const STATIC_ASSETS = [
     './assets/js/storage.js',
     '../branding/favicon.png',
     '../branding/logo-player.png',
-    '../branding/icon-192.png',
-    '../branding/icon-512.png'
+    '../branding/icon-192.png?v=2',
+    '../branding/icon-512.png?v=2',
+    '../branding/icon-maskable.png?v=2'
 ];
 
 // API routes that should be network-first
