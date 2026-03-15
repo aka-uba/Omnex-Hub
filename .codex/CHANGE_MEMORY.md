@@ -4653,3 +4653,41 @@ Format:
   - Native kaynak dosyalari repo disi oldugu icin kod izleme APK binary + log dogrulama uzerinden yapiliyor.
 - Backup/Restore safety:
   - Temp backup alindi: `android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt.bak_native_exit_anim_20260316_022413`.
+
+## 2026-03-16 - Fix tokenManagement placement in DE/FR/RU locale files
+- Request: Move `tokenManagement` block from `form` section to `bluetooth` section in DE/FR/RU devices.json locale files. Also verify `factoryResetSuccess` key in `bluetooth.wizard`.
+- Changes:
+  - Removed `tokenManagement` object from inside `form` section (was after `form.errors`)
+  - Added `tokenManagement` object as direct child of `bluetooth` section (after `wizard`, before closing `}`)
+  - `factoryResetSuccess` already present in `bluetooth.wizard` in all three files - no addition needed
+- Files:
+  - `locales/de/pages/devices.json`
+  - `locales/fr/pages/devices.json`
+  - `locales/ru/pages/devices.json`
+- Checks: PHP `json_decode()` validation passed for all three files (VALID JSON)
+- Risk/Follow-up: None. Structure now matches TR reference file.
+## 2026-03-16 - APK push gecisinde erken oturma etkisi (lineer hiz + no-fade)
+
+- Request: Cihazda gecislerde sonraki icerik onceki kaybolmadan ustune erken oturuyor; `player.js` itme hissine daha yakin davranis isteniyor.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt** (repo disi APK kaynak alani)
+     - Native enter/exit slide animasyonlarinda `alpha` fade kaldirildi (yalnizca eksensel itme hareketi).
+     - Native enter ve exit interpolator'u `LinearInterpolator` yapildi (erken hizlanip oturma etkisi azaltildi).
+  2. **android-player/omnex-player-app/app/build.gradle** (repo disi APK kaynak alani)
+     - APK surumu `versionCode 38`, `versionName 2.9.9`.
+  3. **public/downloads/update.json** ve **downloads/update.json**
+     - OTA metadata `2.9.9 / v38` ve SHA256 guncellendi.
+  4. **public/downloads/omnex-player.apk** ve **downloads/omnex-player.apk**
+     - Yeni APK publish edildi (sha256: `74ac1baace2e9a602c01793fb6a3148fb70d69101865845635a273754090ca45`).
+- Files changed (tracked): public/downloads/update.json, downloads/update.json, public/downloads/omnex-player.apk, downloads/omnex-player.apk
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:assembleStandaloneDebug :app:publishDebugApk` (OK)
+  - ADB validation:
+    - `versionCode=38`, `versionName=2.9.9`
+    - `Transition set: push-down -> slide-down, 2000ms`
+    - `Video stop requested with animated native exit`
+    - `Switched to WebView display (animated slide-down)`
+- Risks/Follow-up:
+  - Gecisin gorunensel olarak birebir onayi cihazdan canli izlemeyle kullanici tarafinda son onay gerektirir.
+- Backup/Restore safety:
+  - Mevcut Exo kaynak backup setleri kullanilmaya devam ediyor; ek restore gerekmedi.
