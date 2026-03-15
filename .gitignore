@@ -72,6 +72,7 @@ storage/templates/portrait/
 storage/templates/landscape/
 storage/public/samples/
 storage/tmp/
+storage/streams/
 storage/*.ab
 storage/*.py
 storage/*.php

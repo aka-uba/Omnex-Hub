@@ -1,8 +1,8 @@
 {
-  "versionCode": 30,
-  "versionName": "2.9.1",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=30",
-  "releaseNotes": "- Splash ekraninda gercek marka logosu (brand_logo.png) kullanildi\n- Logo giris animasyonu: scale overshoot + fade-in\n- Gereksiz baslik/altyazi TextView'lari kaldirildi (logo PNG icinde mevcut)\n- Startup chime sesi korundu (warm chord v2a)",
+  "versionCode": 31,
+  "versionName": "2.9.2",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=31",
+  "releaseNotes": "- Yeni uygulama ikonu (tum mipmap boyutlari)\n- Yeni brand_logo.png ve TV banner\n- Wizard sayfa animasyonu kaldirildi (sadece splash'te kaldi)\n- WebView icerik gecis animasyonlari duzeltildi (CSS specificity fix)\n- SW cache v1.2.9",
   "mandatory": false,
-  "sha256": "2e46e34fded13281b9a54b4368212875f2b93adaa6d71c7f0a5195a9f454243c"
+  "sha256": "8ec207d4edc21b236b0f49948eb1202c3befe2e018d8cf6c2a1c7a83dec9750d"
 }
