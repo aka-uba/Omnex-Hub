@@ -1210,18 +1210,8 @@ video::poster {
     z-index: 0; /* Base katman - gecis sonrasi icerik arka plana dusmesin */
 }
 
-/* Transition sırasında orientation kurallarını override et.
-   #player-screen prefix ile yüksek specificity sağlanır. */
-#player-screen .content-item.transition-enter,
-#player-screen .content-item.transition-exit {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    aspect-ratio: auto !important;
+.content-item.transition-enter,
+.content-item.transition-exit {
     animation-duration: var(--transition-duration, 500ms);
     animation-timing-function: ease;
     animation-fill-mode: both;
@@ -1230,11 +1220,11 @@ video::poster {
     -webkit-backface-visibility: hidden;
 }
 
-#player-screen .content-item.transition-enter {
+.content-item.transition-enter {
     z-index: 2;
 }
 
-#player-screen .content-item.transition-exit {
+.content-item.transition-exit {
     z-index: 1;
     pointer-events: none;
 }
