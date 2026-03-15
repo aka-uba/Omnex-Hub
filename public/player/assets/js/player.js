@@ -188,6 +188,38 @@ class OmnexPlayer {
         return fallbackTransition;
     }
 
+    getElementDebugLabel(element) {
+        if (!element) {
+            return 'none';
+        }
+
+        if (element.id) {
+            return element.id;
+        }
+
+        if (element.tagName) {
+            return element.tagName.toLowerCase();
+        }
+
+        return 'unknown';
+    }
+
+    traceDebug(scope, message, payload) {
+        if (!this.debug) {
+            return;
+        }
+
+        const ts = (performance.now() / 1000).toFixed(3);
+        const prefix = `[Player][${scope} ${ts}] ${message}`;
+
+        if (typeof payload === 'undefined') {
+            console.log(prefix);
+            return;
+        }
+
+        console.log(prefix, payload);
+    }
+
     /**
      * Get device info from Android Bridge or browser
      * @returns {Object} Device information
@@ -2217,6 +2249,7 @@ class OmnexPlayer {
         if (this._htmlPrefetchController && typeof this._htmlPrefetchController.abort === 'function') {
             try {
                 this._htmlPrefetchController.abort();
+                this.traceDebug('HTML', 'prefetch aborted', { url: this._htmlPrefetchUrl || '' });
             } catch (e) {
                 // Silent abort
             }
@@ -2252,6 +2285,12 @@ class OmnexPlayer {
             }
         }
 
+        this.traceDebug('HTML', 'resolved playback url', {
+            originalUrl,
+            finalUrl,
+            isVideoEmbed
+        });
+
         return { originalUrl, finalUrl, isVideoEmbed };
     }
 
@@ -2265,6 +2304,10 @@ class OmnexPlayer {
         if (this._htmlPrefetchUrl === htmlTarget.finalUrl) {
             return;
         }
+
+        this.traceDebug('HTML', 'start prefetch', {
+            url: htmlTarget.finalUrl
+        });
 
         this.cleanupHtmlPrefetch();
 
@@ -2300,6 +2343,9 @@ class OmnexPlayer {
         }
 
         fetch(htmlTarget.finalUrl, requestOptions)
+            .then(() => {
+                this.traceDebug('HTML', 'prefetch completed', { url: htmlTarget.finalUrl });
+            })
             .catch(() => {})
             .finally(() => {
                 if (this._htmlPrefetchUrl === htmlTarget.finalUrl) {
@@ -2664,6 +2710,15 @@ class OmnexPlayer {
         // Determine which element the next content will use
         const nextElement = this._getElementForContentType(nextContentType);
 
+        this.traceDebug('TRANS', 'hideAllContent start', {
+            fromType: this._currentContentType || 'none',
+            toType: nextContentType || 'unknown',
+            prevElement: this.getElementDebugLabel(prevElement),
+            nextElement: this.getElementDebugLabel(nextElement),
+            transition: this._transitionType,
+            durationMs: this._transitionDuration
+        });
+
         // Same element reuse (image→image, video→video): can't crossfade with itself,
         // so just clear classes and let the new content enter-animate on the same element.
         const sameElementReuse = prevElement && nextElement && prevElement === nextElement;
@@ -2681,6 +2736,10 @@ class OmnexPlayer {
                 // Keep previous content visible until the next content is actually ready.
                 // This avoids black/flash gaps on slower Android TV/WebView devices.
                 this._pendingExitElement = prevElement;
+                this.traceDebug('TRANS', 'defer exit until next content ready', {
+                    pendingExitElement: this.getElementDebugLabel(prevElement),
+                    toType: nextContentType
+                });
             } else {
                 this.applyExitTransition(prevElement);
             }
@@ -2742,6 +2801,7 @@ class OmnexPlayer {
                     if (this.elements.htmlContentAlt) {
                         this.elements.htmlContentAlt.src = 'about:blank';
                     }
+                    this.traceDebug('HTML', 'cleared iframe sources after leaving html');
                 }
             };
 
@@ -2770,6 +2830,12 @@ class OmnexPlayer {
             if (element) element.style.display = 'none';
             return;
         }
+
+        this.traceDebug('TRANS', 'applyExitTransition', {
+            element: this.getElementDebugLabel(element),
+            transition: this._transitionType,
+            durationMs: this._transitionDuration
+        });
 
         const resolvedTransitionType = this.getResolvedTransitionType();
 
@@ -2809,6 +2875,10 @@ class OmnexPlayer {
                     this._cleanupVideoElement(exitElement, true);
                 }
             }
+            this.traceDebug('TRANS', 'exit transition completed', {
+                element: this.getElementDebugLabel(exitElement),
+                stillCurrent: this._currentElement === exitElement
+            });
             // releaseResolvedTransitionType() buradan kaldirildi.
             // Exit ve enter ayni resolved type'i paylasir; release sadece
             // applyEnterTransition() sonunda yapilir (tek nokta).
@@ -2825,6 +2895,12 @@ class OmnexPlayer {
         if (!element) return;
 
         const resolvedTransitionType = this.getResolvedTransitionType();
+
+        this.traceDebug('TRANS', 'applyEnterTransition', {
+            element: this.getElementDebugLabel(element),
+            resolvedTransition: resolvedTransitionType,
+            durationMs: this._transitionDuration
+        });
 
         // Clear any existing transition classes
         this.clearTransitionClasses(element);
@@ -2855,6 +2931,9 @@ class OmnexPlayer {
                 // sağlar, transition class'lari kaldiginda CSS z-index devralir.
                 // Inline style silmek icerik katmanini arka plana dusuruyordu.
                 this.releaseResolvedTransitionType();
+                this.traceDebug('TRANS', 'enter transition completed', {
+                    element: this.getElementDebugLabel(enterElement)
+                });
                 this._enterTransitionTimers.delete(enterElement);
             }, this._transitionDuration);
             this._enterTransitionTimers.set(enterElement, enterTimerId);
@@ -2871,6 +2950,10 @@ class OmnexPlayer {
 
         const exitEl = this._pendingExitElement;
         this._pendingExitElement = null;
+        this.traceDebug('TRANS', 'flushing pending exit', {
+            currentElement: this.getElementDebugLabel(currentElement),
+            exitElement: this.getElementDebugLabel(exitEl)
+        });
         this.applyExitTransition(exitEl);
     }
 
@@ -3462,15 +3545,25 @@ class OmnexPlayer {
             return '';
         }
 
+        const itemType = String(item.type || '').toLowerCase();
         const muted = item.muted !== undefined ? item.muted : 1;
         const duration = this.getItemDurationValue(item);
         const loop = item.loop !== undefined && item.loop !== null && item.loop !== ''
             ? (parseInt(item.loop, 10) || 0)
             : 0;
 
+        let stableIdentity = item.media_id || item.template_id || '';
+        if (!stableIdentity) {
+            if (itemType === 'html' && item.url) {
+                stableIdentity = `html:${item.url}`;
+            } else {
+                stableIdentity = item.id || item.url || '';
+            }
+        }
+
         return [
-            item.media_id || item.template_id || item.id || item.url || '',
-            item.type || '',
+            stableIdentity,
+            itemType,
             item.url || '',
             duration === null ? '' : duration,
             loop,
@@ -4154,6 +4247,12 @@ class OmnexPlayer {
     finalizeHtmlPlayback(iframe, item, duration) {
         if (!iframe) return;
 
+        this.traceDebug('HTML', 'finalize playback', {
+            iframe: this.getElementDebugLabel(iframe),
+            url: item?.url || '',
+            duration
+        });
+
         this.hardenSameOriginIframeContent(iframe);
         this.applyEnterTransition(iframe);
 
@@ -4175,6 +4274,13 @@ class OmnexPlayer {
             this.scheduleNext(this.getScheduledDuration(item));
             return;
         }
+
+        this.traceDebug('HTML', 'playHtml start', {
+            itemId: item?.id || '',
+            itemName: item?.name || '',
+            itemUrl: item?.url || '',
+            iframe: this.getElementDebugLabel(iframe)
+        });
 
         // Don't force-hide elements mid-exit-transition (crossfade)
         this.elements.fallbackContent.style.display = 'none';
@@ -4221,16 +4327,30 @@ class OmnexPlayer {
             if (loaded) return;
             if (iframe.dataset.loadToken !== loadToken) return;
             loaded = true;
+            this.traceDebug('HTML', 'iframe finalized load', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl
+            });
             this.finalizeHtmlPlayback(iframe, item, duration);
         };
 
         iframe.onload = () => {
+            this.traceDebug('HTML', 'iframe onload', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl
+            });
             finalizeLoad();
         };
 
         iframe.onerror = () => {
             if (loaded) return;
             if (iframe.dataset.loadToken !== loadToken) return;
+
+            this.traceDebug('HTML', 'iframe onerror', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl,
+                fallbackToOriginal: finalUrl !== originalUrl
+            });
 
             // Handle load errors - try direct URL as fallback if proxy failed
             if (finalUrl !== originalUrl) {
@@ -4265,15 +4385,32 @@ class OmnexPlayer {
         // Set URL (proxied or direct) — triggers load when source differs.
         if (!sameTarget) {
             iframe.src = finalUrl;
+            this.traceDebug('HTML', 'iframe src assigned', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl
+            });
         } else if (canFinalizeImmediately) {
             setTimeout(() => {
                 finalizeLoad();
             }, 0);
+            this.traceDebug('HTML', 'iframe reused existing loaded src', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl
+            });
+        } else {
+            this.traceDebug('HTML', 'iframe same src but waiting load event', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrl
+            });
         }
 
         // Safety timeout: if onload doesn't fire, show anyway.
         setTimeout(() => {
             if (!loaded) {
+                this.traceDebug('HTML', 'iframe safety timeout fired', {
+                    iframe: this.getElementDebugLabel(iframe),
+                    finalUrl
+                });
                 finalizeLoad();
             }
         }, 7000);
@@ -4549,6 +4686,7 @@ class OmnexPlayer {
                     console.log('  Old hash:', currentItemsHash);
                     console.log('  New hash:', newItemsHash);
                     console.log('  Content changed:', contentChanged);
+                    console.log('  Current slot changed:', currentSlotChanged);
                     console.log('  Playlist changed:', playlistChanged);
                     console.log('  Items changed:', itemsChanged);
                     console.log('  Config changed:', configChanged);
@@ -4565,6 +4703,13 @@ class OmnexPlayer {
                     this._scheduleDeferredPrecache();
 
                     const onlyContentChanged = !playlistChanged && !itemsChanged && contentChanged && !configChanged && !forceRestart;
+                    this.traceDebug('SYNC', 'sync decision', {
+                        onlyContentChanged,
+                        wasPlaying,
+                        currentIndex: savedIndex,
+                        currentSlotChanged,
+                        forceRestart
+                    });
 
                     // Keep playback seamless only when the active item payload changed.
                     if (onlyContentChanged && wasPlaying) {
@@ -4613,6 +4758,11 @@ class OmnexPlayer {
                         }
 
                         if (currentSlotChanged) {
+                            this.traceDebug('SYNC', 'restarting current slot due signature change', {
+                                index: savedIndex,
+                                oldSignature: currentSlotSignature,
+                                newSignature: newItemKeys[savedIndex] || ''
+                            });
                             if (this.contentTimer) {
                                 clearTimeout(this.contentTimer);
                                 this.contentTimer = null;

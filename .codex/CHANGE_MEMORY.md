@@ -4521,3 +4521,35 @@ Format:
 - Backup/Restore safety:
   - Edit oncesi gecici backup alindi: `player.js.bak_html_stability_20260316_003339`, `player.css.bak_html_stability_20260316_003339`, `index.html.bak_html_stability_20260316_003339`
   - Restore gerekmemesi nedeniyle backup dosyalari tutuldu (temp backup adimi uygulandi).
+## 2026-03-16 - HTML item tekrar yuklenme sorunu + detayli player trace loglari
+
+- Request: Playlistte HTML iceriklerin (ozellikle PWA/Android) 3-5 kez tekrar yuklenmesi; giris/cikis/animasyon davranisini detayli izlemek icin debug eklenmesi.
+- Root cause:
+  - `api/player/init.php` ve `api/player/sync.php` JSON fallback akisinda HTML item `id` degeri `uniqid('web_...')` ile her istekte yeniden uretiliyordu.
+  - Frontend `syncContent` hash karsilastirmasi bu degisken `id` nedeniyle her sync'te `contentChanged=true` algilayip aktif slotu yeniden baslatiyordu.
+- Changes:
+  1. **api/player/init.php**
+     - `playerBuildStableHtmlItemId()` helper eklendi.
+     - JSON fallback HTML item `id` atamasi `uniqid` yerine deterministic hash tabanli stabil ID'ye cekildi.
+  2. **api/player/sync.php**
+     - `playerBuildStableHtmlItemId()` helper eklendi.
+     - JSON fallback HTML item `id` atamasi `uniqid` yerine deterministic hash tabanli stabil ID'ye cekildi.
+  3. **public/player/assets/js/player.js**
+     - `buildPlaylistItemSignature()` guncellendi: HTML item signature kimligi artik `html:<url>` bazli (id degisse bile false-positive contentChanged olmasin).
+     - Detayli debug trace altyapisi eklendi: `traceDebug()` + `getElementDebugLabel()`.
+     - HTML akisinda trace loglari eklendi: URL resolve, prefetch start/finish/abort, iframe onload/onerror, timeout, finalize.
+     - Transition akisinda trace loglari eklendi: hide/start, defer-exit, apply enter/exit, pending-exit flush, transition completion.
+     - Sync karar noktasina ek trace eklendi: `currentSlotChanged`, seamless restart gerekcesi ve signature farki.
+  4. **public/player/index.html**
+     - Player module cache-bust versiyonu `player.js?v=49` yapildi.
+- Files changed: api/player/init.php, api/player/sync.php, public/player/assets/js/player.js, public/player/index.html
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `php -l api/player/init.php` (OK)
+  - `php -l api/player/sync.php` (OK)
+- Risks/Follow-up:
+  - `playlist.items` JSON icinde ayni URL+order+name kombinasyonuna sahip birden fazla HTML item varsa stabil hash ID cakisma riski teorik olarak vardir (pratikte dusuk).
+  - Trace loglari sadece `?debug` acikken detayli calisir; normal modda overhead yok.
+- Backup/Restore safety:
+  - Edit oncesi backup alindi: `api/player/init.php.bak_html_debug_20260316_010617`, `api/player/sync.php.bak_html_debug_20260316_010617`, `public/player/assets/js/player.js.bak_html_debug_20260316_010617`
+  - Restore gerekmedi.

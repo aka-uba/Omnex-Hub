@@ -177,6 +177,20 @@ function playerSelectVariantForDevice(array $variants, ?int $deviceMaxHeight): ?
     return $variants[count($variants) - 1];
 }
 
+function playerBuildStableHtmlItemId(array $item): string
+{
+    if (!empty($item['id'])) {
+        return (string)$item['id'];
+    }
+
+    $order = (string)($item['order'] ?? $item['order_index'] ?? 0);
+    $url = trim((string)($item['url'] ?? ''));
+    $name = trim((string)($item['name'] ?? ''));
+    $seed = $order . '|' . $url . '|' . $name;
+
+    return 'web_' . substr(hash('sha256', $seed), 0, 16);
+}
+
 function playerResolveMediaPlayback(array $item, array $deviceInfo, ?string $companyId, string $basePath, TranscodeQueueService $transcodeService, ?int $deviceMaxHeight): array
 {
     $fallbackUrl = playerBuildMediaUrl((string)($item['media_path'] ?? ''), $basePath);
@@ -413,7 +427,7 @@ if ($playlist) {
 
                 if ($itemType === 'html' || $itemType === 'webpage') {
                     $playlistItems[] = [
-                        'id' => $item['id'] ?? uniqid('web_', true),
+                        'id' => playerBuildStableHtmlItemId($item),
                         'content_type' => 'html',
                         'name' => $item['name'] ?? 'Web Sayfasi',
                         'url' => $item['url'] ?? '',
