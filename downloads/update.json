@@ -1,8 +1,8 @@
 {
-  "versionCode": 32,
-  "versionName": "2.9.3",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=32",
-  "releaseNotes": "- Splash ekrani: yazili tam logo (kutuphane/apk.png)\n- Launcher ikonu: adaptive icon foreground duzeltildi (circular reference fix)\n- Yeni mipmap ikonlari tum boyutlarda",
+  "versionCode": 33,
+  "versionName": "2.9.4",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=33",
+  "releaseNotes": "- Launcher ikonu: adaptive icon kirpma sorunu duzeltildi (XML kaldirildi, mipmap PNG dogrudan kullaniliyor)\n- Ikon artik tam gorunur, OS tarafindan kirpilmaz",
   "mandatory": false,
-  "sha256": "e02939e98a84f4a9f751a75a3d4e17e0a63f3927289765046f22bf6ab378d292"
+  "sha256": "d6106cd65e65c1503efeaab84f14d2ba52e1aab27387a94e64695e03e56698b1"
 }
