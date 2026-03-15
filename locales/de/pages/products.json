@@ -77,7 +77,8 @@
             "delete": "Löschen",
             "duplicate": "Duplizieren",
             "edit": "Bearbeiten",
-            "sendToDevice": "An Gerät senden"
+            "sendToDevice": "An Gerät senden",
+            "generateHtml": "HTML erstellen"
         }
     },
     "import": {
@@ -703,6 +704,12 @@
         "bulkComplete": "{success} erfolgreich, {failed} fehlgeschlagen",
         "previewLoadError": "Vorschau konnte nicht geladen werden",
         "previewNotAvailable": "Vorschau nicht verfügbar",
+        "liveHtmlPreview": "Live HTML-Vorschau",
+        "htmlPreviewTitle": "HTML-Vorschau",
+        "createHtmlTemplate": "HTML-Vorlage erstellen",
+        "createHtmlTitle": "HTML-Vorlage erstellen",
+        "createHtmlInfo": "HTML-Vorlage wird für {count} Produkte erstellt.",
+        "createHtmlCombined": "Alle in einer Vorlage zusammenfassen",
         "renderingProgress": "Produkt wird gerendert... ({current}/{total})",
         "sendingDeviceProgress": "Wird an Gerät gesendet... ({current}/{total})",
         "checkingCache": "Cache wird überprüft...",
@@ -825,7 +832,18 @@
             "media": "Medien",
             "priceStock": "Preisgestaltung & Bestand",
             "labels": "Etiketten",
+            "deviceContent": "Geräteinhalte",
             "recordInfo": "Historie"
+        },
+        "deviceContent": {
+            "noContent": "Noch keine Gerätezuweisungen",
+            "noContentHint": "Wenn Sie dieses Produkt mit einer Vorlage einem Gerät zuweisen, erscheint hier eine Live-Vorschau",
+            "unknownTemplate": "Unbekannte Vorlage",
+            "device": "Gerät(e)",
+            "synced": "Synchronisiert",
+            "pending": "Ausstehend",
+            "openPreview": "Vollbildvorschau",
+            "editTemplate": "Vorlage bearbeiten"
         },
         "notFound": "Produkt nicht gefunden",
         "labelAssigned": "Etikett erfolgreich zugewiesen",
@@ -1169,7 +1187,13 @@
         "noSlotsAssigned": "Mindestens ein Slot muss ein Produkt zugewiesen haben",
         "clearSlot": "Entfernen",
         "previewTitle": "Vorlagenvorschau",
-        "noDevices": "Keine Online-Geräte gefunden"
+        "noDevices": "Keine Online-Geräte gefunden",
+        "saveAsHtml": "Als HTML-Vorlage speichern",
+        "saveAsHtmlHint": "Speichert dieses Design mit Produktzuordnungen als HTML auf der Web-Vorlagen-Seite",
+        "htmlSaved": "HTML-Vorlage erfolgreich erstellt",
+        "htmlUpdated": "HTML-Vorlage erfolgreich aktualisiert",
+        "htmlSaveFailed": "HTML-Vorlage konnte nicht erstellt werden",
+        "noSlotAssigned": "Weisen Sie mindestens einem Slot ein Produkt zu"
     },
     "priceHistory": {
         "title": "Preishistorie",
@@ -1215,5 +1239,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "HTML-Vorlage erstellen",
+        "selectTemplate": "Vorlage auswählen",
+        "selectTemplatePlaceholder": "Vorlage auswählen...",
+        "customName": "Benutzerdefinierter Name",
+        "namePlaceholder": "Leer lassen für automatischen Namen",
+        "info": "Eine eigenständige HTML-Seite wird erstellt, die die ausgewählte Vorlage mit Produktdaten kombiniert. Sie können diese HTML-Seite zu Wiedergabelisten hinzufügen und an Signage-Geräte senden.",
+        "generate": "HTML erstellen",
+        "generating": "HTML wird erstellt...",
+        "success": "HTML-Vorlage erfolgreich erstellt",
+        "updated": "HTML-Vorlage erfolgreich aktualisiert",
+        "failed": "HTML-Vorlage konnte nicht erstellt werden",
+        "templateRequired": "Bitte wählen Sie eine Vorlage",
+        "noTemplates": "Keine Signage/TV-Vorlagen gefunden",
+        "bulkButton": "HTML Erstellen",
+        "bulkTitle": "HTML für {count} Produkte erstellen",
+        "bulkInfo": "Für {count} ausgewählte Produkte werden HTML-Vorlagen erstellt.",
+        "bulkGenerating": "HTML für {count} Produkte wird erstellt...",
+        "bulkSuccess": "{count} HTML-Vorlagen erfolgreich erstellt",
+        "bulkPartialFail": "HTML-Erstellung für {failed} Produkte fehlgeschlagen",
+        "separatePerProduct": "Separates HTML für jedes Produkt erstellen"
     }
 }

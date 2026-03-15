@@ -77,7 +77,8 @@
             "delete": "Supprimer",
             "duplicate": "Dupliquer",
             "edit": "Modifier",
-            "sendToDevice": "Envoyer à l'appareil"
+            "sendToDevice": "Envoyer à l'appareil",
+            "generateHtml": "Créer HTML"
         }
     },
     "import": {
@@ -703,6 +704,12 @@
         "bulkComplete": "{success} réussis, {failed} échoués",
         "previewLoadError": "Échec du chargement de l'aperçu",
         "previewNotAvailable": "Aperçu non disponible",
+        "liveHtmlPreview": "Aperçu HTML en direct",
+        "htmlPreviewTitle": "Aperçu HTML",
+        "createHtmlTemplate": "Créer un modèle HTML",
+        "createHtmlTitle": "Créer un modèle HTML",
+        "createHtmlInfo": "Un modèle HTML sera créé pour {count} produits.",
+        "createHtmlCombined": "Tout combiner en un seul modèle",
         "renderingProgress": "Rendu du produit... ({current}/{total})",
         "sendingDeviceProgress": "Envoi à l'appareil... ({current}/{total})",
         "checkingCache": "Vérification du cache...",
@@ -825,7 +832,18 @@
             "media": "Médias",
             "priceStock": "Prix et stock",
             "labels": "Étiquettes",
+            "deviceContent": "Contenu des appareils",
             "recordInfo": "Historique"
+        },
+        "deviceContent": {
+            "noContent": "Aucune attribution d'appareil",
+            "noContentHint": "Lorsque vous attribuez ce produit à un appareil avec un modèle, un aperçu en direct apparaîtra ici",
+            "unknownTemplate": "Modèle inconnu",
+            "device": "appareil(s)",
+            "synced": "Synchronisé",
+            "pending": "En attente",
+            "openPreview": "Aperçu plein écran",
+            "editTemplate": "Modifier le modèle"
         },
         "notFound": "Produit non trouvé",
         "labelAssigned": "Étiquette assignée avec succès",
@@ -1169,7 +1187,13 @@
         "noSlotsAssigned": "Au moins un emplacement doit avoir un produit assigné",
         "clearSlot": "Supprimer",
         "previewTitle": "Aperçu du modèle",
-        "noDevices": "Aucun appareil en ligne trouvé"
+        "noDevices": "Aucun appareil en ligne trouvé",
+        "saveAsHtml": "Enregistrer comme modèle HTML",
+        "saveAsHtmlHint": "Enregistre ce design avec les attributions de produits en HTML sur la page des modèles web",
+        "htmlSaved": "Modèle HTML créé avec succès",
+        "htmlUpdated": "Modèle HTML mis à jour avec succès",
+        "htmlSaveFailed": "Impossible de créer le modèle HTML",
+        "noSlotAssigned": "Attribuez au moins un produit à un emplacement"
     },
     "priceHistory": {
         "title": "Historique des prix",
@@ -1215,5 +1239,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "Créer un modèle HTML",
+        "selectTemplate": "Sélectionner un modèle",
+        "selectTemplatePlaceholder": "Sélectionnez un modèle...",
+        "customName": "Nom personnalisé",
+        "namePlaceholder": "Laisser vide pour un nom automatique",
+        "info": "Une page HTML autonome sera créée en combinant le modèle sélectionné avec les données produit. Vous pouvez ajouter cette page HTML aux playlists et l'envoyer aux appareils d'affichage.",
+        "generate": "Créer HTML",
+        "generating": "Création HTML en cours...",
+        "success": "Modèle HTML créé avec succès",
+        "updated": "Modèle HTML mis à jour avec succès",
+        "failed": "Impossible de créer le modèle HTML",
+        "templateRequired": "Veuillez sélectionner un modèle",
+        "noTemplates": "Aucun modèle signage/TV trouvé",
+        "bulkButton": "Générer HTML",
+        "bulkTitle": "Générer HTML pour {count} produits",
+        "bulkInfo": "Des modèles HTML seront créés pour {count} produits sélectionnés.",
+        "bulkGenerating": "Génération HTML pour {count} produits...",
+        "bulkSuccess": "{count} modèles HTML créés avec succès",
+        "bulkPartialFail": "Échec de la création HTML pour {failed} produits",
+        "separatePerProduct": "Créer un HTML séparé pour chaque produit"
     }
 }

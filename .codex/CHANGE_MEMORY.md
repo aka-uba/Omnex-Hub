@@ -11,6 +11,211 @@ Format:
 
 ---
 
+## 2026-03-15 - HTML Şablon Oluştur modallarına canlı önizleme
+- Request: Ürünlerde HTML icon/buton ile açılan modalda şablon seçiminde canlı HTML önizleme eksik
+- Changes:
+  1. `ProductList.js` — `handleGenerateHtml()`: Şablon seçilince iframe ile canlı HTML önizleme
+  2. `ProductList.js` — `bulkGenerateHtml()`: Aynı önizleme (ilk ürün ile)
+- Files: ProductList.js
+- Checks: CSS mevcut (template-preview-live, live-preview-badge)
+- Risk/Follow-up: Yok
+
+---
+
+## 2026-03-15 - Modal.confirm Promise düzeltmesi + Tümünü Seç görünürlük
+- Request: (1) Web Templates silme ikonu onay olmadan siliyor. (2) Tümünü Seç seçeneği görünmüyor.
+- Changes:
+  1. `Modal.js` — `confirm()` metodu: onConfirm callback geçirilmezse Promise döndürüyor (true/false). Böylece `const ok = await Modal.confirm({...})` doğru çalışıyor. Eskiden modal instance objesi (truthy) döndüğü için onay modal'ı beklemeden hemen siliyordu.
+  2. `web-templates.css` — `.wt-select-all-wrapper .filter-label` için `display: inline !important` eklendi (mobil :has() gizleme kuralından korunması için). Wrapper'a hover efekti, checkbox boyutu büyütme eklendi.
+- Files: public/assets/js/components/Modal.js, public/assets/css/pages/web-templates.css
+- Checks: Manuel test gerekli (Modal.confirm kullanılan tüm yerler)
+- Risk/Follow-up: Modal.confirm onConfirm ile çağrılan yerler eski davranışı koruyor (backward compat). Promise yolu sadece onConfirm geçirilmediğinde aktif.
+
+---
+
+## 2026-03-15 - Web Templates sayfa iyileştirmeleri + HTML şablon filtre düzeltmesi
+- Request: (1) WebTemplateList sayfasına DataTable benzeri grid: çoklu seçim, toplu silme, sayfalama, sayfa başı öğe. (2) Silme modalı arka planı gereksiz yenilemesin. (3) Ürünler sayfası HTML Şablon Oluştur modalı tüm şablonları göstersin (sadece TV+signage değil).
+- Changes:
+  1. `WebTemplateList.js` — Tam yeniden yazıldı: checkbox seçim, tümünü seç, toplu silme butonu, sayfalama (prev/next/sayfa numaraları), sayfa başı öğe sayısı (12/24/48/96), silme sonrası DOM animasyonu (yeniden yükleme yok).
+  2. `web-templates.css` — Pagination stilleri (.wt-pagination-*), kart seçim stilleri (.wt-card-select, .template-card.selected), select-all wrapper, dark mode desteği eklendi.
+  3. `ProductList.js` — `handleGenerateHtml()` ve `bulkGenerateHtml()`: `/templates?type=signage` + `type=tv` filtresi kaldırıldı, tüm şablonlar yükleniyor (`/templates?per_page=200`). Şablon seçeneklerine tip etiketi eklendi.
+  4. `api/web-templates/bulk-delete.php` — Yeni endpoint: POST, { ids: [] }, soft delete, aktif atama atlama, audit log.
+  5. `api/index.php` — bulk-delete route eklendi.
+  6. i18n: 8 dilde `selectAll`, `perPage`, `saving`, `bulkDeleted`, `bulkSkipped`, `bulkDeleteMessage` key'leri eklendi.
+- Files: WebTemplateList.js, web-templates.css, ProductList.js, api/web-templates/bulk-delete.php (yeni), api/index.php, locales/*/pages/web-templates.json (8 dil)
+- Checks: PHP syntax OK (bulk-delete.php, FabricToHtmlConverter.php)
+- Risk/Follow-up: Yok. API pagination zaten destekliyordu (per_page parametresi).
+
+---
+
+## 2026-03-15 - Web Templates bulk-delete endpoint
+- Request: Create POST /api/web-templates/bulk-delete for bulk soft-deleting web templates
+- Changes: New endpoint accepting { ids: [] }, validates auth/role, skips templates with active assignments, soft deletes rest, returns deleted/skipped counts with audit logging. Route added to api/index.php.
+- Files: api/web-templates/bulk-delete.php (new), api/index.php (route added)
+- Checks: php -l on both files passed
+- Risk/Follow-up: None. Follows existing delete.php patterns exactly.
+
+---
+
+## 2026-03-15 - slot-media video fix + HTML şablon güncelleme (upsert)
+- Request: (1) Çoklu ürün şablonunda elle eklenen video HTML'e gelmiyor. (2) Aynı şablon+ürün ile tekrar HTML oluşturulduğunda yeni kayıt yerine mevcut güncellenmeli.
+- Changes:
+  1. `FabricToHtmlConverter.php` — `convertObject()`: `slot-media` customType için video/görsel ayrımı eklendi. `staticVideos`, `videoSrc`, `video_placeholder_url` kontrolleri ile doğru render yöntemine yönlendirme.
+  2. `FabricToHtmlConverter.php` — `convertVideo()`: `video_placeholder_url` ve `staticVideos` dizisi desteği eklendi (slot-media objeleri için).
+  3. `generate-from-fabric.php` — Upsert mantığı: Aynı `fabric_template_id` + `product_ids` kombinasyonu varsa mevcut web_templates kaydını güncelle (versiyon artır), yoksa yeni oluştur.
+  4. `ProductList.js` — Tüm generate-from-fabric çağrılarında `is_update` flag'ine göre farklı toast mesajı göster.
+  5. i18n: `htmlUpdated` ve `generateHtml.updated` key'leri 8 dile eklendi.
+- Files: services/FabricToHtmlConverter.php, api/web-templates/generate-from-fabric.php, ProductList.js, locales/*/pages/products.json (8 dil)
+- Checks: PHP syntax OK (2 dosya), JSON validation OK (8 dil)
+- Risk/Follow-up: Upsert eşleştirme `data_sources` JSON parse ile yapılıyor — performans sorunu olursa `source_template_id` + `source_product_ids_hash` kolon eklenmeli.
+
+---
+
+## 2026-03-15 - Multi-product modal: bağımsız HTML şablon kaydet butonu
+- Request: Çoklu ürün modalında cihaza göndermeden ve checkbox işaretlemeden doğrudan HTML şablon olarak kaydetme
+- Changes:
+  1. Checkbox kaldırıldı, yerine "HTML Şablon Olarak Kaydet" butonu eklendi (btn-mp-save-html)
+  2. Yeni `_mpSaveAsHtmlTemplate()` metodu: bağımsız API çağrısı, loading state, validasyon
+  3. `_executeMultiProductSend()` içindeki eski checkbox kodu temizlendi
+  4. i18n: `alsoCreateHtml/alsoCreateHtmlHint` → `saveAsHtml/saveAsHtmlHint/htmlSaved/htmlSaveFailed/noSlotAssigned` (8 dil)
+- Files: ProductList.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/products.json
+- Checks: JSON validation OK (8 dil)
+- Risk/Follow-up: Yok
+
+---
+
+## 2026-03-15 - FabricToHtmlConverter: static video/image fix + multi-product slot mapping
+- Request: Statik (dinamik olmayan, elle eklenen) video ve görsellerin HTML çıktısında görünmesi, çoklu ürün çerçevesi slot→ürün eşleştirmesi, helper objelerin gizlenmesi
+- Changes:
+  1. `convertImage()` — Video URL tespiti eklendi; `.mp4/.webm/.ogg/.mov` uzantılı src'ler `<video>` olarak render edilir (`<img>` yerine)
+  2. `convert()` — Multi-product-frame slot→product eşleştirme haritası oluşturuldu (frameCols×frameRows matris)
+  3. `convertObject()` — Helper obje filtreleme: isSlotBackground, isSlotLabel, isSlotPlaceholder, isTransient, multi-product-frame container, slot-label skip kuralları
+  4. Slot objelerinde (`slotId > 0`) doğru ürün verisi çözümleme
+- Files: services/FabricToHtmlConverter.php
+- Checks: `php -l` syntax check passed
+- Risk/Follow-up: Kullanıcı tüm tasarım özelliklerinin (font, renk vb.) HTML'de korunduğunu doğrulayacak. convertText() zaten fontSize, fontFamily, fontWeight, fontStyle, fill, textAlign, lineHeight, charSpacing, underline, linethrough, backgroundColor destekliyor.
+
+---
+
+## 2026-03-15 - Add 5 HTML preview translation keys to 6 language files
+- Request: Add htmlPreviewTitle, createHtmlTemplate, createHtmlTitle, createHtmlInfo, createHtmlCombined keys to Russian, Azerbaijani, German, Dutch, French, and Arabic products.json files (right after liveHtmlPreview line)
+- Changes: Inserted 5 new translation keys in correct order after "liveHtmlPreview" line in each file with proper translations
+- Files: locales/ru/pages/products.json, locales/az/pages/products.json, locales/de/pages/products.json, locales/nl/pages/products.json, locales/fr/pages/products.json, locales/ar/pages/products.json
+- Checks: JSON grep verification confirmed all 6 keys present in each file with correct line positioning. English and Turkish files already had these keys (no changes needed).
+- Risk/Follow-up: None. All translations verified against user-provided text, diacritics preserved (Russian Cyrillic, Azerbaijani special chars, German umlauts, French accents, Dutch diacritics, Arabic script).
+
+---
+
+## TAKİP: HTML Önizleme Performans Optimizasyonu (beklemede)
+- **Durum**: Kullanıcı test edecek, tecrübeye göre karar verecek
+- **Sorun alanı**: Web Şablonlar listesinde çok sayıda Fabric kaynaklı kart olursa her biri serve endpoint → FabricToHtmlConverter çalıştırır
+- **Etkilenen dosyalar**: WebTemplateList.js (card iframe), serve.php (dinamik render), preview-html.php (anlık render)
+- **Seçenek A**: Web şablon listesinde iframe yerine statik placeholder/thumbnail kullan (sadece detay/önizlemede canlı)
+- **Seçenek B**: serve.php'de kısa süreli cache (5dk) — ürün updated_at değişmemişse cache'den sun
+- **Kullanıcı mesajı**: "HTML önizleme performans optimizasyonunu yapalım" dediğinde bu notu referans al
+
+---
+
+## 2026-03-15 - Cihaz Detay İçerik Sekmesi: Canlı HTML Önizleme
+- Request: Cihaz detay sayfasındaki içerik sekmesinde statik render görseli yerine canlı HTML önizleme
+- Changes:
+  1. DeviceDetail.js: renderDeviceRenderPreview() — şablon+ürün atanmışsa canlı iframe, yoksa statik fallback
+  2. Yeni getProductIdFromContent() — current_content JSON'dan product_id parse
+  3. "Canlı Önizleme" badge + "Tam Ekran" butonu eklendi
+  4. 8 dil çeviri: livePreview, livePreviewHint, fullscreenPreview
+- Files: DeviceDetail.js, locales/*/pages/devices.json
+- Checks: Mevcut fallback korundu
+- Risk: Şablon/ürün silinmişse 404 → iframe boş
+
+---
+
+## 2026-03-15 - Evrensel HTML Önizleme Servisi + Ürün Detay "Cihaz İçeriği" Sekmesi
+- Request: Şablonların canlı HTML olarak her yerde önizlenebilmesi için evrensel bir render servisi, ürün detay sayfasında cihaz içeriği sekmesi
+- Changes:
+  1. Yeni API: `GET /api/templates/:id/preview-html?product_id=xxx` — auth gerektirmez, veritabanına kaydetmez, anlık HTML render
+  2. ProductDetail.js: Yeni "Cihaz İçeriği" sekmesi — ürüne atanmış her şablon için canlı iframe önizleme
+  3. CSS: `.pd-device-content-grid/card/preview/info/actions` stilleri eklendi
+  4. Route: `api/index.php`'de `/api/templates/{id}/preview-html` tanımlandı (auth-free)
+  5. 8 dil çeviri: `detail.tabs.deviceContent` + `detail.deviceContent.*` eklendi
+- Files: api/templates/preview-html.php (yeni), api/index.php, public/assets/js/pages/products/ProductDetail.js, public/assets/css/pages/products.css, locales/*/pages/products.json
+- Checks: PHP syntax OK (preview-html.php, index.php)
+- Risk/Follow-up: Auth-free endpoint — sadece UUID ile erişilebilir (güvenli); iframe sandbox kısıtlamalı
+
+---
+
+## 2026-03-15 - Web şablonlar: Fabric kaynak badge, dinamik serve, editör yönlendirme
+- Request: Fabric.js'den oluşturulan web şablonların card'da önizleme resmi yok, kaynağı belli değil, edit HTML editöre gidiyor, ürün değişiklikleri yansımıyor
+- Changes:
+  1. serve.php: Fabric kaynağı olan şablonlar her istekte güncel ürün verileriyle taze render yapıyor (statik HTML yerine dinamik)
+  2. WebTemplateList.js: Card'da Fabric kaynak badge ("Şablondan"), iframe önizleme, edit → şablon editörüne yönlendirme
+  3. index.php: data_sources alanı list response'a eklendi
+  4. FabricToHtmlConverter.php: canvas-container başlangıçta visibility:hidden, fitToScreen() sonrası visible (flash düzeltme)
+  5. 8 dil çeviri dosyası: source.fabricTemplate, source.fabricHint, actions.editTemplate eklendi
+- Files: api/web-templates/serve.php, api/web-templates/index.php, services/FabricToHtmlConverter.php, public/assets/js/pages/web-templates/WebTemplateList.js, locales/*/pages/web-templates.json
+- Checks: PHP syntax OK (serve.php, index.php)
+- Risk/Follow-up: serve.php her istekte render → performans etkisi (ama cache-control no-cache zaten var); kaynak şablon silinirse fallback cached HTML kullanılır
+
+---
+
+## 2026-03-15 - Player HTML içerik çoklu yenilenme (flicker) düzeltmesi
+- Request: Playlist'teki HTML öğesi birkaç kez yenilenerek açılıyor, video ise tek seferde açılıyor
+- Root cause: İki sorun —
+  1. `playHtml()` iframe yüklenmeden ÖNCE `applyEnterTransition()` çağırıyordu (playImage ise onload SONRASI çağırır)
+  2. `hideAllContent()` HTML→HTML geçişinde bile iframe.src'yi `about:blank`'e set ediyordu → iframe iki kez yükleniyordu (about:blank → yeni url)
+- Changes:
+  1. `player.js playHtml()` — `iframe.onload` callback pattern eklendi (playImage ile aynı yaklaşım). Transition ve scheduleNext yükleme bittikten sonra çalışır. 5sn safety timeout eklendi.
+  2. `player.js hideAllContent()` — `nextContentType !== 'html'` koşulu eklendi, HTML→HTML geçişinde about:blank atanmaz
+  3. `public/player/sw.js` — Cache version v1.2.7 → v1.2.8
+- Files: public/player/assets/js/player.js, public/player/sw.js
+- Checks: JS syntax OK
+- Risk/Follow-up: iframe.onload bazı cross-origin sayfalar için gecikmeli ateşlenebilir — 5sn safety timeout bunu karşılar
+
+---
+
+## 2026-03-15 - Playlist şablon sekmesi kaldırıldı (HTML sekmesi yeterli)
+- Request: Playlist içerik ekleme modalından "Şablonlar" sekmesini, backend kodlarını ve çevirilerini kaldır — HTML Şablonlar sekmesi aynı işi yapıyor
+- Changes:
+  1. `PlaylistDetail.js` — Kaldırılan: `signageTemplates` property, `loadSignageTemplates()`, `renderTemplatesLibrary()`, `selectTemplate()`, `getTemplatePreviewUrl()`, templates tab butonu, templates tab switch case, templates event binding
+  2. 8 dil çeviri dosyası — `tabTemplates`, `emptyTemplates`, `emptyTemplatesHint`, `createTemplate` key'leri kaldırıldı
+- Files: public/assets/js/pages/signage/PlaylistDetail.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/signage.json
+- Checks: JS syntax OK, JSON valid (8 dosya)
+- Risk/Follow-up: Backend show.php'de type='template' desteği geriye uyumluluk için korundu (eski playlist'ler çalışmaya devam eder)
+
+---
+
+## 2026-03-15 - Player CSS transition/centering fix + FabricToHtmlConverter bug fixes
+- Request: 4 kritik FabricToHtmlConverter bug düzeltme (dinamik alanlar, pozisyonlama, video, görsel), video doldurma, HTML ortalama, player şablon geçiş animasyonu sağa kayma düzeltmesi
+- Changes:
+  1. `services/FabricToHtmlConverter.php` — Tam yeniden yazım: labelToFieldMap (60+ giriş) ile dinamik alan çözümleme, center origin pozisyon düzeltmesi, video-placeholder customType tanıma, isDataField guard ile image ambiguity çözümü, object-fit:cover video doldurma, detectBasePath/resolveMediaUrl düzeltmeleri
+  2. `public/player/assets/css/player.css` — Orientation-mismatch CSS'de transform tabanlı ortalamadan flexbox tabanlı ortalamaya geçiş (translateX(-50%) animasyon çakışması düzeltmesi)
+  3. `public/assets/js/pages/web-templates/WebTemplateList.js` — Önizleme butonu (ti-external-link) ve openPreview() metodu eklendi
+  4. `public/player/sw.js` — Cache version v1.2.6 → v1.2.7
+- Files: services/FabricToHtmlConverter.php, public/player/assets/css/player.css, public/assets/js/pages/web-templates/WebTemplateList.js, public/player/sw.js
+- Checks: PHP syntax OK (FabricToHtmlConverter.php), JS syntax OK (WebTemplateList.js)
+- Risk/Follow-up: Player CSS değişikliği PWA cihazlarda SW cache güncellemesi gerektirir (v1.2.7). Login yapılarak görsel doğrulama yapılmalı.
+
+---
+
+## 2026-03-14 - Fabric.js → HTML conversion for signage playlists (Phase 1)
+- Request: Dinamik alanlı ve videolu Fabric.js şablonları HTML'e dönüştürerek playlist'lere eklenip signage cihazlarına gönderilebilmesini sağla. Mevcut render akışına dokunmadan hibrit çözüm.
+- Changes:
+  1. `services/FabricToHtmlConverter.php` — Fabric.js JSON → bağımsız HTML dönüştürücü. Text, image, video, rect, circle, group, gradient destegi. Dinamik alan çözümleme (fieldBinding + {{placeholder}}). Ekrana sığdırma JS ile contain scaling.
+  2. `api/web-templates/generate-from-fabric.php` — POST endpoint. Template ID + product ID(s) alır, HTML oluşturur, diske kaydeder (`storage/companies/{id}/html-templates/`), web_templates tablosuna insert eder (versiyon kaydı dahil).
+  3. `api/web-templates/serve.php` — GET /{id}/serve endpoint. web_templates tablosundan HTML içeriği doğrudan sunar (iframe/player için, auth gerektirmez).
+  4. `api/index.php` — 2 yeni route: `POST /generate-from-fabric`, `GET /{id}/serve`
+  5. `PlaylistDetail.js` — "HTML Şablonlar" sekmesi eklendi. web_templates API'den published şablonları çeker, kart grid'de gösterir, seçince playlist'e type='html' olarak ekler (serve endpoint URL ile).
+  6. `ProductList.js` — DataTable aksiyonlarına "HTML Oluştur" (ti-code) eklendi. Modal ile şablon seç → API'ye gönder → HTML oluştur akışı.
+  7. 16 çeviri dosyası güncellendi (8 dil × 2 sayfa: products.json + signage.json)
+- Files: services/FabricToHtmlConverter.php (yeni), api/web-templates/generate-from-fabric.php (yeni), api/web-templates/serve.php (yeni), api/index.php, public/assets/js/pages/signage/PlaylistDetail.js, public/assets/js/pages/products/ProductList.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/{products,signage}.json
+- Checks: PHP syntax OK (4 dosya), JS syntax OK (2 dosya), JSON valid (16 dosya)
+- Risk/Follow-up:
+  - Fabric.js canvas → HTML dönüşümü piksel-piksel aynı olmayabilir (karmaşık efektler, özel fontlar)
+  - Faz 2: TV/tablet/mobil/özel ölçü seçenekleri, responsive CSS
+  - Faz 3: Widget sistemi (saat, tarih, kayan yazı), VvvebJs editör entegrasyonu, ürün güncellenince otomatik HTML yenileme
+  - serve.php şu an auth kontrolü yapmıyor — cihazlar doğrudan erişebilmeli ama ileride token bazlı erişim düşünülebilir
+
+---
+
 ## 2026-03-14 - Fix i18n folder name translations in media library
 - Request: Sub-folder names in Ortak Kütüphane always showed Turkish regardless of selected language
 - Root cause: `$FOLDER_NAME_KEY_MAP` in `_folder_i18n.php` was defined at file scope. When loaded via `require` inside a Router closure (`api/index.php`), the variable lived in the closure's local scope. `getFolderNameKey()` used `global $FOLDER_NAME_KEY_MAP` which searched PHP's global scope and found nothing → returned null for ALL paths.
@@ -4201,3 +4406,89 @@ Format:
 - Risks/Follow-up:
   - getNestedValue object type guard might affect code that intentionally looks up object subtrees (not expected in current codebase)
   - Sunucuya deploy gerekli (Docker rebuild + git pull)
+
+## 2026-03-14 - Add i18n translations for HTML template generation feature
+
+- Request: Add new i18n keys for HTML template generation (generateHtml) in products page and HTML template tab in signage playlists form
+- Changes:
+  - 8x `locales/{lang}/pages/products.json` (tr, en, ru, az, de, nl, fr, ar):
+    - Added `list.actions.generateHtml` key
+    - Added `generateHtml` top-level section with 12 keys (title, selectTemplate, selectTemplatePlaceholder, customName, namePlaceholder, info, generate, generating, success, failed, templateRequired, noTemplates)
+  - 8x `locales/{lang}/pages/signage.json` (tr, en, ru, az, de, nl, fr, ar):
+    - Added 4 keys inside `playlists.form`: tabHtmlTemplates, emptyHtmlTemplates, emptyHtmlTemplatesHint, goToHtmlTemplates
+- Files changed: 16 locale JSON files
+- Checks: All 16 JSON files validated with PHP json_decode - all OK
+- Risks/Follow-up: None - additive change only, no existing keys modified
+
+## 2026-03-14 - Fix FabricToHtmlConverter critical bugs + add preview icon to web-templates
+
+- Request: Fix 4 critical bugs in FabricToHtmlConverter (dynamic fields not resolving, wrong positioning, video not playing, images not showing) + add preview icon to web-templates page cards
+- Changes:
+  1. **FabricToHtmlConverter.php** — Complete rewrite:
+     - Added `buildFieldValues()` method matching PavoDisplayGateway's implementation (formatted prices, HAL künye fields, dates etc.)
+     - Added `$labelToFieldMap` static array (60+ entries) for customType='dynamic-text' fallback resolution when dynamicField/fieldBinding are missing (v7 bug)
+     - Fixed Fabric.js v7 center origin positioning: `originX/Y='center'` now subtracts half width/height from left/top
+     - Fixed video-placeholder customType: now accepts 'video-placeholder' (hyphen) in addition to 'video_placeholder' (underscore)
+     - Fixed image resolution: now checks customTypes 'image-placeholder', 'dynamic-image', 'slot-image', 'image', 'product_image'
+     - Added export exclusion for isRegionOverlay, excludeFromExport, isBackground objects
+     - Fixed group child positioning with center origin handling
+     - Added vertical centering for text elements (display:flex;align-items:center)
+     - `convertObject()` now takes `$fieldValues` parameter (pre-computed per product)
+  2. **WebTemplateList.js** — Added preview button (ti-external-link icon) to template card overlay, opens serve endpoint in new tab
+  3. Deleted temp debug files: temp_check_bindings.php, temp_check_templates.php, temp_check_texts.php
+- Files changed: services/FabricToHtmlConverter.php, public/assets/js/pages/web-templates/WebTemplateList.js
+- Checks: PHP syntax check passed (FabricToHtmlConverter.php)
+- Risks/Follow-up:
+  - Existing saved web_templates will NOT auto-update — they contain the old (broken) HTML. Users need to regenerate.
+  - labelToFieldMap depends on exact placeholder text matches — custom/unusual field labels won't be resolved
+
+## 2026-03-15 - Cihaza gönder/ata modallarında canlı HTML önizleme
+
+- Request: Ürünler sayfasındaki "Cihaza Gönder" ve "Etiket Ata" modallarına canlı HTML iframe önizlemesi ekle
+- Changes:
+  1. **ProductList.js `_renderTemplatePreview()`** — `productId` parametresi eklendi; productId varsa statik görsel yerine `/api/templates/:id/preview-html?product_id=xxx` iframe'i render eder, "Canlı HTML Önizleme" badge gösterir
+  2. **ProductList.js `_showSingleProductSendModal()`** — Preview card ve template change handler artık productId geçirir → şablon seçildikçe canlı HTML anında güncellenir
+  3. **ProductList.js `showAssignLabelModal()`** — Şablon seçimi altına önizleme card eklendi + template change event listener ile canlı güncelleme
+  4. **products.css** — `.template-preview-live` (iframe container), `.live-preview-badge` (mavi badge), `.assign-label-preview` (küçük önizleme) stilleri
+  5. **i18n** — `sendToDevice.liveHtmlPreview` key'i 8 dilde eklendi
+- Files changed: ProductList.js, products.css, locales/*/pages/products.json (8 dil)
+- Checks: PHP syntax check passed
+- Risks/Follow-up: Performans — her modal açılışında iframe yüklenir. TAKİP notu mevcut.
+
+## 2026-03-15 - Toplu gönderim modalına HTML önizleme + HTML şablon oluşturma
+
+- Request: Çoklu ürün gönder modalında cihaz tipi seçildikten sonra ürünlerin HTML önizlemesi ve HTML şablon oluşturma seçeneği
+- Changes:
+  1. **ProductList.js `_showBulkSendByDeviceTypeModal()`** — Cihaz tipi seçildikten sonra şablonu olan ürünlerin canlı HTML iframe önizlemesi grid'de gösteriliyor + "HTML Şablon Oluştur" butonu eklendi
+  2. **ProductList.js `_bulkCreateHtmlFromSendModal()`** — Yeni method: seçilen ürünler için ayrı ayrı veya birleşik HTML şablon oluşturma (generate-from-fabric API'si ile)
+  3. **products.css** — `.bulk-html-preview-grid/card/iframe/info/header/section` stilleri (grid layout, 220px card'lar, 160px iframe yüksekliği)
+  4. **i18n** — `sendToDevice.htmlPreviewTitle`, `createHtmlTemplate`, `createHtmlTitle`, `createHtmlInfo`, `createHtmlCombined` key'leri 8 dilde
+- Files changed: ProductList.js, products.css, locales/*/pages/products.json (8 dil)
+- Checks: JSON validation passed (tr, en), JS file readable
+- Risks/Follow-up: Çok fazla ürün seçildiğinde grid'deki iframe sayısı performansı etkileyebilir (max-height:360px scroll ile sınırlandırıldı)
+
+## 2026-03-15 - Çoklu ürün şablonu tespit edilemiyor (design_data eksik)
+
+- Request: Şablonları tekli→çoklu ürüne çevirince ürünler sayfası çoklu ürün şablonu olarak görmüyor, tekli de artık görmüyor
+- Root cause (3 katmanlı):
+  1. **API `design_data` dönmüyor**: `/templates` list endpoint'i `design_data`'yı varsayılan SELECT'e dahil etmiyor (performans için). Ama `showMultiProductSendModal()` `design_data` içindeki `multi-product-frame` objelerini arıyor → hiçbir zaman bulamıyor
+  2. **`grid_layout` kolonu SELECT'te yok**: API response'da `grid_layout` alanı hiç dönmüyordu
+  3. **`regions_config` kaydedilmiyor**: EditorWrapper.js save payload'ında `regions_config` hiç gönderilmiyordu → UPDATE'te DB'de null kalıyordu
+- Changes:
+  1. **api/templates/index.php** — `grid_layout` SELECT kolonlarına eklendi
+  2. **ProductList.js `showMultiProductSendModal()`** — API çağrısı `?include_content=1&per_page=200` ile yapılıyor (design_data dahil geliyor)
+  3. **EditorWrapper.js save payload** — `regions_config: gridManager.exportConfig()` eklendi (JSON string olarak)
+- Files changed: api/templates/index.php, ProductList.js, EditorWrapper.js
+- Checks: PHP syntax OK
+- Risk: `include_content=1` payload boyutunu artırır ama sadece multi-product modal açıldığında isteniyor (normal list etkilenmez)
+
+## 2026-03-15 - FabricToHtmlConverter multi-product-frame desteği
+
+- Request: Çoklu ürün çerçeveli şablonların HTML çıktısında slot içerikleri doğru ürün verileriyle gösterilmiyor
+- Root cause: FabricToHtmlConverter `multi-product-frame` customType'ını ve `slotId` prop'unu tanımıyordu. Slot objeleri sadece ilk ürünün verisiyle render ediliyordu.
+- Changes:
+  1. **FabricToHtmlConverter.php `convert()`** — Multi-product-frame tespit ve slot→ürün eşleştirme eklendi. `frameCols×frameRows` matrisinden slotId→productIndex map oluşturulur. `slotId` prop'lu objelere doğru ürün verileri atanır.
+  2. **FabricToHtmlConverter.php `convertObject()`** — Frame helper objeleri atlanıyor: `multi-product-frame` kendisi, `isSlotBackground`, `isSlotLabel`, `isSlotPlaceholder`, `isTransient`, `slot-label` customType
+- Files changed: services/FabricToHtmlConverter.php
+- Checks: PHP syntax OK
+- Risk: Slot objelerinin `slotId` prop'u doğru atanmış olmalı (editör bu prop'u otomatik atar)

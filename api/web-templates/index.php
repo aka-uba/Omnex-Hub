@@ -75,6 +75,7 @@ $query = "
         wt.version,
         wt.published_at,
         wt.scope,
+        wt.data_sources,
         wt.created_at,
         wt.updated_at,
         u.first_name || ' ' || u.last_name as created_by_name,

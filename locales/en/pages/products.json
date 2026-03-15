@@ -77,7 +77,8 @@
             "duplicate": "Duplicate",
             "delete": "Delete",
             "edit": "Edit",
-            "sendToDevice": "Send to Device"
+            "sendToDevice": "Send to Device",
+            "generateHtml": "Generate HTML"
         }
     },
     "import": {
@@ -703,6 +704,12 @@
         "bulkComplete": "{success} successful, {failed} failed",
         "previewLoadError": "Failed to load preview",
         "previewNotAvailable": "Preview not available",
+        "liveHtmlPreview": "Live HTML Preview",
+        "htmlPreviewTitle": "HTML Preview",
+        "createHtmlTemplate": "Create HTML Template",
+        "createHtmlTitle": "Create HTML Template",
+        "createHtmlInfo": "HTML template will be created for {count} products.",
+        "createHtmlCombined": "Combine all into one template",
         "renderingProgress": "Rendering product... ({current}/{total})",
         "sendingDeviceProgress": "Sending to device... ({current}/{total})",
         "checkingCache": "Checking cache...",
@@ -825,7 +832,18 @@
             "media": "Media",
             "priceStock": "Pricing & Stock",
             "labels": "Labels",
+            "deviceContent": "Device Content",
             "recordInfo": "History"
+        },
+        "deviceContent": {
+            "noContent": "No device assignments yet",
+            "noContentHint": "When you assign this product to a device with a template, a live preview will appear here",
+            "unknownTemplate": "Unknown Template",
+            "device": "device(s)",
+            "synced": "Synced",
+            "pending": "Pending",
+            "openPreview": "Full screen preview",
+            "editTemplate": "Edit template"
         },
         "notFound": "Product not found",
         "labelAssigned": "Label successfully assigned",
@@ -1169,7 +1187,13 @@
         "noSlotsAssigned": "At least one slot must have product assigned",
         "clearSlot": "Remove",
         "previewTitle": "Template Preview",
-        "noDevices": "No online devices found"
+        "noDevices": "No online devices found",
+        "saveAsHtml": "Save as HTML Template",
+        "saveAsHtmlHint": "Saves this design with product assignments as HTML to the web templates page",
+        "htmlSaved": "HTML template created successfully",
+        "htmlUpdated": "HTML template updated successfully",
+        "htmlSaveFailed": "Failed to create HTML template",
+        "noSlotAssigned": "Assign at least one product to a slot"
     },
     "priceHistory": {
         "title": "Price History",
@@ -1215,5 +1239,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "Generate HTML Template",
+        "selectTemplate": "Select Template",
+        "selectTemplatePlaceholder": "Select a template...",
+        "customName": "Custom Name",
+        "namePlaceholder": "Leave empty for auto-generated name",
+        "info": "A standalone HTML page will be created by combining the selected template with product data. You can add this HTML page to playlists and send to signage devices.",
+        "generate": "Generate HTML",
+        "generating": "Generating HTML...",
+        "success": "HTML template created successfully",
+        "updated": "HTML template updated successfully",
+        "failed": "Failed to create HTML template",
+        "templateRequired": "Please select a template",
+        "noTemplates": "No signage/TV templates found",
+        "bulkButton": "Generate HTML",
+        "bulkTitle": "Generate HTML for {count} Products",
+        "bulkInfo": "HTML templates will be created for {count} selected products.",
+        "bulkGenerating": "Generating HTML for {count} products...",
+        "bulkSuccess": "{count} HTML templates created successfully",
+        "bulkPartialFail": "Failed to create HTML for {failed} products",
+        "separatePerProduct": "Create separate HTML for each product"
     }
 }

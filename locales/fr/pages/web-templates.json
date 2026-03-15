@@ -65,9 +65,14 @@
         "landscape": "Paysage",
         "portrait": "Portrait"
     },
+    "source": {
+        "fabricTemplate": "Depuis modèle",
+        "fabricHint": "Créé à partir d'un modèle Fabric.js — les données produit se mettent à jour automatiquement"
+    },
     "actions": {
         "new": "Nouveau modèle",
         "edit": "Modifier",
+        "editTemplate": "Modifier le modèle",
         "delete": "Supprimer",
         "duplicate": "Dupliquer",
         "clone": "Cloner",
@@ -78,7 +83,10 @@
         "viewVersions": "Voir les versions",
         "retry": "Réessayer",
         "createFirst": "Créer le premier modèle",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "selectAll": "Tout sélectionner",
+        "perPage": "Par page",
+        "saving": "Enregistrement..."
     },
     "editor": {
         "title": "Éditeur de modèles Web",
@@ -130,7 +138,9 @@
         "deleted": "Modèle Web supprimé",
         "deleteError": "Erreur lors de la suppression",
         "duplicated": "Modèle Web dupliqué",
-        "duplicateError": "Erreur lors de la duplication"
+        "duplicateError": "Erreur lors de la duplication",
+        "bulkDeleted": "{count} modèles supprimés",
+        "bulkSkipped": "{count} modèles ignorés (affectations actives)"
     },
     "toast": {
         "created": "Modèle Web créé",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Supprimer le modèle",
         "deleteMessage": "Êtes-vous sûr de vouloir supprimer le modèle \"{name}\" ?",
+        "bulkDeleteMessage": "Êtes-vous sûr de vouloir supprimer {count} modèles ?",
         "delete": "Êtes-vous sûr de vouloir supprimer ce modèle Web ?",
         "deleteWarning": "Cette action ne peut pas être annulée. Les assignations d'appareils liées à ce modèle seront également supprimées.",
         "publish": "Êtes-vous sûr de vouloir publier ce modèle ?",

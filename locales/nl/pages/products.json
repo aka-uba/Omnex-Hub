@@ -51,7 +51,18 @@
             "media": "Media",
             "priceStock": "Prijzen en voorraad",
             "labels": "Etiketten",
+            "deviceContent": "Apparaatinhoud",
             "recordInfo": "Geschiedenis"
+        },
+        "deviceContent": {
+            "noContent": "Nog geen apparaattoewijzingen",
+            "noContentHint": "Wanneer u dit product met een sjabloon aan een apparaat toewijst, verschijnt hier een live voorbeeld",
+            "unknownTemplate": "Onbekend sjabloon",
+            "device": "apparaat",
+            "synced": "Gesynchroniseerd",
+            "pending": "In afwachting",
+            "openPreview": "Volledig scherm voorbeeld",
+            "editTemplate": "Sjabloon bewerken"
         },
         "notFound": "Product niet gevonden",
         "labelAssigned": "Label succesvol toegewezen",
@@ -213,7 +224,8 @@
             "delete": "Verwijderen",
             "duplicate": "Dupliceren",
             "edit": "Bewerking",
-            "sendToDevice": "Verzenden naar apparaat"
+            "sendToDevice": "Verzenden naar apparaat",
+            "generateHtml": "HTML maken"
         }
     },
     "import": {
@@ -837,6 +849,12 @@
         "bulkComplete": "{success} succesvol, {failed} mislukt",
         "previewLoadError": "Kan voorbeeld niet laden",
         "previewNotAvailable": "Voorbeeld niet beschikbaar",
+        "liveHtmlPreview": "Live HTML-voorbeeld",
+        "htmlPreviewTitle": "HTML-voorbeeld",
+        "createHtmlTemplate": "HTML-sjabloon maken",
+        "createHtmlTitle": "HTML-sjabloon maken",
+        "createHtmlInfo": "Er wordt een HTML-sjabloon gemaakt voor {count} producten.",
+        "createHtmlCombined": "Alles in één sjabloon samenvoegen",
         "renderingProgress": "Product weergeven... ({current}/{total})",
         "sendingDeviceProgress": "Verzenden naar apparaat... ({current}/{total})",
         "checkingCache": "Cache controleren...",
@@ -1166,7 +1184,13 @@
         "noSlotsAssigned": "Er moet aan ten minste één slot een product zijn toegewezen",
         "clearSlot": "Verwijderen",
         "previewTitle": "Sjabloonvoorbeeld",
-        "noDevices": "Geen online apparaten gevonden"
+        "noDevices": "Geen online apparaten gevonden",
+        "saveAsHtml": "Opslaan als HTML-sjabloon",
+        "saveAsHtmlHint": "Slaat dit ontwerp met producttoewijzingen op als HTML op de websjablonen-pagina",
+        "htmlSaved": "HTML-sjabloon succesvol aangemaakt",
+        "htmlUpdated": "HTML-sjabloon succesvol bijgewerkt",
+        "htmlSaveFailed": "Kan HTML-sjabloon niet aanmaken",
+        "noSlotAssigned": "Wijs ten minste één product toe aan een slot"
     },
     "priceHistory": {
         "title": "Prijsgeschiedenis",
@@ -1212,5 +1236,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "HTML-sjabloon maken",
+        "selectTemplate": "Sjabloon selecteren",
+        "selectTemplatePlaceholder": "Selecteer een sjabloon...",
+        "customName": "Aangepaste naam",
+        "namePlaceholder": "Leeg laten voor automatische naam",
+        "info": "Er wordt een zelfstandige HTML-pagina gemaakt door het geselecteerde sjabloon te combineren met productgegevens. U kunt deze HTML-pagina toevoegen aan afspeellijsten en naar signage-apparaten sturen.",
+        "generate": "HTML maken",
+        "generating": "HTML wordt gemaakt...",
+        "success": "HTML-sjabloon succesvol aangemaakt",
+        "updated": "HTML-sjabloon succesvol bijgewerkt",
+        "failed": "HTML-sjabloon kon niet worden aangemaakt",
+        "templateRequired": "Selecteer een sjabloon",
+        "noTemplates": "Geen signage/TV-sjablonen gevonden",
+        "bulkButton": "HTML Genereren",
+        "bulkTitle": "HTML genereren voor {count} producten",
+        "bulkInfo": "Er worden HTML-sjablonen gemaakt voor {count} geselecteerde producten.",
+        "bulkGenerating": "HTML genereren voor {count} producten...",
+        "bulkSuccess": "{count} HTML-sjablonen succesvol aangemaakt",
+        "bulkPartialFail": "HTML aanmaken mislukt voor {failed} producten",
+        "separatePerProduct": "Aparte HTML voor elk product maken"
     }
 }

@@ -77,7 +77,8 @@
             "duplicate": "Çoğalt",
             "delete": "Sil",
             "edit": "Düzenle",
-            "sendToDevice": "Cihaza Gönder"
+            "sendToDevice": "Cihaza Gönder",
+            "generateHtml": "HTML Oluştur"
         }
     },
     "import": {
@@ -701,6 +702,12 @@
         "bulkComplete": "{success} başarılı, {failed} başarısız",
         "previewLoadError": "Önizleme yüklenemedi",
         "previewNotAvailable": "Önizleme mevcut değil",
+        "liveHtmlPreview": "Canlı HTML Önizleme",
+        "htmlPreviewTitle": "HTML Önizleme",
+        "createHtmlTemplate": "HTML Şablon Oluştur",
+        "createHtmlTitle": "HTML Şablon Oluştur",
+        "createHtmlInfo": "{count} ürün için HTML şablon oluşturulacak.",
+        "createHtmlCombined": "Tümünü tek şablonda birleştir",
         "renderingProgress": "Ürün render ediliyor... ({current}/{total})",
         "sendingDeviceProgress": "Cihaza gönderiliyor... ({current}/{total})",
         "checkingCache": "Cache kontrol ediliyor...",
@@ -823,7 +830,18 @@
             "media": "Medya",
             "priceStock": "Fiyatlandırma & Stok",
             "labels": "Etiketler",
+            "deviceContent": "Cihaz İçeriği",
             "recordInfo": "Geçmiş"
+        },
+        "deviceContent": {
+            "noContent": "Henüz cihaz ataması yok",
+            "noContentHint": "Bu ürünü bir şablonla cihaza atadığınızda burada canlı önizleme görünecek",
+            "unknownTemplate": "Bilinmeyen Şablon",
+            "device": "cihaz",
+            "synced": "Senkron",
+            "pending": "Beklemede",
+            "openPreview": "Tam ekran önizle",
+            "editTemplate": "Şablonu düzenle"
         },
         "notFound": "Ürün bulunamadı",
         "labelAssigned": "Etiket başarıyla atandı",
@@ -1167,7 +1185,13 @@
         "noSlotsAssigned": "En az bir alana ürün atanmalıdır",
         "clearSlot": "Kaldır",
         "previewTitle": "Şablon Önizleme",
-        "noDevices": "Çevrimiçi cihaz bulunamadı"
+        "noDevices": "Çevrimiçi cihaz bulunamadı",
+        "saveAsHtml": "HTML Şablon Olarak Kaydet",
+        "saveAsHtmlHint": "Bu tasarımı ürün atamaları ile web şablonları sayfasına HTML olarak kaydeder",
+        "htmlSaved": "HTML şablon başarıyla oluşturuldu",
+        "htmlUpdated": "HTML şablon başarıyla güncellendi",
+        "htmlSaveFailed": "HTML şablon oluşturulamadı",
+        "noSlotAssigned": "En az bir slot'a ürün atayın"
     },
     "priceHistory": {
         "title": "Fiyat Geçmişi",
@@ -1213,5 +1237,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "HTML Şablon Oluştur",
+        "selectTemplate": "Şablon Seçin",
+        "selectTemplatePlaceholder": "Şablon seçin...",
+        "customName": "Özel İsim",
+        "namePlaceholder": "Boş bırakılırsa otomatik oluşturulur",
+        "info": "Seçilen şablon ve ürün verileri birleştirilerek bağımsız bir HTML sayfası oluşturulacak. Bu HTML sayfasını playlist'lere ekleyerek signage cihazlarına gönderebilirsiniz.",
+        "generate": "HTML Oluştur",
+        "generating": "HTML oluşturuluyor...",
+        "success": "HTML şablon başarıyla oluşturuldu",
+        "updated": "HTML şablon başarıyla güncellendi",
+        "failed": "HTML şablon oluşturulamadı",
+        "templateRequired": "Lütfen bir şablon seçin",
+        "noTemplates": "Signage/TV şablonu bulunamadı",
+        "bulkButton": "HTML Oluştur",
+        "bulkTitle": "{count} Ürün için HTML Oluştur",
+        "bulkInfo": "Seçilen {count} ürün için HTML şablon oluşturulacak.",
+        "bulkGenerating": "{count} ürün için HTML oluşturuluyor...",
+        "bulkSuccess": "{count} HTML şablon başarıyla oluşturuldu",
+        "bulkPartialFail": "{failed} ürün için HTML oluşturulamadı",
+        "separatePerProduct": "Her ürün için ayrı HTML oluştur"
     }
 }

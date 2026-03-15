@@ -186,6 +186,11 @@ export class ProductDetailPage {
                     <i class="ti ti-currency-lira"></i>
                     <span>${this.__('detail.tabs.priceStock')}</span>
                 </button>
+                <button class="settings-tab" data-pd-tab="deviceContent">
+                    <i class="ti ti-device-desktop"></i>
+                    <span>${this.__('detail.tabs.deviceContent')}</span>
+                    ${labelsCount > 0 ? `<span class="pd-tab-badge">${labelsCount}</span>` : ''}
+                </button>
                 <button class="settings-tab" data-pd-tab="meta">
                     <i class="ti ti-file-info"></i>
                     <span>${this.__('detail.tabs.recordInfo')}</span>
@@ -568,6 +573,11 @@ export class ProductDetailPage {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Tab: Device Content (Canlı HTML Önizleme) -->
+            <div class="settings-tab-content" id="pd-tab-deviceContent">
+                ${this.renderDeviceContentTab(p)}
             </div>
 
             <!-- Tab: Record Info -->
@@ -1891,6 +1901,81 @@ export class ProductDetailPage {
                 }
             }
         });
+    }
+
+    /**
+     * Cihaz İçeriği sekmesi — atanmış şablonların canlı HTML önizlemesi
+     */
+    renderDeviceContentTab(product) {
+        const labels = product.labels || [];
+
+        if (labels.length === 0) {
+            return `
+                <div class="empty-state" style="padding:48px 24px">
+                    <i class="ti ti-device-desktop-off" style="font-size:48px;color:var(--text-muted)"></i>
+                    <h3 style="margin:12px 0 4px">${this.__('detail.deviceContent.noContent')}</h3>
+                    <p style="color:var(--text-muted)">${this.__('detail.deviceContent.noContentHint')}</p>
+                </div>
+            `;
+        }
+
+        // Benzersiz şablon ID'lerini topla (aynı şablon birden fazla cihaza atanmış olabilir)
+        const seenTemplates = new Set();
+        const uniqueLabels = [];
+        for (const label of labels) {
+            if (label.template_id && !seenTemplates.has(label.template_id)) {
+                seenTemplates.add(label.template_id);
+                uniqueLabels.push(label);
+            }
+        }
+
+        const basePath = this.app.config.basePath || '';
+
+        return `
+            <div class="pd-device-content-grid">
+                ${uniqueLabels.map(label => {
+                    const previewUrl = `${basePath}/api/templates/${label.template_id}/preview-html?product_id=${product.id}`;
+                    const deviceCount = labels.filter(l => l.template_id === label.template_id).length;
+                    const deviceNames = labels
+                        .filter(l => l.template_id === label.template_id)
+                        .map(l => this.escapeHtml(l.device_name))
+                        .join(', ');
+
+                    return `
+                        <div class="pd-device-content-card">
+                            <div class="pd-device-content-preview">
+                                <iframe src="${previewUrl}"
+                                        style="width:100%;height:100%;border:none;pointer-events:none;position:absolute;left:0;top:0"
+                                        loading="lazy" sandbox="allow-scripts"></iframe>
+                            </div>
+                            <div class="pd-device-content-info">
+                                <h4>${this.escapeHtml(label.template_name || this.__('detail.deviceContent.unknownTemplate'))}</h4>
+                                <div class="pd-device-content-meta">
+                                    <span title="${deviceNames}">
+                                        <i class="ti ti-device-desktop"></i> ${deviceCount} ${this.__('detail.deviceContent.device')}
+                                    </span>
+                                    <span class="badge ${label.status === 'synced' ? 'badge-success' : 'badge-warning'}" style="font-size:10px">
+                                        ${label.status === 'synced' ? this.__('detail.deviceContent.synced') : this.__('detail.deviceContent.pending')}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="pd-device-content-actions">
+                                <button class="btn btn-sm btn-outline"
+                                        onclick="window.open('${previewUrl}', '_blank')"
+                                        title="${this.__('detail.deviceContent.openPreview')}">
+                                    <i class="ti ti-external-link"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline"
+                                        onclick="window.location.hash='#/templates/editor?id=${label.template_id}'"
+                                        title="${this.__('detail.deviceContent.editTemplate')}">
+                                    <i class="ti ti-palette"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     }
 
     destroy() {

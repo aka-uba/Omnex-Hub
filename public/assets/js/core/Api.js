@@ -65,7 +65,7 @@ export class Api {
                     credentials: 'include'
                 });
                 const data = await resp.json();
-                this.csrfToken = data.token;
+                this.csrfToken = data.data?.token || data.token;
             } catch (e) {
                 // Silently fail - CSRF may not be required in dev
             }

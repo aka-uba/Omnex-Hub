@@ -2980,6 +2980,140 @@
     font-weight: var(--font-medium);
 }
 
+/* Live HTML iframe preview */
+.template-preview-live {
+    padding: 0;
+    position: relative;
+}
+
+.template-preview-live iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+}
+
+.live-preview-badge {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(34, 139, 230, 0.85);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    z-index: 2;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+}
+
+.live-preview-badge i {
+    font-size: 11px;
+}
+
+/* Assign label modal preview */
+.assign-label-preview {
+    min-height: 160px;
+}
+
+.assign-label-preview .template-preview-image {
+    height: 160px;
+}
+
+/* Bulk HTML preview grid in send modal */
+.bulk-html-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.bulk-html-preview-header h4 {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.bulk-html-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-3);
+    max-height: 360px;
+    overflow-y: auto;
+    padding: var(--space-1);
+}
+
+.bulk-html-preview-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-secondary);
+    transition: all var(--transition-fast);
+}
+
+.bulk-html-preview-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+}
+
+.bulk-html-preview-iframe {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    background: #000;
+    overflow: hidden;
+}
+
+.bulk-html-preview-iframe iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none;
+}
+
+.bulk-html-preview-info {
+    padding: var(--space-2) var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-top: 1px solid var(--border-light);
+}
+
+.bulk-html-preview-info .product-name {
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bulk-html-preview-info .device-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bulk-html-preview-section {
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--space-4);
+}
+
 .template-preview-info {
     padding: var(--space-3);
     border-top: 1px solid var(--border-light);
@@ -5360,6 +5494,43 @@
     color: var(--color-danger);
 }
 
+/* Multi-product HTML preview & create section */
+.mp-html-section {
+    border-top: 1px solid var(--border-light);
+    padding-top: var(--space-3);
+}
+
+.mp-html-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.mp-html-preview-frame {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.mp-html-preview-frame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none;
+}
+
+.mp-html-actions {
+    margin-top: var(--space-3);
+}
+
 /* Dark mode: product stat cards */
 .dark .product-stat-card {
     background: var(--bg-tertiary, #161b22);
@@ -5484,5 +5655,95 @@
     .kunye-step-line {
         min-width: 12px;
         margin-top: 14px;
+    }
+}
+
+/* =====================================================
+   Product Detail - Device Content Tab (Canlı HTML Önizleme)
+   ===================================================== */
+.pd-device-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 4px;
+}
+
+.pd-device-content-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pd-device-content-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.dark .pd-device-content-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.pd-device-content-preview {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+    background: #000;
+    overflow: hidden;
+}
+
+.pd-device-content-preview iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    pointer-events: none;
+}
+
+.pd-device-content-info {
+    padding: 12px 16px 8px;
+}
+
+.pd-device-content-info h4 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pd-device-content-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.pd-device-content-meta i {
+    font-size: 14px;
+    margin-right: 2px;
+}
+
+.pd-device-content-actions {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.pd-device-content-actions .btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+@media (max-width: 640px) {
+    .pd-device-content-grid {
+        grid-template-columns: 1fr;
     }
 }

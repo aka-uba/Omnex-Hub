@@ -3343,6 +3343,7 @@ export class EditorWrapper {
                 design_data: JSON.stringify(canvasData),
                 target_device_type: this._currentPresetId || 'custom',
                 grid_layout: this._currentGridLayoutId || 'single',
+                regions_config: this.editor?.gridManager?.exportConfig ? JSON.stringify(this.editor.gridManager.exportConfig()) : null,
                 grid_visible: this.editor?.gridManager?.isGridVisible() ?? true,
                 orientation: height > width ? 'portrait' : 'landscape',
                 preview_image: thumbnail,

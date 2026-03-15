@@ -65,9 +65,14 @@
         "landscape": "منظر جمالي",
         "portrait": "لَوحَة"
     },
+    "source": {
+        "fabricTemplate": "من القالب",
+        "fabricHint": "تم إنشاؤه من قالب Fabric.js — يتم تحديث بيانات المنتج تلقائيًا"
+    },
     "actions": {
         "new": "قالب جديد",
         "edit": "يحرر",
+        "editTemplate": "تعديل القالب",
         "delete": "يمسح",
         "duplicate": "ينسخ",
         "clone": "استنساخ",
@@ -78,7 +83,10 @@
         "viewVersions": "عرض الإصدارات",
         "retry": "أعد المحاولة",
         "createFirst": "إنشاء القالب الأول",
-        "cancel": "يلغي"
+        "cancel": "يلغي",
+        "selectAll": "تحديد الكل",
+        "perPage": "لكل صفحة",
+        "saving": "جاري الحفظ..."
     },
     "editor": {
         "title": "محرر قوالب الويب",
@@ -130,7 +138,9 @@
         "deleted": "تم حذف قالب الويب",
         "deleteError": "حدث خطأ أثناء الحذف",
         "duplicated": "قالب الويب مكرر",
-        "duplicateError": "حدث خطأ أثناء التكرار"
+        "duplicateError": "حدث خطأ أثناء التكرار",
+        "bulkDeleted": "تم حذف {count} قالب",
+        "bulkSkipped": "تم تخطي {count} قالب (تعيينات نشطة)"
     },
     "toast": {
         "created": "تم إنشاء قالب الويب",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "حذف القالب",
         "deleteMessage": "هل أنت متأكد أنك تريد حذف القالب \"{name}\"؟",
+        "bulkDeleteMessage": "هل أنت متأكد من حذف {count} قالب؟",
         "delete": "هل أنت متأكد أنك تريد حذف قالب الويب هذا؟",
         "deleteWarning": "لا يمكن التراجع عن هذا الإجراء. سيتم أيضًا حذف تعيينات الأجهزة المرتبطة بهذا القالب.",
         "publish": "هل أنت متأكد أنك تريد نشر هذا القالب؟",

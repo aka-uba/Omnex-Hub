@@ -65,9 +65,14 @@
         "landscape": "Mənzərə",
         "portrait": "Portret"
     },
+    "source": {
+        "fabricTemplate": "Şablondan",
+        "fabricHint": "Fabric.js şablonundan yaradılıb — məhsul məlumatları avtomatik yenilənir"
+    },
     "actions": {
         "new": "Yeni Şablon",
         "edit": "Redaktə et",
+        "editTemplate": "Şablonu Redaktə Et",
         "delete": "Sil",
         "duplicate": "Dublikat",
         "clone": "Klon",
@@ -78,7 +83,10 @@
         "viewVersions": "Versiyalara baxın",
         "retry": "Yenidən cəhd edin",
         "createFirst": "İlk Şablon Yaradın",
-        "cancel": "Ləğv et"
+        "cancel": "Ləğv et",
+        "selectAll": "Hamısını Seç",
+        "perPage": "Səhifə başına",
+        "saving": "Saxlanılır..."
     },
     "editor": {
         "title": "Veb Şablon Redaktoru",
@@ -130,7 +138,9 @@
         "deleted": "Veb şablonu silindi",
         "deleteError": "Silinmə zamanı xəta baş verdi",
         "duplicated": "Veb şablonu dublikatlandı",
-        "duplicateError": "Dublikasiya zamanı xəta baş verdi"
+        "duplicateError": "Dublikasiya zamanı xəta baş verdi",
+        "bulkDeleted": "{count} şablon silindi",
+        "bulkSkipped": "{count} şablon atlandı (aktiv təyinat)"
     },
     "toast": {
         "created": "Veb şablon yaradıldı",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Şablonu silin",
         "deleteMessage": "\"{name}\" şablonunu silmək istədiyinizə əminsiniz?",
+        "bulkDeleteMessage": "{count} şablonu silmək istədiyinizə əminsiniz?",
         "delete": "Bu veb şablonunu silmək istədiyinizə əminsiniz?",
         "deleteWarning": "Bu əməliyyat geri qaytarıla bilməz. Bu şablonla əlaqələndirilmiş cihaz təyinatları da silinəcək.",
         "publish": "Bu şablonu dərc etmək istədiyinizə əminsiniz?",

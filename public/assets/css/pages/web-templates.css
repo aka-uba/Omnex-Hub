@@ -30,12 +30,75 @@
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .template-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
     border-color: var(--color-primary);
+}
+
+.template-card.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.3);
+}
+
+/* Card Selection Checkbox */
+.wt-card-select {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.wt-card-select:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.wt-card-select .form-check-input {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Select All wrapper */
+.wt-select-all-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.wt-select-all-wrapper:hover {
+    background: var(--bg-secondary);
+}
+
+.wt-select-all-wrapper .form-check-input {
+    margin: 0;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.wt-select-all-wrapper .filter-label {
+    display: inline !important;
+    font-weight: 500;
 }
 
 /* Thumbnail Section */
@@ -190,6 +253,77 @@
 }
 
 /* ============================================
+   Pagination
+   ============================================ */
+
+.wt-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0 0;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.wt-pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.wt-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wt-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wt-page-btn:hover:not(:disabled):not(.active) {
+    background: var(--bg-secondary);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.wt-page-btn.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+}
+
+.wt-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.wt-page-dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 36px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ============================================
    Empty & Loading States
    ============================================ */
 
@@ -260,6 +394,11 @@
     .template-cards {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
+
+    .wt-pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 /* Web Templates filter compact - mobile */
@@ -285,7 +424,7 @@
         padding: 0.35rem 0.5rem;
     }
 
-    .card:has(~ .card .templates-grid) .filter-label {
+    .card:has(~ .card .templates-grid) .filter-label:not(.wt-select-all-wrapper .filter-label) {
         display: none;
     }
 
@@ -327,6 +466,10 @@
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
 
+.dark-mode .template-card.selected {
+    box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.4);
+}
+
 .dark-mode .template-card-thumbnail {
     background: var(--bg-tertiary);
 }
@@ -334,6 +477,15 @@
 .dark-mode .template-card-overlay .btn-icon {
     background: rgba(30, 30, 46, 0.95);
     color: var(--text-primary);
+}
+
+.dark-mode .wt-card-select {
+    background: rgba(30, 30, 46, 0.9);
+}
+
+.dark-mode .wt-page-btn {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
 }
 
 .dark-mode .empty-state i,

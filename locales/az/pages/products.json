@@ -77,7 +77,8 @@
             "delete": "Sil",
             "duplicate": "Dublikat",
             "edit": "Redaktə et",
-            "sendToDevice": "Cihaza göndərin"
+            "sendToDevice": "Cihaza göndərin",
+            "generateHtml": "HTML Yarat"
         }
     },
     "import": {
@@ -701,6 +702,12 @@
         "bulkComplete": "{success} uğurlu, {failed} uğursuz",
         "previewLoadError": "Önizləməni yükləmək alınmadı",
         "previewNotAvailable": "Önizləmə mövcud deyil",
+        "liveHtmlPreview": "Canlı HTML Önizləmə",
+        "htmlPreviewTitle": "HTML Önizləmə",
+        "createHtmlTemplate": "HTML Şablon Yarat",
+        "createHtmlTitle": "HTML Şablon Yarat",
+        "createHtmlInfo": "{count} məhsul üçün HTML şablon yaradılacaq.",
+        "createHtmlCombined": "Hamısını bir şablonda birləşdir",
         "renderingProgress": "Məhsul göstərilir... ({current}/{total})",
         "sendingDeviceProgress": "Cihaza göndərilir... ({current}/{total})",
         "checkingCache": "Keş yoxlanılır...",
@@ -823,7 +830,18 @@
             "media": "Media",
             "priceStock": "Qiymət və Fond",
             "labels": "Etiketlər",
+            "deviceContent": "Cihaz Məzmunu",
             "recordInfo": "Tarix"
+        },
+        "deviceContent": {
+            "noContent": "Hələ cihaz təyinatı yoxdur",
+            "noContentHint": "Bu məhsulu şablonla cihaza təyin etdikdə burada canlı önizləmə görünəcək",
+            "unknownTemplate": "Naməlum Şablon",
+            "device": "cihaz",
+            "synced": "Sinxron",
+            "pending": "Gözləmədə",
+            "openPreview": "Tam ekran önizləmə",
+            "editTemplate": "Şablonu redaktə et"
         },
         "notFound": "Məhsul tapılmadı",
         "labelAssigned": "Etiket uğurla təyin edildi",
@@ -1167,7 +1185,13 @@
         "noSlotsAssigned": "Ən azı bir yuvaya məhsul təyin edilməlidir",
         "clearSlot": "Sil",
         "previewTitle": "Şablona ön baxış",
-        "noDevices": "Heç bir onlayn cihaz tapılmadı"
+        "noDevices": "Heç bir onlayn cihaz tapılmadı",
+        "saveAsHtml": "HTML Şablon Olaraq Saxla",
+        "saveAsHtmlHint": "Bu dizaynı məhsul təyinatları ilə veb şablonlar səhifəsinə HTML olaraq saxlayır",
+        "htmlSaved": "HTML şablon uğurla yaradıldı",
+        "htmlUpdated": "HTML şablon uğurla yeniləndi",
+        "htmlSaveFailed": "HTML şablon yaradıla bilmədi",
+        "noSlotAssigned": "Ən azı bir slota məhsul təyin edin"
     },
     "priceHistory": {
         "title": "Qiymət Tarixçəsi",
@@ -1213,5 +1237,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "HTML Şablon Yarat",
+        "selectTemplate": "Şablon Seçin",
+        "selectTemplatePlaceholder": "Şablon seçin...",
+        "customName": "Xüsusi Ad",
+        "namePlaceholder": "Boş buraxılsa avtomatik yaradılacaq",
+        "info": "Seçilmiş şablon və məhsul məlumatları birləşdirilərək müstəqil HTML səhifəsi yaradılacaq. Bu HTML səhifəni pleylistlərə əlavə edib signage cihazlarına göndərə bilərsiniz.",
+        "generate": "HTML Yarat",
+        "generating": "HTML yaradılır...",
+        "success": "HTML şablon uğurla yaradıldı",
+        "updated": "HTML şablon uğurla yeniləndi",
+        "failed": "HTML şablon yaradıla bilmədi",
+        "templateRequired": "Zəhmət olmasa bir şablon seçin",
+        "noTemplates": "Signage/TV şablonu tapılmadı",
+        "bulkButton": "HTML Yarat",
+        "bulkTitle": "{count} Məhsul üçün HTML Yarat",
+        "bulkInfo": "Seçilmiş {count} məhsul üçün HTML şablon yaradılacaq.",
+        "bulkGenerating": "{count} məhsul üçün HTML yaradılır...",
+        "bulkSuccess": "{count} HTML şablon uğurla yaradıldı",
+        "bulkPartialFail": "{failed} məhsul üçün HTML yaradıla bilmədi",
+        "separatePerProduct": "Hər məhsul üçün ayrı HTML yarat"
     }
 }

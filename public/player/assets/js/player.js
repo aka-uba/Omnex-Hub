@@ -2613,8 +2613,9 @@ class OmnexPlayer {
         this.elements.imageContent.onload = null;
         this.elements.imageContent.onerror = null;
 
-        // Clear iframe src only when switching away from html content
-        if (this._currentContentType === 'html') {
+        // Clear iframe src only when switching AWAY from html content
+        // (not for html→html transitions — playHtml will set new src directly)
+        if (this._currentContentType === 'html' && nextContentType !== 'html') {
             // Delay clearing iframe to allow exit transition to play
             if (hasTransition && prevElement === this.elements.htmlContent) {
                 setTimeout(() => {
@@ -3997,24 +3998,50 @@ class OmnexPlayer {
             contentContainer.classList.remove('show-overlay-mask');
         }
 
-        // Show iframe with transition
-        this.applyEnterTransition(iframe);
+        // Prepare iframe (hidden until loaded)
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.border = 'none';
         iframe.style.backgroundColor = '#000';
 
-        // Set URL (proxied or direct)
-        iframe.src = finalUrl;
+        // Clear previous handlers
+        iframe.onload = null;
+        iframe.onerror = null;
 
-        // Handle load errors - try direct URL as fallback if proxy failed
-        iframe.onerror = () => {
-            if (finalUrl !== originalUrl) {
-                iframe.src = originalUrl;
-            }
+        let loaded = false;
+        const duration = this.getScheduledDuration(item);
+
+        iframe.onload = () => {
+            if (loaded) return; // Prevent double-fire
+            loaded = true;
+            // Show iframe with transition AFTER content is loaded (like playImage)
+            this.applyEnterTransition(iframe);
+            this.scheduleNext(duration);
         };
 
-        this.scheduleNext(this.getScheduledDuration(item));
+        iframe.onerror = () => {
+            if (loaded) return;
+            // Handle load errors - try direct URL as fallback if proxy failed
+            if (finalUrl !== originalUrl) {
+                iframe.src = originalUrl;
+                return;
+            }
+            loaded = true;
+            this.applyEnterTransition(iframe);
+            this.scheduleNext(duration);
+        };
+
+        // Set URL (proxied or direct) — triggers load
+        iframe.src = finalUrl;
+
+        // Safety timeout: if onload doesn't fire within 5s, show anyway
+        setTimeout(() => {
+            if (!loaded) {
+                loaded = true;
+                this.applyEnterTransition(iframe);
+                this.scheduleNext(duration);
+            }
+        }, 5000);
     }
 
     /**

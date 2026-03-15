@@ -65,9 +65,14 @@
         "landscape": "Landscape",
         "portrait": "Portrait"
     },
+    "source": {
+        "fabricTemplate": "From Template",
+        "fabricHint": "Generated from Fabric.js template — product data auto-updates"
+    },
     "actions": {
         "new": "New Template",
         "edit": "Edit",
+        "editTemplate": "Edit Template",
         "delete": "Delete",
         "duplicate": "Duplicate",
         "clone": "Clone",
@@ -78,7 +83,10 @@
         "viewVersions": "View Versions",
         "retry": "Retry",
         "createFirst": "Create First Template",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "selectAll": "Select All",
+        "perPage": "Per page",
+        "saving": "Saving..."
     },
     "editor": {
         "title": "Web Template Editor",
@@ -130,7 +138,9 @@
         "deleted": "Web template deleted",
         "deleteError": "Error occurred during deletion",
         "duplicated": "Web template duplicated",
-        "duplicateError": "Error occurred during duplication"
+        "duplicateError": "Error occurred during duplication",
+        "bulkDeleted": "{count} templates deleted",
+        "bulkSkipped": "{count} templates skipped (active assignments)"
     },
     "toast": {
         "created": "Web template created",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Delete Template",
         "deleteMessage": "Are you sure you want to delete the template \"{name}\"?",
+        "bulkDeleteMessage": "Are you sure you want to delete {count} templates?",
         "delete": "Are you sure you want to delete this web template?",
         "deleteWarning": "This action cannot be undone. Device assignments linked to this template will also be deleted.",
         "publish": "Are you sure you want to publish this template?",

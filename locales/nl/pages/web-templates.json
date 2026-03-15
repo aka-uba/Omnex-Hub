@@ -65,9 +65,14 @@
         "landscape": "Landschap",
         "portrait": "Portret"
     },
+    "source": {
+        "fabricTemplate": "Uit sjabloon",
+        "fabricHint": "Gemaakt uit Fabric.js-sjabloon — productgegevens worden automatisch bijgewerkt"
+    },
     "actions": {
         "new": "Nieuwe sjabloon",
         "edit": "Bewerking",
+        "editTemplate": "Sjabloon bewerken",
         "delete": "Verwijderen",
         "duplicate": "Duplicaat",
         "clone": "Kloon",
@@ -78,7 +83,10 @@
         "viewVersions": "Bekijk versies",
         "retry": "Opnieuw proberen",
         "createFirst": "Maak eerste sjabloon",
-        "cancel": "Annuleren"
+        "cancel": "Annuleren",
+        "selectAll": "Alles selecteren",
+        "perPage": "Per pagina",
+        "saving": "Opslaan..."
     },
     "editor": {
         "title": "Websjablooneditor",
@@ -130,7 +138,9 @@
         "deleted": "Websjabloon verwijderd",
         "deleteError": "Er is een fout opgetreden tijdens het verwijderen",
         "duplicated": "Websjabloon gedupliceerd",
-        "duplicateError": "Er is een fout opgetreden tijdens het dupliceren"
+        "duplicateError": "Er is een fout opgetreden tijdens het dupliceren",
+        "bulkDeleted": "{count} sjablonen verwijderd",
+        "bulkSkipped": "{count} sjablonen overgeslagen (actieve toewijzingen)"
     },
     "toast": {
         "created": "Websjabloon gemaakt",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Sjabloon verwijderen",
         "deleteMessage": "Weet u zeker dat u de sjabloon \"{name}\" wilt verwijderen?",
+        "bulkDeleteMessage": "Weet u zeker dat u {count} sjablonen wilt verwijderen?",
         "delete": "Weet u zeker dat u deze websjabloon wilt verwijderen?",
         "deleteWarning": "Deze actie kan niet ongedaan worden gemaakt. Apparaattoewijzingen die aan deze sjabloon zijn gekoppeld, worden ook verwijderd.",
         "publish": "Weet u zeker dat u deze sjabloon wilt publiceren?",

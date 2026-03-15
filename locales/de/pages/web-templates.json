@@ -65,9 +65,14 @@
         "landscape": "Querformat",
         "portrait": "Hochformat"
     },
+    "source": {
+        "fabricTemplate": "Aus Vorlage",
+        "fabricHint": "Aus Fabric.js-Vorlage erstellt — Produktdaten werden automatisch aktualisiert"
+    },
     "actions": {
         "new": "Neue Vorlage",
         "edit": "Bearbeiten",
+        "editTemplate": "Vorlage bearbeiten",
         "delete": "Löschen",
         "duplicate": "Duplizieren",
         "clone": "Klonen",
@@ -78,7 +83,10 @@
         "viewVersions": "Versionen anzeigen",
         "retry": "Wiederholen",
         "createFirst": "Erste Vorlage erstellen",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "selectAll": "Alle auswählen",
+        "perPage": "Pro Seite",
+        "saving": "Speichern..."
     },
     "editor": {
         "title": "Web-Vorlagen-Editor",
@@ -130,7 +138,9 @@
         "deleted": "Web-Vorlage gelöscht",
         "deleteError": "Fehler beim Löschen",
         "duplicated": "Web-Vorlage dupliziert",
-        "duplicateError": "Fehler beim Duplizieren"
+        "duplicateError": "Fehler beim Duplizieren",
+        "bulkDeleted": "{count} Vorlagen gelöscht",
+        "bulkSkipped": "{count} Vorlagen übersprungen (aktive Zuweisungen)"
     },
     "toast": {
         "created": "Web-Vorlage erstellt",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Vorlage löschen",
         "deleteMessage": "Sind Sie sicher, dass Sie die Vorlage \"{name}\" löschen möchten?",
+        "bulkDeleteMessage": "Möchten Sie {count} Vorlagen wirklich löschen?",
         "delete": "Sind Sie sicher, dass Sie diese Web-Vorlage löschen möchten?",
         "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Mit dieser Vorlage verknüpfte Gerätezuweisungen werden ebenfalls gelöscht.",
         "publish": "Sind Sie sicher, dass Sie diese Vorlage veröffentlichen möchten?",

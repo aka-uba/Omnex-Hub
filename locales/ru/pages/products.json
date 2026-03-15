@@ -77,7 +77,8 @@
             "delete": "Удалить",
             "duplicate": "Дублировать",
             "edit": "Редактировать",
-            "sendToDevice": "Отправить на устройство"
+            "sendToDevice": "Отправить на устройство",
+            "generateHtml": "Создать HTML"
         }
     },
     "import": {
@@ -703,6 +704,12 @@
         "bulkComplete": "{success} успешно, {failed} не удалось",
         "previewLoadError": "Не удалось загрузить предпросмотр",
         "previewNotAvailable": "Предпросмотр недоступен",
+        "liveHtmlPreview": "HTML предпросмотр в реальном времени",
+        "htmlPreviewTitle": "HTML предпросмотр",
+        "createHtmlTemplate": "Создать HTML шаблон",
+        "createHtmlTitle": "Создать HTML шаблон",
+        "createHtmlInfo": "Будет создан HTML шаблон для {count} товаров.",
+        "createHtmlCombined": "Объединить всё в один шаблон",
         "renderingProgress": "Рендеринг товара... ({current}/{total})",
         "sendingDeviceProgress": "Отправка на устройство... ({current}/{total})",
         "checkingCache": "Проверка кэша...",
@@ -825,7 +832,18 @@
             "media": "Медиа",
             "priceStock": "Цены и остатки",
             "labels": "Метки",
+            "deviceContent": "Содержимое устройств",
             "recordInfo": "История"
+        },
+        "deviceContent": {
+            "noContent": "Назначений устройств пока нет",
+            "noContentHint": "Когда вы назначите этот товар на устройство с шаблоном, здесь появится предпросмотр",
+            "unknownTemplate": "Неизвестный шаблон",
+            "device": "устр.",
+            "synced": "Синхронизировано",
+            "pending": "Ожидание",
+            "openPreview": "Полноэкранный просмотр",
+            "editTemplate": "Редактировать шаблон"
         },
         "notFound": "Товар не найден",
         "labelAssigned": "Метка успешно назначена",
@@ -1169,7 +1187,13 @@
         "noSlotsAssigned": "Хотя бы одному слоту должен быть назначен товар",
         "clearSlot": "Удалить",
         "previewTitle": "Предпросмотр шаблона",
-        "noDevices": "Онлайн устройств не найдено"
+        "noDevices": "Онлайн устройств не найдено",
+        "saveAsHtml": "Сохранить как HTML шаблон",
+        "saveAsHtmlHint": "Сохраняет этот дизайн с назначенными товарами как HTML на страницу веб-шаблонов",
+        "htmlSaved": "HTML шаблон успешно создан",
+        "htmlUpdated": "HTML шаблон успешно обновлён",
+        "htmlSaveFailed": "Не удалось создать HTML шаблон",
+        "noSlotAssigned": "Назначьте хотя бы один товар в слот"
     },
     "priceHistory": {
         "title": "История цен",
@@ -1215,5 +1239,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "Создать HTML шаблон",
+        "selectTemplate": "Выберите шаблон",
+        "selectTemplatePlaceholder": "Выберите шаблон...",
+        "customName": "Пользовательское имя",
+        "namePlaceholder": "Оставьте пустым для автоматического имени",
+        "info": "Будет создана самостоятельная HTML страница, объединяющая выбранный шаблон с данными продукта. Вы можете добавить эту HTML страницу в плейлисты и отправить на устройства вывески.",
+        "generate": "Создать HTML",
+        "generating": "Создание HTML...",
+        "success": "HTML шаблон успешно создан",
+        "updated": "HTML шаблон успешно обновлён",
+        "failed": "Не удалось создать HTML шаблон",
+        "templateRequired": "Пожалуйста, выберите шаблон",
+        "noTemplates": "Шаблоны signage/TV не найдены",
+        "bulkButton": "Создать HTML",
+        "bulkTitle": "Создать HTML для {count} товаров",
+        "bulkInfo": "Будут созданы HTML-шаблоны для {count} выбранных товаров.",
+        "bulkGenerating": "Создание HTML для {count} товаров...",
+        "bulkSuccess": "{count} HTML-шаблонов успешно создано",
+        "bulkPartialFail": "Не удалось создать HTML для {failed} товаров",
+        "separatePerProduct": "Создать отдельный HTML для каждого товара"
     }
 }

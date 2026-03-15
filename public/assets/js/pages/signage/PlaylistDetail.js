@@ -14,11 +14,10 @@ export class PlaylistDetailPage {
         this.playlist = null;
         this.items = [];
         this.mediaLibrary = [];
-        this.templates = []; // For backward compatibility
-        this.signageTemplates = []; // Signage and TV templates for playlist items
         this.isNew = false;
         this.contentModal = null;
-        this.activeTab = 'media'; // 'media', 'templates', or 'webpage'
+        this.activeTab = 'media'; // 'media', 'htmlTemplates', 'webpage', 'stream'
+        this.webTemplates = []; // HTML templates from web_templates table
 
         // Media library state (like MediaPicker)
         this.activeMediaLibrary = 'company'; // 'company' or 'public'
@@ -594,56 +593,6 @@ export class PlaylistDetailPage {
         `;
     }
 
-    renderTemplatesLibrary() {
-        if (!this.signageTemplates.length) {
-            return `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="ti ti-layout text-4xl mb-2"></i>
-                    <p>${this.__('playlists.form.emptyTemplates')}</p>
-                    <p class="text-sm mt-2">${this.__('playlists.form.emptyTemplatesHint')}</p>
-                    <a href="#/templates/editor" target="_blank" class="btn btn-primary mt-4">
-                        <i class="ti ti-plus"></i>
-                        ${this.__('playlists.form.createTemplate')}
-                    </a>
-                </div>
-            `;
-        }
-
-        return `
-            <div class="template-grid">
-                ${this.signageTemplates.map(template => {
-                    const previewUrl = this.getTemplatePreviewUrl(template.preview_image || template.thumbnail);
-                    const isSelected = this.items.some(i => i.template_id === template.id);
-                    const typeLabel = template.type === 'tv'
-                        ? this.__('template.types.tv')
-                        : this.__('template.types.signage');
-
-                    return `
-                        <div class="template-item ${isSelected ? 'selected' : ''}"
-                            data-template-id="${template.id}">
-                            <div class="template-item-preview">
-                                ${previewUrl
-                                    ? `<img src="${previewUrl}" alt="${escapeHTML(template.name)}">`
-                                    : `<div class="template-placeholder">
-                                        <i class="ti ti-layout"></i>
-                                       </div>`
-                                }
-                            </div>
-                            <div class="template-item-info">
-                                <div class="template-item-name">${escapeHTML(template.name)}</div>
-                                <div class="template-item-meta">
-                                    <span class="template-type-badge ${template.type}">${typeLabel}</span>
-                                    ${template.width && template.height ? `<span class="template-size">${template.width}×${template.height}</span>` : ''}
-                                </div>
-                            </div>
-                            ${isSelected ? '<div class="template-item-check"><i class="ti ti-check"></i></div>' : ''}
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-    }
-
     /**
      * Preload translations before render
      */
@@ -670,47 +619,142 @@ export class PlaylistDetailPage {
             document.getElementById('playlist-items-container').innerHTML = this.renderItems();
         }
 
-        // Load media and templates in parallel
+        // Load media and HTML templates in parallel
         await Promise.all([
             this.loadMediaLibrary(),
-            this.loadSignageTemplates()
+            this.loadWebTemplates()
         ]);
         Logger.log('[DEBUG] Media library loaded:', this.mediaLibrary.length, 'items');
-        Logger.log('[DEBUG] Signage templates loaded:', this.signageTemplates.length, 'templates');
 
         this.bindEvents();
         Logger.log('[DEBUG] PlaylistDetail init completed');
     }
 
-    async loadSignageTemplates() {
+    /**
+     * Load web templates (HTML templates from web_templates table)
+     */
+    async loadWebTemplates() {
         try {
-            // Load signage and tv templates
-            const [signageRes, tvRes] = await Promise.all([
-                this.app.api.get('/templates?type=signage&per_page=100'),
-                this.app.api.get('/templates?type=tv&per_page=100')
-            ]);
-
-            const signageTemplates = signageRes.data || [];
-            const tvTemplates = tvRes.data || [];
-
-            this.signageTemplates = [...signageTemplates, ...tvTemplates];
-            Logger.log('[DEBUG] Signage templates loaded:', this.signageTemplates.length);
+            const res = await this.app.api.get('/web-templates?status=published&per_page=100');
+            this.webTemplates = res.data?.items || res.data || [];
+            Logger.log('[DEBUG] Web templates loaded:', this.webTemplates.length);
         } catch (error) {
-            Logger.error('Signage templates load error:', error);
-            this.signageTemplates = [];
+            Logger.error('Web templates load error:', error);
+            this.webTemplates = [];
         }
     }
 
-    getTemplatePreviewUrl(preview) {
-        if (!preview) return '';
-
-        // Data URI (base64 images) - return as-is
-        if (preview.startsWith('data:')) {
-            return preview;
+    /**
+     * Render HTML templates library grid
+     */
+    renderHtmlTemplatesLibrary() {
+        if (!this.webTemplates.length) {
+            return `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="ti ti-code text-4xl mb-2"></i>
+                    <p>${this.__('playlists.form.emptyHtmlTemplates')}</p>
+                    <p class="text-sm mt-2">${this.__('playlists.form.emptyHtmlTemplatesHint')}</p>
+                    <a href="#/web-templates" target="_blank" class="btn btn-primary mt-4">
+                        <i class="ti ti-plus"></i>
+                        ${this.__('playlists.form.goToHtmlTemplates')}
+                    </a>
+                </div>
+            `;
         }
 
-        // Use MediaUtils for cross-environment compatibility
-        return MediaUtils.getDisplayUrl(preview);
+        return `
+            <div class="template-grid">
+                ${this.webTemplates.map(wt => {
+                    const isSelected = this.items.some(i => i.web_template_id === wt.id);
+                    const typeLabel = wt.template_type || 'signage';
+                    const sizeLabel = wt.width && wt.height ? `${wt.width}×${wt.height}` : '';
+                    const statusClass = wt.status === 'published' ? 'badge-success' : 'badge-warning';
+
+                    return `
+                        <div class="template-item html-template-item ${isSelected ? 'selected' : ''}"
+                            data-template-id="${wt.id}">
+                            <div class="template-item-preview">
+                                ${wt.thumbnail
+                                    ? `<img src="${wt.thumbnail}" alt="${escapeHTML(wt.name)}">`
+                                    : `<div class="template-placeholder html-template-placeholder">
+                                        <i class="ti ti-code"></i>
+                                        <span>HTML</span>
+                                       </div>`
+                                }
+                            </div>
+                            <div class="template-item-info">
+                                <div class="template-item-name">${escapeHTML(wt.name)}</div>
+                                <div class="template-item-meta">
+                                    <span class="template-type-badge signage">${escapeHTML(typeLabel)}</span>
+                                    ${sizeLabel ? `<span class="template-size">${sizeLabel}</span>` : ''}
+                                </div>
+                            </div>
+                            ${isSelected ? '<div class="template-item-check"><i class="ti ti-check"></i></div>' : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    /**
+     * Select an HTML template from web_templates and add to playlist
+     */
+    selectHtmlTemplate(templateId) {
+        const wt = this.webTemplates.find(t => t.id === templateId);
+        if (!wt) return;
+
+        const existingIndex = this.items.findIndex(i => i.web_template_id === templateId);
+
+        if (existingIndex > -1) {
+            // Toggle off — remove
+            this.items.splice(existingIndex, 1);
+        } else {
+            const defaultDuration = parseInt(document.getElementById('playlist-duration')?.value) || 10;
+
+            // Build the URL for the HTML content
+            // If the web template has data_sources with file info, use file path
+            // Otherwise serve via a simple route
+            let contentUrl = '';
+            try {
+                const ds = typeof wt.data_sources === 'string' ? JSON.parse(wt.data_sources) : wt.data_sources;
+                if (ds && ds.source === 'fabric_template') {
+                    // Generated from fabric — file exists on disk
+                    const basePath = window.OmnexConfig?.basePath || '';
+                    contentUrl = `${basePath}/api/web-templates/${wt.id}/serve`;
+                }
+            } catch { /* ignore */ }
+
+            if (!contentUrl) {
+                const basePath = window.OmnexConfig?.basePath || '';
+                contentUrl = `${basePath}/api/web-templates/${wt.id}/serve`;
+            }
+
+            const newItem = {
+                id: 'new_' + Date.now(),
+                web_template_id: wt.id,
+                name: wt.name,
+                url: contentUrl,
+                type: 'html',
+                duration: defaultDuration,
+                width: wt.width,
+                height: wt.height,
+                order: this.items.length
+            };
+
+            this.items.push(newItem);
+        }
+
+        // Re-render items and modal grid
+        document.getElementById('playlist-items-container').innerHTML = this.renderItems();
+        this.initDragDrop();
+
+        // Refresh the grid in modal
+        const container = this.contentModal?.element?.querySelector('#content-library-container');
+        if (container) {
+            container.innerHTML = this.renderHtmlTemplatesLibrary();
+            this.bindContentItemClicks();
+        }
     }
 
     async loadPlaylist(id) {
@@ -869,9 +913,9 @@ export class PlaylistDetailPage {
                     <i class="ti ti-photo"></i>
                     ${this.__('playlists.form.tabMedia')}
                 </button>
-                <button type="button" class="content-tab" data-tab="templates">
-                    <i class="ti ti-layout"></i>
-                    ${this.__('playlists.form.tabTemplates')}
+                <button type="button" class="content-tab" data-tab="htmlTemplates">
+                    <i class="ti ti-code"></i>
+                    ${this.__('playlists.form.tabHtmlTemplates')}
                 </button>
                 <button type="button" class="content-tab" data-tab="webpage">
                     <i class="ti ti-world"></i>
@@ -943,8 +987,8 @@ export class PlaylistDetailPage {
         if (container) {
             if (tabName === 'media') {
                 container.innerHTML = this.renderMediaLibrary();
-            } else if (tabName === 'templates') {
-                container.innerHTML = this.renderTemplatesLibrary();
+            } else if (tabName === 'htmlTemplates') {
+                container.innerHTML = this.renderHtmlTemplatesLibrary();
             } else if (tabName === 'webpage') {
                 container.innerHTML = this.renderWebPageForm();
             } else if (tabName === 'stream') {
@@ -1191,15 +1235,11 @@ export class PlaylistDetailPage {
 
             // Bind grid events (folders, files, breadcrumb, pagination)
             this.bindMediaGridEvents();
-        } else if (this.activeTab === 'templates') {
-            this.contentModal.element.querySelectorAll('.template-item').forEach(item => {
+        } else if (this.activeTab === 'htmlTemplates') {
+            // Bind HTML template item clicks
+            this.contentModal.element.querySelectorAll('.html-template-item').forEach(item => {
                 item.addEventListener('click', () => {
-                    this.selectTemplate(item.dataset.templateId);
-                    const container = this.contentModal.element.querySelector('#content-library-container');
-                    if (container) {
-                        container.innerHTML = this.renderTemplatesLibrary();
-                        this.bindContentItemClicks();
-                    }
+                    this.selectHtmlTemplate(item.dataset.templateId);
                 });
             });
         } else if (this.activeTab === 'webpage') {
@@ -1487,51 +1527,6 @@ export class PlaylistDetailPage {
                 ...(media.type === 'video' && { muted: true })
             };
             Logger.log('[DEBUG] Adding new item:', newItem);
-            this.items.push(newItem);
-            Logger.log('[DEBUG] Items after add:', this.items);
-        }
-
-        document.getElementById('playlist-items-container').innerHTML = this.renderItems();
-        this.initDragDrop();
-        Logger.log('[DEBUG] Items rendered');
-    }
-
-    /**
-     * Select a template from the library
-     */
-    selectTemplate(templateId) {
-        Logger.log('[DEBUG] selectTemplate called with templateId:', templateId);
-        const template = this.signageTemplates.find(t => t.id === templateId);
-        Logger.log('[DEBUG] Found template:', template);
-
-        if (!template) {
-            Logger.warn('[DEBUG] Template not found in library!');
-            return;
-        }
-
-        const existingIndex = this.items.findIndex(i => i.template_id === templateId);
-        Logger.log('[DEBUG] Existing index:', existingIndex);
-
-        if (existingIndex > -1) {
-            this.items.splice(existingIndex, 1);
-            Logger.log('[DEBUG] Removed template item, new items:', this.items);
-        } else {
-            const defaultDuration = parseInt(document.getElementById('playlist-duration')?.value) || 10;
-            const previewUrl = this.getTemplatePreviewUrl(template.preview_image || template.thumbnail);
-
-            const newItem = {
-                id: 'new_' + Date.now(),
-                template_id: template.id,
-                name: template.name,
-                url: previewUrl,
-                type: 'template',
-                template_type: template.type, // signage or tv
-                width: template.width,
-                height: template.height,
-                duration: defaultDuration,
-                order: this.items.length
-            };
-            Logger.log('[DEBUG] Adding new template item:', newItem);
             this.items.push(newItem);
             Logger.log('[DEBUG] Items after add:', this.items);
         }

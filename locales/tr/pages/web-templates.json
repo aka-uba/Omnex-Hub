@@ -65,9 +65,14 @@
         "landscape": "Yatay",
         "portrait": "Dikey"
     },
+    "source": {
+        "fabricTemplate": "Şablondan",
+        "fabricHint": "Fabric.js şablonundan oluşturulmuş — ürün verileri otomatik güncellenir"
+    },
     "actions": {
         "new": "Yeni Şablon",
         "edit": "Düzenle",
+        "editTemplate": "Şablonu Düzenle",
         "delete": "Sil",
         "duplicate": "Çoğalt",
         "clone": "Çoğalt",
@@ -78,7 +83,10 @@
         "viewVersions": "Versiyonları Görüntüle",
         "retry": "Tekrar Dene",
         "createFirst": "İlk Şablonu Oluştur",
-        "cancel": "İptal"
+        "cancel": "İptal",
+        "selectAll": "Tümünü Seç",
+        "perPage": "Sayfa başı",
+        "saving": "Kaydediliyor..."
     },
     "editor": {
         "title": "Web Şablon Editörü",
@@ -130,7 +138,9 @@
         "deleted": "Web şablonu silindi",
         "deleteError": "Silme sırasında hata oluştu",
         "duplicated": "Web şablonu kopyalandı",
-        "duplicateError": "Kopyalama sırasında hata oluştu"
+        "duplicateError": "Kopyalama sırasında hata oluştu",
+        "bulkDeleted": "{count} şablon silindi",
+        "bulkSkipped": "{count} şablon atlandı (aktif atama)"
     },
     "toast": {
         "created": "Web şablonu oluşturuldu",
@@ -145,6 +155,7 @@
     "confirm": {
         "deleteTitle": "Şablonu Sil",
         "deleteMessage": "\"{name}\" şablonunu silmek istediğinize emin misiniz?",
+        "bulkDeleteMessage": "{count} şablonu silmek istediğinize emin misiniz?",
         "delete": "Bu web şablonunu silmek istediğinize emin misiniz?",
         "deleteWarning": "Bu işlem geri alınamaz. Şablona bağlı cihaz atamaları da silinecektir.",
         "publish": "Bu şablonu yayınlamak istediğinize emin misiniz?",

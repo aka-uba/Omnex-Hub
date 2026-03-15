@@ -322,6 +322,12 @@ $router->group(['prefix' => '/api/products', 'middleware' => ['auth']], function
 // =====================================================
 // Template Routes
 // =====================================================
+
+// Şablon HTML Önizleme (auth gerektirmez — iframe/player erişimi)
+$router->get('/api/templates/{id}/preview-html', function($request) {
+    require API_PATH . '/templates/preview-html.php';
+});
+
 $router->group(['prefix' => '/api/templates', 'middleware' => ['auth']], function($router) {
     // Static routes MUST come before dynamic /{id} routes
     $router->get('', function($request) {
@@ -381,6 +387,12 @@ $router->group(['prefix' => '/api/field-binding', 'middleware' => ['auth']], fun
 // =====================================================
 // Web Template Routes (VvvebJs HTML Şablonları)
 // =====================================================
+
+// HTML İçerik Sunucu (iframe/player için, auth gerektirmez)
+$router->get('/api/web-templates/{id}/serve', function($request) {
+    require API_PATH . '/web-templates/serve.php';
+});
+
 $router->group(['prefix' => '/api/web-templates', 'middleware' => ['auth', 'csrf']], function($router) {
     // Liste
     $router->get('', function($request) {
@@ -395,6 +407,16 @@ $router->group(['prefix' => '/api/web-templates', 'middleware' => ['auth', 'csrf
     // Oluştur
     $router->post('', function($request) {
         require API_PATH . '/web-templates/create.php';
+    });
+
+    // Fabric.js şablonundan HTML oluştur
+    $router->post('/generate-from-fabric', function($request) {
+        require API_PATH . '/web-templates/generate-from-fabric.php';
+    });
+
+    // Toplu sil
+    $router->post('/bulk-delete', function($request) {
+        require API_PATH . '/web-templates/bulk-delete.php';
     });
 
     // Güncelle

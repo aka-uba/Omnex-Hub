@@ -390,16 +390,35 @@ export class Modal {
             danger: 'btn-danger'
         };
 
-        return this.show({
-            title,
-            icon: type,
-            size: 'sm',
-            content: `<p class="text-gray-600 dark:text-gray-400">${escapeHTML(message)}</p>`,
-            confirmText,
-            cancelText,
-            confirmClass: confirmClasses[type] || confirmClasses.info,
-            onConfirm,
-            onClose: onCancel
+        // onConfirm callback verilmişse eski davranış (callback tetiklenir)
+        // verilmemişse Promise döndür (await ile kullanım: const ok = await Modal.confirm(...))
+        if (onConfirm) {
+            return this.show({
+                title,
+                icon: type,
+                size: 'sm',
+                content: `<p class="text-gray-600 dark:text-gray-400">${escapeHTML(message)}</p>`,
+                confirmText,
+                cancelText,
+                confirmClass: confirmClasses[type] || confirmClasses.info,
+                onConfirm,
+                onClose: onCancel
+            });
+        }
+
+        // Promise-based: await Modal.confirm({ ... }) => true/false
+        return new Promise((resolve) => {
+            this.show({
+                title,
+                icon: type,
+                size: 'sm',
+                content: `<p class="text-gray-600 dark:text-gray-400">${escapeHTML(message)}</p>`,
+                confirmText,
+                cancelText,
+                confirmClass: confirmClasses[type] || confirmClasses.info,
+                onConfirm: () => { resolve(true); },
+                onClose: () => { resolve(false); if (onCancel) onCancel(); }
+            });
         });
     }
 

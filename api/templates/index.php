@@ -94,7 +94,7 @@ $selectColumns = [
     'id', 'company_id', 'name', 'description', 'type', 'category',
     'width', 'height', 'orientation', 'preview_image',
     'layout_type', 'template_file', 'slots', 'scope',
-    'is_default', 'created_at', 'updated_at'
+    'is_default', 'grid_layout', 'created_at', 'updated_at'
 ];
 if ($includeContent) {
     $selectColumns[] = 'design_data';

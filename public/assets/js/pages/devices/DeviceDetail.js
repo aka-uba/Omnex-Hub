@@ -584,7 +584,38 @@ export class DeviceDetailPage {
             return this.renderPlaylistPreview(playlist);
         }
 
-        // Show rendered template image, uploaded preview, or current_content file path
+        // Canlı HTML önizleme: şablon + ürün atanmışsa iframe ile göster
+        const templateId = d.current_template_id || d.assigned_template?.id;
+        const productId = this.assignedProducts?.[0]?.id || this.getProductIdFromContent(d);
+
+        if (templateId && productId) {
+            const basePath = this.app?.config?.basePath || '';
+            const previewUrl = `${basePath}/api/templates/${templateId}/preview-html?product_id=${productId}`;
+            const frameClass = d.type === 'esl' || d.type === 'esl_android' ? 'esl-frame' : 'tv-frame';
+
+            return `
+                <div class="device-preview-container">
+                    <div class="device-preview-frame ${frameClass}" style="position:relative;overflow:hidden">
+                        <iframe src="${previewUrl}"
+                                style="width:100%;height:100%;border:none;pointer-events:none;position:absolute;left:0;top:0"
+                                loading="lazy" sandbox="allow-scripts"></iframe>
+                    </div>
+                    <div class="device-preview-info mt-3">
+                        <div class="flex items-center gap-2">
+                            <span class="badge badge-success"><i class="ti ti-live-photo mr-1"></i>${this.__('detailPage.livePreview')}</span>
+                            <p class="text-xs text-gray-500">${this.__('detailPage.livePreviewHint')}</p>
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            <button class="btn btn-sm btn-outline" onclick="window.open('${previewUrl}', '_blank')">
+                                <i class="ti ti-external-link"></i> ${this.__('detailPage.fullscreenPreview')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fallback: statik render görseli
         const renderUrl = d.render_image_url || d.assigned_template?.render_image || d.content_preview_url || this.getDevicePreviewUrl(d);
 
         if (renderUrl) {
@@ -622,6 +653,19 @@ export class DeviceDetailPage {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * current_content JSON'dan product_id çıkar
+     */
+    getProductIdFromContent(device) {
+        if (!device.current_content) return null;
+        try {
+            const content = typeof device.current_content === 'string'
+                ? JSON.parse(device.current_content)
+                : device.current_content;
+            return content?.product_id || null;
+        } catch { return null; }
     }
 
     renderAssignedTemplateCard() {

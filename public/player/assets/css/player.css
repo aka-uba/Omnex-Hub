@@ -155,13 +155,14 @@ body {
     }
 
     #player-screen .content-container.orientation-portrait .content-item {
+        position: relative;
         width: auto !important;
         height: 100% !important;
         max-width: 56.25%; /* 9:16 aspect ratio */
         aspect-ratio: 9 / 16;
         object-fit: contain;
-        left: 50%;
-        transform: translateX(-50%);
+        left: auto;
+        transform: none;
     }
 }
 
@@ -174,34 +175,39 @@ body {
     }
 
     #player-screen .content-container.orientation-landscape .content-item {
+        position: relative;
         width: 100% !important;
         height: auto !important;
         max-height: 56.25%; /* 16:9 aspect ratio */
         aspect-ratio: 16 / 9;
         object-fit: contain;
-        top: 50%;
-        transform: translateY(-50%);
+        top: auto;
+        transform: none;
     }
 }
 
 /* When playlist orientation matches screen orientation - fill entire screen */
 @media (orientation: landscape) {
     #player-screen .content-container.orientation-landscape .content-item {
+        position: absolute;
         width: 100% !important;
         height: 100% !important;
         max-width: none;
         aspect-ratio: auto;
         left: 0;
+        top: 0;
         transform: none;
     }
 }
 
 @media (orientation: portrait) {
     #player-screen .content-container.orientation-portrait .content-item {
+        position: absolute;
         width: 100% !important;
         height: 100% !important;
         max-height: none;
         aspect-ratio: auto;
+        left: 0;
         top: 0;
         transform: none;
     }

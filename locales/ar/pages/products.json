@@ -77,7 +77,8 @@
             "delete": "يمسح",
             "duplicate": "نسخ",
             "edit": "يحرر",
-            "sendToDevice": "إرسال إلى الجهاز"
+            "sendToDevice": "إرسال إلى الجهاز",
+            "generateHtml": "إنشاء HTML"
         }
     },
     "import": {
@@ -701,6 +702,12 @@
         "bulkComplete": "{success} نجح، {failed} فشل",
         "previewLoadError": "فشل تحميل المعاينة",
         "previewNotAvailable": "المعاينة غير متاحة",
+        "liveHtmlPreview": "معاينة HTML مباشرة",
+        "htmlPreviewTitle": "معاينة HTML",
+        "createHtmlTemplate": "إنشاء قالب HTML",
+        "createHtmlTitle": "إنشاء قالب HTML",
+        "createHtmlInfo": "سيتم إنشاء قالب HTML لـ {count} منتجات.",
+        "createHtmlCombined": "دمج الكل في قالب واحد",
         "renderingProgress": "عرض المنتج... ({current}/{total})",
         "sendingDeviceProgress": "جارٍ الإرسال إلى الجهاز... ({current}/{total})",
         "checkingCache": "جارٍ التحقق من ذاكرة التخزين المؤقت...",
@@ -823,7 +830,18 @@
             "media": "وسائط",
             "priceStock": "التسعير والمخزون",
             "labels": "التسميات",
+            "deviceContent": "محتوى الأجهزة",
             "recordInfo": "تاريخ"
+        },
+        "deviceContent": {
+            "noContent": "لا توجد تعيينات أجهزة حتى الآن",
+            "noContentHint": "عند تعيين هذا المنتج لجهاز باستخدام قالب، ستظهر معاينة مباشرة هنا",
+            "unknownTemplate": "قالب غير معروف",
+            "device": "جهاز",
+            "synced": "متزامن",
+            "pending": "قيد الانتظار",
+            "openPreview": "معاينة ملء الشاشة",
+            "editTemplate": "تعديل القالب"
         },
         "notFound": "لم يتم العثور على المنتج",
         "labelAssigned": "تم تعيين التصنيف بنجاح",
@@ -1167,7 +1185,13 @@
         "noSlotsAssigned": "يجب أن تحتوي فتحة واحدة على الأقل على منتج مخصص",
         "clearSlot": "يزيل",
         "previewTitle": "معاينة القالب",
-        "noDevices": "لم يتم العثور على أجهزة متصلة بالإنترنت"
+        "noDevices": "لم يتم العثور على أجهزة متصلة بالإنترنت",
+        "saveAsHtml": "حفظ كقالب HTML",
+        "saveAsHtmlHint": "يحفظ هذا التصميم مع تعيينات المنتجات كقالب HTML في صفحة قوالب الويب",
+        "htmlSaved": "تم إنشاء قالب HTML بنجاح",
+        "htmlUpdated": "تم تحديث قالب HTML بنجاح",
+        "htmlSaveFailed": "فشل في إنشاء قالب HTML",
+        "noSlotAssigned": "قم بتعيين منتج واحد على الأقل لفتحة"
     },
     "priceHistory": {
         "title": "تاريخ الأسعار",
@@ -1213,5 +1237,27 @@
             "csv": "CSV",
             "json": "JSON"
         }
+    },
+    "generateHtml": {
+        "title": "إنشاء قالب HTML",
+        "selectTemplate": "اختر القالب",
+        "selectTemplatePlaceholder": "اختر قالباً...",
+        "customName": "اسم مخصص",
+        "namePlaceholder": "اتركه فارغاً لإنشاء اسم تلقائي",
+        "info": "سيتم إنشاء صفحة HTML مستقلة من خلال دمج القالب المحدد مع بيانات المنتج. يمكنك إضافة صفحة HTML هذه إلى قوائم التشغيل وإرسالها إلى أجهزة العرض.",
+        "generate": "إنشاء HTML",
+        "generating": "جاري إنشاء HTML...",
+        "success": "تم إنشاء قالب HTML بنجاح",
+        "updated": "تم تحديث قالب HTML بنجاح",
+        "failed": "فشل إنشاء قالب HTML",
+        "templateRequired": "يرجى اختيار قالب",
+        "noTemplates": "لم يتم العثور على قوالب signage/TV",
+        "bulkButton": "إنشاء HTML",
+        "bulkTitle": "إنشاء HTML لـ {count} منتجات",
+        "bulkInfo": "سيتم إنشاء قوالب HTML لـ {count} منتجات محددة.",
+        "bulkGenerating": "جاري إنشاء HTML لـ {count} منتجات...",
+        "bulkSuccess": "تم إنشاء {count} قوالب HTML بنجاح",
+        "bulkPartialFail": "فشل إنشاء HTML لـ {failed} منتجات",
+        "separatePerProduct": "إنشاء HTML منفصل لكل منتج"
     }
 }

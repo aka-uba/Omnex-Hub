@@ -419,6 +419,13 @@ export class ProductListPage {
                     onClick: (row) => this.handleAssignLabel(row)
                 },
                 {
+                    name: 'generate-html',
+                    icon: 'ti-code',
+                    label: this.__('list.actions.generateHtml'),
+                    class: 'btn-ghost text-cyan',
+                    onClick: (row) => this.handleGenerateHtml(row)
+                },
+                {
                     name: 'duplicate',
                     icon: 'ti-copy',
                     label: this.__('list.actions.duplicate'),
@@ -483,6 +490,14 @@ export class ProductListPage {
         printBtn.innerHTML = `<i class="ti ti-printer"></i> <span>${this.__('actions.printBulkLabels')}</span>`;
         printBtn.addEventListener('click', () => this.showBulkPrintModal());
         toolbarActions.appendChild(printBtn);
+
+        // Bulk HTML generate button
+        const htmlBtn = document.createElement('button');
+        htmlBtn.id = 'btn-bulk-html';
+        htmlBtn.className = 'btn btn-sm btn-cyan hidden';
+        htmlBtn.innerHTML = `<i class="ti ti-code"></i> <span>${this.__('generateHtml.bulkButton')}</span>`;
+        htmlBtn.addEventListener('click', () => this.bulkGenerateHtml());
+        toolbarActions.appendChild(htmlBtn);
 
         // Bulk send button
         const sendBtn = document.createElement('button');
@@ -944,6 +959,278 @@ export class ProductListPage {
     /**
      * Duplicate product
      */
+    /**
+     * Generate HTML from Fabric.js template for a product
+     * Opens modal to select template, then creates HTML via API
+     */
+    async handleGenerateHtml(row) {
+        try {
+            // Load ALL templates (not just signage/tv)
+            const templateRes = await this.app.api.get('/templates?per_page=200');
+            const templates = templateRes.data || [];
+
+            if (!templates.length) {
+                Toast.warning(this.__('generateHtml.noTemplates'));
+                return;
+            }
+
+            const templateOptions = templates.map(t => {
+                const size = t.width && t.height ? ` (${t.width}×${t.height})` : '';
+                const typeLabel = t.type ? ` [${t.type.toUpperCase()}]` : '';
+                return `<option value="${t.id}">${escapeHTML(t.name)}${size}${typeLabel}</option>`;
+            }).join('');
+
+            const basePath = window.OmnexConfig?.basePath || '';
+            const livePreviewLabel = this.__('sendToDevice.liveHtmlPreview') || 'Canlı HTML Önizleme';
+            const productId = row.id;
+
+            Modal.show({
+                title: this.__('generateHtml.title'),
+                icon: 'ti-code',
+                size: 'md',
+                content: `
+                    <form id="generate-html-form">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">${this.__('generateHtml.selectTemplate')}</label>
+                            <select id="html-template-select" class="form-select">
+                                <option value="">${this.__('generateHtml.selectTemplatePlaceholder')}</option>
+                                ${templateOptions}
+                            </select>
+                        </div>
+                        <div id="html-gen-preview" class="template-preview-card mt-3" style="display:none;">
+                            <div class="template-preview-content">
+                                <div class="template-preview-image template-preview-live">
+                                    <iframe id="html-gen-preview-iframe"
+                                            sandbox="allow-scripts"
+                                            style="width:100%;height:100%;border:none;pointer-events:none;"
+                                            loading="lazy"></iframe>
+                                    <div class="live-preview-badge">
+                                        <i class="ti ti-broadcast"></i> ${livePreviewLabel}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label class="form-label">${this.__('generateHtml.customName')} (${this.__('form.optional')})</label>
+                            <input type="text" id="html-template-name" class="form-input"
+                                placeholder="${this.__('generateHtml.namePlaceholder')}">
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="ti ti-info-circle"></i>
+                            <span>${this.__('generateHtml.info')}</span>
+                        </div>
+                    </form>
+                `,
+                confirmText: this.__('generateHtml.generate'),
+                cancelText: this.__('modal.cancel'),
+                onConfirm: async () => {
+                    const templateId = document.getElementById('html-template-select')?.value;
+                    const customName = document.getElementById('html-template-name')?.value?.trim();
+
+                    if (!templateId) {
+                        Toast.error(this.__('generateHtml.templateRequired'));
+                        return false; // prevent close
+                    }
+
+                    try {
+                        Toast.info(this.__('generateHtml.generating'));
+
+                        const response = await this.app.api.post('/web-templates/generate-from-fabric', {
+                            template_id: templateId,
+                            product_ids: [row.id],
+                            name: customName || ''
+                        });
+
+                        if (response.success) {
+                            const msg = response.data?.is_update
+                                ? this.__('generateHtml.updated')
+                                : this.__('generateHtml.success');
+                            Toast.success(msg);
+                        } else {
+                            Toast.error(response.message || this.__('generateHtml.failed'));
+                            return false;
+                        }
+                    } catch (error) {
+                        Toast.error(error.message || this.__('generateHtml.failed'));
+                        return false;
+                    }
+                }
+            });
+
+            // Şablon değişince önizleme güncelle
+            setTimeout(() => {
+                const selectEl = document.getElementById('html-template-select');
+                if (selectEl) {
+                    selectEl.addEventListener('change', () => {
+                        const previewCard = document.getElementById('html-gen-preview');
+                        const iframe = document.getElementById('html-gen-preview-iframe');
+                        const tid = selectEl.value;
+                        if (tid && previewCard && iframe) {
+                            iframe.src = `${basePath}/api/templates/${tid}/preview-html?product_id=${productId}`;
+                            previewCard.style.display = '';
+                        } else if (previewCard) {
+                            previewCard.style.display = 'none';
+                        }
+                    });
+                }
+            }, 50);
+        } catch (error) {
+            Logger.error('Generate HTML templates load error:', error);
+            Toast.error(error.message || this.__('generateHtml.failed'));
+        }
+    }
+
+    async bulkGenerateHtml() {
+        if (!this.selectedProducts || this.selectedProducts.length === 0) {
+            Toast.warning(this.__('list.selectWarning'));
+            return;
+        }
+
+        try {
+            // Load ALL templates (not just signage/tv)
+            const templateRes = await this.app.api.get('/templates?per_page=200');
+            const templates = templateRes.data || [];
+
+            if (!templates.length) {
+                Toast.warning(this.__('generateHtml.noTemplates'));
+                return;
+            }
+
+            const count = this.selectedProducts.length;
+            const templateOptions = templates.map(t => {
+                const size = t.width && t.height ? ` (${t.width}×${t.height})` : '';
+                const typeLabel = t.type ? ` [${t.type.toUpperCase()}]` : '';
+                return `<option value="${t.id}">${escapeHTML(t.name)}${size}${typeLabel}</option>`;
+            }).join('');
+
+            const basePath = window.OmnexConfig?.basePath || '';
+            const livePreviewLabel = this.__('sendToDevice.liveHtmlPreview') || 'Canlı HTML Önizleme';
+            const firstProductId = this.selectedProducts[0]?.id;
+
+            Modal.show({
+                title: this.__('generateHtml.bulkTitle', { count }),
+                icon: 'ti-code',
+                size: 'md',
+                content: `
+                    <form id="bulk-generate-html-form">
+                        <div class="alert alert-info mb-3">
+                            <i class="ti ti-info-circle"></i>
+                            <span>${this.__('generateHtml.bulkInfo', { count })}</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required">${this.__('generateHtml.selectTemplate')}</label>
+                            <select id="bulk-html-template-select" class="form-select">
+                                <option value="">${this.__('generateHtml.selectTemplatePlaceholder')}</option>
+                                ${templateOptions}
+                            </select>
+                        </div>
+                        <div id="bulk-html-gen-preview" class="template-preview-card mt-3" style="display:none;">
+                            <div class="template-preview-content">
+                                <div class="template-preview-image template-preview-live">
+                                    <iframe id="bulk-html-gen-preview-iframe"
+                                            sandbox="allow-scripts"
+                                            style="width:100%;height:100%;border:none;pointer-events:none;"
+                                            loading="lazy"></iframe>
+                                    <div class="live-preview-badge">
+                                        <i class="ti ti-broadcast"></i> ${livePreviewLabel}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mt-3">
+                            <div class="form-check">
+                                <input type="checkbox" id="bulk-html-separate" class="form-check-input" checked>
+                                <label for="bulk-html-separate" class="form-check-label">${this.__('generateHtml.separatePerProduct')}</label>
+                            </div>
+                        </div>
+                    </form>
+                `,
+                confirmText: this.__('generateHtml.generate'),
+                cancelText: this.__('modal.cancel'),
+                onConfirm: async () => {
+                    const templateId = document.getElementById('bulk-html-template-select')?.value;
+                    const separate = document.getElementById('bulk-html-separate')?.checked;
+
+                    if (!templateId) {
+                        Toast.error(this.__('generateHtml.templateRequired'));
+                        return false;
+                    }
+
+                    try {
+                        Toast.info(this.__('generateHtml.bulkGenerating', { count }));
+
+                        if (separate) {
+                            // Her ürün için ayrı HTML oluştur
+                            let successCount = 0;
+                            let failCount = 0;
+
+                            for (const product of this.selectedProducts) {
+                                try {
+                                    const resp = await this.app.api.post('/web-templates/generate-from-fabric', {
+                                        template_id: templateId,
+                                        product_ids: [product.id]
+                                    });
+                                    if (resp.success) successCount++;
+                                    else failCount++;
+                                } catch {
+                                    failCount++;
+                                }
+                            }
+
+                            if (successCount > 0) {
+                                Toast.success(this.__('generateHtml.bulkSuccess', { count: successCount }));
+                            }
+                            if (failCount > 0) {
+                                Toast.warning(this.__('generateHtml.bulkPartialFail', { failed: failCount }));
+                            }
+                        } else {
+                            // Tüm ürünleri tek HTML'de birleştir
+                            const productIds = this.selectedProducts.map(p => p.id);
+                            const response = await this.app.api.post('/web-templates/generate-from-fabric', {
+                                template_id: templateId,
+                                product_ids: productIds
+                            });
+
+                            if (response.success) {
+                                const msg = response.data?.is_update
+                                    ? this.__('generateHtml.updated')
+                                    : this.__('generateHtml.success');
+                                Toast.success(msg);
+                            } else {
+                                Toast.error(response.message || this.__('generateHtml.failed'));
+                                return false;
+                            }
+                        }
+                    } catch (error) {
+                        Toast.error(error.message || this.__('generateHtml.failed'));
+                        return false;
+                    }
+                }
+            });
+
+            // Şablon değişince önizleme güncelle (ilk ürün ile)
+            setTimeout(() => {
+                const selectEl = document.getElementById('bulk-html-template-select');
+                if (selectEl) {
+                    selectEl.addEventListener('change', () => {
+                        const previewCard = document.getElementById('bulk-html-gen-preview');
+                        const iframe = document.getElementById('bulk-html-gen-preview-iframe');
+                        const tid = selectEl.value;
+                        if (tid && previewCard && iframe && firstProductId) {
+                            iframe.src = `${basePath}/api/templates/${tid}/preview-html?product_id=${firstProductId}`;
+                            previewCard.style.display = '';
+                        } else if (previewCard) {
+                            previewCard.style.display = 'none';
+                        }
+                    });
+                }
+            }, 50);
+        } catch (error) {
+            Logger.error('Bulk generate HTML error:', error);
+            Toast.error(error.message || this.__('generateHtml.failed'));
+        }
+    }
+
     async duplicateProduct(row) {
         try {
             const response = await this.app.api.get(`/products/${row.id}`);
@@ -1095,6 +1382,18 @@ export class ProductListPage {
                             </select>
                             <p class="form-hint">${this.__('assignLabel.templatesFound', { count: templates.length })}</p>
                         </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="ti ti-eye"></i> ${this.__('sendToDevice.templatePreview')}</label>
+                            <div class="template-preview-card assign-label-preview" id="assign-template-preview-card">
+                                ${firstLabel && firstLabel.template_id ? this._renderTemplatePreview({ id: firstLabel.template_id, name: firstLabel.template_name || '' }, productId) : `
+                                    <div class="template-preview-empty">
+                                        <i class="ti ti-layout"></i>
+                                        <span>${this.__('sendToDevice.selectTemplateToPreview')}</span>
+                                    </div>
+                                `}
+                            </div>
+                        </div>
                     </form>
                 `,
                 footer: `
@@ -1111,6 +1410,30 @@ export class ProductListPage {
             document.getElementById('btn-assign-label')?.addEventListener('click', () => {
                 this.assignLabel(productId, hasExistingLabels);
             });
+
+            // Bind template change for live preview
+            const assignTemplateSelect = document.getElementById('assign-template');
+            if (assignTemplateSelect) {
+                assignTemplateSelect.addEventListener('change', (e) => {
+                    const previewCard = document.getElementById('assign-template-preview-card');
+                    if (!previewCard) return;
+                    const selectedId = e.target.value;
+                    if (selectedId) {
+                        const selectedTemplate = templates.find(t => t.id === selectedId);
+                        previewCard.innerHTML = this._renderTemplatePreview(
+                            { id: selectedId, name: selectedTemplate?.name || '' },
+                            productId
+                        );
+                    } else {
+                        previewCard.innerHTML = `
+                            <div class="template-preview-empty">
+                                <i class="ti ti-layout"></i>
+                                <span>${this.__('sendToDevice.selectTemplateToPreview')}</span>
+                            </div>
+                        `;
+                    }
+                });
+            }
 
             // Store reference for removeProductLabel and editLabelAssignment
             window.productListPage = this;
@@ -1824,15 +2147,18 @@ export class ProductListPage {
         const bulkDeleteBtn = document.getElementById('btn-bulk-delete');
         const bulkSendBtn = document.getElementById('btn-bulk-send');
         const bulkPrintBtn = document.getElementById('btn-bulk-print');
+        const bulkHtmlBtn = document.getElementById('btn-bulk-html');
 
         if (rows.length > 0) {
             bulkDeleteBtn?.classList.remove('hidden');
             bulkSendBtn?.classList.remove('hidden');
             bulkPrintBtn?.classList.remove('hidden');
+            bulkHtmlBtn?.classList.remove('hidden');
         } else {
             bulkDeleteBtn?.classList.add('hidden');
             bulkSendBtn?.classList.add('hidden');
             bulkPrintBtn?.classList.add('hidden');
+            bulkHtmlBtn?.classList.add('hidden');
         }
 
         Logger.log('Selected:', rows.length, 'products');
@@ -2207,7 +2533,7 @@ export class ProductListPage {
                     <div class="template-preview-section">
                         <h4><i class="ti ti-eye"></i> ${this.__('sendToDevice.templatePreview')}</h4>
                         <div class="template-preview-card" id="template-preview-card">
-                            ${initialTemplate ? this._renderTemplatePreview(initialTemplate) : `
+                            ${initialTemplate ? this._renderTemplatePreview(initialTemplate, productId) : `
                                 <div class="template-preview-empty">
                                     <i class="ti ti-layout"></i>
                                     <span>${this.__('sendToDevice.selectTemplateToPreview')}</span>
@@ -2314,7 +2640,7 @@ export class ProductListPage {
                             height: selectedOption.dataset.height,
                             render_image: selectedOption.dataset.preview
                         };
-                        previewCard.innerHTML = this._renderTemplatePreview(templateData);
+                        previewCard.innerHTML = this._renderTemplatePreview(templateData, productId);
                     } else if (previewCard) {
                         previewCard.innerHTML = `
                             <div class="template-preview-empty">
@@ -2430,6 +2756,16 @@ export class ProductListPage {
                     <h4><i class="ti ti-list"></i> ${this.__('sendToDevice.productsToSend')}</h4>
                     <div id="type-products-list" class="type-products-list"></div>
                 </div>
+
+                <div id="bulk-html-preview-section" class="bulk-html-preview-section mt-4" style="display: none;">
+                    <div class="bulk-html-preview-header">
+                        <h4><i class="ti ti-eye"></i> ${this.__('sendToDevice.htmlPreviewTitle')}</h4>
+                        <button type="button" class="btn btn-sm btn-cyan" id="btn-bulk-create-html">
+                            <i class="ti ti-code"></i> ${this.__('sendToDevice.createHtmlTemplate')}
+                        </button>
+                    </div>
+                    <div id="bulk-html-preview-grid" class="bulk-html-preview-grid"></div>
+                </div>
             </div>
         `;
 
@@ -2471,6 +2807,8 @@ export class ProductListPage {
                     const typeData = this._bulkSendDeviceTypes[type];
                     const previewDiv = document.getElementById('selected-type-preview');
                     const listDiv = document.getElementById('type-products-list');
+                    const htmlPreviewSection = document.getElementById('bulk-html-preview-section');
+                    const htmlPreviewGrid = document.getElementById('bulk-html-preview-grid');
 
                     if (typeData && previewDiv && listDiv) {
                         previewDiv.style.display = 'block';
@@ -2481,6 +2819,35 @@ export class ProductListPage {
                                 <span class="device-name">${escapeHTML(item.device.name)}</span>
                             </div>
                         `).join('');
+
+                        // Şablonu olan ürünlerin HTML önizlemesini göster
+                        const productsWithTemplates = typeData.products.filter(item => item.templateId);
+                        if (productsWithTemplates.length > 0 && htmlPreviewSection && htmlPreviewGrid) {
+                            htmlPreviewSection.style.display = 'block';
+                            const basePath = window.OmnexConfig?.basePath || '';
+                            htmlPreviewGrid.innerHTML = productsWithTemplates.map(item => {
+                                const iframeSrc = `${basePath}/api/templates/${item.templateId}/preview-html?product_id=${item.product.id}`;
+                                return `
+                                    <div class="bulk-html-preview-card">
+                                        <div class="bulk-html-preview-iframe">
+                                            <iframe src="${escapeHTML(iframeSrc)}"
+                                                    sandbox="allow-scripts"
+                                                    loading="lazy"
+                                                    title="${escapeHTML(item.product.name)}"></iframe>
+                                            <div class="live-preview-badge">
+                                                <i class="ti ti-broadcast"></i> HTML
+                                            </div>
+                                        </div>
+                                        <div class="bulk-html-preview-info">
+                                            <span class="product-name">${escapeHTML(item.product.name)}</span>
+                                            <span class="device-name">${escapeHTML(item.device.name)}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        } else if (htmlPreviewSection) {
+                            htmlPreviewSection.style.display = 'none';
+                        }
                     }
 
                     // Aktif kartı işaretle
@@ -2490,7 +2857,111 @@ export class ProductListPage {
                     e.target.closest('.device-type-card')?.classList.add('active');
                 });
             });
+
+            // HTML şablon oluştur butonu
+            document.getElementById('btn-bulk-create-html')?.addEventListener('click', () => {
+                const selectedType = document.querySelector('input[name="device-type"]:checked')?.value;
+                if (!selectedType) {
+                    Toast.warning(this.__('sendToDevice.deviceTypeRequired'));
+                    return;
+                }
+                const typeData = this._bulkSendDeviceTypes[selectedType];
+                if (!typeData || typeData.products.length === 0) return;
+
+                // Şablonu olan ürünlerin template ID'lerini topla
+                const templateIds = [...new Set(typeData.products.filter(p => p.templateId).map(p => p.templateId))];
+                const productIds = typeData.products.map(p => p.product.id);
+
+                if (templateIds.length === 0) {
+                    Toast.warning(this.__('sendToDevice.noTemplateData'));
+                    return;
+                }
+
+                // Her template+product kombinasyonu için HTML oluştur
+                this._bulkCreateHtmlFromSendModal(templateIds[0], productIds);
+            });
         }, 100);
+    }
+
+    /**
+     * Toplu gönderim modalından HTML şablon oluştur
+     */
+    async _bulkCreateHtmlFromSendModal(templateId, productIds) {
+        const count = productIds.length;
+        const separateLabel = this.__('generateHtml.separatePerProduct');
+        const combinedLabel = this.__('sendToDevice.createHtmlCombined') || 'Tümünü tek şablonda birleştir';
+
+        Modal.show({
+            title: this.__('sendToDevice.createHtmlTitle') || 'HTML Şablon Oluştur',
+            icon: 'ti-code',
+            size: 'sm',
+            content: `
+                <div class="mb-3">
+                    <p class="text-sm text-muted mb-3">
+                        <i class="ti ti-info-circle"></i>
+                        ${this.__('sendToDevice.createHtmlInfo', { count }) || `${count} ürün için HTML şablon oluşturulacak.`}
+                    </p>
+                    <div class="form-group">
+                        <div class="form-check mb-2">
+                            <input type="radio" id="html-mode-separate" name="html-mode" value="separate" class="form-check-input" checked>
+                            <label for="html-mode-separate" class="form-check-label">${separateLabel}</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" id="html-mode-combined" name="html-mode" value="combined" class="form-check-input">
+                            <label for="html-mode-combined" class="form-check-label">${combinedLabel}</label>
+                        </div>
+                    </div>
+                </div>
+            `,
+            confirmText: this.__('generateHtml.generate'),
+            cancelText: this.__('actions.cancel'),
+            onConfirm: async () => {
+                const mode = document.querySelector('input[name="html-mode"]:checked')?.value || 'separate';
+                try {
+                    Toast.info(this.__('generateHtml.bulkGenerating', { count }));
+
+                    if (mode === 'separate') {
+                        let successCount = 0;
+                        let failCount = 0;
+                        for (const pid of productIds) {
+                            try {
+                                const resp = await this.app.api.post('/web-templates/generate-from-fabric', {
+                                    template_id: templateId,
+                                    product_ids: [pid]
+                                });
+                                if (resp.success) successCount++;
+                                else failCount++;
+                            } catch {
+                                failCount++;
+                            }
+                        }
+                        if (successCount > 0) {
+                            Toast.success(this.__('generateHtml.bulkSuccess', { count: successCount }));
+                        }
+                        if (failCount > 0) {
+                            Toast.warning(this.__('generateHtml.bulkPartialFail', { failed: failCount }));
+                        }
+                    } else {
+                        const response = await this.app.api.post('/web-templates/generate-from-fabric', {
+                            template_id: templateId,
+                            product_ids: productIds
+                        });
+                        if (response.success) {
+                            const msg = response.data?.is_update
+                                ? this.__('generateHtml.updated')
+                                : this.__('generateHtml.success');
+                            Toast.success(msg);
+                        } else {
+                            Toast.error(response.message || this.__('generateHtml.failed'));
+                            return false;
+                        }
+                    }
+                } catch (error) {
+                    Toast.error(error.message || this.__('generateHtml.failed'));
+                    return false;
+                }
+            }
+        });
     }
 
     /**
@@ -3051,9 +3522,38 @@ export class ProductListPage {
      * @param {Object} template - Template data
      * @returns {string} HTML string
      */
-    _renderTemplatePreview(template) {
-        let previewUrl = template.render_image || template.preview_url || template.thumbnail || template.preview_image || '';
+    _renderTemplatePreview(template, productId = null) {
         const basePath = window.OmnexConfig?.basePath || '';
+        const templateLabel = this.__('sendToDevice.template');
+        const previewNotAvailable = this.__('sendToDevice.previewNotAvailable');
+        const previewLoadError = this.__('sendToDevice.previewLoadError');
+        const livePreviewLabel = this.__('sendToDevice.liveHtmlPreview') || 'Canlı HTML Önizleme';
+
+        // productId varsa canlı HTML iframe önizleme kullan
+        if (productId && template.id) {
+            const iframeSrc = `${basePath}/api/templates/${template.id}/preview-html?product_id=${productId}`;
+            return `
+                <div class="template-preview-content">
+                    <div class="template-preview-image template-preview-live">
+                        <iframe src="${escapeHTML(iframeSrc)}"
+                                sandbox="allow-scripts"
+                                style="width:100%;height:100%;border:none;pointer-events:none;"
+                                loading="lazy"
+                                title="${escapeHTML(template.name || templateLabel)}"></iframe>
+                        <div class="live-preview-badge">
+                            <i class="ti ti-broadcast"></i> ${livePreviewLabel}
+                        </div>
+                    </div>
+                    <div class="template-preview-info">
+                        <div class="template-preview-name">${escapeHTML(template.name || templateLabel)}</div>
+                        <div class="template-preview-size">${template.width || '?'} x ${template.height || '?'} px</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Statik görsel önizleme (productId yoksa fallback)
+        let previewUrl = template.render_image || template.preview_url || template.thumbnail || template.preview_image || '';
 
         // Build full URL - ensure proper path joining
         let fullUrl = '';
@@ -3074,10 +3574,6 @@ export class ProductListPage {
                 fullUrl = basePath + cleanPath;
             }
         }
-
-        const previewLoadError = this.__('sendToDevice.previewLoadError');
-        const previewNotAvailable = this.__('sendToDevice.previewNotAvailable');
-        const templateLabel = this.__('sendToDevice.template');
 
         return `
             <div class="template-preview-content">
@@ -5124,9 +5620,9 @@ export class ProductListPage {
      */
     async showMultiProductSendModal() {
         try {
-            // Fetch templates and devices in parallel
+            // Fetch templates (with design_data for multi-product frame detection) and devices
             const [templateRes, deviceRes] = await Promise.all([
-                this.app.api.get('/templates'),
+                this.app.api.get('/templates?include_content=1&per_page=200'),
                 this.app.api.get('/devices')
             ]);
 
@@ -5213,6 +5709,19 @@ export class ProductListPage {
                         </select>
                         ${allDevices.length === 0 ? `<p class="text-muted mt-1" style="font-size:12px;">${this.__('multiProductSend.noDevices')}</p>` : ''}
                     </div>
+
+                    <div class="mp-section mp-html-section" id="mp-html-section" style="display:none;">
+                        <div class="mp-html-header">
+                            <label class="mp-section-label"><i class="ti ti-code"></i> ${this.__('sendToDevice.createHtmlTemplate')}</label>
+                        </div>
+                        <div class="mp-html-preview" id="mp-html-preview"></div>
+                        <div class="mp-html-actions">
+                            <button type="button" class="btn btn-sm btn-cyan" id="btn-mp-save-html">
+                                <i class="ti ti-file-code"></i> ${this.__('multiProductSend.saveAsHtml')}
+                            </button>
+                            <small class="text-muted d-block mt-1">${this.__('multiProductSend.saveAsHtmlHint')}</small>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -5254,6 +5763,12 @@ export class ProductListPage {
                 this._mpUpdateSlotUI(this._mpSelectedTemplate);
             });
         });
+
+        // HTML şablon olarak kaydet butonu
+        const btnSaveHtml = document.getElementById('btn-mp-save-html');
+        if (btnSaveHtml) {
+            btnSaveHtml.addEventListener('click', () => this._mpSaveAsHtmlTemplate());
+        }
     }
 
     /**
@@ -5492,6 +6007,92 @@ export class ProductListPage {
         const total = this._mpSlotAssignments.length;
         const assigned = this._mpSlotAssignments.filter(s => s !== null).length;
         summaryEl.textContent = this.__('multiProductSend.slotsAssigned', { assigned, total });
+
+        // HTML preview + oluşturma bölümünü güncelle
+        this._mpUpdateHtmlPreview();
+    }
+
+    /**
+     * Slot atamaları değiştiğinde HTML önizleme ve oluşturma bölümünü güncelle
+     */
+    _mpUpdateHtmlPreview() {
+        const htmlSection = document.getElementById('mp-html-section');
+        const htmlPreview = document.getElementById('mp-html-preview');
+        if (!htmlSection || !htmlPreview) return;
+
+        const template = this._mpSelectedTemplate;
+        const assignedProducts = this._mpSlotAssignments.filter(s => s !== null);
+
+        if (!template || assignedProducts.length === 0) {
+            htmlSection.style.display = 'none';
+            return;
+        }
+
+        htmlSection.style.display = '';
+
+        // Atanmış ürün ID'leri ile canlı HTML önizleme iframe'i oluştur
+        const basePath = window.OmnexConfig?.basePath || '';
+        const productIds = assignedProducts.map(s => s.id).join(',');
+        const iframeSrc = `${basePath}/api/templates/${template.id}/preview-html?product_ids=${productIds}`;
+
+        htmlPreview.innerHTML = `
+            <div class="mp-html-preview-frame">
+                <iframe src="${escapeHTML(iframeSrc)}"
+                        sandbox="allow-scripts"
+                        loading="lazy"
+                        title="${escapeHTML(template.name)}"></iframe>
+                <div class="live-preview-badge">
+                    <i class="ti ti-broadcast"></i> ${this.__('sendToDevice.liveHtmlPreview')}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Çoklu ürün tasarımını bağımsız olarak HTML şablon olarak kaydet (cihaza göndermeden)
+     */
+    async _mpSaveAsHtmlTemplate() {
+        const template = this._mpSelectedTemplate;
+        if (!template) {
+            Toast.warning(this.__('multiProductSend.templateRequired'));
+            return;
+        }
+
+        const assignedSlots = this._mpSlotAssignments.filter(s => s !== null);
+        if (assignedSlots.length === 0) {
+            Toast.warning(this.__('multiProductSend.noSlotAssigned'));
+            return;
+        }
+
+        const btn = document.getElementById('btn-mp-save-html');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ti ti-loader ti-spin"></i> ${this.__('actions.saving')}`;
+        }
+
+        try {
+            const productIds = assignedSlots.map(s => s.id);
+            const resp = await this.app.api.post('/web-templates/generate-from-fabric', {
+                template_id: template.id,
+                product_ids: productIds
+            });
+            if (resp.success) {
+                const msg = resp.data?.is_update
+                    ? this.__('multiProductSend.htmlUpdated')
+                    : this.__('multiProductSend.htmlSaved');
+                Toast.success(msg);
+            } else {
+                Toast.error(resp.message || this.__('multiProductSend.htmlSaveFailed'));
+            }
+        } catch (error) {
+            Logger.error('_mpSaveAsHtmlTemplate error:', error);
+            Toast.error(this.__('multiProductSend.htmlSaveFailed'));
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ti ti-file-code"></i> ${this.__('multiProductSend.saveAsHtml')}`;
+            }
+        }
     }
 
     /**
@@ -5575,6 +6176,8 @@ export class ProductListPage {
                 } catch (e) {
                     // Ignore - worker will process it
                 }
+
+                // Not: HTML şablon oluşturma artık bağımsız buton ile yapılıyor (_mpSaveAsHtmlTemplate)
             } else {
                 Toast.error(response.message || this.__('multiProductSend.failed'));
             }
