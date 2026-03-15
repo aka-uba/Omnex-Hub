@@ -4569,4 +4569,87 @@ Format:
 - Risks/Follow-up:
   - Harici ama dogrudan medya uzantilariyla gelen URL'ler (ornegin CDN mp4) yeni filtreyi gecmeye devam eder; HTML/web URL'leri artik SW MEDIA cache'e alinmaz.
 - Backup/Restore safety:
-  - Bu follow-up degisiklikte onceki backup seti gecerliligini koruyor; ek restore gerekmedi.
+  - Bu follow-up degisiklikte onceki backup seti gecerliligini koruyor; ek restore gerekmedi.## 2026-03-16 - APK cihazda HTML->video gecis senkronu ve native transition uyumu
+
+- Request: APK tarafinda ilk HTML duzgun olduktan sonra video gorunmeme, sonraki HTML'de preload/play icon flash ve gecislerin tarayiciyla uyumsuz davranisini duzeltme; cihazdan dogrudan dogrulama.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Native video baslangicinda bekleyen `_pendingExitElement` zorunlu flush edildi (`handleNativeVideoStarted`) ki HTML katmani ustte takili kalmasin.
+     - Balanced profilde transition suresini 400ms'e clamp eden kisim kaldirildi (playlist suresi korunuyor).
+  2. **public/player/index.html**
+     - JS cache-bust `player.js?v=52` yapildi.
+  3. **android-player/omnex-player-app/app/build.gradle**
+     - APK surumu `versionCode 36`, `versionName 2.9.7`.
+  4. **public/downloads/update.json** ve **downloads/update.json**
+     - OTA metadata 2.9.7 / v36 ve yeni SHA256 ile guncellendi.
+  5. **public/downloads/omnex-player.apk** ve **downloads/omnex-player.apk**
+     - Yeni APK publish edildi (sha256: `58257ae0961572053f45000098319d7f0ffcfd350011e301a486c915932e6bde`).
+- Files changed: public/player/assets/js/player.js, public/player/index.html, android-player/omnex-player-app/app/build.gradle, public/downloads/update.json, downloads/update.json, public/downloads/omnex-player.apk, downloads/omnex-player.apk
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `./gradlew.bat :app:assembleStandaloneDebug :app:publishDebugApk` (OK)
+  - ADB live validation: cihaz logunda `player.js?v=52`, `Transition: push-down, Duration: 2000ms`, ve `native video start - flushing pending exit` goruldu.
+  - Live endpoint validation:
+    - `https://hub.omnexcore.com/player/` -> `player.js?v=52`
+    - `https://hub.omnexcore.com/downloads/update.json` -> `versionCode 36`, `versionName 2.9.7`
+- Risks/Follow-up:
+  - Sunucudaki `02-deploy-app.sh` certbot adiminda uzun sure asili kalabildigi icin manuel kesildi; uygulama dosyalari canliya dustu ama cert yenileme adimi ayri izlenmeli.
+- Backup/Restore safety:
+  - Edit oncesi temp backup alindi: `public/player/assets/js/player.js.bak_native_transition_fix_20260316_020957`, `android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt.bak_native_transition_fix_20260316_020957`.
+
+## 2026-03-16 - BluetoothWizard Token Yönetimi ve Factory Reset İyileştirmesi
+
+- Request: PavoDisplay cihazlarında factory reset sonrası DB token temizleme, token yönetim arayüzü ekleme
+- Context: 3 Pavo cihaz (@B2A401A977/172-httpserver, @B2A301AB37/160-http, @B2A401A959/161-mqtt) token ile kuruldu ama sunucuda token DB'de kalıyordu, factory reset sonrası token temizlenmiyordu
+- Diagnostics: 3 cihazda tüm portlar kapalı (80,8080,1883,5555), HTTP/MQTT üzerinden factory reset mümkün değil, sadece BLE ile yapılabilir. DB'de 3 cihazın token'ı mevcut (16 karakter).
+- Changes:
+  1. **BluetoothWizard.js** (`_factoryReset`): Factory reset sonrası `_clearTokenFromServer()` çağrısı eklendi - DB'deki token otomatik silinir
+  2. **BluetoothWizard.js** (Token Yönetimi UI): Verify step'e "Token Yönetimi" kartı eklendi - Token durumu (korumalı/korumasız), Token göster, Token ayarla, Token temizle butonları
+  3. **BluetoothWizard.js** (`_clearTokenFromServer`): Yeni metod - API DELETE /devices/:id/bt-password ile DB token temizleme
+  4. **BluetoothWizard.js** (`_updateTokenStatusUI`): Token durumunu UI'da badge ile gösterme
+  5. **BluetoothWizard.js** (`_viewToken`): Token'ı modal ile görüntüleme
+  6. **BluetoothWizard.js** (`_clearDeviceToken`): BLE + DB'den token temizleme (admin/user password boşaltma + DB delete)
+  7. **BluetoothWizard.js** (`_setDevicePassword`): Token ayarlandıktan sonra DB'ye otomatik kayıt
+  8. **BluetoothWizard.js** (`_connect`): Bağlantı sonrası token durumunu UI'da gösterme
+  9. **i18n**: `bluetooth.tokenManagement.*` ve `bluetooth.wizard.factoryResetSuccess` key'leri 8 dile eklendi
+- Files changed: public/assets/js/pages/devices/list/BluetoothWizard.js, locales/tr/pages/devices.json, locales/en/pages/devices.json, locales/az/pages/devices.json, locales/de/pages/devices.json, locales/fr/pages/devices.json, locales/nl/pages/devices.json, locales/ru/pages/devices.json, locales/ar/pages/devices.json
+- Checks run: JS syntax OK (node -e), TR JSON OK, EN JSON OK
+- Backup: BluetoothWizard.js.bak.20260316
+- Risks/Follow-up:
+  - HTTP/MQTT modlu cihazlara ağ üzerinden factory reset göndermek mümkün değil (portlar kapalı, protokol desteklemiyor)
+  - Factory reset sadece BLE ile yapılabilir (Web Bluetooth API gerektirir)
+  - 172 ve 161 cihazları zaten resetlendi, eski tokenlar artık geçersiz
+  - 160 (@B2A301AB37, HTTP) cihazı hala token aktif: BLE ile factory reset yapılabilir
+## 2026-03-16 - APK native gecis yonu ve video->HTML exit animasyonu hizalamasi
+
+- Request: Cihazda APK oynatici `player.js` ile birebir davranmiyor; HTML->video gecis yonu ters (sunucuda yukaridan asagi, cihazda asagidan yukari) ve video->HTML gecisinde animasyon kayboluyor.
+- Root cause:
+  - Native transition map'te `push-down` ters yone (`slide-up`) eslenmisti.
+  - `stopVideoNative()` anlik `switchToWebView()` yapiyor, native katman cikisi animasyonsuz kapanip HTML enter animasyonunu kesiyordu.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt** (repo disi APK kaynak alani)
+     - Native transition map duzeltildi: `push-down -> slide-down`, `push-up -> slide-up`.
+     - Native cikis animasyonu eklendi: `switchToWebView(animateExit=true)` ile video->HTML gecisinde playerView exit animasyonu uygulanir.
+     - Cikis/enter yarismasi icin `isSwitchingToWebView` guard eklendi; katman gecisinde race condition bastirildi.
+     - `stopVideo()` artik uygun durumda `Video stop requested with animated native exit` akisina girer.
+  2. **android-player/omnex-player-app/app/build.gradle** (repo disi APK kaynak alani)
+     - APK surumu `versionCode 37`, `versionName 2.9.8`.
+  3. **public/downloads/update.json** ve **downloads/update.json**
+     - OTA metadata `2.9.8 / v37` ve yeni SHA256 ile guncellendi.
+  4. **public/downloads/omnex-player.apk** ve **downloads/omnex-player.apk**
+     - Yeni APK publish edildi (sha256: `5314404a894ead9de83a51a9e91838cadfbecc751e2976fd7d7642292a7f0033`).
+- Files changed (tracked): public/downloads/update.json, downloads/update.json, public/downloads/omnex-player.apk, downloads/omnex-player.apk
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `./gradlew.bat :app:assembleStandaloneDebug :app:publishDebugApk` (OK)
+  - ADB live validation:
+    - `player.js?v=52`
+    - `Transition set: push-down -> slide-down, 2000ms`
+    - `Video stop requested with animated native exit`
+    - `Switched to WebView display (animated slide-down)`
+- Risks/Follow-up:
+  - Native kaynak dosyalari repo disi oldugu icin kod izleme APK binary + log dogrulama uzerinden yapiliyor.
+- Backup/Restore safety:
+  - Temp backup alindi: `android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt.bak_native_exit_anim_20260316_022413`.

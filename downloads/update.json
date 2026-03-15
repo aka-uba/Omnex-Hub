@@ -1,8 +1,8 @@
 {
-  "versionCode": 36,
-  "versionName": "2.9.7",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=36",
-  "releaseNotes": "- Native video baslangicinda bekleyen onceki icerik cikis gecisi zorunlu flush edildi (HTML ustte takili kalma/siyah flash duzeltmesi)\n- APK ExoPlayer gecisleri push/slide tiplerine esitlenerek web gecis yonleriyle uyumlu hale getirildi\n- APK katman sirasi native video icin guclendirildi (playerView/webView front-switch)\n- Balanced profilde playlist transition suresi artik 400ms'e zorla kisaltilmiyor",
+  "versionCode": 37,
+  "versionName": "2.9.8",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=37",
+  "releaseNotes": "- APK native gecis yonu duzeltildi: push-down artik cihazda da yukaridan asagi davranir\n- Native video cikisi animasyonlu hale getirildi (video->HTML gecisinde ani kesilme yerine cikis/enter uyumu)\n- Native/WebView gecis yarismalari icin cikis animasyon durumu korunarak katman gecisi stabil hale getirildi",
   "mandatory": false,
-  "sha256": "58257ae0961572053f45000098319d7f0ffcfd350011e301a486c915932e6bde"
+  "sha256": "5314404a894ead9de83a51a9e91838cadfbecc751e2976fd7d7642292a7f0033"
 }
