@@ -1,8 +1,8 @@
 {
-  "versionCode": 28,
-  "versionName": "2.8.4",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=28",
-  "releaseNotes": "- Wizard tasarimi animasyonlu ikonlarla geri yuklendi\n- Wizard gecis animasyonlari ve adim gostergesi geri getirildi\n- Arka plan temasi player ekrani stiliyle korundu\n- Varsayilan sunucu ve update indirme yolu mevcut haliyle korundu",
+  "versionCode": 35,
+  "versionName": "2.9.6",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=35",
+  "releaseNotes": "- APK native transition patch geri alindi (backup ile ayni yapi)\n- HTML iframe icerikler portrait cihazlarda 16:9 clamp disina alindi, merkezleme duzeltildi\n- Same-origin HTML videolarda preload/play overlay flash etkisi azaltildi",
   "mandatory": false,
-  "sha256": "d611a2a43dbaa9d994235d7c50373079f6ac9dc789ec1854b6d03915fd501229"
+  "sha256": "0da52946b778a7085e300c99cc492cb1265dbf6adb1d6bef6e42f8d588dc60e5"
 }

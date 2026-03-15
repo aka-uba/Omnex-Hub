@@ -174,7 +174,7 @@ body {
         align-items: center;
     }
 
-    #player-screen .content-container.orientation-landscape .content-item {
+    #player-screen .content-container.orientation-landscape .content-item:not(iframe) {
         position: relative;
         width: 100% !important;
         height: auto !important;
@@ -183,6 +183,18 @@ body {
         object-fit: contain;
         top: auto;
         transform: none;
+    }
+
+    /* HTML templates self-scale inside iframe, do not force 16:9 clamp on portrait devices. */
+    #player-screen .content-container.orientation-landscape iframe.content-item {
+        position: absolute !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none !important;
+        aspect-ratio: auto !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
     }
 }
 
@@ -283,7 +295,7 @@ body {
     aspect-ratio: auto !important;
 }
 
-#player-screen .content-container.force-rotate-portrait.orientation-landscape .content-item {
+#player-screen .content-container.force-rotate-portrait.orientation-landscape .content-item:not(iframe) {
     width: 100% !important;
     height: 56.25% !important;
     max-width: 100% !important;
@@ -293,6 +305,17 @@ body {
     transform: translateY(-50%) !important;
     aspect-ratio: 16 / 9 !important;
     object-fit: contain !important;
+}
+
+#player-screen .content-container.force-rotate-portrait.orientation-landscape iframe.content-item {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    aspect-ratio: auto !important;
 }
 
 /* ==================== Loading Screen ==================== */

@@ -4241,6 +4241,7 @@ class OmnexPlayer {
                 style.id = styleId;
                 style.textContent = `
                     html, body { margin: 0 !important; padding: 0 !important; background: #000 !important; overflow: hidden !important; }
+                    video { background: #000 !important; }
                     video::-webkit-media-controls,
                     video::-webkit-media-controls-panel,
                     video::-webkit-media-controls-play-button,
@@ -4262,16 +4263,44 @@ class OmnexPlayer {
             const videos = doc.querySelectorAll('video');
             videos.forEach((video) => {
                 video.controls = false;
+                video.removeAttribute('controls');
+                video.playsInline = true;
                 video.setAttribute('playsinline', '');
                 video.setAttribute('webkit-playsinline', '');
+                video.muted = true;
+                video.defaultMuted = true;
+                video.setAttribute('muted', '');
                 if (!video.getAttribute('preload')) {
                     video.setAttribute('preload', 'auto');
                 }
+                video.style.opacity = '0';
+                video.style.visibility = 'hidden';
+                video.style.transition = 'opacity 120ms linear';
+
+                const revealVideo = () => {
+                    video.style.visibility = 'visible';
+                    video.style.opacity = '1';
+                };
+
+                if (video.dataset.omnexGuardAttached !== '1') {
+                    video.dataset.omnexGuardAttached = '1';
+                    ['playing', 'canplay', 'loadeddata'].forEach((eventName) => {
+                        video.addEventListener(eventName, revealVideo);
+                    });
+                }
+
+                // Avoid brief preload/play icon flashes while autoplay initializes.
+                setTimeout(revealVideo, 1200);
+
                 if (video.paused && video.autoplay) {
                     const playPromise = video.play();
                     if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(() => {});
+                        playPromise.catch(() => {
+                            revealVideo();
+                        });
                     }
+                } else if (!video.paused) {
+                    revealVideo();
                 }
             });
         } catch (e) {

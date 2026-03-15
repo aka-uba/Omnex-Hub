@@ -1,8 +1,8 @@
 {
-  "versionCode": 34,
-  "versionName": "2.9.5",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=34",
-  "releaseNotes": "- Launcher ikonu yeni gradient tasarimla guncellendi",
+  "versionCode": 35,
+  "versionName": "2.9.6",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=35",
+  "releaseNotes": "- APK native transition patch geri alindi (backup ile ayni yapi)\n- HTML iframe icerikler portrait cihazlarda 16:9 clamp disina alindi, merkezleme duzeltildi\n- Same-origin HTML videolarda preload/play overlay flash etkisi azaltildi",
   "mandatory": false,
-  "sha256": "a5610097eb317e809ed9d5f7592d6a473e05a52e1c921c0667cd67054ec5c0b7"
+  "sha256": "0da52946b778a7085e300c99cc492cb1265dbf6adb1d6bef6e42f8d588dc60e5"
 }
