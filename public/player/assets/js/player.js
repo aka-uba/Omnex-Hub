@@ -3459,6 +3459,17 @@ class OmnexPlayer {
         this._currentVideoItem = item;
         this._currentElement = video;
 
+        // Native playback has no DOM enter transition callback.
+        // Flush deferred exits immediately so previous HTML/image/video can
+        // complete its exit animation and not stay above ExoPlayer.
+        if (this._pendingExitElement && this._pendingExitElement !== video) {
+            this.traceDebug('TRANS', 'native video start - flushing pending exit', {
+                pendingExitElement: this.getElementDebugLabel(this._pendingExitElement),
+                nativePlaceholder: this.getElementDebugLabel(video)
+            });
+            this.flushPendingExitTransition(video);
+        }
+
         const setDuration = this.getScheduledDuration(item, 0);
         if (setDuration > 0) {
             this.scheduleNext(setDuration);
@@ -3639,8 +3650,6 @@ class OmnexPlayer {
 
         if (this.isLegacyProfile() && this._transitionType !== 'none') {
             this._transitionDuration = Math.min(this._transitionDuration, 300);
-        } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
-            this._transitionDuration = Math.min(this._transitionDuration, 400);
         }
 
         document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
