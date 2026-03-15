@@ -2151,6 +2151,23 @@ class OmnexPlayer {
         // Never precache live HLS manifest/stream endpoints.
         if (lowerUrl.includes('/api/stream/') || lowerUrl.includes('.m3u8')) return false;
 
+        let parsedUrl;
+        try {
+            parsedUrl = new URL(url);
+        } catch (e) {
+            return false;
+        }
+
+        const path = (parsedUrl.pathname || '').toLowerCase();
+        const mediaExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm'];
+        const hasKnownMediaExtension = mediaExtensions.some((ext) => path.endsWith(ext));
+        const looksLikeMediaPath = path.includes('/storage/') || path.includes('/media/');
+
+        // SW MEDIA cache should only target actual media assets, not HTML/web URLs.
+        if (!hasKnownMediaExtension && !looksLikeMediaPath) {
+            return false;
+        }
+
         // Reject URLs with unresolved template variables
         if (url.includes('%7B') || url.includes('%7D') ||
             url.includes('{') || url.includes('}')) return false;
@@ -2184,6 +2201,15 @@ class OmnexPlayer {
             const idx = (this.currentIndex + offset) % len;
             const it = items[idx];
             if (!it) continue;
+            const itemType = String(it.type || '').toLowerCase();
+            const mimeType = String(it.mime_type || '').toLowerCase();
+            const isMediaType =
+                itemType === 'image' ||
+                itemType === 'video' ||
+                itemType === 'stream' ||
+                mimeType.startsWith('image/') ||
+                mimeType.startsWith('video/');
+            if (!isMediaType) continue;
             const rawUrl = it.url || (it.media && it.media.url);
             if (!rawUrl) continue;
             const url = this.normalizeLocalhostUrl(api.getMediaUrl(rawUrl));
@@ -2202,7 +2228,16 @@ class OmnexPlayer {
         // Prune stale entries only on playlist change (not every item advance)
         if (pruneStale) {
             const allMediaUrls = items
-                .filter(function(item) { return item.url || (item.media && item.media.url); })
+                .filter((item) => {
+                    if (!(item.url || (item.media && item.media.url))) return false;
+                    const itemType = String(item.type || '').toLowerCase();
+                    const mimeType = String(item.mime_type || '').toLowerCase();
+                    return itemType === 'image' ||
+                        itemType === 'video' ||
+                        itemType === 'stream' ||
+                        mimeType.startsWith('image/') ||
+                        mimeType.startsWith('video/');
+                })
                 .map(function(item) { return api.getMediaUrl(item.url || (item.media && item.media.url)); })
                 .map((url) => this.normalizeLocalhostUrl(url))
                 .filter((url) => this.isValidCacheableUrl(url));
@@ -4335,6 +4370,8 @@ class OmnexPlayer {
         };
 
         iframe.onload = () => {
+            if (loaded) return;
+            if (iframe.dataset.loadToken !== loadToken) return;
             this.traceDebug('HTML', 'iframe onload', {
                 iframe: this.getElementDebugLabel(iframe),
                 finalUrl

@@ -4553,3 +4553,20 @@ Format:
 - Backup/Restore safety:
   - Edit oncesi backup alindi: `api/player/init.php.bak_html_debug_20260316_010617`, `api/player/sync.php.bak_html_debug_20260316_010617`, `public/player/assets/js/player.js.bak_html_debug_20260316_010617`
   - Restore gerekmedi.
+## 2026-03-16 - HTML trace follow-up: SW precache filtreleme + stale onload log temizligi
+
+- Request: Yeni trace loglarina gore kalan anomalileri kontrol etme (YouTube CORS precache hatasi ve HTML'den cikis sonrasi stale onload debug gurultusu).
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - `isValidCacheableUrl()` sadece gercek medya URL'lerini kabul edecek sekilde daraltildi (extension/path bazli)
+     - `precacheMedia()` upcoming ve prune listelerinde sadece image/video/stream tipleri cache'e alinacak sekilde filtrelendi
+     - `playHtml()` icindeki `iframe.onload` trace'i stale eventleri eleyecek sekilde token+loaded guard ile sikilastirildi
+  2. **public/player/index.html**
+     - Cache-bust guncellemesi: `player.js?v=50`
+- Files changed: public/player/assets/js/player.js, public/player/index.html
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+- Risks/Follow-up:
+  - Harici ama dogrudan medya uzantilariyla gelen URL'ler (ornegin CDN mp4) yeni filtreyi gecmeye devam eder; HTML/web URL'leri artik SW MEDIA cache'e alinmaz.
+- Backup/Restore safety:
+  - Bu follow-up degisiklikte onceki backup seti gecerliligini koruyor; ek restore gerekmedi.
