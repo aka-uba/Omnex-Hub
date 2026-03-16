@@ -5022,3 +5022,85 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Akis davranisi degismemeli; sadece konsol gürültüsü ve snapshot hesaplari devre disi.
 - Backup/Restore safety:
   - Temp backup alindi: `public/player/assets/js/player.js.bak_disable_deep_debug_20260316_0828`.
+
+## 2026-03-16 - Startup context sync for new tasks
+
+- Request: Read existing project info files and memory, then confirm readiness for upcoming topics.
+- Changes:
+  1. **.codex/CHANGE_MEMORY.md**
+     - Added this log entry to record startup context sync.
+- Checks run:
+  - No syntax check run (no code files changed in this task).
+- Risks/Follow-up:
+  - Next tasks should follow current player stabilization context and existing workflow guardrails.
+- Backup/Restore safety:
+  - Not needed (append-only memory update).
+## 2026-03-16 - Android TV shortcut icon strategy confirmation
+
+- Request: Confirm whether a TV-only special shortcut PNG can be used while keeping current icon pack for other devices.
+- Changes:
+  1. **.codex/CHANGE_MEMORY.md**
+     - Added this advisory-task log entry.
+- Checks run:
+  - No syntax check run (no code files changed in this task).
+- Risks/Follow-up:
+  - For Android TV, launcher surface may use ndroid:banner and/or app icon depending on launcher; both resources should be planned together.
+- Backup/Restore safety:
+  - Not needed (append-only memory update).
+## 2026-03-16 - Add TV-only launcher icon resources (with temp backup)
+
+- Request: Use a separate shortcut icon PNG only for TV devices to avoid oval-mask white gaps, with temp-backup-safe workflow.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/res/mipmap-television-mdpi/ic_launcher.png**
+  2. **android-player/omnex-player-app/app/src/main/res/mipmap-television-mdpi/ic_launcher_round.png**
+  3. **android-player/omnex-player-app/app/src/main/res/mipmap-television-hdpi/ic_launcher.png**
+  4. **android-player/omnex-player-app/app/src/main/res/mipmap-television-hdpi/ic_launcher_round.png**
+  5. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xhdpi/ic_launcher.png**
+  6. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xhdpi/ic_launcher_round.png**
+  7. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xxhdpi/ic_launcher.png**
+  8. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xxhdpi/ic_launcher_round.png**
+  9. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xxxhdpi/ic_launcher.png**
+  10. **android-player/omnex-player-app/app/src/main/res/mipmap-television-xxxhdpi/ic_launcher_round.png**
+     - TV-only mipmap qualifiers added; app keeps existing icon resource names (ic_launcher, ic_launcher_round) so non-TV devices continue using normal icon pack.
+     - TV icons generated from source: public/branding/tv-logo.png.
+  11. **android-player/omnex-player-app/app/src/main/AndroidManifest.xml.bak_tv_shortcut_icons_20260316_174139**
+     - Temp backup created before resource work.
+- Checks run:
+  - ./gradlew.bat :app:compileDebugKotlin (failed: ambiguous task name because flavors exist)
+  - ./gradlew.bat :app:compileStandaloneDebugKotlin (OK)
+  - ./gradlew.bat :app:compilePlaystoreDebugKotlin (OK)
+- Risks/Follow-up:
+  - If some TV launchers still apply aggressive icon masks, visual tuning may require a dedicated padded TV icon source instead of current square-fill asset.
+  - Leanback home tile also depends on ndroid:banner; if needed, anner can be customized separately.
+- Backup/Restore safety:
+  - Temp backup used as requested.
+## 2026-03-16 - Build v2.9.13 APK, update OTA JSON, push/pull and deploy for TV auto-update test
+
+- Request: Build new APK, copy into downloads folders, update upload/update JSON files, run git pull+push, deploy APK+JSON to server for OTA test on TV.
+- Changes:
+  1. **android-player/omnex-player-app/app/build.gradle** (gitignored)
+     - versionCode: `41 -> 42`
+     - versionName: `2.9.12 -> 2.9.13`
+  2. **downloads/omnex-player.apk** and **public/downloads/omnex-player.apk**
+     - Replaced with newly built standalone debug APK (v42).
+  3. **downloads/omnex-player-standalone-v2.9.13.apk** and **public/downloads/omnex-player-standalone-v2.9.13.apk**
+     - Added versioned APK copies for release archive.
+  4. **downloads/update.json** and **public/downloads/update.json**
+     - Updated to versionCode `42`, versionName `2.9.13`, downloadUrl query `v=42`, new release notes and SHA256.
+  5. **User Downloads copies**
+     - `C:\Users\test\Downloads\omnex-player.apk`
+     - `C:\Users\test\Downloads\omnex-player-standalone-v2.9.13.apk`
+     - `C:\Users\test\Downloads\update.json`
+- Checks run:
+  - `./gradlew.bat assembleStandaloneDebug` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK)
+  - JSON parse checks (downloads/public update.json) (OK)
+  - APK hash parity check (downloads/public) (OK)
+- Risks/Follow-up:
+  - `android-player/` gitignored oldugu icin kaynak kod degisiklikleri git commit'e girmez; dagitim APK + update.json uzerinden yayin yapilir.
+  - Server deploy adiminda SSH erisimi/izinler ortama baglidir.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `android-player/omnex-player-app/app/build.gradle.bak_apk_release_20260316_175238`
+    - `downloads/update.json.bak_apk_release_20260316_175238`
+    - `public/downloads/update.json.bak_apk_release_20260316_175238`

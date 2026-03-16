@@ -1,8 +1,8 @@
 {
-  "versionCode": 41,
-  "versionName": "2.9.12",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=41",
-  "releaseNotes": "- Native video gecisleri tekrar aktif ama transition tipi/yonu player.js tarafindan resolve edilip aynen APK'ya aktarilir\n- Force-rotate (yatay->dikey / dikey->yatay) durumlarinda native video transition yonu player animasyonuyla senkronize remap edilir\n- Video icerikler de artik gecis animasyonuna dahil olur (anlik kaybolma/gelme azaltildi)",
-  "mandatory": false,
-  "sha256": "a32a13b4607a6a257d563cf61c30cda9a6920fefa461d2fc94be880fe616d715"
+    "versionCode":  42,
+    "versionName":  "2.9.13",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=42",
+    "releaseNotes":  "- TV launcher icon kaynaklari TV cihazlari icin ozel optimize edildi\n- TV shortcut gorunumunde oval maske bosluk etkisi azaltildi\n- Genel stabilite iyilestirmeleri",
+    "mandatory":  false,
+    "sha256":  "8545afe951eb730a679cce4e0a07f510ca5a7bb50ae5fb19a29b50eada21dd8c"
 }
