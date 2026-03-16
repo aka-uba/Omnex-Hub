@@ -3318,6 +3318,13 @@ class OmnexPlayer {
             return transition;
         }
 
+        const layoutState = this.getLayoutOrientationState();
+        if (layoutState.virtualized) {
+            // Manual orientation override already virtualizes playlist layout.
+            // Avoid second directional remap to prevent rule stacking conflicts.
+            return transition;
+        }
+
         const container = document.getElementById('content-container');
         const isForceRotateLandscape = !!(container && container.classList.contains('force-rotate-landscape'));
         const isForceRotatePortrait = !!(container && container.classList.contains('force-rotate-portrait'));
