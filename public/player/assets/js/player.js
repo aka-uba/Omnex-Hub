@@ -290,6 +290,7 @@ class OmnexPlayer {
             : [];
 
         const metrics = this.getDisplayMetrics();
+        const layoutState = this.getLayoutOrientationState();
         this._transitionDebugSeq += 1;
 
         this.traceDebug('STATE', stage, Object.assign({
@@ -305,6 +306,9 @@ class OmnexPlayer {
                 viewport: this.getViewportOrientation(),
                 playlist: this.getPlaylistOrientation(),
                 content: this.currentContentOrientation || null,
+                layout: layoutState.layoutOrientation,
+                layoutSource: layoutState.source,
+                virtualizedPlaylistOrientation: layoutState.virtualized,
                 containerClasses
             },
             playback: {
@@ -1397,6 +1401,31 @@ class OmnexPlayer {
             : null;
     }
 
+    getBaseContentOrientation() {
+        return this.currentContentOrientation || this.getPlaylistOrientation();
+    }
+
+    shouldVirtualizePlaylistOrientation() {
+        // When user explicitly requests portrait/landscape with the toggle,
+        // treat playlist layout orientation as requested screen orientation.
+        // This keeps content geometry/transition paths consistent across types.
+        return !!this.getRequestedOrientation();
+    }
+
+    getLayoutOrientationState() {
+        const requestedOrientation = this.getRequestedOrientation();
+        const baseOrientation = this.getBaseContentOrientation();
+        const virtualized = !!requestedOrientation && this.shouldVirtualizePlaylistOrientation();
+
+        return {
+            requestedOrientation,
+            baseOrientation,
+            layoutOrientation: virtualized ? requestedOrientation : baseOrientation,
+            source: virtualized ? 'requested-screen' : 'content-or-playlist',
+            virtualized
+        };
+    }
+
     getEffectiveOrientationState() {
         return this.getRequestedOrientation() || this.getCurrentScreenOrientation();
     }
@@ -1492,20 +1521,26 @@ class OmnexPlayer {
         const applyOrientationState = () => {
             this.applyPlaylistOrientation();
             this.updateOrientationToggleState();
+            const layoutState = this.getLayoutOrientationState();
             if (this.debug) {
                 console.log('[Player] Orientation toggle result:', {
                     from: current,
                     requested: next,
                     nativeRequestSent,
                     browserLockApplied,
-                    currentScreen: this.getCurrentScreenOrientation()
+                    currentScreen: this.getCurrentScreenOrientation(),
+                    layout: layoutState.layoutOrientation,
+                    source: layoutState.source
                 });
             }
             this.traceTransitionSnapshot('orientation-toggle-applied', {
                 from: current,
                 requested: next,
                 nativeRequestSent,
-                browserLockApplied
+                browserLockApplied,
+                layoutOrientation: layoutState.layoutOrientation,
+                layoutSource: layoutState.source,
+                virtualizedPlaylistOrientation: layoutState.virtualized
             });
         };
 
@@ -2730,22 +2765,26 @@ class OmnexPlayer {
         if (normalizedContentOrientation) {
             this.currentContentOrientation = normalizedContentOrientation;
         }
-        const orientation = this.currentContentOrientation || this.getPlaylistOrientation();
+        const layoutState = this.getLayoutOrientationState();
+        const orientation = layoutState.layoutOrientation || 'landscape';
 
         // Remove existing orientation classes
         container.classList.remove('orientation-landscape', 'orientation-portrait');
 
         // Add current orientation class
         container.classList.add(`orientation-${orientation}`);
-        this.applyOrientationRotation(container, this.getRequestedOrientation());
+        this.applyOrientationRotation(container, layoutState.requestedOrientation);
         this.updateOrientationToggleState();
 
         if (this.debug) {
-            console.log('[Player] Applied content orientation:', orientation, 'requested screen:', this.getRequestedOrientation() || '(auto)');
+            console.log('[Player] Applied content orientation:', orientation, 'requested screen:', layoutState.requestedOrientation || '(auto)', 'source:', layoutState.source);
         }
         this.traceTransitionSnapshot('orientation-applied', {
             appliedOrientation: orientation,
-            requestedScreenOrientation: this.getRequestedOrientation() || '(auto)'
+            requestedScreenOrientation: layoutState.requestedOrientation || '(auto)',
+            baseContentOrientation: layoutState.baseOrientation,
+            orientationSource: layoutState.source,
+            virtualizedPlaylistOrientation: layoutState.virtualized
         });
     }
 
