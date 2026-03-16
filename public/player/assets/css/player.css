@@ -276,9 +276,9 @@ body {
     height: 100% !important;
     max-width: 56.25% !important;
     max-height: 100% !important;
-    left: 50% !important;
+    left: calc((100% - 56.25%) / 2) !important;
     top: 0 !important;
-    transform: translateX(-50%);
+    transform: none;
     aspect-ratio: 9 / 16 !important;
     object-fit: contain !important;
 }
@@ -301,8 +301,8 @@ body {
     max-width: 100% !important;
     max-height: 56.25% !important;
     left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%);
+    top: calc((100% - 56.25%) / 2) !important;
+    transform: none;
     aspect-ratio: 16 / 9 !important;
     object-fit: contain !important;
 }

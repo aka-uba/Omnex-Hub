@@ -4957,3 +4957,26 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Repoda bu turn disinda kullaniciya ait baska degisiklikler var; commit yalnizca player CSS/index + memory ile sinirli tutulmali.
 - Backup/Restore safety:
   - Temp backup alindi: `public/player/assets/css/player.css.bak_transition_force_rotate_conflict_20260316_0741`.
+
+## 2026-03-16 - Remove centering transform conflict for force-rotate mismatch (PC HTML jump fix)
+
+- Request: APK stabil, ancak PC'de ozellikle HTML gecislerinde icerik saga dayali baslayip merkeze atliyor; tum turlerde merkez konumunun stabil olmasi istendi.
+- Changes:
+  1. **public/player/assets/css/player.css**
+     - `force-rotate-landscape.orientation-portrait .content-item` merkezleme yontemi:
+       - `left: 50% + transform: translateX(-50%)` yerine
+       - `left: calc((100% - 56.25%) / 2)` + `transform: none` kullanildi.
+     - `force-rotate-portrait.orientation-landscape .content-item:not(iframe)` merkezleme yontemi:
+       - `top: 50% + transform: translateY(-50%)` yerine
+       - `top: calc((100% - 56.25%) / 2)` + `transform: none` kullanildi.
+     - Boyutu/orani belirleyen mevcut kurallar korunarak sadece transform-cakismasi kaldirildi.
+  2. **public/player/index.html**
+     - CSS cache-bust guncellendi: `player.css?v=38`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - Not: CSS/HTML icin projede tanimli dogrudan syntax check komutu yok.
+- Risks/Follow-up:
+  - `56.25%` tabanli merkezleme mevcut tasarimla uyumlu; farkli custom aspect oranli ozel template'lerde ek ayar gerektirebilir.
+  - Final gorsel dogrulama PC browser force-rotate senaryosunda (html->video, video->html, image->html) yapilmali.
+- Backup/Restore safety:
+  - Temp backup alindi: `public/player/assets/css/player.css.bak_center_without_transform_20260316_0806`.
