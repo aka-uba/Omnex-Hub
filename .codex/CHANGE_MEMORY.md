@@ -5002,3 +5002,23 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Farkli en-boy oranli custom iceriklerde goruntu alani hissi degisebilir; gerekli olursa oran bazli ince ayar eklenir.
 - Backup/Restore safety:
   - Temp backup alindi: `public/player/assets/css/player.css.bak_orientation_center_lock_20260316_0817`.
+
+## 2026-03-16 - Disable deep player debug traces after stabilization (player.js v60)
+
+- Request: Gecis/konum sorunlari cozuldikten sonra islem gecmisinde eklenen ayrintili debug loglarinin kaldirilmasi; debug temizligi sonrasi davranisin bozulmamasi istendi.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Ayrintili debug metotlari no-op hale getirildi:
+       - `traceDebug(...)` -> no-op
+       - `traceTransitionSnapshot(...)` -> no-op
+     - Snapshot sayaci olarak kullanilan `_transitionDebugSeq` constructor alanindan kaldirildi.
+     - Cagri noktalari korunarak transition akisi degistirilmedi (sadece log cikisi kapatildi).
+  2. **public/player/index.html**
+     - JS cache-bust guncellendi: `player.js?v=60`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+- Risks/Follow-up:
+  - Derin debug loglari kapali oldugu icin yeni issue durumunda gecici olarak tekrar acilabilir.
+  - Akis davranisi degismemeli; sadece konsol gürültüsü ve snapshot hesaplari devre disi.
+- Backup/Restore safety:
+  - Temp backup alindi: `public/player/assets/js/player.js.bak_disable_deep_debug_20260316_0828`.

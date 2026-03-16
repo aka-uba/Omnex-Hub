@@ -150,7 +150,6 @@ class OmnexPlayer {
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
-        this._transitionDebugSeq = 0;
     }
 
     isLegacyProfile() {
@@ -206,19 +205,9 @@ class OmnexPlayer {
     }
 
     traceDebug(scope, message, payload) {
-        if (!this.debug) {
-            return;
-        }
-
-        const ts = (performance.now() / 1000).toFixed(3);
-        const prefix = `[Player][${scope} ${ts}] ${message}`;
-
-        if (typeof payload === 'undefined') {
-            console.log(prefix);
-            return;
-        }
-
-        console.log(prefix, payload);
+        // Detailed trace logs disabled in production code path.
+        // Keep method as no-op to avoid touching transition flow call sites.
+        return;
     }
 
     roundDebugValue(value, precision = 2) {
@@ -276,65 +265,9 @@ class OmnexPlayer {
     }
 
     traceTransitionSnapshot(stage, payload = {}) {
-        if (!this.debug) {
-            return;
-        }
-
-        const container = document.getElementById('content-container');
-        const containerClasses = container
-            ? Array.from(container.classList || []).filter(cls =>
-                cls.startsWith('orientation-') ||
-                cls.startsWith('force-rotate') ||
-                cls === 'show-overlay-mask'
-            )
-            : [];
-
-        const metrics = this.getDisplayMetrics();
-        const layoutState = this.getLayoutOrientationState();
-        this._transitionDebugSeq += 1;
-
-        this.traceDebug('STATE', stage, Object.assign({
-            seq: this._transitionDebugSeq,
-            transition: {
-                configured: this._transitionType || 'none',
-                runtime: this._runtimeTransitionType || null,
-                durationMs: this._transitionDuration || 0
-            },
-            orientation: {
-                requested: this.getRequestedOrientation() || '(auto)',
-                screen: this.getCurrentScreenOrientation(),
-                viewport: this.getViewportOrientation(),
-                playlist: this.getPlaylistOrientation(),
-                content: this.currentContentOrientation || null,
-                layout: layoutState.layoutOrientation,
-                layoutSource: layoutState.source,
-                virtualizedPlaylistOrientation: layoutState.virtualized,
-                containerClasses
-            },
-            playback: {
-                index: this.currentIndex,
-                totalItems: Array.isArray(this.playlist?.items) ? this.playlist.items.length : 0,
-                currentType: this._currentContentType || 'none',
-                currentElement: this.getElementDebugLabel(this._currentElement),
-                pendingExit: this.getElementDebugLabel(this._pendingExitElement),
-                activeVideoSlot: this._activeVideoSlot,
-                activeHtmlSlot: this._activeHtmlSlot,
-                nativeMode: this._nativeVideoMode,
-                nativePlaying: this.isNativePlaybackActive()
-            },
-            metrics: {
-                viewport: `${metrics.viewportWidth}x${metrics.viewportHeight}`,
-                render: `${metrics.renderWidth}x${metrics.renderHeight}`,
-                dpr: this.roundDebugValue(metrics.devicePixelRatio, 3)
-            },
-            elements: {
-                image: this.getElementLayoutSnapshot(this.elements?.imageContent),
-                video: this.getElementLayoutSnapshot(this.elements?.videoContent),
-                videoAlt: this.getElementLayoutSnapshot(this.elements?.videoContentAlt),
-                html: this.getElementLayoutSnapshot(this.elements?.htmlContent),
-                htmlAlt: this.getElementLayoutSnapshot(this.elements?.htmlContentAlt)
-            }
-        }, payload));
+        // Detailed state snapshots disabled in production code path.
+        // Keep method as no-op to avoid touching transition flow call sites.
+        return;
     }
 
     /**
