@@ -2866,13 +2866,16 @@ class OmnexPlayer {
             return;
         }
 
+        const resolvedTransitionType = this.getResolvedTransitionType();
+        const domTransitionType = this.getDomTransitionTypeForCurrentLayout(resolvedTransitionType);
+
         this.traceDebug('TRANS', 'applyExitTransition', {
             element: this.getElementDebugLabel(element),
             transition: this._transitionType,
+            resolvedTransition: resolvedTransitionType,
+            domTransition: domTransitionType,
             durationMs: this._transitionDuration
         });
-
-        const resolvedTransitionType = this.getResolvedTransitionType();
 
         // Remove any existing transition classes
         this.clearTransitionClasses(element);
@@ -2883,7 +2886,7 @@ class OmnexPlayer {
         element.style.zIndex = '1';
 
         // Add exit transition class
-        element.classList.add('transition-exit', `${resolvedTransitionType}-exit`);
+        element.classList.add('transition-exit', `${domTransitionType}-exit`);
 
         // Hide element after transition completes
         const duration = this._transitionDuration;
@@ -2930,10 +2933,12 @@ class OmnexPlayer {
         if (!element) return;
 
         const resolvedTransitionType = this.getResolvedTransitionType();
+        const domTransitionType = this.getDomTransitionTypeForCurrentLayout(resolvedTransitionType);
 
         this.traceDebug('TRANS', 'applyEnterTransition', {
             element: this.getElementDebugLabel(element),
             resolvedTransition: resolvedTransitionType,
+            domTransition: domTransitionType,
             durationMs: this._transitionDuration
         });
 
@@ -2946,9 +2951,9 @@ class OmnexPlayer {
         element.style.opacity = '1';
         element.style.zIndex = '2';
 
-        if (resolvedTransitionType !== 'none') {
+        if (domTransitionType !== 'none') {
             // Add enter transition class (z-index: 2 via CSS)
-            element.classList.add('transition-enter', `${resolvedTransitionType}-enter`);
+            element.classList.add('transition-enter', `${domTransitionType}-enter`);
 
             // Track current element
             this._currentElement = element;
@@ -3108,7 +3113,7 @@ class OmnexPlayer {
         return `${prefix}-${mappedDirection}`;
     }
 
-    getNativeTransitionTypeForCurrentLayout(resolvedTransitionType) {
+    getDomTransitionTypeForCurrentLayout(resolvedTransitionType) {
         const transition = resolvedTransitionType || 'none';
         if (transition === 'none') {
             return transition;
@@ -3118,20 +3123,10 @@ class OmnexPlayer {
         const isForceRotateLandscape = !!(container && container.classList.contains('force-rotate-landscape'));
         const isForceRotatePortrait = !!(container && container.classList.contains('force-rotate-portrait'));
 
-        // Container rotated +90deg (portrait viewport forced to landscape content).
-        // DOM transition vectors rotate with content; native overlay must be remapped
-        // so video enter/exit matches the same visual direction.
+        // Keep transition direction aligned with the CURRENT SCREEN axis.
+        // When container is rotated via fallback classes, remap DOM classes so
+        // "push-down" still looks like down on screen.
         if (isForceRotateLandscape) {
-            return this.mapDirectionalTransition(transition, {
-                left: 'up',
-                right: 'down',
-                up: 'right',
-                down: 'left'
-            });
-        }
-
-        // Container rotated -90deg (landscape viewport forced to portrait content).
-        if (isForceRotatePortrait) {
             return this.mapDirectionalTransition(transition, {
                 left: 'down',
                 right: 'up',
@@ -3140,6 +3135,22 @@ class OmnexPlayer {
             });
         }
 
+        if (isForceRotatePortrait) {
+            return this.mapDirectionalTransition(transition, {
+                left: 'up',
+                right: 'down',
+                up: 'right',
+                down: 'left'
+            });
+        }
+
+        return transition;
+    }
+
+    getNativeTransitionTypeForCurrentLayout(resolvedTransitionType) {
+        const transition = resolvedTransitionType || 'none';
+        // Native player view is rendered in screen coordinates. After DOM-side
+        // layout remap, native transition can follow the resolved playlist type directly.
         return transition;
     }
 
@@ -3420,6 +3431,43 @@ class OmnexPlayer {
      */
     hasNativeVideoSupport() {
         return window.AndroidBridge && typeof window.AndroidBridge.playVideoNative === 'function';
+    }
+
+    isNativePlaybackActive() {
+        if (!this.hasNativeVideoSupport() || !window.AndroidBridge || typeof window.AndroidBridge.isPlayingNatively !== 'function') {
+            return false;
+        }
+
+        try {
+            return window.AndroidBridge.isPlayingNatively();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    stopNativeVideoForTransition(reason = 'content-swap') {
+        if (!this.isNativePlaybackActive()) {
+            return false;
+        }
+        if (!window.AndroidBridge || typeof window.AndroidBridge.stopVideoNative !== 'function') {
+            return false;
+        }
+
+        try {
+            window.AndroidBridge.stopVideoNative();
+            this.setNativeVideoMode(false);
+            this.traceDebug('TRANS', 'requested native stop for web transition', {
+                reason,
+                transition: this._transitionType || 'none',
+                durationMs: this._transitionDuration || 0
+            });
+            return true;
+        } catch (error) {
+            if (this.debug) {
+                console.warn('[Player] Failed to stop native video for transition', error);
+            }
+            return false;
+        }
     }
 
     /**
@@ -3759,6 +3807,7 @@ class OmnexPlayer {
             if (window.AndroidBridge && typeof window.AndroidBridge.setVideoTransition === 'function') {
                 try {
                     const resolvedTransitionType = this.getResolvedTransitionType();
+                    const domTransitionType = this.getDomTransitionTypeForCurrentLayout(resolvedTransitionType);
                     const nativeTransitionType = this.getNativeTransitionTypeForCurrentLayout(resolvedTransitionType);
                     window.AndroidBridge.setVideoTransition(
                         nativeTransitionType || 'none',
@@ -3767,6 +3816,7 @@ class OmnexPlayer {
                     this.traceDebug('TRANS', 'native transition prepared', {
                         requested: this._transitionType || 'none',
                         resolved: resolvedTransitionType,
+                        domMapped: domTransitionType,
                         nativeMapped: nativeTransitionType,
                         durationMs: this._transitionDuration || 500,
                         forceRotateLandscape: !!document.getElementById('content-container')?.classList.contains('force-rotate-landscape'),
@@ -4411,6 +4461,7 @@ class OmnexPlayer {
         });
 
         this.hardenSameOriginIframeContent(iframe);
+        this.stopNativeVideoForTransition('html-ready');
         this.applyEnterTransition(iframe);
 
         // Small paint buffer avoids timer starting before first stable frame.
@@ -4425,7 +4476,14 @@ class OmnexPlayer {
      * Play HTML/webpage content in iframe
      */
     playHtml(item) {
-        this.setNativeVideoMode(false);
+        if (!this.isNativePlaybackActive()) {
+            this.setNativeVideoMode(false);
+        } else {
+            this.traceDebug('TRANS', 'playHtml waiting with native video active', {
+                itemId: item?.id || '',
+                itemName: item?.name || ''
+            });
+        }
         const iframe = this.getActiveHtmlElement();
         if (!iframe) {
             this.scheduleNext(this.getScheduledDuration(item));
@@ -4607,9 +4665,23 @@ class OmnexPlayer {
             // hideAllContent() in playCurrentItem will apply exit transition to video,
             // then the exit transition timeout will pause/hide it after duration.
 
+            const items = Array.isArray(this.playlist?.items) ? this.playlist.items : [];
+            const nextIndex = items.length > 0 ? ((this.currentIndex + 1) % items.length) : -1;
+            const nextType = nextIndex >= 0 ? String(items[nextIndex]?.type || '').toLowerCase() : '';
+
+            // Keep current native frame alive while waiting html iframe readiness,
+            // then stop native right before html enter starts (in finalizeHtmlPlayback()).
+            const shouldDeferNativeStop = nextType === 'html';
+
             // Only stop native ExoPlayer since it can't be crossfaded via CSS
-            if (this.hasNativeVideoSupport() && window.AndroidBridge.isPlayingNatively && window.AndroidBridge.isPlayingNatively()) {
-                if (window.AndroidBridge.stopVideoNative) {
+            if (this.isNativePlaybackActive()) {
+                if (shouldDeferNativeStop) {
+                    this.traceDebug('TRANS', 'defer native stop until html is ready', {
+                        currentIndex: this.currentIndex,
+                        nextIndex,
+                        nextType
+                    });
+                } else if (window.AndroidBridge.stopVideoNative) {
                     window.AndroidBridge.stopVideoNative();
                     this.setNativeVideoMode(false);
                     if (this.debug) {
