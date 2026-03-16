@@ -657,7 +657,8 @@ video::-ms-media-controls {
 }
 
 /* General video styling for signage */
-#video-content {
+#video-content,
+#video-content-alt {
     /* No controls attribute needed in HTML, but ensure via CSS */
     pointer-events: none;
     outline: none;
@@ -667,7 +668,8 @@ video::-ms-media-controls {
 }
 
 /* Prevent focus outline */
-#video-content:focus {
+#video-content:focus,
+#video-content-alt:focus {
     outline: none;
 }
 

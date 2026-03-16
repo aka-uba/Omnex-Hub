@@ -3457,7 +3457,9 @@ class OmnexPlayer {
         video.style.display = 'none';
         this._currentVideoUrl = url;
         this._currentVideoItem = item;
-        this._currentElement = video;
+        // Native playback is rendered by ExoPlayer overlay, not this DOM video element.
+        // Keep current element null so the placeholder video node is never exit-animated.
+        this._currentElement = null;
 
         // Native playback has no DOM enter transition callback.
         // Flush deferred exits immediately so previous HTML/image/video can
@@ -3467,7 +3469,7 @@ class OmnexPlayer {
                 pendingExitElement: this.getElementDebugLabel(this._pendingExitElement),
                 nativePlaceholder: this.getElementDebugLabel(video)
             });
-            this.flushPendingExitTransition(video);
+            this.flushPendingExitTransition(null);
         }
 
         const setDuration = this.getScheduledDuration(item, 0);
@@ -4262,6 +4264,9 @@ class OmnexPlayer {
                         opacity: 0 !important;
                         visibility: hidden !important;
                     }
+                    video::poster {
+                        display: none !important;
+                    }
                 `;
                 const parentNode = doc.head || doc.documentElement || doc.body;
                 if (parentNode) {
@@ -4273,6 +4278,7 @@ class OmnexPlayer {
             videos.forEach((video) => {
                 video.controls = false;
                 video.removeAttribute('controls');
+                video.removeAttribute('poster');
                 video.playsInline = true;
                 video.setAttribute('playsinline', '');
                 video.setAttribute('webkit-playsinline', '');
@@ -4290,26 +4296,35 @@ class OmnexPlayer {
                     video.style.visibility = 'visible';
                     video.style.opacity = '1';
                 };
+                const revealIfReady = () => {
+                    const hasFrame = video.readyState >= 2;
+                    const hasProgress = Number(video.currentTime || 0) > 0;
+                    const isPlaying = !video.paused && !video.ended;
+                    if (hasFrame && (isPlaying || hasProgress)) {
+                        revealVideo();
+                        return true;
+                    }
+                    return false;
+                };
 
                 if (video.dataset.omnexGuardAttached !== '1') {
                     video.dataset.omnexGuardAttached = '1';
-                    ['playing', 'canplay', 'loadeddata'].forEach((eventName) => {
-                        video.addEventListener(eventName, revealVideo);
+                    ['playing', 'canplay', 'loadeddata', 'timeupdate'].forEach((eventName) => {
+                        video.addEventListener(eventName, revealIfReady);
                     });
                 }
 
-                // Avoid brief preload/play icon flashes while autoplay initializes.
-                setTimeout(revealVideo, 1200);
+                // Keep video hidden until an actual decoded frame is available.
+                setTimeout(revealIfReady, 1200);
+                setTimeout(revealIfReady, 2600);
 
                 if (video.paused && video.autoplay) {
                     const playPromise = video.play();
                     if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(() => {
-                            revealVideo();
-                        });
+                        playPromise.then(revealIfReady).catch(() => {});
                     }
                 } else if (!video.paused) {
-                    revealVideo();
+                    revealIfReady();
                 }
             });
         } catch (e) {
