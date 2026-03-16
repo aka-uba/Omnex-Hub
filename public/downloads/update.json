@@ -1,8 +1,8 @@
 {
-  "versionCode": 40,
-  "versionName": "2.9.11",
-  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=40",
-  "releaseNotes": "- APK native transition yonetimi pasif: animasyon akisi tamamen player.js tarafindan yonetilir\n- Native katman sadece video yuzeyini goster/gizle yapar, ek stil/hiz egirisi uygulamaz\n- Playlist transition zamanlamasi ile APK gecisleri tek kaynaktan senkronize edilir",
+  "versionCode": 41,
+  "versionName": "2.9.12",
+  "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=41",
+  "releaseNotes": "- Native video gecisleri tekrar aktif ama transition tipi/yonu player.js tarafindan resolve edilip aynen APK'ya aktarilir\n- Force-rotate (yatay->dikey / dikey->yatay) durumlarinda native video transition yonu player animasyonuyla senkronize remap edilir\n- Video icerikler de artik gecis animasyonuna dahil olur (anlik kaybolma/gelme azaltildi)",
   "mandatory": false,
-  "sha256": "2056f83108c2a2ba43e672635935b01b941d0290f05cdb215aee50a8ff062978"
+  "sha256": "a32a13b4607a6a257d563cf61c30cda9a6920fefa461d2fc94be880fe616d715"
 }

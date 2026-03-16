@@ -3088,6 +3088,61 @@ class OmnexPlayer {
         return this.getEdgeTransitionFallback(this._runtimeTransitionType);
     }
 
+    mapDirectionalTransition(transitionType, directionMap) {
+        if (!transitionType || !directionMap) {
+            return transitionType;
+        }
+
+        const match = String(transitionType).match(/^(.*)-(left|right|up|down)$/);
+        if (!match) {
+            return transitionType;
+        }
+
+        const prefix = match[1];
+        const direction = match[2];
+        const mappedDirection = directionMap[direction];
+        if (!mappedDirection || mappedDirection === direction) {
+            return transitionType;
+        }
+
+        return `${prefix}-${mappedDirection}`;
+    }
+
+    getNativeTransitionTypeForCurrentLayout(resolvedTransitionType) {
+        const transition = resolvedTransitionType || 'none';
+        if (transition === 'none') {
+            return transition;
+        }
+
+        const container = document.getElementById('content-container');
+        const isForceRotateLandscape = !!(container && container.classList.contains('force-rotate-landscape'));
+        const isForceRotatePortrait = !!(container && container.classList.contains('force-rotate-portrait'));
+
+        // Container rotated +90deg (portrait viewport forced to landscape content).
+        // DOM transition vectors rotate with content; native overlay must be remapped
+        // so video enter/exit matches the same visual direction.
+        if (isForceRotateLandscape) {
+            return this.mapDirectionalTransition(transition, {
+                left: 'up',
+                right: 'down',
+                up: 'right',
+                down: 'left'
+            });
+        }
+
+        // Container rotated -90deg (landscape viewport forced to portrait content).
+        if (isForceRotatePortrait) {
+            return this.mapDirectionalTransition(transition, {
+                left: 'down',
+                right: 'up',
+                up: 'left',
+                down: 'right'
+            });
+        }
+
+        return transition;
+    }
+
     releaseResolvedTransitionType() {
         this._runtimeTransitionType = null;
     }
@@ -3472,6 +3527,10 @@ class OmnexPlayer {
             this.flushPendingExitTransition(null);
         }
 
+        // Native enter transition runs on APK side, so release resolved transition
+        // token here to avoid carrying it into unrelated future swaps.
+        this.releaseResolvedTransitionType();
+
         const setDuration = this.getScheduledDuration(item, 0);
         if (setDuration > 0) {
             this.scheduleNext(setDuration);
@@ -3699,10 +3758,20 @@ class OmnexPlayer {
             // Pass transition info to native player before starting video
             if (window.AndroidBridge && typeof window.AndroidBridge.setVideoTransition === 'function') {
                 try {
+                    const resolvedTransitionType = this.getResolvedTransitionType();
+                    const nativeTransitionType = this.getNativeTransitionTypeForCurrentLayout(resolvedTransitionType);
                     window.AndroidBridge.setVideoTransition(
-                        this._transitionType || 'none',
+                        nativeTransitionType || 'none',
                         this._transitionDuration || 500
                     );
+                    this.traceDebug('TRANS', 'native transition prepared', {
+                        requested: this._transitionType || 'none',
+                        resolved: resolvedTransitionType,
+                        nativeMapped: nativeTransitionType,
+                        durationMs: this._transitionDuration || 500,
+                        forceRotateLandscape: !!document.getElementById('content-container')?.classList.contains('force-rotate-landscape'),
+                        forceRotatePortrait: !!document.getElementById('content-container')?.classList.contains('force-rotate-portrait')
+                    });
                 } catch (e) { }
             }
 
