@@ -150,6 +150,7 @@ class OmnexPlayer {
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
+        this._transitionDebugSeq = 0;
     }
 
     isLegacyProfile() {
@@ -218,6 +219,118 @@ class OmnexPlayer {
         }
 
         console.log(prefix, payload);
+    }
+
+    roundDebugValue(value, precision = 2) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) {
+            return 0;
+        }
+        const factor = Math.pow(10, precision);
+        return Math.round(n * factor) / factor;
+    }
+
+    getElementLayoutSnapshot(element) {
+        if (!element) {
+            return null;
+        }
+
+        const computed = window.getComputedStyle ? window.getComputedStyle(element) : null;
+        const rect = element.getBoundingClientRect ? element.getBoundingClientRect() : null;
+        const transitionClasses = Array.from(element.classList || []).filter(cls =>
+            cls === 'transition-enter' ||
+            cls === 'transition-exit' ||
+            cls.endsWith('-enter') ||
+            cls.endsWith('-exit') ||
+            cls === 'loading'
+        );
+
+        let mediaSource = '';
+        if (element.tagName === 'VIDEO') {
+            mediaSource = element.currentSrc || element.src || '';
+        } else if (element.tagName === 'IFRAME') {
+            mediaSource = element.src || '';
+        } else if (element.tagName === 'IMG') {
+            mediaSource = element.currentSrc || element.src || '';
+        }
+
+        return {
+            id: this.getElementDebugLabel(element),
+            display: element.style.display || '',
+            computedDisplay: computed ? computed.display : '',
+            visibility: element.style.visibility || '',
+            computedVisibility: computed ? computed.visibility : '',
+            opacity: element.style.opacity || '',
+            computedOpacity: computed ? computed.opacity : '',
+            zIndex: element.style.zIndex || '',
+            computedZIndex: computed ? computed.zIndex : '',
+            transitionClasses: transitionClasses.join(' '),
+            rect: rect ? {
+                left: this.roundDebugValue(rect.left, 1),
+                top: this.roundDebugValue(rect.top, 1),
+                width: this.roundDebugValue(rect.width, 1),
+                height: this.roundDebugValue(rect.height, 1)
+            } : null,
+            srcTail: mediaSource ? mediaSource.slice(-180) : ''
+        };
+    }
+
+    traceTransitionSnapshot(stage, payload = {}) {
+        if (!this.debug) {
+            return;
+        }
+
+        const container = document.getElementById('content-container');
+        const containerClasses = container
+            ? Array.from(container.classList || []).filter(cls =>
+                cls.startsWith('orientation-') ||
+                cls.startsWith('force-rotate') ||
+                cls === 'show-overlay-mask'
+            )
+            : [];
+
+        const metrics = this.getDisplayMetrics();
+        this._transitionDebugSeq += 1;
+
+        this.traceDebug('STATE', stage, Object.assign({
+            seq: this._transitionDebugSeq,
+            transition: {
+                configured: this._transitionType || 'none',
+                runtime: this._runtimeTransitionType || null,
+                durationMs: this._transitionDuration || 0
+            },
+            orientation: {
+                requested: this.getRequestedOrientation() || '(auto)',
+                screen: this.getCurrentScreenOrientation(),
+                viewport: this.getViewportOrientation(),
+                playlist: this.getPlaylistOrientation(),
+                content: this.currentContentOrientation || null,
+                containerClasses
+            },
+            playback: {
+                index: this.currentIndex,
+                totalItems: Array.isArray(this.playlist?.items) ? this.playlist.items.length : 0,
+                currentType: this._currentContentType || 'none',
+                currentElement: this.getElementDebugLabel(this._currentElement),
+                pendingExit: this.getElementDebugLabel(this._pendingExitElement),
+                activeVideoSlot: this._activeVideoSlot,
+                activeHtmlSlot: this._activeHtmlSlot,
+                nativeMode: this._nativeVideoMode,
+                nativePlaying: this.isNativePlaybackActive()
+            },
+            metrics: {
+                viewport: `${metrics.viewportWidth}x${metrics.viewportHeight}`,
+                render: `${metrics.renderWidth}x${metrics.renderHeight}`,
+                dpr: this.roundDebugValue(metrics.devicePixelRatio, 3)
+            },
+            elements: {
+                image: this.getElementLayoutSnapshot(this.elements?.imageContent),
+                video: this.getElementLayoutSnapshot(this.elements?.videoContent),
+                videoAlt: this.getElementLayoutSnapshot(this.elements?.videoContentAlt),
+                html: this.getElementLayoutSnapshot(this.elements?.htmlContent),
+                htmlAlt: this.getElementLayoutSnapshot(this.elements?.htmlContentAlt)
+            }
+        }, payload));
     }
 
     /**
@@ -1388,6 +1501,12 @@ class OmnexPlayer {
                     currentScreen: this.getCurrentScreenOrientation()
                 });
             }
+            this.traceTransitionSnapshot('orientation-toggle-applied', {
+                from: current,
+                requested: next,
+                nativeRequestSent,
+                browserLockApplied
+            });
         };
 
         // Wait for native/browser orientation propagation before computing fallback classes.
@@ -2624,6 +2743,10 @@ class OmnexPlayer {
         if (this.debug) {
             console.log('[Player] Applied content orientation:', orientation, 'requested screen:', this.getRequestedOrientation() || '(auto)');
         }
+        this.traceTransitionSnapshot('orientation-applied', {
+            appliedOrientation: orientation,
+            requestedScreenOrientation: this.getRequestedOrientation() || '(auto)'
+        });
     }
 
     /**
@@ -2652,6 +2775,12 @@ class OmnexPlayer {
                 muted: item.muted  // ğŸ› DEBUG: Check muted value
             });
         }
+        this.traceTransitionSnapshot('playCurrentItem', {
+            itemIndex: this.currentIndex,
+            itemName: item?.name || '',
+            itemType: item?.type || '',
+            itemOrientation
+        });
 
         // Determine content type - check type field, fallback to mime_type analysis
         let contentType = item.type;
@@ -2752,6 +2881,12 @@ class OmnexPlayer {
             nextElement: this.getElementDebugLabel(nextElement),
             transition: this._transitionType,
             durationMs: this._transitionDuration
+        });
+        this.traceTransitionSnapshot('hideAllContent-start', {
+            fromType: this._currentContentType || 'none',
+            toType: nextContentType || 'unknown',
+            prevElement: this.getElementDebugLabel(prevElement),
+            nextElement: this.getElementDebugLabel(nextElement)
         });
 
         // Same element reuse (image→image, video→video): can't crossfade with itself,
@@ -2854,6 +2989,10 @@ class OmnexPlayer {
         if (contentContainer) {
             contentContainer.classList.remove('show-overlay-mask');
         }
+        this.traceTransitionSnapshot('hideAllContent-end', {
+            nextContentType: nextContentType || 'unknown',
+            pendingExitElement: this.getElementDebugLabel(this._pendingExitElement)
+        });
     }
 
     /**
@@ -2875,6 +3014,11 @@ class OmnexPlayer {
             resolvedTransition: resolvedTransitionType,
             domTransition: domTransitionType,
             durationMs: this._transitionDuration
+        });
+        this.traceTransitionSnapshot('exit-transition-start', {
+            element: this.getElementDebugLabel(element),
+            resolvedTransition: resolvedTransitionType,
+            domTransition: domTransitionType
         });
 
         // Remove any existing transition classes
@@ -2917,6 +3061,10 @@ class OmnexPlayer {
                 element: this.getElementDebugLabel(exitElement),
                 stillCurrent: this._currentElement === exitElement
             });
+            this.traceTransitionSnapshot('exit-transition-end', {
+                element: this.getElementDebugLabel(exitElement),
+                stillCurrent: this._currentElement === exitElement
+            });
             // releaseResolvedTransitionType() buradan kaldirildi.
             // Exit ve enter ayni resolved type'i paylasir; release sadece
             // applyEnterTransition() sonunda yapilir (tek nokta).
@@ -2940,6 +3088,11 @@ class OmnexPlayer {
             resolvedTransition: resolvedTransitionType,
             domTransition: domTransitionType,
             durationMs: this._transitionDuration
+        });
+        this.traceTransitionSnapshot('enter-transition-start', {
+            element: this.getElementDebugLabel(element),
+            resolvedTransition: resolvedTransitionType,
+            domTransition: domTransitionType
         });
 
         // Clear any existing transition classes
@@ -2974,6 +3127,9 @@ class OmnexPlayer {
                 this.traceDebug('TRANS', 'enter transition completed', {
                     element: this.getElementDebugLabel(enterElement)
                 });
+                this.traceTransitionSnapshot('enter-transition-end', {
+                    element: this.getElementDebugLabel(enterElement)
+                });
                 this._enterTransitionTimers.delete(enterElement);
             }, this._transitionDuration);
             this._enterTransitionTimers.set(enterElement, enterTimerId);
@@ -2991,6 +3147,10 @@ class OmnexPlayer {
         const exitEl = this._pendingExitElement;
         this._pendingExitElement = null;
         this.traceDebug('TRANS', 'flushing pending exit', {
+            currentElement: this.getElementDebugLabel(currentElement),
+            exitElement: this.getElementDebugLabel(exitEl)
+        });
+        this.traceTransitionSnapshot('pending-exit-flush', {
             currentElement: this.getElementDebugLabel(currentElement),
             exitElement: this.getElementDebugLabel(exitEl)
         });
@@ -3248,6 +3408,10 @@ class OmnexPlayer {
      */
     playImage(item) {
         this.setNativeVideoMode(false);
+        this.traceTransitionSnapshot('playImage-start', {
+            itemName: item?.name || '',
+            itemUrl: item?.url || ''
+        });
         const img = this.elements.imageContent;
 
         // Don't force-hide elements that are mid-exit-transition (crossfade).
@@ -3342,6 +3506,10 @@ class OmnexPlayer {
      */
     playTemplate(item) {
         this.setNativeVideoMode(false);
+        this.traceTransitionSnapshot('playTemplate-start', {
+            itemName: item?.name || '',
+            itemUrl: item?.url || ''
+        });
         const img = this.elements.imageContent;
 
         // Don't force-hide elements mid-exit-transition (crossfade)
@@ -3461,6 +3629,10 @@ class OmnexPlayer {
                 transition: this._transitionType || 'none',
                 durationMs: this._transitionDuration || 0
             });
+            this.traceTransitionSnapshot('native-stop-requested', {
+                reason,
+                transition: this._transitionType || 'none'
+            });
             return true;
         } catch (error) {
             if (this.debug) {
@@ -3547,6 +3719,9 @@ class OmnexPlayer {
         if (contentContainer) {
             contentContainer.style.background = backgroundValue;
         }
+        this.traceTransitionSnapshot('native-video-mode-changed', {
+            nextState
+        });
     }
 
     handleNativeVideoStarted(item, url, video) {
@@ -3563,6 +3738,10 @@ class OmnexPlayer {
         // Native playback is rendered by ExoPlayer overlay, not this DOM video element.
         // Keep current element null so the placeholder video node is never exit-animated.
         this._currentElement = null;
+        this.traceTransitionSnapshot('native-video-started', {
+            itemName: item?.name || '',
+            urlTail: (url || '').slice(-180)
+        });
 
         // Native playback has no DOM enter transition callback.
         // Flush deferred exits immediately so previous HTML/image/video can
@@ -3595,6 +3774,9 @@ class OmnexPlayer {
         }
 
         this.setNativeVideoMode(false);
+        this.traceTransitionSnapshot('native-video-ended', {
+            loopCount: this._currentLoopCount
+        });
 
         const item = this._currentVideoItem;
         if (!item) {
@@ -3797,10 +3979,20 @@ class OmnexPlayer {
             return;
         }
 
+        this.traceTransitionSnapshot('playVideo-start', {
+            itemName: item?.name || '',
+            urlTail: url.slice(-180)
+        });
+
         // âœ… PHASE 2: Try native playback first (ExoPlayer on Android)
         const shouldTryNative =
             this.hasNativeVideoSupport() &&
             (url.includes('.m3u8') || url.includes('.mp4') || url.includes('.webm'));
+
+        this.traceTransitionSnapshot('playVideo-mode-decision', {
+            shouldTryNative,
+            hasNativeSupport: this.hasNativeVideoSupport()
+        });
 
         if (shouldTryNative) {
             // Pass transition info to native player before starting video
@@ -3822,6 +4014,12 @@ class OmnexPlayer {
                         forceRotateLandscape: !!document.getElementById('content-container')?.classList.contains('force-rotate-landscape'),
                         forceRotatePortrait: !!document.getElementById('content-container')?.classList.contains('force-rotate-portrait')
                     });
+                    this.traceTransitionSnapshot('native-transition-prepared', {
+                        requested: this._transitionType || 'none',
+                        resolved: resolvedTransitionType,
+                        domMapped: domTransitionType,
+                        nativeMapped: nativeTransitionType
+                    });
                 } catch (e) { }
             }
 
@@ -3835,6 +4033,10 @@ class OmnexPlayer {
                     }
 
                     this.handleNativeVideoStarted(item, url, video);
+                    this.traceTransitionSnapshot('playVideo-native-started', {
+                        resultMode: result.mode,
+                        itemName: item?.name || ''
+                    });
                     // Preload NEXT video AFTER ExoPlayer consumed the current preload
                     this.prepareNextMedia();
 
@@ -3845,6 +4047,10 @@ class OmnexPlayer {
                         console.log('[Player] âš ï¸ ExoPlayer failed, using WebView:', result.error);
                     }
                     this.playVideoWebView(item, url, video, applyVideoOrientationFromMetadata);
+                    this.traceTransitionSnapshot('playVideo-fallback-webview', {
+                        resultMode: result.mode || 'unknown',
+                        error: result.error || ''
+                    });
                     this.prepareNextMedia();
                 }
             }).catch(error => {
@@ -3852,6 +4058,9 @@ class OmnexPlayer {
                     console.error('[Player] Native playback error:', error);
                 }
                 this.playVideoWebView(item, url, video, applyVideoOrientationFromMetadata);
+                this.traceTransitionSnapshot('playVideo-native-error-webview', {
+                    error: error?.message || String(error || '')
+                });
                 this.prepareNextMedia();
             });
 
@@ -3860,6 +4069,9 @@ class OmnexPlayer {
 
         // No native support or unsupported format - use WebView
         this.playVideoWebView(item, url, video, applyVideoOrientationFromMetadata);
+        this.traceTransitionSnapshot('playVideo-direct-webview', {
+            itemName: item?.name || ''
+        });
         this.prepareNextMedia();
     }
 
@@ -4462,6 +4674,11 @@ class OmnexPlayer {
 
         this.hardenSameOriginIframeContent(iframe);
         this.stopNativeVideoForTransition('html-ready');
+        this.traceTransitionSnapshot('html-finalize-before-enter', {
+            iframe: this.getElementDebugLabel(iframe),
+            itemName: item?.name || '',
+            duration
+        });
         this.applyEnterTransition(iframe);
 
         // Small paint buffer avoids timer starting before first stable frame.
@@ -4494,6 +4711,11 @@ class OmnexPlayer {
             itemId: item?.id || '',
             itemName: item?.name || '',
             itemUrl: item?.url || '',
+            iframe: this.getElementDebugLabel(iframe)
+        });
+        this.traceTransitionSnapshot('playHtml-start', {
+            itemId: item?.id || '',
+            itemName: item?.name || '',
             iframe: this.getElementDebugLabel(iframe)
         });
 
@@ -4545,6 +4767,10 @@ class OmnexPlayer {
             this.traceDebug('HTML', 'iframe finalized load', {
                 iframe: this.getElementDebugLabel(iframe),
                 finalUrl
+            });
+            this.traceTransitionSnapshot('playHtml-iframe-ready', {
+                iframe: this.getElementDebugLabel(iframe),
+                finalUrlTail: (finalUrl || '').slice(-180)
             });
             this.finalizeHtmlPlayback(iframe, item, duration);
         };
@@ -4668,6 +4894,11 @@ class OmnexPlayer {
             const items = Array.isArray(this.playlist?.items) ? this.playlist.items : [];
             const nextIndex = items.length > 0 ? ((this.currentIndex + 1) % items.length) : -1;
             const nextType = nextIndex >= 0 ? String(items[nextIndex]?.type || '').toLowerCase() : '';
+            this.traceTransitionSnapshot('scheduleNext-tick', {
+                currentIndex: this.currentIndex,
+                nextIndex,
+                nextType
+            });
 
             // Keep current native frame alive while waiting html iframe readiness,
             // then stop native right before html enter starts (in finalizeHtmlPlayback()).
@@ -4681,12 +4912,18 @@ class OmnexPlayer {
                         nextIndex,
                         nextType
                     });
+                    this.traceTransitionSnapshot('scheduleNext-defer-native-stop', {
+                        nextType
+                    });
                 } else if (window.AndroidBridge.stopVideoNative) {
                     window.AndroidBridge.stopVideoNative();
                     this.setNativeVideoMode(false);
                     if (this.debug) {
                         console.log('[Player] Stopped ExoPlayer before transition');
                     }
+                    this.traceTransitionSnapshot('scheduleNext-stop-native-now', {
+                        nextType
+                    });
                 }
             }
 
