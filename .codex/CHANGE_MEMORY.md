@@ -4980,3 +4980,25 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Final gorsel dogrulama PC browser force-rotate senaryosunda (html->video, video->html, image->html) yapilmali.
 - Backup/Restore safety:
   - Temp backup alindi: `public/player/assets/css/player.css.bak_center_without_transform_20260316_0806`.
+
+## 2026-03-16 - Lock orientation-mismatch content to absolute center (cross-type transition drift fix)
+
+- Request: PC'de html duzelmesine ragmen video/resim cikisinda saga-sola kayar gibi davranis raporlandi; bunun animasyon kaynakli olup olmadigi soruldu.
+- Changes:
+  1. **public/player/assets/css/player.css**
+     - Orientation mismatch layout'lari (force-rotate disi media-query bloklari) flex+relative modelden absolute center modele alindi:
+       - `@media landscape` + `.orientation-portrait .content-item`:
+         - `position: absolute`, `width: 56.25%`, `left: calc((100% - 56.25%) / 2)`, `top: 0`.
+       - `@media portrait` + `.orientation-landscape .content-item:not(iframe)`:
+         - `position: absolute`, `height: 56.25%`, `left: 0`, `top: calc((100% - 56.25%) / 2)`.
+     - Amaç: enter/exit aninda iki icerik ayni anda gorunurken flex reflow/relative static-position nedeniyle olusan yatay-dikey kaymalari kaldirmak.
+  2. **public/player/index.html**
+     - CSS cache-bust guncellendi: `player.css?v=39`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - Not: CSS/HTML icin projede tanimli dogrudan syntax check komutu yok.
+- Risks/Follow-up:
+  - Bu degisiklik tur-bagimsizdir; html/video/image icin ortak geometry kullanir.
+  - Farkli en-boy oranli custom iceriklerde goruntu alani hissi degisebilir; gerekli olursa oran bazli ince ayar eklenir.
+- Backup/Restore safety:
+  - Temp backup alindi: `public/player/assets/css/player.css.bak_orientation_center_lock_20260316_0817`.

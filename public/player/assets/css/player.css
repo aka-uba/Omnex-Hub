@@ -149,19 +149,19 @@ body {
 /* Portrait playlist on landscape screen - show content in portrait aspect ratio */
 @media (orientation: landscape) {
     #player-screen .content-container.orientation-portrait {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: block;
     }
 
     #player-screen .content-container.orientation-portrait .content-item {
-        position: relative;
-        width: auto !important;
+        position: absolute;
+        width: 56.25% !important;
         height: 100% !important;
-        max-width: 56.25%; /* 9:16 aspect ratio */
+        max-width: 56.25% !important; /* 9:16 aspect ratio */
+        max-height: 100% !important;
         aspect-ratio: 9 / 16;
         object-fit: contain;
-        left: auto;
+        left: calc((100% - 56.25%) / 2);
+        top: 0;
         transform: none;
     }
 }
@@ -169,19 +169,19 @@ body {
 /* Landscape playlist on portrait screen - show content in landscape aspect ratio */
 @media (orientation: portrait) {
     #player-screen .content-container.orientation-landscape {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: block;
     }
 
     #player-screen .content-container.orientation-landscape .content-item:not(iframe) {
-        position: relative;
+        position: absolute;
         width: 100% !important;
-        height: auto !important;
-        max-height: 56.25%; /* 16:9 aspect ratio */
+        height: 56.25% !important;
+        max-width: 100% !important;
+        max-height: 56.25% !important; /* 16:9 aspect ratio */
         aspect-ratio: 16 / 9;
         object-fit: contain;
-        top: auto;
+        left: 0;
+        top: calc((100% - 56.25%) / 2);
         transform: none;
     }
 
