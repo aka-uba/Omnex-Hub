@@ -5104,3 +5104,22 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `android-player/omnex-player-app/app/build.gradle.bak_apk_release_20260316_175238`
     - `downloads/update.json.bak_apk_release_20260316_175238`
     - `public/downloads/update.json.bak_apk_release_20260316_175238`
+## 2026-03-16 - Post-release git/server deployment verification (v2.9.13)
+
+- Request: Complete git push/pull and deploy APK + update JSON so OTA test can run on TV.
+- Changes:
+  1. **Git**
+     - Commit: `18161a7` pushed to `origin/main`.
+     - Included files: `.codex/CHANGE_MEMORY.md`, `downloads/*.apk`, `downloads/update.json`, `public/downloads/*.apk`, `public/downloads/update.json`.
+  2. **Server deploy**
+     - Remote repo fast-forward pull completed in `/opt/omnex-hub`.
+     - APK + update JSON uploaded via SCP to `/opt/omnex-hub/downloads/` and `/opt/omnex-hub/public/downloads/`.
+- Checks run:
+  - Remote JSON+APK integrity check: version `42` / `2.9.13`, SHA256 match = `true`.
+  - Live endpoint check: `https://hub.omnexcore.com/downloads/update.json` shows v42 metadata.
+  - Live APK HEAD check: `https://hub.omnexcore.com/downloads/omnex-player.apk?v=42` returns HTTP 200.
+- Risks/Follow-up:
+  - OTA popup appears only if TV device currently has lower `versionCode` than `42`.
+  - If same version already installed, update dialog intentionally does not show.
+- Backup/Restore safety:
+  - Previous temp backups retained for build.gradle and update.json files.
