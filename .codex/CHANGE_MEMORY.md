@@ -5315,3 +5315,55 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Temp backups created before edit:
     - `.codex/tmp_backups/player.js.pre_disable_native_tv_20260317_063754.bak`
     - `.codex/tmp_backups/index.html.pre_player_js_v70_20260317_063754.bak`
+## 2026-03-17 - Backup comparison (2026-03-16 and earlier) for native/WebView regressions
+
+- Request: Compare current playback stack against 2026-03-16 and earlier backups.
+- Findings:
+  1. APK side (`MainActivity.kt`) in older backup always eager-initialized Exo and exposed `playVideoNative`; no explicit `native` query gate in player URL.
+  2. `player.js` 2026-03-16 backup used bridge-presence check for native support only; no constrained-TV/profile guard.
+  3. `player.js` backup `20260317_050619` contained session hard-disable logic (`_nativeVideoHardDisabled` after first native failure), which is absent in current file.
+  4. `ExoPlayerManager.kt` delta vs older backup is small; current adds `clearPreloadedVideo()` helper for decoder contention control.
+- Changes:
+  - No production code change for this comparison request.
+  - Diagnostic artifacts created:
+    - `.codex/tmp_player_vs_20260316_0828.diff`
+    - `.codex/tmp_player_vs_20260317_050619.diff`
+    - `.codex/tmp_main_vs_20260317_035714.diff`
+    - `.codex/tmp_exo_vs_20260317_035714.diff`
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK)
+- Risks/Follow-up:
+  - Absence of session hard-disable can allow repeated native retry loops on decoder-fragile TVs.
+  - Existing workspace has unrelated modified files; not touched.
+- Backup/Restore safety:
+  - Existing backup used for inspected APK file:
+    - `.codex/tmp_backups/MainActivity.kt.pre_native_disable_20260317_064513.bak`
+## 2026-03-17 - Restore session hard-disable and keep APK native-always behavior
+
+- Request: Keep APK behavior where Exo remains available (no new APK-side native gate) and restore old player.js session hard-disable after first native failure; keep constrained TV/native guards if beneficial.
+- Findings:
+  1. Current APK file had been temporarily modified to add native gating; this conflicted with requested old behavior.
+  2. Current player.js lacked `_nativeVideoHardDisabled` session lock from older backup behavior.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/MainActivity.kt**
+     - Restored from pre-edit backup (`.codex/tmp_backups/MainActivity.kt.pre_native_disable_20260317_064513.bak`).
+     - Result: APK side no longer forces `native=0` or `shouldEnableNativePlayback()` gating; Exo path remains available as before.
+  2. **public/player/assets/js/player.js**
+     - Reintroduced session-level native failure lock:
+       - Added constructor state: `_nativeVideoFailureStreak`, `_nativeVideoHardDisabled`.
+       - `hasNativeVideoSupport()` now returns false if hard-disabled.
+       - `fallbackToWebView()` increments failure streak and hard-disables native after first failure in current session.
+       - `handleNativeVideoStarted()` resets failure streak to 0.
+     - Existing constrained-TV guard (`isConstrainedTvProfile`) and `enableNativeVideo` config logic were preserved.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK)
+- Risks/Follow-up:
+  - With session hard-disable, one native decoder failure keeps the rest of that app session on WebView path until app/page reload.
+  - Constrained TV guard still bypasses native attempts on TV profile (`enableMediaPrecache=false`), by design.
+- Backup/Restore safety:
+  - Temp backups created before edits:
+    - `.codex/tmp_backups/MainActivity.kt.pre_restore_exo_always_20260317_070159.bak`
+    - `.codex/tmp_backups/player.js.pre_restore_hard_disable_20260317_070159.bak`
+  - Restored file source:
+    - `.codex/tmp_backups/MainActivity.kt.pre_native_disable_20260317_064513.bak`
