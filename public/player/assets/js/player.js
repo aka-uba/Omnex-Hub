@@ -165,6 +165,17 @@ class OmnexPlayer {
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
+        this._nativeOverlayOptimizationEnabled = this.isAndroidApp;
+        this._adaptiveTransitionState = {
+            enabled: this.isAndroidApp && !this.isLegacyProfile(),
+            constrained: false,
+            pressureScore: 0,
+            highLagStreak: 0,
+            stableStreak: 0,
+            intervalId: null,
+            expectedTickAt: 0,
+            lastReason: ''
+        };
     }
 
     isLegacyProfile() {
@@ -177,6 +188,164 @@ class OmnexPlayer {
 
     isConstrainedProfile() {
         return this.isLegacyProfile() || this.isBalancedProfile();
+    }
+
+    mapBalancedTransition(transitionType) {
+        const transition = String(transitionType || 'none').trim().toLowerCase();
+        const balancedMap = {
+            'wipe-left': 'push-left',
+            'wipe-right': 'push-right',
+            'wipe-up': 'push-up',
+            'wipe-down': 'push-down',
+            'slide-left': 'push-left',
+            'slide-right': 'push-right',
+            'slide-up': 'push-up',
+            'slide-down': 'push-down',
+            'zoom': 'fade',
+            'zoom-in': 'fade',
+            'zoom-out': 'fade'
+        };
+        return balancedMap[transition] || transition;
+    }
+
+    resolveTransitionPolicy(requestedType, requestedDuration) {
+        const transition = String(requestedType || 'none').trim().toLowerCase() || 'none';
+        const parsedDuration = Number.parseInt(requestedDuration, 10);
+        const fallbackDuration = Number.parseInt(this._playlistTransitionDuration, 10) || 500;
+        const baseDuration = Number.isFinite(parsedDuration) && parsedDuration > 0
+            ? parsedDuration
+            : fallbackDuration;
+
+        const adaptiveConstrained = !!this._adaptiveTransitionState?.constrained;
+        if (transition !== 'none' && this.isLegacyProfile()) {
+            return {
+                type: 'fade',
+                duration: 300,
+                policy: 'legacy',
+                adaptiveConstrained: false
+            };
+        }
+
+        if (transition !== 'none' && adaptiveConstrained) {
+            return {
+                type: 'fade',
+                duration: 300,
+                policy: 'adaptive',
+                adaptiveConstrained: true
+            };
+        }
+
+        if (transition !== 'none' && this.isBalancedProfile()) {
+            return {
+                type: this.mapBalancedTransition(transition),
+                duration: Math.min(Math.max(baseDuration, 260), 450),
+                policy: 'balanced',
+                adaptiveConstrained: false
+            };
+        }
+
+        return {
+            type: transition,
+            duration: baseDuration,
+            policy: 'default',
+            adaptiveConstrained: false
+        };
+    }
+
+    applyTransitionPolicy(requestedType, requestedDuration) {
+        const resolved = this.resolveTransitionPolicy(requestedType, requestedDuration);
+        this._transitionType = resolved.type;
+        this._transitionDuration = resolved.duration;
+        document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
+        return resolved;
+    }
+
+    startAdaptiveTransitionMonitor() {
+        const state = this._adaptiveTransitionState;
+        if (!state || !state.enabled || state.intervalId) {
+            return;
+        }
+
+        state.expectedTickAt = performance.now() + 1000;
+        state.intervalId = setInterval(() => {
+            const now = performance.now();
+            const lagMs = Math.max(0, now - state.expectedTickAt);
+            state.expectedTickAt = now + 1000;
+            this.recordAdaptiveLag(lagMs, 'interval');
+        }, 1000);
+    }
+
+    stopAdaptiveTransitionMonitor() {
+        const state = this._adaptiveTransitionState;
+        if (!state || !state.intervalId) {
+            return;
+        }
+
+        clearInterval(state.intervalId);
+        state.intervalId = null;
+        state.expectedTickAt = 0;
+        state.pressureScore = 0;
+        state.highLagStreak = 0;
+        state.stableStreak = 0;
+        state.constrained = false;
+        state.lastReason = '';
+    }
+
+    recordAdaptiveLag(lagMs, source = 'interval') {
+        const state = this._adaptiveTransitionState;
+        if (!state || !state.enabled) {
+            return;
+        }
+
+        const lag = Math.max(0, Number(lagMs) || 0);
+        if (lag >= 180) {
+            state.pressureScore = Math.min(12, state.pressureScore + 3);
+            state.highLagStreak += 1;
+            state.stableStreak = 0;
+        } else if (lag >= 120) {
+            state.pressureScore = Math.min(12, state.pressureScore + 2);
+            state.highLagStreak += 1;
+            state.stableStreak = 0;
+        } else if (lag >= 80) {
+            state.pressureScore = Math.min(12, state.pressureScore + 1);
+            state.highLagStreak = 0;
+            state.stableStreak = 0;
+        } else if (lag <= 35) {
+            state.pressureScore = Math.max(0, state.pressureScore - 1);
+            state.highLagStreak = 0;
+            state.stableStreak += 1;
+        } else {
+            state.pressureScore = Math.max(0, state.pressureScore - 0.5);
+            state.highLagStreak = 0;
+            state.stableStreak = 0;
+        }
+
+        if (!state.constrained && (state.highLagStreak >= 3 || state.pressureScore >= 7)) {
+            state.constrained = true;
+            state.stableStreak = 0;
+            state.lastReason = `${source}:${Math.round(lag)}ms`;
+            if (this.debug) {
+                console.log('[Player] Adaptive transition degrade enabled:', state.lastReason);
+            }
+            return;
+        }
+
+        if (state.constrained && state.pressureScore <= 1 && state.stableStreak >= 45) {
+            state.constrained = false;
+            state.highLagStreak = 0;
+            state.stableStreak = 0;
+            state.lastReason = '';
+            if (this.debug) {
+                console.log('[Player] Adaptive transition degrade disabled');
+            }
+        }
+    }
+
+    recordPlaybackTimerLag(lagMs) {
+        if (!Number.isFinite(lagMs)) {
+            return;
+        }
+        this.recordAdaptiveLag(Math.min(Math.max(0, lagMs), 1000), 'schedule');
     }
 
     getEdgeTransitionFallback(transitionType) {
@@ -2699,6 +2868,7 @@ class OmnexPlayer {
 
         this.isPlaying = true;
         this.currentIndex = 0;
+        this.startAdaptiveTransitionMonitor();
         this.playCurrentItem();
     }
 
@@ -2865,16 +3035,14 @@ class OmnexPlayer {
         // Apply per-item transition override if present, otherwise use playlist default.
         // item.transition = null means "use playlist default".
         // item.transition = 'fade'/'push-left'/etc. overrides for this item's ENTER transition.
-        if (item.transition) {
-            this._transitionType = item.transition;
-            this._transitionDuration = parseInt(item.transition_duration, 10) || this._playlistTransitionDuration || 500;
-            document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
-        } else {
-            // Restore playlist defaults
-            this._transitionType = this._playlistTransitionType || 'none';
-            this._transitionDuration = this._playlistTransitionDuration || 500;
-            document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
-        }
+        const requestedTransitionType = item.transition || this._playlistTransitionType || 'none';
+        const requestedTransitionDuration = item.transition
+            ? (parseInt(item.transition_duration, 10) || this._playlistTransitionDuration || 500)
+            : (this._playlistTransitionDuration || 500);
+        const transitionPolicy = this.applyTransitionPolicy(
+            requestedTransitionType,
+            requestedTransitionDuration
+        );
         // Reset resolved transition for the new item (force re-resolve for 'random-safe')
         this._runtimeTransitionType = null;
 
@@ -2884,6 +3052,10 @@ class OmnexPlayer {
             itemType: item?.type || '',
             itemOrientation,
             itemTransition: item.transition || '(playlist-default)',
+            requestedTransitionType,
+            requestedTransitionDuration,
+            transitionPolicy: transitionPolicy.policy,
+            adaptiveConstrained: transitionPolicy.adaptiveConstrained,
             effectiveTransition: this._transitionType,
             effectiveDuration: this._transitionDuration
         });
@@ -3886,6 +4058,9 @@ class OmnexPlayer {
         }
         if (contentContainer) {
             contentContainer.style.background = backgroundValue;
+            if (this._nativeOverlayOptimizationEnabled) {
+                contentContainer.classList.toggle('native-overlay-passive', nextState);
+            }
         }
         this.traceTransitionSnapshot('native-video-mode-changed', {
             nextState
@@ -4135,17 +4310,17 @@ class OmnexPlayer {
         }
 
         this.releaseResolvedTransitionType();
-        this._transitionType = this.playlist.transition || 'none';
-        this._transitionDuration = parseInt(this.playlist.transition_duration, 10) || 500;
+        const resolved = this.applyTransitionPolicy(
+            this.playlist.transition || 'none',
+            this.playlist.transition_duration
+        );
 
         // Store playlist-level defaults so per-item overrides can restore them
         this._playlistTransitionType = this._transitionType;
         this._playlistTransitionDuration = this._transitionDuration;
 
-        document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
-
         if (this.debug) {
-            console.log(`[Player] Transition: ${this._transitionType}, Duration: ${this._transitionDuration}ms`);
+            console.log(`[Player] Transition policy(${resolved.policy}): ${this._transitionType}, ${this._transitionDuration}ms`);
         }
     }
 
@@ -5258,8 +5433,11 @@ class OmnexPlayer {
             console.log(`[Player] scheduleNext: ${duration}s for item ${this.currentIndex + 1}`);
         }
 
+        const scheduledAt = performance.now();
+        const scheduledDelayMs = duration * 1000;
         this.contentTimer = setTimeout(() => {
             this.contentTimer = null; // Clear timer reference before calling playNext
+            this.recordPlaybackTimerLag(performance.now() - (scheduledAt + scheduledDelayMs));
 
             // Don't immediately stop video here - let crossfade handle it.
             // hideAllContent() in playCurrentItem will apply exit transition to video,
@@ -5355,6 +5533,7 @@ class OmnexPlayer {
      */
     stopPlayback() {
         this.isPlaying = false;
+        this.stopAdaptiveTransitionMonitor();
 
         if (this.contentTimer) {
             clearTimeout(this.contentTimer);

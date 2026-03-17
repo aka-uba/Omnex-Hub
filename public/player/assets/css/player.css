@@ -134,6 +134,13 @@ body {
     height: 100dvh;
 }
 
+/* Native ExoPlayer mode: keep WebView overlay controls visible while minimizing
+   unnecessary content compositing work in the WebView layer. */
+#player-screen .content-container.native-overlay-passive {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* Ensure content items fill the entire screen */
 #player-screen .content-item {
     position: absolute;
