@@ -1,8 +1,8 @@
 {
-    "versionCode":  44,
-    "versionName":  "2.9.15",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=44",
-    "releaseNotes":  "- Native ExoPlayer gecis semantigi player.js ile hizalandi (slide/push/wipe/zoom)\n- Gecis surelerinde ms clamp kaldirildi, playlist degerleri birebir uygulanir\n- APK tarafinda video gecis stabilitesi iyilestirildi",
+    "versionCode":  45,
+    "versionName":  "2.9.16",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=45",
+    "releaseNotes":  "- Native video katmanlamasi duzenlendi, yon ikonu video uzerinde kalici/surekli gorunur\n- ExoPlayer gecisinde WebView seffaflik yarisi giderildi, siyah ekran riski azaltildi\n- JS native video modu ile Android katman durumu senkronu guclendirildi",
     "mandatory":  false,
-    "sha256":  "f56d8bb77b5a6e8812d177c6c5314585db5c155fd0643f878d4527dbd7286c1d"
+    "sha256":  "6d7de3f034ca497f29127b037c0280bd2c68b72d938b89dd1839a0b33ef00cda"
 }
