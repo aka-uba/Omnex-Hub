@@ -2534,19 +2534,25 @@ class OmnexPlayer {
         }
 
         const immediateNextType = immNext ? String(immNext.type || '').toLowerCase() : '';
+        const mediaPrecacheEnabled = this.config.enableMediaPrecache !== false;
         const deviceInfo = this.detectDeviceType();
         const isNativeTvDevice =
             this.hasNativeVideoSupport() &&
             (deviceInfo.isTV || deviceInfo.isAndroidTV);
         const shouldSkipNativePreload =
-            isNativeTvDevice &&
-            (this._currentContentType === 'html' || immediateNextType === 'html');
+            !mediaPrecacheEnabled ||
+            (
+                isNativeTvDevice &&
+                (this._currentContentType === 'html' || immediateNextType === 'html')
+            );
 
         // ExoPlayer preload: find the next video item in playlist and preload it.
         // ExoPlayerManager.preloadNextVideo() is idempotent (skips if same URL).
         if (shouldSkipNativePreload) {
-            // TV decoders can fail when HTML inline <video> and Exo preload overlap.
-            this.clearNativePreloadedVideo('tv-html-preload-guard');
+            // Keep native preload aligned with profile and avoid decoder contention.
+            this.clearNativePreloadedVideo(
+                mediaPrecacheEnabled ? 'tv-html-preload-guard' : 'profile-precache-disabled'
+            );
         } else if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
             const videoItem = items[nextVideoIndex];
             const videoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
