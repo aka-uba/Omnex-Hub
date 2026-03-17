@@ -1,8 +1,8 @@
 {
-    "versionCode":  43,
-    "versionName":  "2.9.14",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=43",
-    "releaseNotes":  "- TV tarafinda html/video gecislerinde decoder cakisma riskini azaltan oynatma iyilestirmeleri\n- PWA tarafinda web-template endpoint cache davranisi guncellendi\n- Oynatma stabilitesi ve gecis guvenilirligi artirildi",
+    "versionCode":  44,
+    "versionName":  "2.9.15",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=44",
+    "releaseNotes":  "- Native ExoPlayer gecis semantigi player.js ile hizalandi (slide/push/wipe/zoom)\n- Gecis surelerinde ms clamp kaldirildi, playlist degerleri birebir uygulanir\n- APK tarafinda video gecis stabilitesi iyilestirildi",
     "mandatory":  false,
-    "sha256":  "9fdc4e5dcfb83fceb2988416b503698adb14e794ccfd127a901ce981f31653ed"
+    "sha256":  "f56d8bb77b5a6e8812d177c6c5314585db5c155fd0643f878d4527dbd7286c1d"
 }
