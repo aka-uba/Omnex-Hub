@@ -5571,3 +5571,146 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Temp backup created:
     - `.codex/tmp_backups/player.js.pre_video_black_fix_20260317_231431.bak`
     - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_player_video_black_fix_20260317_231556.bak`
+## 2026-03-17 - Commit, push and production deploy for player video black-screen fix
+
+- Request: Commit/push latest player fix and deploy to server for live validation.
+- Changes:
+  1. **Git**
+     - Created commit on `main`: `ac5c177` (`fix(player): keep video visible after enter transition`).
+     - Pushed to `origin/main` (`6679e48 -> ac5c177`).
+  2. **Production deploy**
+     - Connected to server via `camlicayazilim@185.124.84.34:2299`.
+     - Ran in `/opt/omnex-hub`:
+       - `git pull --ff-only origin main`
+       - `docker compose -p omnex -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml build app`
+       - `docker compose -p omnex -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml up -d app`
+  3. **Live verification**
+     - `app` container reached `healthy`.
+     - `http://127.0.0.1:8080/player/index.html` contains `player.js?v=79`.
+     - `http://127.0.0.1:8080/player/sw.js` contains `CACHE_VERSION = 'v1.3.16'`.
+     - `http://127.0.0.1:8080/player/assets/js/player.js` contains `stabilize post-animation visibility` patch comment.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - Remote compose status check (`docker compose ... ps app`) (healthy)
+- Risks/Follow-up:
+  - `deploy` user SSH key authentication failed in this environment; deploy executed with `camlicayazilim` user instead.
+  - Additional scenario tests are still needed per requested device/content matrix.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_player_commit_push_deploy_20260317_232408.bak`
+## 2026-03-17 - Android player transition parity audit (no code change)
+
+- Request: Check whether APK-backed devices execute transition effects and content-type transitions identical to `player.js`, or whether only JS performance profiles should be adjusted.
+- Findings:
+  1. **Parity is not exact in current architecture.**
+     - `player.js` sends transition type/duration to APK (`setVideoTransition`) and remains source of selection.
+     - Native engine still performs its own enter/exit animations for Exo overlay (`jsOwnsTransitions = false` in `ExoPlayerManager.kt`).
+  2. **Native transition semantics are grouped and simplified vs CSS.**
+     - `slide/push/wipe` families are collapsed into shared translation animations in APK.
+     - `zoom/zoom-in/zoom-out` are grouped with one native behavior.
+     - CSS-side distinctions (e.g., wipe clip-path behavior) are richer than native view animations.
+  3. **Performance profiles alone cannot solve this mismatch.**
+     - Profiles mainly tune timings/precache/hardware layer; they do not make native transition semantics match CSS one-to-one.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md` (this note only)
+- Checks run:
+  - None. No application code changed.
+- Risks/Follow-up:
+  - For true cross-client parity, APK transition implementation must be aligned with JS semantics (or native video path must be selectively disabled).
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_android_transition_audit_20260317_233849.bak`
+## 2026-03-17 - Android native transition timing parity aligned with JS
+
+- Request: Keep native playback enabled and align APK transition language/flow with player.js for all playlist transition types and millisecond timing behavior.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt**
+     - Removed native upper clamp on transition duration (`coerceIn(0, 3000)` -> `coerceAtLeast(0)`), so APK honors JS-provided transition milliseconds exactly.
+  2. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/MainActivity.kt**
+     - Updated `setVideoTransition` bridge documentation comment to list full supported transition set (`fade/crossfade/zoom/slide/push/wipe` directional variants).
+  3. **Validation notes**
+     - Verified native transition type coverage matches JS/CSS transition families in player.
+- Checks run:
+  - `.\gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `.\gradlew.bat :app:compilePlaystoreDebugKotlin` (OK)
+- Risks/Follow-up:
+  - Very large transition durations are now applied as-is; backend/panel should keep realistic bounds to avoid very long blocking animations.
+  - Android player sources appear outside current root git tracking scope; commit/deploy flow may require separate repo/process.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/ExoPlayerManager.kt.pre_duration_unclamp_20260317_235421.bak`
+    - `.codex/tmp_backups/MainActivity.kt.pre_transition_comment_sync_20260317_235421.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_android_transition_js_parity_apply_20260317_235703.bak`
+## 2026-03-18 - APK OTA release publish (v2.9.15 / code 44)
+
+- Request: Build latest APK, copy to both OTA directories (`downloads`, `public/downloads`), update OTA JSON, then commit/push and pull on server so devices can receive remote update.
+- Changes:
+  1. **android-player/omnex-player-app/app/build.gradle**
+     - Bumped Android app version to `versionCode 44`, `versionName 2.9.15` before build.
+  2. **APK artifacts**
+     - Rebuilt `:app:assembleStandaloneDebug`.
+     - Published new APK to:
+       - `downloads/omnex-player.apk`
+       - `public/downloads/omnex-player.apk`
+       - `downloads/omnex-player-standalone-v2.9.15.apk`
+       - `public/downloads/omnex-player-standalone-v2.9.15.apk`
+     - New APK SHA256:
+       - `f56d8bb77b5a6e8812d177c6c5314585db5c155fd0643f878d4527dbd7286c1d`
+  3. **OTA metadata**
+     - Updated both:
+       - `downloads/update.json`
+       - `public/downloads/update.json`
+     - Set `versionCode: 44`, `versionName: 2.9.15`, URL query `v=44`, and new `sha256`.
+  4. **Git + deploy**
+     - Commit: `1747adf` (`chore(apk): publish ota package v2.9.15`)
+     - Pushed: `origin/main` (`ac5c177 -> 1747adf`)
+     - Server pull and app redeploy completed on `/opt/omnex-hub`.
+- Checks run:
+  - `.\gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - JSON parse/consistency:
+    - `ConvertFrom-Json` for both `update.json` files (OK)
+    - APK SHA vs `update.json.sha256` match (OK)
+  - Server verification:
+    - `curl http://127.0.0.1:8080/downloads/update.json` shows v44 metadata (OK)
+    - `sha256sum` on both server APK paths matches expected hash (OK)
+    - `docker compose ... ps app` healthy after redeploy (OK)
+- Risks/Follow-up:
+  - `android-player/` is gitignored in root repository; version bump in `app/build.gradle` is local build context and not part of this commit history.
+  - Devices already on code 44 will not re-install same code; next OTA must increment `versionCode`.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/build.gradle.pre_apk_ota_20260318_000330.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_apk_ota_20260318_000330.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_apk_ota_20260318_000330.bak`
+    - `.codex/tmp_backups/omnex-player.apk.pre_apk_ota_20260318_000330.bak`
+    - `.codex/tmp_backups/public.omnex-player.apk.pre_apk_ota_20260318_000330.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_apk_ota_release_20260318_000704.bak`
+## 2026-03-18 - APK image transition preload sync + player cache refresh
+
+- Request: Verify image-content behavior on APK devices, address image transition flash risk, and rule out old build/version drift.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Added `loadImageIntoElementWhenReady(...)` to preload images before display element swap.
+     - Refactored `playImage(...)` and `playTemplate(...)` to use the shared preload/timeout flow.
+  2. **public/player/index.html**
+     - Bumped player script query version `player.js?v=80 -> v81` for cache busting.
+  3. **public/player/sw.js**
+     - Bumped service-worker cache version `v1.3.17 -> v1.3.18`.
+  4. **Device/runtime verification**
+     - Confirmed APK version on G66: `versionName=2.9.15`, `versionCode=44`.
+     - Confirmed runtime transition logs still honor JS timing (e.g. `Transition set ... 500ms`).
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - ADB verification:
+    - `dumpsys package com.omnex.player` (version check OK)
+    - `logcat` filtered for `OmnexPlayer`/`ExoPlayerManager` (transition timing and load URL observed)
+- Risks/Follow-up:
+  - Image pipeline still uses a single visible `<img>` element; if a rare device-specific flash persists, next step is dual-image ping-pong similar to video/html.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/player.js.pre_image_transition_stabilize_20260318_004409.bak`
+    - `.codex/tmp_backups/index.html.pre_image_transition_stabilize_20260318_004409.bak`
+    - `.codex/tmp_backups/sw.js.pre_image_transition_stabilize_20260318_004409.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_image_transition_stabilize_20260318_004439.bak`

@@ -3545,6 +3545,66 @@ class OmnexPlayer {
         }
     }
 
+    loadImageIntoElementWhenReady(img, url, onReady, onError, timeoutMs = 10000) {
+        if (!img || !url) {
+            if (typeof onError === 'function') onError();
+            return;
+        }
+
+        let finished = false;
+        let timeoutId = null;
+
+        const finalize = (callback) => {
+            if (finished) return;
+            finished = true;
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            if (typeof callback === 'function') {
+                callback();
+            }
+        };
+
+        const assignReadyImageToDisplay = () => {
+            img.onload = null;
+            img.onerror = null;
+
+            img.onload = () => {
+                finalize(onReady);
+            };
+
+            img.onerror = () => {
+                finalize(onError);
+            };
+
+            img.src = url;
+
+            if (img.complete && img.naturalWidth > 0) {
+                setTimeout(() => {
+                    if (!finished && img.onload) {
+                        img.onload();
+                    }
+                }, 0);
+            }
+        };
+
+        const preloadImage = new Image();
+        preloadImage.onload = () => {
+            if (finished) return;
+            assignReadyImageToDisplay();
+        };
+        preloadImage.onerror = () => {
+            finalize(onError);
+        };
+
+        timeoutId = setTimeout(() => {
+            finalize(onError);
+        }, timeoutMs);
+
+        preloadImage.src = url;
+    }
+
     /**
      * Play image content
      */
@@ -3581,66 +3641,22 @@ class OmnexPlayer {
             return;
         }
 
-        // Clear previous handlers
-        img.onload = null;
-        img.onerror = null;
-
-        // Track if image loaded
-        let imageLoaded = false;
-
-        img.onload = () => {
-            imageLoaded = true;
-            const detectedOrientation = this.getOrientationFromDimensions(img.naturalWidth, img.naturalHeight);
-            if (detectedOrientation) {
-                this.applyPlaylistOrientation(detectedOrientation);
-            }
-            this.applyEnterTransition(img);
-            this.scheduleNext(this.getScheduledDuration(item));
-        };
-
-        img.onerror = () => {
-            imageLoaded = true;
-            this.scheduleNext(2);
-        };
-
-        // Set source to load the image
-        img.src = url;
-
-        // Safety: if image is already cached/complete, onload may not fire.
-        // Check immediately after setting src (in next microtask).
-        if (img.complete && img.naturalWidth > 0 && !imageLoaded) {
-            if (this.debug) {
-                console.log('[Player] Image already complete (cached), triggering onload manually');
-            }
-            // Use setTimeout to let the wrapper assignment below complete first
-            setTimeout(() => {
-                if (!imageLoaded && img.onload) {
-                    img.onload();
+        this.loadImageIntoElementWhenReady(
+            img,
+            url,
+            () => {
+                const detectedOrientation = this.getOrientationFromDimensions(img.naturalWidth, img.naturalHeight);
+                if (detectedOrientation) {
+                    this.applyPlaylistOrientation(detectedOrientation);
                 }
-            }, 0);
-        }
-
-        // Fallback timeout - if image doesn't load or error within 10s, skip
-        const timeoutId = setTimeout(() => {
-            if (!imageLoaded) {
-                img.onload = null;
-                img.onerror = null;
+                this.applyEnterTransition(img);
+                this.scheduleNext(this.getScheduledDuration(item));
+            },
+            () => {
                 this.scheduleNext(2);
-            }
-        }, 10000);
-
-        // âœ… MEMORY LEAK FIX: Clear timeout on success/error
-        const originalOnLoad = img.onload;
-        img.onload = () => {
-            clearTimeout(timeoutId);
-            if (originalOnLoad) originalOnLoad.call(img);
-        };
-
-        const originalOnError = img.onerror;
-        img.onerror = () => {
-            clearTimeout(timeoutId);
-            if (originalOnError) originalOnError.call(img);
-        };
+            },
+            10000
+        );
     }
 
     /**
@@ -3673,48 +3689,23 @@ class OmnexPlayer {
             return;
         }
 
-        // Clear previous handlers
-        img.onload = null;
-        img.onerror = null;
-
-        let imageLoaded = false;
-
-        img.onload = () => {
-            imageLoaded = true;
-            const detectedOrientation = this.getOrientationFromDimensions(img.naturalWidth, img.naturalHeight);
-            if (detectedOrientation) {
-                this.applyPlaylistOrientation(detectedOrientation);
-            }
-            this.applyEnterTransition(img);
-            this.scheduleNext(this.getScheduledDuration(item));
-        };
-
-        img.onerror = () => {
-            imageLoaded = true;
-            this.showTemplateFallback(item);
-            this.scheduleNext(this.getScheduledDuration(item));
-        };
-
-        img.src = url;
-
-        // Safety: cached image may not fire onload
-        if (img.complete && img.naturalWidth > 0 && !imageLoaded) {
-            setTimeout(() => {
-                if (!imageLoaded && img.onload) {
-                    img.onload();
+        this.loadImageIntoElementWhenReady(
+            img,
+            url,
+            () => {
+                const detectedOrientation = this.getOrientationFromDimensions(img.naturalWidth, img.naturalHeight);
+                if (detectedOrientation) {
+                    this.applyPlaylistOrientation(detectedOrientation);
                 }
-            }, 0);
-        }
-
-        // Fallback timeout
-        setTimeout(() => {
-            if (!imageLoaded) {
-                img.onload = null;
-                img.onerror = null;
+                this.applyEnterTransition(img);
+                this.scheduleNext(this.getScheduledDuration(item));
+            },
+            () => {
                 this.showTemplateFallback(item);
                 this.scheduleNext(this.getScheduledDuration(item));
-            }
-        }, 10000);
+            },
+            10000
+        );
     }
 
     /**
