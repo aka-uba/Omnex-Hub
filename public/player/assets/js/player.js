@@ -3600,7 +3600,18 @@ class OmnexPlayer {
         if (this._nativeVideoHardDisabled) {
             return false;
         }
-        return window.AndroidBridge && typeof window.AndroidBridge.playVideoNative === 'function';
+        if (!window.AndroidBridge || typeof window.AndroidBridge.playVideoNative !== 'function') {
+            return false;
+        }
+
+        const deviceInfo = this.detectDeviceType();
+        const isNativeTvDevice = deviceInfo.isTV || deviceInfo.isAndroidTV;
+        if (isNativeTvDevice && this.config.enableMediaPrecache === false) {
+            // Balanced/legacy TV profiles prioritize WebView stability over native decode.
+            return false;
+        }
+
+        return true;
     }
 
     isNativePlaybackActive() {
