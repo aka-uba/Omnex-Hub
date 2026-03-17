@@ -216,6 +216,15 @@ class OmnexPlayer {
             ? parsedDuration
             : fallbackDuration;
 
+        if (transition === 'none') {
+            return {
+                type: 'none',
+                duration: 0,
+                policy: this.isLegacyProfile() ? 'legacy' : (this.isBalancedProfile() ? 'balanced' : 'default'),
+                adaptiveConstrained: false
+            };
+        }
+
         const adaptiveConstrained = !!this._adaptiveTransitionState?.constrained;
         if (transition !== 'none' && this.isLegacyProfile()) {
             return {
@@ -4132,7 +4141,9 @@ class OmnexPlayer {
         // scheduleNext() already handles the delayed setNativeVideoMode(false).
         // If we're called directly (video ended naturally, no timer), delay the switch.
         if (this._nativeVideoMode) {
-            const nativeExitDuration = this._transitionDuration || 300;
+            const nativeExitDuration = this._transitionType === 'none'
+                ? 0
+                : (this._transitionDuration || 300);
             setTimeout(() => {
                 if (!this.isNativePlaybackActive()) {
                     this.setNativeVideoMode(false);
@@ -4375,16 +4386,19 @@ class OmnexPlayer {
                     const resolvedTransitionType = this.getResolvedTransitionType();
                     const domTransitionType = this.getDomTransitionTypeForCurrentLayout(resolvedTransitionType);
                     const nativeTransitionType = this.getNativeTransitionTypeForCurrentLayout(resolvedTransitionType);
+                    const nativeTransitionDuration = nativeTransitionType === 'none'
+                        ? 0
+                        : (this._transitionDuration || 500);
                     window.AndroidBridge.setVideoTransition(
                         nativeTransitionType || 'none',
-                        this._transitionDuration || 500
+                        nativeTransitionDuration
                     );
                     this.traceDebug('TRANS', 'native transition prepared', {
                         requested: this._transitionType || 'none',
                         resolved: resolvedTransitionType,
                         domMapped: domTransitionType,
                         nativeMapped: nativeTransitionType,
-                        durationMs: this._transitionDuration || 500,
+                        durationMs: nativeTransitionDuration,
                         forceRotateLandscape: !!document.getElementById('content-container')?.classList.contains('force-rotate-landscape'),
                         forceRotatePortrait: !!document.getElementById('content-container')?.classList.contains('force-rotate-portrait')
                     });
@@ -5485,7 +5499,9 @@ class OmnexPlayer {
                         // Next content is WebView-based (image/html). Delay making
                         // WebView opaque until the native exit animation finishes
                         // (typically 300ms) to avoid a poster/preload flash.
-                        const nativeExitDuration = this._transitionDuration || 300;
+                        const nativeExitDuration = this._transitionType === 'none'
+                            ? 0
+                            : (this._transitionDuration || 300);
                         setTimeout(() => {
                             // Guard: only switch if we're still NOT in native mode
                             // (e.g. a rapid video→video transition might have re-entered)
