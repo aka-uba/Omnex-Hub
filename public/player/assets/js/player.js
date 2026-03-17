@@ -4651,6 +4651,12 @@ class OmnexPlayer {
     hardenSameOriginIframeContent(iframe) {
         if (!iframe) return;
 
+        // Constrained TV devices are decoder-fragile; avoid forcing iframe video
+        // element rewrites/autoplay hooks that can overlap with native decoder teardown.
+        if (this.isConstrainedTvProfile()) {
+            return;
+        }
+
         let doc = null;
         try {
             doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
@@ -4819,7 +4825,10 @@ class OmnexPlayer {
     playHtml(item) {
         this.clearNativePreloadedVideo('play-html-start');
 
-        if (!this.isNativePlaybackActive()) {
+        if (this.isConstrainedTvProfile()) {
+            this.stopNativeVideoForTransition('play-html-start-constrained');
+            this.setNativeVideoMode(false);
+        } else if (!this.isNativePlaybackActive()) {
             this.setNativeVideoMode(false);
         } else {
             this.traceDebug('TRANS', 'playHtml waiting with native video active', {
@@ -5028,7 +5037,7 @@ class OmnexPlayer {
 
             // Keep current native frame alive while waiting html iframe readiness,
             // then stop native right before html enter starts (in finalizeHtmlPlayback()).
-            const shouldDeferNativeStop = nextType === 'html';
+            const shouldDeferNativeStop = nextType === 'html' && !this.isConstrainedTvProfile();
 
             // Only stop native ExoPlayer since it can't be crossfaded via CSS
             if (this.isNativePlaybackActive()) {
