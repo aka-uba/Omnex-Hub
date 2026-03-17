@@ -2533,9 +2533,21 @@ class OmnexPlayer {
             this.cleanupHtmlPrefetch();
         }
 
+        const immediateNextType = immNext ? String(immNext.type || '').toLowerCase() : '';
+        const deviceInfo = this.detectDeviceType();
+        const isNativeTvDevice =
+            this.hasNativeVideoSupport() &&
+            (deviceInfo.isTV || deviceInfo.isAndroidTV);
+        const shouldSkipNativePreload =
+            isNativeTvDevice &&
+            (this._currentContentType === 'html' || immediateNextType === 'html');
+
         // ExoPlayer preload: find the next video item in playlist and preload it.
         // ExoPlayerManager.preloadNextVideo() is idempotent (skips if same URL).
-        if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
+        if (shouldSkipNativePreload) {
+            // TV decoders can fail when HTML inline <video> and Exo preload overlap.
+            this.clearNativePreloadedVideo('tv-html-preload-guard');
+        } else if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
             const videoItem = items[nextVideoIndex];
             const videoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
             if (videoUrl && videoUrl !== this._currentVideoUrl) {
@@ -3588,6 +3600,28 @@ class OmnexPlayer {
         try {
             return window.AndroidBridge.isPlayingNatively();
         } catch (e) {
+            return false;
+        }
+    }
+
+    clearNativePreloadedVideo(reason = 'content-swap') {
+        if (!this.hasNativeVideoSupport() || !window.AndroidBridge || typeof window.AndroidBridge.clearPreloadedVideoNative !== 'function') {
+            return false;
+        }
+
+        try {
+            window.AndroidBridge.clearPreloadedVideoNative();
+            this.traceDebug('TRANS', 'requested native preload clear', {
+                reason
+            });
+            this.traceTransitionSnapshot('native-preload-cleared', {
+                reason
+            });
+            return true;
+        } catch (error) {
+            if (this.debug) {
+                console.warn('[Player] Failed to clear native preload', error);
+            }
             return false;
         }
     }
@@ -4652,6 +4686,7 @@ class OmnexPlayer {
         });
 
         this.hardenSameOriginIframeContent(iframe);
+        this.clearNativePreloadedVideo('html-ready');
         this.stopNativeVideoForTransition('html-ready');
         this.traceTransitionSnapshot('html-finalize-before-enter', {
             iframe: this.getElementDebugLabel(iframe),
@@ -4672,6 +4707,8 @@ class OmnexPlayer {
      * Play HTML/webpage content in iframe
      */
     playHtml(item) {
+        this.clearNativePreloadedVideo('play-html-start');
+
         if (!this.isNativePlaybackActive()) {
             this.setNativeVideoMode(false);
         } else {
@@ -4886,6 +4923,7 @@ class OmnexPlayer {
             // Only stop native ExoPlayer since it can't be crossfaded via CSS
             if (this.isNativePlaybackActive()) {
                 if (shouldDeferNativeStop) {
+                    this.clearNativePreloadedVideo('schedule-html-defer');
                     this.traceDebug('TRANS', 'defer native stop until html is ready', {
                         currentIndex: this.currentIndex,
                         nextIndex,

@@ -5123,3 +5123,56 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - If same version already installed, update dialog intentionally does not show.
 - Backup/Restore safety:
   - Previous temp backups retained for build.gradle and update.json files.
+## 2026-03-17 - Player history/memory review for next operations readiness
+
+- Request: Review yesterday's player work from operation/commit history and memory, then confirm readiness for upcoming tasks.
+- Changes:
+  1. **.codex/CHANGE_MEMORY.md**
+     - Added this readiness review log entry.
+- Checks run:
+  - No syntax checks run (no code files changed; memory-only update).
+- Risks/Follow-up:
+  - 2026-03-16 player timeline contains intensive transition/orientation fixes and APK release chain (v2.9.6 -> v2.9.13); next changes should be scoped carefully to avoid regressions in public/player/assets/js/player.js and public/player/assets/css/player.css.
+- Backup/Restore safety:
+  - Not needed (append-only memory update).
+
+## 2026-03-17 - Cross-device playback instability deep investigation and guarded fixes
+
+- Request: Investigate inconsistent playback across PC Chrome/PWA, Android phone, and Grundig TV; connect via ADB for long-running analysis, inspect p50/p95/p99, validate device/media profile behavior, and check ffmpeg/hls/html-video conflict without assumptions.
+- Findings:
+  1. TV-side decoder failures are repeatable and device-local (not server latency): `OMX.MS.AVC.Decoder` errors appear in both ExoPlayer and Chromium/WebView decode paths during video<->html cycles.
+  2. Long-run TV metrics from filtered log capture (`.codex/tv_logcat_long_filtered_20260317_034021.log`):
+     - `preload_to_exo_codec_error`: n=16, p50=4393.5ms, p95=4494.2ms, p99=4497.2ms
+     - `use_preloaded_to_exo_codec_error`: n=16, p50=4444ms, p95=4550.2ms, p99=4550.8ms
+     - `native_stop_requested_to_webview_switch`: n=16, p50=1518.5ms, p95=1527.2ms, p99=1527.8ms
+  3. Production API flow during incident window remained healthy (`/api/player/init`, `/api/player/heartbeat` consistently HTTP 200 with low ms timings in `api.log`), so backend/network bottleneck was not indicated.
+  4. Active TV playlist contains `html + image + video` mix; html templates include inline `<video>` mp4 sources, which aligns with native-preload + html-video decoder contention windows.
+
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Added TV+HTML guard to skip native Exo preload in decoder-contention-prone transitions.
+     - Added `clearNativePreloadedVideo(...)` bridge-aware helper and invoked it in HTML transition points (`playHtml`, `finalizeHtmlPlayback`, deferred html stop path).
+  2. **public/player/sw.js**
+     - Bumped SW cache version: `v1.3.3 -> v1.3.4`.
+     - Added `/api/web-templates/` to network-first API routes to reduce stale template cache behavior.
+  3. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt** (gitignored local tree)
+     - Added `clearPreloadedVideo()` for explicit preload decoder release.
+  4. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/MainActivity.kt** (gitignored local tree)
+     - Added JS bridge method `clearPreloadedVideoNative()`.
+
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - `./gradlew.bat :app:compileDebugKotlin` (failed: ambiguous variant task name)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK)
+
+- Risks/Follow-up:
+  - Full preload-clear behavior on TV requires APK with new bridge method; JS-side guard still reduces contention even on older APK by skipping problematic preload path.
+  - `android-player/` is gitignored in this repo, so Android native code edits are local and must be deployed via APK release workflow.
+
+- Backup/Restore safety:
+  - Temp backups created before edits:
+    - `.codex/tmp_backups/player.js.20260317_035714.bak`
+    - `.codex/tmp_backups/sw.js.20260317_040117.bak`
+    - `.codex/tmp_backups/ExoPlayerManager.kt.20260317_035714.bak`
+    - `.codex/tmp_backups/MainActivity.kt.20260317_035714.bak`
