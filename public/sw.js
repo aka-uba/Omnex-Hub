@@ -108,6 +108,10 @@ self.addEventListener('activate', event => {
                 return Promise.all(
                     cacheNames
                         .filter(name => {
+                            // Never touch player caches; /player has its own SW lifecycle.
+                            if (name.startsWith('omnex-player-') || name.startsWith('omnex-player-media-')) {
+                                return false;
+                            }
                             // In dev mode, clear ALL caches
                             if (DEV_MODE) return true;
                             // In production, only clear old versions

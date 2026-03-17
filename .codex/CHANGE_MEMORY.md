@@ -5248,3 +5248,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/StreamChannelService.php.pre_ffmpeg_dedupe_20260317_061543.bak`
     - `.codex/tmp_backups/player.js.pre_media_diag_20260317_061543.bak`
     - `.codex/tmp_backups/index.html.pre_player_js_v68_20260317_061543.bak`
+## 2026-03-17 - Root SW cache cleanup hotfix (preserve player caches)
+
+- Request: Analyze new logs showing repeated SW installs and player startup watchdog hits; identify concrete interference.
+- Findings:
+  1. Root SW (`public/sw.js`) activate cleanup was deleting `omnex-player-*` caches (`[SW] Deleting cache: omnex-player-v1.3.10` in browser logs).
+  2. This caused cross-scope cache churn and can destabilize first-load behavior for `/player`.
+- Changes:
+  1. **public/sw.js**
+     - Updated activate cache filter to never delete `omnex-player-` and `omnex-player-media-` caches.
+- Checks run:
+  - `node --check public/sw.js` (OK)
+- Risks/Follow-up:
+  - Browser extension `contentScript.js` blob HEAD/fetch errors are external to repository code and may still appear in normal profile; test in extension-disabled profile for clean signal.
+- Backup/Restore safety:
+  - Temp backup created before edit:
+    - `.codex/tmp_backups/public_sw.js.pre_preserve_player_cache_20260317_062304.bak`
