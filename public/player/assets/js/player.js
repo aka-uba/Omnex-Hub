@@ -3252,6 +3252,13 @@ class OmnexPlayer {
             }
             const enterTimerId = setTimeout(() => {
                 this.clearTransitionClasses(enterElement);
+                // stabilize post-animation visibility:
+                // revealVideoElement starts videos at opacity:0 to prevent preload/poster flash.
+                // after transition classes are removed, force active element back to opaque.
+                if (this._currentElement === enterElement && enterElement.style.display !== 'none') {
+                    enterElement.style.opacity = '1';
+                    enterElement.style.visibility = 'visible';
+                }
                 // z-index temizlemeyi kaldir: CSS .content-item base z-index:0
                 // sağlar, transition class'lari kaldiginda CSS z-index devralir.
                 // Inline style silmek icerik katmanini arka plana dusuruyordu.

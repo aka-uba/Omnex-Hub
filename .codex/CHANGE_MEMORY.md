@@ -5524,3 +5524,50 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Re-encode queue should be allowed to finish (or re-trigger specific media) if full backfill is required.
 - Backup/Restore safety:
   - No local file backup required (no code edit in this step).
+## 2026-03-17 - Context sync for project rules and safeguards
+
+- Request: User asked whether current project context, rules, deploy process, backup discipline, and encoding precautions are remembered.
+- Changes:
+  1. **.codex/CHANGE_MEMORY.md**
+     - Appended this context-sync entry after re-reading project memory/workflow files.
+- Checks run:
+  - None. No application code changed; syntax checks not applicable for memory-only update.
+- Risks/Follow-up:
+  - Must keep following memory workflow on each task before edits and before final response.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_context_sync_20260317_225906.bak`
+## 2026-03-17 - Player prep review of process tree and recent commits
+
+- Request: Review current process tree, recent commits, and player-related working context before continuing work on player.
+- Changes:
+  1. **.codex/CHANGE_MEMORY.md**
+     - Appended this preparation note after inspecting repo state, player file tree, running processes, and recent player commits.
+- Checks run:
+  - None. No application code changed; syntax checks not applicable for review-only prep.
+- Risks/Follow-up:
+  - `public/player/assets/js/player.js` currently has constrained-TV guards disabled by `fa4978f`, so older memory about forced 360p rewrite is stale.
+  - Worktree contains many untracked temp/backup artifacts; avoid treating them as source changes during player edits.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_player_prep_review_20260317_230337.bak`
+## 2026-03-17 - Fix video turning black after enter transition on PC browser/PWA
+
+- Request: Fix regression where video items appear during enter effect but turn black when transition ends, while transition type/duration works.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - In `applyEnterTransition()` completion timer, forced active element back to visible/opaque (`opacity:1`, `visibility:visible`) after transition classes are removed.
+     - This preserves anti-flash `opacity:0` start behavior while preventing post-animation fallback to black.
+  2. **public/player/index.html**
+     - Bumped player script cache-bust `v=78 -> v=79`.
+  3. **public/player/sw.js**
+     - Bumped SW cache version `v1.3.15 -> v1.3.16`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+- Risks/Follow-up:
+  - Fix targets WebView/Browser enter-transition stabilization; device-specific native Exo transition behavior still needs separate scenario-by-scenario validation.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/player.js.pre_video_black_fix_20260317_231431.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_player_video_black_fix_20260317_231556.bak`
