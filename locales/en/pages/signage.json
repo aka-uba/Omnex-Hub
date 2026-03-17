@@ -77,7 +77,8 @@
                 "loop": "Loop",
                 "orientation": "Screen Orientation",
                 "template": "Template",
-                "layoutType": "Layout Type"
+                "layoutType": "Layout Type",
+                "itemTransition": "Item Transition Effect"
             },
             "infoTitle": "List Information",
             "itemsTitle": "List Contents",
@@ -153,7 +154,9 @@
             "confirmUnassign": "No devices selected. This playlist will be removed from all devices. Continue?",
             "currentlyAssigned": "Currently assigned to {device} device",
             "currentlyAssignedCount": "Currently assigned to {count} devices",
-            "aDevice": "a device"
+            "aDevice": "a device",
+            "usePlaylistDefault": "Use playlist default",
+            "itemTransitionHint": "Leave empty to use playlist transition setting"
         },
         "assignToDevice": "Assign to Device",
         "toast": {

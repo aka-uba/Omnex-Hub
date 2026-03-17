@@ -77,7 +77,8 @@
                 "loop": "Boucle",
                 "orientation": "Orientation de l'écran",
                 "template": "Modèle",
-                "layoutType": "Type de mise en page"
+                "layoutType": "Type de mise en page",
+                "itemTransition": "Effet de transition de l'élément"
             },
             "infoTitle": "Informations de la liste",
             "itemsTitle": "Contenu de la liste",
@@ -153,7 +154,9 @@
             "confirmUnassign": "Aucun appareil sélectionné. Cette liste de lecture sera supprimée de tous les appareils. Continuer ?",
             "currentlyAssigned": "Actuellement assignée à l'appareil {device}",
             "currentlyAssignedCount": "Actuellement assignée à {count} appareils",
-            "aDevice": "un appareil"
+            "aDevice": "un appareil",
+            "usePlaylistDefault": "Utiliser le défaut de la playlist",
+            "itemTransitionHint": "Laisser vide pour utiliser le paramètre de transition de la playlist"
         },
         "assignToDevice": "Assigner à l'appareil",
         "toast": {

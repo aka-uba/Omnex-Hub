@@ -11,6 +11,21 @@ Format:
 
 ---
 
+## 2026-03-17 - Per-item transition efekt destegi
+- Request: Playlist iceriklerinde her ogede farkli gecis efekti ve suresi desteklenmeli (hardcoded degil). Tum icerik turleri (html, video, resim, stream, template) arasi gecisler calismali.
+- Changes:
+  1. Backend show.php: 4 icerik tipine transition/transition_duration alanlari eklendi
+  2. Backend content.php: Player API'ye per-item transition verileri eklendi (main + fallback path)
+  3. Frontend PlaylistDetail.js: editItem modalina per-item transition select + duration input eklendi, save payload guncellendi
+  4. Player player.js: playCurrentItem icinde item.transition override, playlist default fallback, device profile cap (legacy 300ms, balanced 400ms)
+  5. i18n: 8 dilde 3 yeni key (itemTransition fields icinde, usePlaylistDefault ve itemTransitionHint form icinde)
+  6. Cache: player.js v77->v78, sw.js v1.3.14->v1.3.15
+- Files: api/playlists/show.php, api/player/content.php, public/assets/js/pages/signage/PlaylistDetail.js, public/player/assets/js/player.js, public/player/index.html, public/player/sw.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/signage.json
+- Checks: PHP lint OK (show.php, content.php), JS syntax OK (PlaylistDetail.js, player.js), JSON valid (8 files)
+- Risk/Follow-up: Deploy ve cihazda test gerekli. Eski cache temizligi yapilmali.
+
+---
+
 ## 2026-03-17 - TV video oynatma regresyonu duzeltmesi (11 bug fix)
 - Request: TV cihazlarda video siyah ekran, preload gorselden ileri gidemiyor. OMX.MS.AVC.Decoder ERROR, PIPELINE_ERROR_DECODE. Codex ile eklenen constrained TV, native video kilitleme ve agresif watchdog regresyona neden oldu.
 - Changes: 11 fix — hasNativeVideoSupport basitlesti, _nativeVideoHardDisabled kaldirildi, isConstrainedTvProfile etkisizlesti, 360p rewrite kaldirildi, handleNativeVideoStarted _currentElement=video geri geldi, attemptStartupRecovery/watchdog kaldirildi, deferred exit sadece video/stream, balanced profile cap geri geldi, prepareNextMedia sadelelesti, playHtml constrained guard kaldirildi, scheduleNext deferred native stop kaldirildi

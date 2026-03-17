@@ -77,7 +77,8 @@
                 "loop": "Döngü",
                 "orientation": "Ekran Yönü",
                 "template": "Şablon",
-                "layoutType": "Yerleşim Tipi"
+                "layoutType": "Yerleşim Tipi",
+                "itemTransition": "İçerik Geçiş Efekti"
             },
             "infoTitle": "Liste Bilgileri",
             "itemsTitle": "Liste İçerikleri",
@@ -153,7 +154,9 @@
             "confirmUnassign": "Seçili cihaz yok. Bu playlist tüm cihazlardan kaldırılacak. Devam edilsin mi?",
             "currentlyAssigned": "Şu anda {device} cihazına atanmış",
             "currentlyAssignedCount": "Şu anda {count} cihaza atanmış",
-            "aDevice": "bir cihaz"
+            "aDevice": "bir cihaz",
+            "usePlaylistDefault": "Playlist varsayılanı",
+            "itemTransitionHint": "Boş bırakılırsa playlist geçiş ayarı kullanılır"
         },
         "assignToDevice": "Cihaza Ata",
         "toast": {

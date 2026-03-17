@@ -112,7 +112,10 @@ foreach ($assignments as $assignment) {
                                     'order' => $item['order'] ?? 0,
                                     // ✅ CRITICAL FIX: muted INTEGER olarak döndür (0/1), boolean değil
                                     // JavaScript hash hesaplaması için tutarlılık sağla
-                                    'muted' => isset($item['muted']) ? (int)$item['muted'] : ($media['file_type'] === 'video' ? 1 : null)
+                                    'muted' => isset($item['muted']) ? (int)$item['muted'] : ($media['file_type'] === 'video' ? 1 : null),
+                                    // Per-item transition override (null = use playlist default)
+                                    'transition' => $item['transition'] ?? null,
+                                    'transition_duration' => isset($item['transition_duration']) ? (int)$item['transition_duration'] : null
                                 ];
                             }
                         }
@@ -222,7 +225,9 @@ if (empty($content['playlists']) && empty($content['media'])) {
                             'url' => $mediaUrl,
                             'type' => $media['file_type'],
                             'duration' => $item['duration'] ?? 10,
-                            'order' => $item['order'] ?? 0
+                            'order' => $item['order'] ?? 0,
+                            'transition' => $item['transition'] ?? null,
+                            'transition_duration' => isset($item['transition_duration']) ? (int)$item['transition_duration'] : null
                         ];
                     }
                 }

@@ -97,7 +97,8 @@
                 "loop": "حلقة",
                 "orientation": "اتجاه الشاشة",
                 "template": "نموذج",
-                "layoutType": "نوع التخطيط"
+                "layoutType": "نوع التخطيط",
+                "itemTransition": "تأثير انتقال العنصر"
             },
             "infoTitle": "معلومات القائمة",
             "itemsTitle": "محتويات القائمة",
@@ -173,7 +174,9 @@
             "confirmUnassign": "لم يتم تحديد أي أجهزة. ستتم إزالة قائمة التشغيل هذه من جميع الأجهزة. يكمل؟",
             "currentlyAssigned": "تم تعيينه حاليًا لجهاز {device}",
             "currentlyAssignedCount": "تم تعيينه حاليًا لـ {count} من الأجهزة",
-            "aDevice": "جهاز"
+            "aDevice": "جهاز",
+            "usePlaylistDefault": "استخدام الافتراضي لقائمة التشغيل",
+            "itemTransitionHint": "اتركه فارغاً لاستخدام إعداد انتقال قائمة التشغيل"
         },
         "assignToDevice": "تعيين للجهاز",
         "toast": {

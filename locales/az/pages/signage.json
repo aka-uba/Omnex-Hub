@@ -97,7 +97,8 @@
                 "loop": "Döngə",
                 "orientation": "Ekran Orientasiyası",
                 "template": "Şablon",
-                "layoutType": "Layout növü"
+                "layoutType": "Layout növü",
+                "itemTransition": "Məzmun keçid effekti"
             },
             "infoTitle": "Siyahı məlumatı",
             "itemsTitle": "Mündəricat Siyahı",
@@ -173,7 +174,9 @@
             "confirmUnassign": "Heç bir cihaz seçilməyib. Bu pleylist bütün cihazlardan silinəcək. Davam edilsin?",
             "currentlyAssigned": "Hazırda {device} cihazına təyin edilib",
             "currentlyAssignedCount": "Hazırda {count} cihazlarına təyin edilib",
-            "aDevice": "bir cihaz"
+            "aDevice": "bir cihaz",
+            "usePlaylistDefault": "Pleylist standartı",
+            "itemTransitionHint": "Boş buraxılsa pleylist keçid ayarı istifadə olunur"
         },
         "assignToDevice": "Cihaza təyin edin",
         "toast": {

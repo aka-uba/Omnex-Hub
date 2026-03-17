@@ -77,7 +77,8 @@
                 "loop": "Цикл",
                 "orientation": "Ориентация экрана",
                 "template": "Шаблон",
-                "layoutType": "Тип макета"
+                "layoutType": "Тип макета",
+                "itemTransition": "Эффект перехода элемента"
             },
             "infoTitle": "Информация о списке",
             "itemsTitle": "Содержимое списка",
@@ -153,7 +154,9 @@
             "confirmUnassign": "Устройства не выбраны. Этот плейлист будет удалён со всех устройств. Продолжить?",
             "currentlyAssigned": "Сейчас назначено устройству {device}",
             "currentlyAssignedCount": "Сейчас назначено устройствам: {count}",
-            "aDevice": "устройство"
+            "aDevice": "устройство",
+            "usePlaylistDefault": "По умолчанию плейлиста",
+            "itemTransitionHint": "Оставьте пустым для использования настройки перехода плейлиста"
         },
         "assignToDevice": "Назначить устройству",
         "toast": {

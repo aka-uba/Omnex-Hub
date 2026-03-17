@@ -77,7 +77,8 @@
                 "loop": "Schleife",
                 "orientation": "Bildschirmausrichtung",
                 "template": "Vorlage",
-                "layoutType": "Layout-Typ"
+                "layoutType": "Layout-Typ",
+                "itemTransition": "Element-Übergangseffekt"
             },
             "infoTitle": "Listeninformationen",
             "itemsTitle": "Listeninhalt",
@@ -153,7 +154,9 @@
             "confirmUnassign": "Keine Geräte ausgewählt. Diese Playlist wird von allen Geräten entfernt. Fortfahren?",
             "currentlyAssigned": "Derzeit {device} Gerät zugewiesen",
             "currentlyAssignedCount": "Derzeit {count} Geräten zugewiesen",
-            "aDevice": "ein Gerät"
+            "aDevice": "ein Gerät",
+            "usePlaylistDefault": "Playlist-Standard verwenden",
+            "itemTransitionHint": "Leer lassen, um die Playlist-Übergangseinstellung zu verwenden"
         },
         "assignToDevice": "Gerät zuweisen",
         "toast": {

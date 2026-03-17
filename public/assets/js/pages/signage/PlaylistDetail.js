@@ -1588,6 +1588,24 @@ export class PlaylistDetailPage {
                             </div>
                         </div>
                     ` : ''}
+                    <hr style="margin: 12px 0; border-color: var(--border-color, #e5e7eb);">
+                    <div class="form-group">
+                        <label class="form-label">${this.__('playlists.form.fields.itemTransition')}</label>
+                        <select id="edit-item-transition" class="form-select">
+                            <option value="">${this.__('playlists.form.usePlaylistDefault')}</option>
+                            ${this.renderTransitionOptions()}
+                        </select>
+                        <small class="form-hint">${this.__('playlists.form.itemTransitionHint')}</small>
+                    </div>
+                    <div class="form-group" id="edit-item-transition-duration-row" style="${item.transition && item.transition !== '' ? '' : 'display:none'}">
+                        <label class="form-label">${this.__('playlists.form.fields.transitionDuration')}</label>
+                        <div class="input-with-suffix">
+                            <input type="number" id="edit-item-transition-duration" class="form-input"
+                                value="${item.transition_duration || ''}" min="100" max="2000" step="100"
+                                placeholder="500">
+                            <span class="input-suffix">ms</span>
+                        </div>
+                    </div>
                 </form>
             `,
             confirmText: this.__('actions.save'),
@@ -1628,6 +1646,12 @@ export class PlaylistDetailPage {
                     this.items[index].loop = loopEnabled ? loopCount : 0;
                 }
 
+                // Update per-item transition
+                const itemTransition = document.getElementById('edit-item-transition').value;
+                const itemTransitionDuration = parseInt(document.getElementById('edit-item-transition-duration').value) || null;
+                this.items[index].transition = itemTransition || null;
+                this.items[index].transition_duration = itemTransition ? itemTransitionDuration : null;
+
                 // Re-render
                 document.getElementById('playlist-items-container').innerHTML = this.renderItems();
                 this.initDragDrop();
@@ -1635,7 +1659,7 @@ export class PlaylistDetailPage {
             }
         });
 
-        // Handle loop checkbox toggle
+        // Handle loop checkbox toggle + item transition toggle
         setTimeout(() => {
             const loopCheckbox = document.getElementById('edit-item-loop');
             const loopCountRow = document.getElementById('edit-loop-count-row');
@@ -1643,6 +1667,18 @@ export class PlaylistDetailPage {
                 loopCheckbox.addEventListener('change', () => {
                     loopCountRow.style.display = loopCheckbox.checked ? '' : 'none';
                 });
+            }
+
+            // Set item transition dropdown to current value
+            const transitionSelect = document.getElementById('edit-item-transition');
+            const transitionDurationRow = document.getElementById('edit-item-transition-duration-row');
+            if (transitionSelect) {
+                transitionSelect.value = item.transition || '';
+                if (transitionSelect && transitionDurationRow) {
+                    transitionSelect.addEventListener('change', () => {
+                        transitionDurationRow.style.display = transitionSelect.value ? '' : 'none';
+                    });
+                }
             }
         }, 100);
     }
@@ -1824,6 +1860,8 @@ export class PlaylistDetailPage {
                 duration: item.duration,
                 loop: parseInt(item.loop) || 0,
                 muted: (item.type === 'video' || item.type === 'stream') ? (item.muted !== false) : undefined,
+                transition: item.transition || null,
+                transition_duration: item.transition_duration ? parseInt(item.transition_duration) : null,
                 order: index
             }))
         };

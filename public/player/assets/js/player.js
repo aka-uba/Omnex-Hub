@@ -2862,11 +2862,36 @@ class OmnexPlayer {
                 muted: item.muted  // ğŸ› DEBUG: Check muted value
             });
         }
+        // Apply per-item transition override if present, otherwise use playlist default.
+        // item.transition = null means "use playlist default".
+        // item.transition = 'fade'/'push-left'/etc. overrides for this item's ENTER transition.
+        if (item.transition) {
+            this._transitionType = item.transition;
+            this._transitionDuration = parseInt(item.transition_duration, 10) || this._playlistTransitionDuration || 500;
+            // Apply device profile caps
+            if (this.isLegacyProfile() && this._transitionType !== 'none') {
+                this._transitionDuration = Math.min(this._transitionDuration, 300);
+            } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
+                this._transitionDuration = Math.min(this._transitionDuration, 400);
+            }
+            document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
+        } else {
+            // Restore playlist defaults
+            this._transitionType = this._playlistTransitionType || 'none';
+            this._transitionDuration = this._playlistTransitionDuration || 500;
+            document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
+        }
+        // Reset resolved transition for the new item (force re-resolve for 'random-safe')
+        this._runtimeTransitionType = null;
+
         this.traceTransitionSnapshot('playCurrentItem', {
             itemIndex: this.currentIndex,
             itemName: item?.name || '',
             itemType: item?.type || '',
-            itemOrientation
+            itemOrientation,
+            itemTransition: item.transition || '(playlist-default)',
+            effectiveTransition: this._transitionType,
+            effectiveDuration: this._transitionDuration
         });
 
         // Determine content type - check type field, fallback to mime_type analysis
@@ -4125,6 +4150,10 @@ class OmnexPlayer {
         } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
             this._transitionDuration = Math.min(this._transitionDuration, 400);
         }
+
+        // Store playlist-level defaults so per-item overrides can restore them
+        this._playlistTransitionType = this._transitionType;
+        this._playlistTransitionDuration = this._transitionDuration;
 
         document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
 

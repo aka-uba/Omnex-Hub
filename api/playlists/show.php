@@ -115,7 +115,9 @@ if (is_array($rawItems)) {
                     'duration' => $item['duration'] ?? null,
                     'loop' => $item['loop'] ?? 0,
                     'order' => $item['order'] ?? 0,
-                    'muted' => isset($item['muted']) ? (bool)$item['muted'] : null
+                    'muted' => isset($item['muted']) ? (bool)$item['muted'] : null,
+                    'transition' => $item['transition'] ?? null,
+                    'transition_duration' => $item['transition_duration'] ?? null
                 ];
             }
         }
@@ -129,7 +131,9 @@ if (is_array($rawItems)) {
                 'duration' => $item['duration'] ?? null,
                 'loop' => $item['loop'] ?? 0,
                 'order' => $item['order'] ?? 0,
-                'muted' => isset($item['muted']) ? (bool)$item['muted'] : true
+                'muted' => isset($item['muted']) ? (bool)$item['muted'] : true,
+                'transition' => $item['transition'] ?? null,
+                'transition_duration' => $item['transition_duration'] ?? null
             ];
         }
         // Handle html/webpage items (external URLs)
@@ -142,7 +146,9 @@ if (is_array($rawItems)) {
                 'duration' => $item['duration'] ?? null,
                 'loop' => $item['loop'] ?? 0,
                 'order' => $item['order'] ?? 0,
-                'muted' => isset($item['muted']) ? (bool)$item['muted'] : null
+                'muted' => isset($item['muted']) ? (bool)$item['muted'] : null,
+                'transition' => $item['transition'] ?? null,
+                'transition_duration' => $item['transition_duration'] ?? null
             ];
         }
         // Handle media items
@@ -184,7 +190,9 @@ if (is_array($rawItems)) {
                     'loop' => $item['loop'] ?? 0,
                     'order' => $item['order'] ?? 0,
                     // ✅ Video ses kontrolü - muted alanını ekle
-                    'muted' => isset($item['muted']) ? (bool)$item['muted'] : ($contentType === 'video' ? true : null)
+                    'muted' => isset($item['muted']) ? (bool)$item['muted'] : ($contentType === 'video' ? true : null),
+                    'transition' => $item['transition'] ?? null,
+                    'transition_duration' => $item['transition_duration'] ?? null
                 ];
             }
         }

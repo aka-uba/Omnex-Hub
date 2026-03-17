@@ -97,7 +97,8 @@
                 "loop": "Lus",
                 "orientation": "Schermoriëntatie",
                 "template": "Sjabloon",
-                "layoutType": "Indelingstype"
+                "layoutType": "Indelingstype",
+                "itemTransition": "Overgangseffect item"
             },
             "infoTitle": "Lijstinformatie",
             "itemsTitle": "Lijst inhoud",
@@ -173,7 +174,9 @@
             "confirmUnassign": "Geen apparaten geselecteerd. Deze afspeellijst wordt van alle apparaten verwijderd. Doorgaan?",
             "currentlyAssigned": "Momenteel toegewezen aan {device} apparaat",
             "currentlyAssignedCount": "Momenteel toegewezen aan {count} apparaten",
-            "aDevice": "een apparaat"
+            "aDevice": "een apparaat",
+            "usePlaylistDefault": "Gebruik afspeellijststandaard",
+            "itemTransitionHint": "Laat leeg om de overgangsinstelling van de afspeellijst te gebruiken"
         },
         "assignToDevice": "Toewijzen aan apparaat",
         "toast": {
