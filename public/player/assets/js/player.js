@@ -3492,6 +3492,7 @@ class OmnexPlayer {
         video.onloadedmetadata = null;
         video.onloadeddata = null;
 
+        video.removeAttribute('poster');
         this.hideVideoElement(video);
         video.pause();
         if (resetSource) {
@@ -3882,7 +3883,18 @@ class OmnexPlayer {
 
         this.cleanupVideo();
         this.setNativeVideoMode(true);
-        video.style.display = 'none';
+        // Ensure BOTH video elements are fully hidden and have no poster.
+        // During ExoPlayer native playback, the WebView is transparent;
+        // any visible poster/preload content would leak through.
+        const vids = [this.elements.videoContent, this.elements.videoContentAlt];
+        for (const v of vids) {
+            if (v) {
+                v.removeAttribute('poster');
+                v.style.display = 'none';
+                v.style.visibility = 'hidden';
+                v.style.opacity = '0';
+            }
+        }
         this._currentVideoUrl = url;
         this._currentVideoItem = item;
         // Track the video element so transitions know what is currently showing.
@@ -3922,7 +3934,18 @@ class OmnexPlayer {
             return;
         }
 
-        this.setNativeVideoMode(false);
+        // Don't immediately switch WebView to opaque here.
+        // The native ExoPlayerManager may still be running its exit animation.
+        // scheduleNext() already handles the delayed setNativeVideoMode(false).
+        // If we're called directly (video ended naturally, no timer), delay the switch.
+        if (this._nativeVideoMode) {
+            const nativeExitDuration = this._transitionDuration || 300;
+            setTimeout(() => {
+                if (!this.isNativePlaybackActive()) {
+                    this.setNativeVideoMode(false);
+                }
+            }, nativeExitDuration);
+        }
         this.traceTransitionSnapshot('native-video-ended', {
             loopCount: this._currentLoopCount
         });
@@ -5134,13 +5157,52 @@ class OmnexPlayer {
             // Only stop native ExoPlayer since it can't be crossfaded via CSS
             if (this.isNativePlaybackActive()) {
                 if (window.AndroidBridge.stopVideoNative) {
+                    // Ensure ALL WebView video elements are fully hidden BEFORE
+                    // triggering the native exit animation. Otherwise the poster/
+                    // preload frame leaks through when the WebView becomes opaque.
+                    const vids = [this.elements.videoContent, this.elements.videoContentAlt];
+                    for (const v of vids) {
+                        if (v) {
+                            v.removeAttribute('poster');
+                            v.style.display = 'none';
+                            v.style.visibility = 'hidden';
+                            v.style.opacity = '0';
+                        }
+                    }
+
                     window.AndroidBridge.stopVideoNative();
-                    this.setNativeVideoMode(false);
+
+                    // If next content will also use ExoPlayer, keep WebView transparent.
+                    // The new ExoPlayer instance will do its own enter transition
+                    // without a jarring opaque flash in between.
+                    const nextIsNativeVideo = (nextType === 'video' || nextType === 'stream') &&
+                        this.hasNativeVideoSupport();
+
+                    if (nextIsNativeVideo) {
+                        // Stay in native mode — avoid transparent→opaque→transparent flicker
+                        this.traceTransitionSnapshot('scheduleNext-stop-native-stay-transparent', {
+                            nextType
+                        });
+                    } else {
+                        // Next content is WebView-based (image/html). Delay making
+                        // WebView opaque until the native exit animation finishes
+                        // (typically 300ms) to avoid a poster/preload flash.
+                        const nativeExitDuration = this._transitionDuration || 300;
+                        setTimeout(() => {
+                            // Guard: only switch if we're still NOT in native mode
+                            // (e.g. a rapid video→video transition might have re-entered)
+                            if (!this.isNativePlaybackActive()) {
+                                this.setNativeVideoMode(false);
+                            }
+                        }, nativeExitDuration);
+                    }
+
                     if (this.debug) {
-                        console.log('[Player] Stopped ExoPlayer before transition');
+                        console.log('[Player] Stopped ExoPlayer before transition, nextIsNative:', nextIsNativeVideo);
                     }
                     this.traceTransitionSnapshot('scheduleNext-stop-native-now', {
-                        nextType
+                        nextType,
+                        nextIsNativeVideo
                     });
                 }
             }
