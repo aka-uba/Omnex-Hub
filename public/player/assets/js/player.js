@@ -3712,13 +3712,8 @@ class OmnexPlayer {
 
     getConstrainedTvPlaybackUrl(url) {
         if (!url) return url;
-
-        if (!this.isConstrainedTvProfile()) {
-            return url;
-        }
-
-        // Prefer baseline 360p variant for decoder-fragile TV profiles.
-        return url.replace(/\/(1080p|720p|540p)\/playlist\.m3u8(?=$|\?)/i, '/360p/playlist.m3u8');
+        // Disabled forced 360p rewrite to avoid variant-specific decode regressions on TV.
+        return url;
     }
 
     isNativePlaybackActive() {

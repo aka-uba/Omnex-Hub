@@ -5379,3 +5379,46 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Clients with aggressive intermediary caching should fetch `player.js?v=71` immediately.
 - Backup/Restore safety:
   - No file backup needed (single-line low-risk edit).
+## 2026-03-17 - Commit/push/deploy and TV ADB install execution
+
+- Request: Perform commit + push + server deploy and install built APK on TV via ADB.
+- Actions completed:
+  1. Commits pushed to `main`:
+     - `74644c3` player: restore native fail session lock for TV stability
+     - `1e4f874` player: restore native fail lock and bump cache bust to v71
+  2. Production deploy executed on server (`/opt/omnex-hub`):
+     - `git pull --ff-only origin main`
+     - `docker compose -p omnex -f deploy/docker-compose.yml -f deploy/docker-compose.standalone.yml build app`
+     - `docker compose ... up -d`
+     - app container reached healthy state.
+  3. APK build/publish and device install:
+     - `./gradlew.bat clean assembleStandaloneDebug publishDebugApk`
+     - generated `public/downloads/omnex-player.apk` updated timestamp.
+     - ADB install to TV `192.168.1.52:46863` with `install -r -t` (Success).
+     - package verify: `versionName=2.9.14`, `versionCode=43`, `lastUpdateTime=2026-03-17 07:12:23`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK)
+  - `./gradlew.bat clean assembleStandaloneDebug publishDebugApk` (OK)
+- Risks/Follow-up:
+  - APK version code/name unchanged (`43/2.9.14`); OTA `update.json` version did not change.
+  - For forced OTA rollout, version bump + update.json refresh is required.
+- Backup/Restore safety:
+  - Temp backups used:
+    - `.codex/tmp_backups/MainActivity.kt.pre_restore_exo_always_20260317_070159.bak`
+    - `.codex/tmp_backups/player.js.pre_restore_hard_disable_20260317_070159.bak`
+## 2026-03-17 - Remove forced 360p TV rewrite
+
+- Request: Remove forced 360p stream URL rewrite and test playback.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - `getConstrainedTvPlaybackUrl()` changed to passthrough (no variant rewrite).
+  2. **public/player/index.html**
+     - Bumped player script cache-bust `v=71 -> v=72`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+- Risks/Follow-up:
+  - TV decoder will now receive original variant selection from playlist source (no forced downscale).
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/player.js.pre_remove_360_force_20260317_071955.bak`
