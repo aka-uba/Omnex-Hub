@@ -49,6 +49,37 @@ class HlsTranscoder
     private ?string $ffprobePath = null;
 
     /**
+     * Build RFC6381 AVC codec string (avc1.PPCCLL) from profile/level.
+     * level must be encoded as hex byte (e.g. 3.1 => 0x1f), not decimal text.
+     */
+    private function buildAvcCodecString(array $profile): string
+    {
+        $codecMap = [
+            'baseline' => '42e0',
+            'main' => '4d40',
+            'high' => '6400',
+        ];
+        $profileHex = $codecMap[strtolower((string)($profile['profile'] ?? 'main'))] ?? '4d40';
+
+        $rawLevel = trim((string)($profile['level'] ?? '3.1'));
+        $levelTenths = null;
+        if ($rawLevel !== '' && is_numeric($rawLevel)) {
+            $levelTenths = (int)round(((float)$rawLevel) * 10);
+        } elseif (preg_match('/^(\d+)(?:\.(\d+))?$/', $rawLevel, $m)) {
+            $major = (int)$m[1];
+            $minor = isset($m[2]) ? (int)substr($m[2], 0, 1) : 0;
+            $levelTenths = ($major * 10) + $minor;
+        }
+
+        if (!is_int($levelTenths) || $levelTenths <= 0) {
+            $levelTenths = 31; // fallback -> level 3.1
+        }
+
+        $levelHex = str_pad(strtolower(dechex($levelTenths)), 2, '0', STR_PAD_LEFT);
+        return "avc1.{$profileHex}{$levelHex},mp4a.40.2";
+    }
+
+    /**
      * Cross-platform shell arg quote helper.
      * Windows'ta escapeshellarg() "%" karakterini bosluga cevirdigi icin
      * HLS segment template (%04d) argumaninda preservePercent=true kullanilir.
@@ -415,15 +446,7 @@ class HlsTranscoder
             $bandwidth = $profile['bitrate'] * 1000; // bps
             $resolution = $profile['width'] . 'x' . $profile['height'];
 
-            // H.264 codec string: profile + level
-            $codecMap = [
-                'baseline' => '42e0',
-                'main' => '4d40',
-                'high' => '6400',
-            ];
-            $profileHex = $codecMap[$profile['profile']] ?? '4d40';
-            $levelHex = str_replace('.', '', $profile['level']);
-            $codecStr = "avc1.{$profileHex}{$levelHex},mp4a.40.2";
+            $codecStr = $this->buildAvcCodecString($profile);
 
             $lines[] = "#EXT-X-STREAM-INF:BANDWIDTH={$bandwidth},RESOLUTION={$resolution},CODECS=\"{$codecStr}\",NAME=\"{$profileName}\"";
             $lines[] = "{$profileName}/playlist.m3u8";
