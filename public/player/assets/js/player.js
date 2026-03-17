@@ -3603,15 +3603,23 @@ class OmnexPlayer {
         if (!window.AndroidBridge || typeof window.AndroidBridge.playVideoNative !== 'function') {
             return false;
         }
+        return true;
+    }
+
+    getConstrainedTvPlaybackUrl(url) {
+        if (!url) return url;
 
         const deviceInfo = this.detectDeviceType();
-        const isNativeTvDevice = deviceInfo.isTV || deviceInfo.isAndroidTV;
-        if (isNativeTvDevice && this.config.enableMediaPrecache === false) {
-            // Balanced/legacy TV profiles prioritize WebView stability over native decode.
-            return false;
+        const isConstrainedTv =
+            (deviceInfo.isTV || deviceInfo.isAndroidTV) &&
+            this.config.enableMediaPrecache === false;
+
+        if (!isConstrainedTv) {
+            return url;
         }
 
-        return true;
+        // Prefer baseline 360p variant for decoder-fragile TV profiles.
+        return url.replace(/\/(1080p|720p|540p)\/playlist\.m3u8(?=$|\?)/i, '/360p/playlist.m3u8');
     }
 
     isNativePlaybackActive() {
@@ -4019,7 +4027,8 @@ class OmnexPlayer {
             contentContainer.classList.remove('show-overlay-mask');
         }
 
-        const url = api.getMediaUrl(item.url || (item.media && item.media.url));
+        const sourceUrl = api.getMediaUrl(item.url || (item.media && item.media.url));
+        const url = this.getConstrainedTvPlaybackUrl(sourceUrl);
 
         if (!url) {
             this.scheduleNext(2);
