@@ -141,31 +141,9 @@ if (!in_array($mimeType, $allowedMimes)) {
     Response::badRequest('Desteklenmeyen dosya tipi: ' . $mimeType);
 }
 
-// =========================================================
-// Check for duplicate (file hash)
-// =========================================================
+// Compute file hash for DB record
 $fileContent = file_get_contents($tmpPath);
 $fileHash = md5($fileContent);
-
-try {
-    $existing = $db->fetch(
-        "SELECT id, status, created_at FROM erp_import_files
-         WHERE company_id = ? AND file_hash = ? AND status IN ('pending', 'processing', 'completed')
-         ORDER BY created_at DESC LIMIT 1",
-        [$companyId, $fileHash]
-    );
-
-    if ($existing) {
-        Response::success([
-            'duplicate' => true,
-            'existing_id' => $existing['id'],
-            'existing_status' => $existing['status'],
-            'message' => 'Bu dosya daha önce yüklenmiş (hash eşleşmesi)'
-        ], 'Dosya zaten mevcut');
-    }
-} catch (Exception $e) {
-    // Table might not exist yet, continue
-}
 
 // =========================================================
 // Save File

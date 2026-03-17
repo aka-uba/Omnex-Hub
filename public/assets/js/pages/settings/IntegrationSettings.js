@@ -654,6 +654,26 @@ export class IntegrationSettingsPage {
             this.loadImportFiles(1, this.importFilesPagination.per_page || 10);
         });
 
+        // Upload zone toggle
+        document.getElementById('import-upload-btn')?.addEventListener('click', () => {
+            this.toggleImportUploadZone();
+        });
+
+        // File input change
+        document.getElementById('import-file-input')?.addEventListener('change', (e) => {
+            if (e.target.files?.length) {
+                this.handleImportFileUpload(e.target.files);
+            }
+        });
+
+        // Select files button
+        document.getElementById('import-select-files-btn')?.addEventListener('click', () => {
+            document.getElementById('import-file-input')?.click();
+        });
+
+        // Drag & drop
+        this.bindImportDropZoneEvents();
+
         document.getElementById('clear-import-history-btn')?.addEventListener('click', () => {
             this.clearImportHistory();
         });
@@ -2023,11 +2043,37 @@ export class IntegrationSettingsPage {
                                     <i class="ti ti-folder-open"></i>
                                     ${this.__('integrations.import.pendingFilesTitle')}
                                 </h2>
-                                <button type="button" id="refresh-import-files-btn" class="btn btn-sm btn-outline" title="${this.__('actions.refresh')}">
-                                    <i class="ti ti-refresh"></i>
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="import-upload-btn" class="btn btn-sm btn-primary" title="${this.__('integrations.import.uploadFiles')}">
+                                        <i class="ti ti-upload"></i>
+                                        ${this.__('integrations.import.uploadFiles')}
+                                    </button>
+                                    <button type="button" id="refresh-import-files-btn" class="btn btn-sm btn-outline" title="${this.__('actions.refresh')}">
+                                        <i class="ti ti-refresh"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="chart-card-body">
+                                <!-- Upload Drop Zone -->
+                                <div id="import-upload-zone" class="import-upload-zone" style="display:none">
+                                    <div class="import-upload-zone-inner">
+                                        <i class="ti ti-cloud-upload" style="font-size: 2.5rem; color: var(--color-primary); margin-bottom: 8px"></i>
+                                        <p class="text-lg font-medium mb-1">${this.__('integrations.import.uploadDropTitle')}</p>
+                                        <p class="text-muted text-sm mb-3">${this.__('integrations.import.uploadDropHint')}</p>
+                                        <div class="flex items-center gap-2 justify-center">
+                                            <button type="button" id="import-select-files-btn" class="btn btn-sm btn-outline">
+                                                <i class="ti ti-file-plus"></i>
+                                                ${this.__('integrations.import.selectFiles')}
+                                            </button>
+                                            <span class="text-muted text-xs">.CSV, .TXT, .JSON, .XML, .XLSX</span>
+                                        </div>
+                                        <input type="file" id="import-file-input" multiple accept=".csv,.txt,.tsv,.json,.xml,.xlsx,.xls,.dat" style="display:none">
+                                    </div>
+                                    <div id="import-upload-progress" style="display:none">
+                                        <div class="import-upload-file-list" id="import-upload-file-list"></div>
+                                    </div>
+                                </div>
+
                                 <p class="text-muted mb-3">${this.__('integrations.import.pendingFilesDesc')}</p>
                                 <div id="import-files-container">
                                     <p class="text-muted text-center">${this.__('integrations.import.loading')}</p>
@@ -2580,6 +2626,9 @@ export class IntegrationSettingsPage {
         const rows = files.map(f => `
             <tr>
                 <td class="text-center">
+                    <input type="checkbox" class="import-file-checkbox" value="${escapeHTML(f.filename)}">
+                </td>
+                <td class="text-center">
                     <input
                         type="radio"
                         class="default-import-file-radio"
@@ -2598,21 +2647,37 @@ export class IntegrationSettingsPage {
                 <td>${f.size_formatted}</td>
                 <td>${f.modified}</td>
                 <td>
-                    ${f.already_imported
-                        ? `<span class="badge badge-secondary">${this.__('integrations.import.alreadyImported')}</span>`
-                        : `<button class="btn btn-sm btn-primary import-file-btn" data-filename="${escapeHTML(f.filename)}">
-                            <i class="ti ti-upload"></i> ${this.__('integrations.import.importFile')}
-                           </button>`
-                    }
+                    <div class="flex items-center gap-1">
+                        ${f.already_imported
+                            ? `<span class="badge badge-secondary">${this.__('integrations.import.alreadyImported')}</span>`
+                            : `<button class="btn btn-sm btn-primary import-file-btn" data-filename="${escapeHTML(f.filename)}">
+                                <i class="ti ti-upload"></i> ${this.__('integrations.import.importFile')}
+                               </button>`
+                        }
+                        <button class="btn btn-sm btn-outline text-danger delete-import-file-btn" data-filename="${escapeHTML(f.filename)}" title="${this.__('actions.delete')}">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('');
 
         return `
+            <div class="flex items-center gap-2 mb-2">
+                <label class="flex items-center gap-2 text-sm">
+                    <input type="checkbox" id="import-files-select-all">
+                    ${this.__('integrations.import.selectAll')}
+                </label>
+                <button type="button" id="delete-selected-import-files-btn" class="btn btn-sm btn-outline text-danger" style="display:none">
+                    <i class="ti ti-trash"></i>
+                    ${this.__('integrations.import.deleteSelected')}
+                </button>
+            </div>
             <div class="table-responsive">
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th class="text-center" style="width:36px"></th>
                             <th class="text-center"><i class="ti ti-star"></i></th>
                             <th>${this.__('integrations.import.historyFile')}</th>
                             <th>${this.__('integrations.import.fileFormat')}</th>
@@ -2645,6 +2710,32 @@ export class IntegrationSettingsPage {
             });
         });
 
+        // Tekli silme
+        document.querySelectorAll('.delete-import-file-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filename = e.currentTarget.dataset.filename;
+                this.deleteImportFiles([filename]);
+            });
+        });
+
+        // Tümünü seç
+        document.getElementById('import-files-select-all')?.addEventListener('change', (e) => {
+            const checked = e.target.checked;
+            document.querySelectorAll('.import-file-checkbox').forEach(cb => { cb.checked = checked; });
+            this.updateDeleteSelectedBtn();
+        });
+
+        // Checkbox değişikliği
+        document.querySelectorAll('.import-file-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => this.updateDeleteSelectedBtn());
+        });
+
+        // Seçilenleri sil
+        document.getElementById('delete-selected-import-files-btn')?.addEventListener('click', () => {
+            const selected = Array.from(document.querySelectorAll('.import-file-checkbox:checked')).map(cb => cb.value);
+            if (selected.length) this.deleteImportFiles(selected);
+        });
+
         document.querySelector('.import-files-prev')?.addEventListener('click', () => {
             const nextPage = Math.max(1, (this.importFilesPagination.page || 1) - 1);
             this.loadImportFiles(nextPage, this.importFilesPagination.per_page || 10);
@@ -2661,6 +2752,166 @@ export class IntegrationSettingsPage {
             const perPage = parseInt(e.target.value, 10) || 10;
             this.loadImportFiles(1, perPage);
         });
+    }
+
+    updateDeleteSelectedBtn() {
+        const selected = document.querySelectorAll('.import-file-checkbox:checked').length;
+        const btn = document.getElementById('delete-selected-import-files-btn');
+        if (btn) {
+            btn.style.display = selected > 0 ? '' : 'none';
+            btn.textContent = '';
+            btn.innerHTML = `<i class="ti ti-trash"></i> ${this.__('integrations.import.deleteSelected')} (${selected})`;
+        }
+    }
+
+    deleteImportFiles(filenames) {
+        const count = filenames.length;
+        Modal.confirm({
+            title: this.__('actions.delete'),
+            message: count === 1
+                ? `"${filenames[0]}" ${this.__('integrations.import.deleteConfirmSingle')}`
+                : `${count} ${this.__('integrations.import.deleteConfirmMulti')}`,
+            type: 'danger',
+            confirmText: this.__('actions.delete'),
+            cancelText: this.__('actions.cancel'),
+            onConfirm: async () => {
+                try {
+                    const response = await this.app.api.delete('/import/files', { filenames });
+                    if (response.success) {
+                        Toast.success(response.message || this.__('messages.deleteSuccess'));
+                        await this.loadImportFiles(1, this.importFilesPagination.per_page || 10);
+                    } else {
+                        Toast.error(response.message || this.__('messages.deleteFailed'));
+                    }
+                } catch (error) {
+                    Logger.error('Delete import files error:', error);
+                    Toast.error(error.message || this.__('messages.deleteFailed'));
+                }
+            }
+        });
+    }
+
+    toggleImportUploadZone() {
+        const zone = document.getElementById('import-upload-zone');
+        if (!zone) return;
+        const isVisible = zone.style.display !== 'none';
+        zone.style.display = isVisible ? 'none' : '';
+        // Reset progress area
+        if (!isVisible) {
+            const progress = document.getElementById('import-upload-progress');
+            if (progress) progress.style.display = 'none';
+            const fileInput = document.getElementById('import-file-input');
+            if (fileInput) fileInput.value = '';
+        }
+    }
+
+    bindImportDropZoneEvents() {
+        const zone = document.getElementById('import-upload-zone');
+        if (!zone) return;
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            zone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            zone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.remove('drag-over');
+            });
+        });
+
+        zone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer?.files;
+            if (files?.length) {
+                // Show the zone if it was hidden (drop on the card area)
+                zone.style.display = '';
+                this.handleImportFileUpload(files);
+            }
+        });
+    }
+
+    async handleImportFileUpload(fileList) {
+        const files = Array.from(fileList);
+        if (!files.length) return;
+
+        const progressContainer = document.getElementById('import-upload-progress');
+        const fileListEl = document.getElementById('import-upload-file-list');
+        if (!progressContainer || !fileListEl) return;
+
+        progressContainer.style.display = '';
+
+        // Show file list with pending status
+        fileListEl.innerHTML = files.map((f, i) => `
+            <div class="import-upload-file-item" id="upload-file-item-${i}">
+                <div class="flex items-center gap-2 flex-1">
+                    <i class="ti ti-file text-lg"></i>
+                    <span class="text-sm">${escapeHTML(f.name)}</span>
+                    <span class="text-muted text-xs">(${this.formatFileSize(f.size)})</span>
+                </div>
+                <span class="upload-file-status">
+                    <i class="ti ti-loader ti-spin"></i>
+                </span>
+            </div>
+        `).join('');
+
+        // Build FormData
+        const formData = new FormData();
+        files.forEach(f => formData.append('files[]', f));
+
+        try {
+            const response = await this.app.api.upload('/import/web-upload', formData);
+
+            if (response.success) {
+                const data = response.data || {};
+                const results = data.results || [];
+
+                // Update each file status
+                results.forEach((r, i) => {
+                    const item = document.getElementById(`upload-file-item-${i}`);
+                    if (!item) return;
+                    const statusEl = item.querySelector('.upload-file-status');
+                    if (!statusEl) return;
+
+                    if (r.success) {
+                        statusEl.innerHTML = `<span class="badge badge-success">${this.__('integrations.import.uploadSuccess')}</span>`;
+                    } else {
+                        statusEl.innerHTML = `<span class="badge badge-danger" title="${escapeHTML(r.error || '')}">${this.__('integrations.import.uploadFailed')}</span>`;
+                    }
+                });
+
+                const msg = response.message || `${data.success_count}/${data.total_count}`;
+                if (data.fail_count > 0) {
+                    Toast.warning(msg);
+                } else {
+                    Toast.success(msg);
+                }
+
+                // Refresh files table
+                await this.loadImportFiles(1, this.importFilesPagination.per_page || 10);
+            } else {
+                Toast.error(response.message || this.__('integrations.import.uploadError'));
+                fileListEl.innerHTML = `<p class="text-danger text-sm">${escapeHTML(response.message || '')}</p>`;
+            }
+        } catch (error) {
+            Logger.error('Import file upload error:', error);
+            Toast.error(error.message || this.__('integrations.import.uploadError'));
+            fileListEl.innerHTML = `<p class="text-danger text-sm">${escapeHTML(error.message || '')}</p>`;
+        }
+
+        // Reset file input
+        const fileInput = document.getElementById('import-file-input');
+        if (fileInput) fileInput.value = '';
+    }
+
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
     bindImportHistoryEvents() {

@@ -178,21 +178,7 @@ if ($method === 'POST') {
             ], 'id = ?', [$fileId]);
         }
 
-        if (!$fileId) {
-            $existing = $db->fetch(
-                "SELECT id, status FROM erp_import_files
-                 WHERE company_id = ? AND file_hash = ? AND status IN ('completed', 'processing')
-                 ORDER BY created_at DESC LIMIT 1",
-                [$companyId, $fileHash]
-            );
-            if ($existing) {
-                Response::success([
-                    'already_imported' => true,
-                    'existing_id' => $existing['id'],
-                    'message' => 'Bu dosya daha önce import edilmiş'
-                ], 'Dosya zaten import edilmiş');
-            }
-        }
+        // Allow re-import of previously imported files
     } catch (Exception $e) {
         // Continue
     }
@@ -358,4 +344,75 @@ if ($method === 'POST') {
 
         Response::error('Import hatası: ' . $e->getMessage(), 422);
     }
+}
+
+// =========================================================
+// DELETE: Delete file(s) from import directory
+// =========================================================
+if ($method === 'DELETE') {
+    if (!in_array($user['role'], ['SuperAdmin', 'Admin', 'superadmin', 'admin'])) {
+        Response::forbidden('Bu işlem için yetkiniz yok');
+    }
+
+    $data = json_decode(file_get_contents('php://input'), true) ?? [];
+    $filenames = $data['filenames'] ?? [];
+
+    // Support single filename param too
+    if (empty($filenames) && !empty($data['filename'])) {
+        $filenames = [$data['filename']];
+    }
+
+    if (empty($filenames)) {
+        Response::badRequest('Silinecek dosya adı gerekli');
+    }
+
+    $deleted = 0;
+    $errors = [];
+
+    $realImportDir = is_dir($importDir) ? realpath($importDir) : null;
+
+    foreach ($filenames as $fname) {
+        $fname = basename((string)$fname); // Path traversal koruması
+        $filePath = $importDir . $fname;
+
+        if (!file_exists($filePath) || !is_file($filePath)) {
+            $errors[] = $fname . ': dosya bulunamadı';
+            continue;
+        }
+
+        // Path traversal kontrolü
+        $realPath = realpath($filePath);
+        if (!$realPath || !$realImportDir || strpos($realPath, $realImportDir) !== 0) {
+            $errors[] = $fname . ': geçersiz yol';
+            continue;
+        }
+
+        if (@unlink($filePath)) {
+            $deleted++;
+
+            // DB kaydını da temizle
+            try {
+                $db->delete('erp_import_files', "company_id = ? AND filename = ? AND status = 'pending'", [$companyId, $fname]);
+            } catch (Exception $e) {
+                // Sessiz - dosya silindi, DB kaydı kalmış olabilir
+            }
+
+            Logger::audit('delete', 'erp_import_file', [
+                'user_id' => $user['id'],
+                'company_id' => $companyId,
+                'filename' => $fname
+            ]);
+        } else {
+            $errors[] = $fname . ': silinemedi';
+        }
+    }
+
+    $total = count($filenames);
+    $message = $deleted . '/' . $total . ' dosya silindi';
+
+    Response::success([
+        'deleted' => $deleted,
+        'total' => $total,
+        'errors' => $errors
+    ], $message);
 }

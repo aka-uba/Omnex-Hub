@@ -2039,6 +2039,12 @@ $router->group(['prefix' => '/api/import', 'middleware' => ['auth']], function($
     $router->post('/files/import', function($request) {
         require API_PATH . '/import/files.php';
     });
+    $router->delete('/files', function($request) {
+        require API_PATH . '/import/files.php';
+    });
+    $router->post('/web-upload', function($request) {
+        require API_PATH . '/import/web-upload.php';
+    });
 });
 
 // Dispatch request
