@@ -1487,12 +1487,34 @@ class OmnexPlayer {
 
         const metrics = this.getDisplayMetrics();
         const isViewportPortrait = metrics.viewportHeight >= metrics.viewportWidth;
+        const needsRotation =
+            (requestedOrientation === 'landscape' && isViewportPortrait) ||
+            (requestedOrientation === 'portrait' && !isViewportPortrait);
 
+        if (!needsRotation) return;
+
+        // Android TV APK: Prefer native OS-level orientation change.
+        // CSS rotate() on the container breaks hardware video decoding on many TV chipsets
+        // (OMX.MS.AVC.Decoder cannot composite into a CSS-rotated surface).
+        if (this.isAndroidApp && this.androidBridge && typeof this.androidBridge.setOrientation === 'function') {
+            try {
+                this.androidBridge.setOrientation(requestedOrientation);
+                if (this.debug) {
+                    console.log('[Player] Native orientation set to:', requestedOrientation);
+                }
+                // Native rotation handled — no CSS fallback needed
+                return;
+            } catch (e) {
+                if (this.debug) {
+                    console.warn('[Player] Native setOrientation failed, falling back to CSS rotation', e);
+                }
+            }
+        }
+
+        // Browser/PWA fallback: CSS rotation
         if (requestedOrientation === 'landscape' && isViewportPortrait) {
             container.classList.add('force-rotate-landscape');
-            return;
-        }
-        if (requestedOrientation === 'portrait' && !isViewportPortrait) {
+        } else if (requestedOrientation === 'portrait' && !isViewportPortrait) {
             container.classList.add('force-rotate-portrait');
         }
     }
@@ -3911,11 +3933,11 @@ class OmnexPlayer {
         if (!video) return;
 
         // Video starts hidden until first frame is decoded.
-        // Use visibility:hidden so it still occupies layout and decodes frames.
+        // Use display:none to fully prevent poster/preload frame leaking on TV WebViews.
         video.classList.add('loading');
-        video.style.display = 'block';
+        video.style.display = 'none';
         video.style.visibility = 'hidden';
-        video.style.opacity = '1';
+        video.style.opacity = '0';
     }
 
     revealVideoElement(video, item) {
