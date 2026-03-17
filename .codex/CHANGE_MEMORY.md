@@ -11,6 +11,15 @@ Format:
 
 ---
 
+## 2026-03-17 - TV video oynatma regresyonu duzeltmesi (11 bug fix)
+- Request: TV cihazlarda video siyah ekran, preload gorselden ileri gidemiyor. OMX.MS.AVC.Decoder ERROR, PIPELINE_ERROR_DECODE. Codex ile eklenen constrained TV, native video kilitleme ve agresif watchdog regresyona neden oldu.
+- Changes: 11 fix — hasNativeVideoSupport basitlesti, _nativeVideoHardDisabled kaldirildi, isConstrainedTvProfile etkisizlesti, 360p rewrite kaldirildi, handleNativeVideoStarted _currentElement=video geri geldi, attemptStartupRecovery/watchdog kaldirildi, deferred exit sadece video/stream, balanced profile cap geri geldi, prepareNextMedia sadelelesti, playHtml constrained guard kaldirildi, scheduleNext deferred native stop kaldirildi
+- Files: public/player/assets/js/player.js (6215->6037), public/player/index.html (v74), public/player/sw.js (v1.3.11)
+- Checks: node -c syntax OK
+- Risk/Follow-up: TV'de test edilmeli. Yedekler: player.js.bak.20260317
+
+---
+
 ## 2026-03-15 - HTML Åablon OluÅŸtur modallarÄ±na canlÄ± Ã¶nizleme
 - Request: ÃœrÃ¼nlerde HTML icon/buton ile aÃ§Ä±lan modalda ÅŸablon seÃ§iminde canlÄ± HTML Ã¶nizleme eksik
 - Changes:
@@ -5438,3 +5447,65 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Temp backups created:
     - `.codex/tmp_backups/player.js.pre_revert_360_restore_20260317_072503.bak`
     - `.codex/tmp_backups/index.html.pre_revert_360_restore_20260317_072503.bak`
+## 2026-03-17 - TV decode profile investigation (no code change)
+
+- Request: Validate whether FFmpeg/HLS output profile is incompatible with TV playback.
+- Findings:
+  - FFmpeg profile definitions are present and explicit in `services/HlsTranscoder.php` (360p baseline@3.0, 540/720 main@3.1, 1080 high@4.0).
+  - Sample stream probe confirms encoded outputs are valid H.264:
+    - 720p segment: Main, Level 3.1, yuv420p, 1280x720, refs=1.
+    - 360p segment: Constrained Baseline, Level 3.0, yuv420p, 640x360, refs=1.
+  - TV logs repeatedly show `OMX.MS.AVC.Decoder ERROR(0x80001000)` and `PIPELINE_ERROR_DECODE` in both ExoPlayer and Chromium/WebView pipelines.
+  - In captured Exo runs, stream URL is repeatedly `/720p/playlist.m3u8` and decoder reports `Resolution: 1280 720`.
+  - Potential metadata bug noted: HLS master CODECS string level suffix is built as decimal text (e.g. `31`) instead of AVC hex level byte in `generateMasterPlaylist()`.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md` (this entry only)
+- Checks run:
+  - None (no code files changed; syntax checks not applicable).
+- Risks/Follow-up:
+  - Primary symptom points to device decoder instability/resource contention rather than malformed elementary stream.
+  - If master playlist is used by strict clients, fix CODECS level encoding (`31` -> `1f`, `30` -> `1e`, `40` -> `28`) to avoid parser misclassification.
+## 2026-03-17 - Fix HLS master CODECS level hex encoding
+
+- Request: Fix `master.m3u8` CODECS level suffix (`31` vs `1f`) due client selection/parsing failures; user reported 720/1080 stream links not working in tests.
+- Changes:
+  1. **services/HlsTranscoder.php**
+     - Added `buildAvcCodecString()` helper to generate RFC6381 AVC codec string with proper hex level byte.
+     - Updated `generateMasterPlaylist()` to use helper instead of decimal-like level suffix.
+     - Example corrected mapping:
+       - 3.0 -> `1e` (was `30`)
+       - 3.1 -> `1f` (was `31`)
+       - 4.0 -> `28` (was `40`)
+- Checks run:
+  - `php -l services/HlsTranscoder.php` (OK)
+- Risks/Follow-up:
+  - Fix affects newly generated master playlists immediately.
+  - Existing already-generated `storage/streams/**/master.m3u8` files keep old CODECS text until re-generated.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/HlsTranscoder.php.pre_codec_hex_fix_20260317_073522.bak`
+## 2026-03-17 - Prod worker rebuild + live verification after codec fix
+
+- Request: Continue with deploy and verify live `master.m3u8` + 720/1080 stream links.
+- Changes:
+  1. **No new repo code edit**
+     - Investigated prod mismatch and found root cause: only `app` service had been rebuilt; `transcode-worker` (which generates `master.m3u8`) was still on old image.
+  2. **Operational deploy**
+     - Rebuilt/restarted `app`, `transcode-worker`, `channel-worker` on prod.
+     - Verified new completed transcode outputs now contain hex codec levels:
+       - `avc1.42e01e` (360p)
+       - `avc1.4d401f` (540p/720p)
+- Checks run:
+  - `php -l services/HlsTranscoder.php` (OK; existing fix file sanity)
+  - Live prod checks:
+    - transcode queue status/progress via PostgreSQL
+    - new `storage/streams/**/master.m3u8` CODECS lines via app container
+    - stream endpoints:
+      - `/api/stream/{token}/master.m3u8` -> `200`
+      - `/api/stream/{token}/variant/720p/playlist.m3u8` -> `200`
+      - `/api/stream/{token}/variant/1080p/playlist.m3u8` -> `200`
+- Risks/Follow-up:
+  - Jobs encoded before worker rebuild still have old `30/31` codec strings in their existing `master.m3u8`.
+  - Re-encode queue should be allowed to finish (or re-trigger specific media) if full backfill is required.
+- Backup/Restore safety:
+  - No local file backup required (no code edit in this step).

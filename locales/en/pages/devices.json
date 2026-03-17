@@ -792,6 +792,7 @@
             "mediaCleared": "Media cleared",
             "clearMediaError": "Clear media error: {error}",
             "resetting": "Resetting to factory settings...",
+            "factoryResetSuccess": "Factory reset completed successfully",
             "resetError": "Factory reset error: {error}",
             "configuredViaBluetooth": "Configured via Bluetooth",
             "unknownDevice": "Unknown device",
@@ -837,7 +838,27 @@
         "loadMqttSettings": "Load server settings",
         "mqttSettingsLoaded": "MQTT settings loaded",
         "mqttNoSettings": "MQTT settings not configured yet. Please configure MQTT settings from admin panel.",
-        "mqttUrlRequired": "MQTT Broker URL is required"
+        "mqttUrlRequired": "MQTT Broker URL is required",
+        "tokenManagement": {
+            "title": "Token Management",
+            "status": "Token Status",
+            "protected": "Protected",
+            "notProtected": "Not Protected",
+            "checking": "Checking...",
+            "description": "BLE token prevents unauthorized Bluetooth access to the device. Token is automatically cleared after factory reset.",
+            "viewToken": "View Token",
+            "setToken": "Set Token",
+            "clearToken": "Clear Token",
+            "currentToken": "Current Token",
+            "tokenUsageHint": "This token is used for authentication in BLE commands. Without a token, the device cannot be accessed via Bluetooth.",
+            "noTokenFound": "No token found for this device",
+            "clearTokenConfirm": "Are you sure you want to clear the device token?\nThis will remove the BLE password from both the device and database.",
+            "clearingBleToken": "Clearing BLE token...",
+            "bleTokenCleared": "BLE token cleared from device",
+            "tokenCleared": "Token cleared (DB + device)",
+            "tokenSavedToDb": "Token saved to database",
+            "factoryResetWarning": "Factory reset clears all passwords and automatically removes DB token."
+        }
     },
     "control": {
         "title": "Device Control",

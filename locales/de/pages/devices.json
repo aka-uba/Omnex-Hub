@@ -786,6 +786,7 @@
             "mediaCleared": "Medien gelöscht",
             "clearMediaError": "Medien-Lösch-Fehler: {error}",
             "resetting": "Wird auf Werkseinstellungen zurückgesetzt...",
+            "factoryResetSuccess": "Werkseinstellungen erfolgreich wiederhergestellt",
             "resetError": "Werksreset-Fehler: {error}",
             "configuredViaBluetooth": "Über Bluetooth konfiguriert",
             "unknownDevice": "Unbekanntes Gerät",
@@ -808,6 +809,26 @@
             "infoReadFailed": "Geräteinformationen konnten nicht gelesen werden",
             "ipRequired": "Gerät kann ohne IP-Informationen nicht registriert werden.",
             "completeStepsTooltip": "Schließen Sie die Schritte Verbindung, WiFi, Protokoll und Überprüfung ab, um das Gerät hinzuzufügen."
+        },
+        "tokenManagement": {
+            "title": "Token-Verwaltung",
+            "status": "Token-Status",
+            "protected": "Geschützt",
+            "notProtected": "Nicht geschützt",
+            "checking": "Überprüfung...",
+            "description": "BLE-Token verhindert unbefugten Bluetooth-Zugriff auf das Gerät. Nach dem Werksreset wird der Token automatisch gelöscht.",
+            "viewToken": "Token anzeigen",
+            "setToken": "Token festlegen",
+            "clearToken": "Token löschen",
+            "currentToken": "Aktueller Token",
+            "tokenUsageHint": "Dieser Token wird zur Authentifizierung bei BLE-Befehlen verwendet.",
+            "noTokenFound": "Kein Token für dieses Gerät gefunden",
+            "clearTokenConfirm": "Sind Sie sicher, dass Sie den Geräte-Token löschen möchten?",
+            "clearingBleToken": "BLE-Token wird gelöscht...",
+            "bleTokenCleared": "BLE-Token vom Gerät gelöscht",
+            "tokenCleared": "Token gelöscht (DB + Gerät)",
+            "tokenSavedToDb": "Token in Datenbank gespeichert",
+            "factoryResetWarning": "Werksreset löscht alle Passwörter und entfernt den DB-Token automatisch."
         }
     },
     "control": {

@@ -786,6 +786,7 @@
             "mediaCleared": "Médias effacés",
             "clearMediaError": "Erreur d'effacement des médias : {error}",
             "resetting": "Réinitialisation aux paramètres d'usine...",
+            "factoryResetSuccess": "Réinitialisation d'usine effectuée avec succès",
             "resetError": "Erreur de réinitialisation d'usine : {error}",
             "configuredViaBluetooth": "Configuré via Bluetooth",
             "unknownDevice": "Appareil inconnu",
@@ -808,6 +809,26 @@
             "infoReadFailed": "Impossible de lire les informations de l'appareil",
             "ipRequired": "Impossible d'enregistrer l'appareil sans informations IP.",
             "completeStepsTooltip": "Complétez les étapes de connexion, WiFi, protocole et vérification pour ajouter l'appareil."
+        },
+        "tokenManagement": {
+            "title": "Gestion des jetons",
+            "status": "État du jeton",
+            "protected": "Protégé",
+            "notProtected": "Non protégé",
+            "checking": "Vérification...",
+            "description": "Le jeton BLE empêche l'accès Bluetooth non autorisé à l'appareil. Le jeton est automatiquement supprimé après la réinitialisation d'usine.",
+            "viewToken": "Voir le jeton",
+            "setToken": "Définir le jeton",
+            "clearToken": "Supprimer le jeton",
+            "currentToken": "Jeton actuel",
+            "tokenUsageHint": "Ce jeton est utilisé pour l'authentification des commandes BLE.",
+            "noTokenFound": "Aucun jeton trouvé pour cet appareil",
+            "clearTokenConfirm": "Êtes-vous sûr de vouloir supprimer le jeton de l'appareil ?",
+            "clearingBleToken": "Suppression du jeton BLE...",
+            "bleTokenCleared": "Jeton BLE supprimé de l'appareil",
+            "tokenCleared": "Jeton supprimé (BD + appareil)",
+            "tokenSavedToDb": "Jeton enregistré dans la base de données",
+            "factoryResetWarning": "La réinitialisation d'usine supprime tous les mots de passe et le jeton BD automatiquement."
         }
     },
     "control": {

@@ -2626,33 +2626,14 @@ class OmnexPlayer {
             this.cleanupHtmlPrefetch();
         }
 
-        const immediateNextType = immNext ? String(immNext.type || '').toLowerCase() : '';
-        const mediaPrecacheEnabled = this.config.enableMediaPrecache !== false;
-        const deviceInfo = this.detectDeviceType();
-        const isNativeTvDevice =
-            this.hasNativeVideoSupport() &&
-            (deviceInfo.isTV || deviceInfo.isAndroidTV);
-        const shouldSkipNativePreload =
-            !mediaPrecacheEnabled ||
-            (
-                isNativeTvDevice &&
-                (this._currentContentType === 'html' || immediateNextType === 'html')
-            );
-
         // ExoPlayer preload: find the next video item in playlist and preload it.
         // ExoPlayerManager.preloadNextVideo() is idempotent (skips if same URL).
-        if (shouldSkipNativePreload) {
-            // Keep native preload aligned with profile and avoid decoder contention.
-            this.clearNativePreloadedVideo(
-                mediaPrecacheEnabled ? 'tv-html-preload-guard' : 'profile-precache-disabled'
-            );
-        } else if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
+        if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
             const videoItem = items[nextVideoIndex];
             const sourceVideoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
-            const videoUrl = this.getConstrainedTvPlaybackUrl(sourceVideoUrl);
-            if (videoUrl && videoUrl !== this._currentVideoUrl) {
+            if (sourceVideoUrl && sourceVideoUrl !== this._currentVideoUrl) {
                 try {
-                    window.AndroidBridge.preloadNextVideoNative(videoUrl);
+                    window.AndroidBridge.preloadNextVideoNative(sourceVideoUrl);
                 } catch (e) {
                     // Preload failed silently
                 }
@@ -2983,8 +2964,7 @@ class OmnexPlayer {
         if (prevElement && hasTransition && !sameElementReuse) {
             const shouldDeferExit =
                 nextContentType === 'video' ||
-                nextContentType === 'stream' ||
-                nextContentType === 'html';
+                nextContentType === 'stream';
 
             if (shouldDeferExit) {
                 // Keep previous content visible until the next content is actually ready.
@@ -3692,33 +3672,17 @@ class OmnexPlayer {
         if (this.config.enableNativeVideo === false) {
             return false;
         }
-        if (this._nativeVideoHardDisabled) {
-            return false;
-        }
-        if (this.isConstrainedTvProfile()) {
-            return false;
-        }
-        if (!window.AndroidBridge || typeof window.AndroidBridge.playVideoNative !== 'function') {
-            return false;
-        }
-        return true;
+        return window.AndroidBridge && typeof window.AndroidBridge.playVideoNative === 'function';
     }
 
     isConstrainedTvProfile() {
-        const deviceInfo = this.detectDeviceType();
-        return (deviceInfo.isTV || deviceInfo.isAndroidTV) &&
-            this.config.enableMediaPrecache === false;
+        // Disabled: was aggressively blocking native video on TV devices
+        return false;
     }
 
     getConstrainedTvPlaybackUrl(url) {
-        if (!url) return url;
-
-        if (!this.isConstrainedTvProfile()) {
-            return url;
-        }
-
-        // Prefer baseline 360p variant for decoder-fragile TV profiles.
-        return url.replace(/\/(1080p|720p|540p)\/playlist\.m3u8(?=$|\?)/i, '/360p/playlist.m3u8');
+        // Disabled: 360p rewrite was causing playback failures on TVs
+        return url;
     }
 
     isNativePlaybackActive() {
@@ -3819,17 +3783,6 @@ class OmnexPlayer {
         if (this.debug) {
             console.log('[Player] Falling back to WebView for:', url, 'Error:', error);
         }
-        this._nativeVideoFailureStreak += 1;
-        if (!this._nativeVideoHardDisabled && this._nativeVideoFailureStreak >= 1) {
-            this._nativeVideoHardDisabled = true;
-            this.traceTransitionSnapshot('native-video-disabled-after-failure', {
-                failureStreak: this._nativeVideoFailureStreak,
-                error: String(error || '')
-            });
-            if (this.debug) {
-                console.warn('[Player] Native playback disabled for this session after decoder failure');
-            }
-        }
         this.setNativeVideoMode(false);
         // WebView will handle playback through normal HTML5 video element
         // The video element is already set up, just continue with normal playback
@@ -3889,9 +3842,8 @@ class OmnexPlayer {
         video.style.display = 'none';
         this._currentVideoUrl = url;
         this._currentVideoItem = item;
-        // Native playback is rendered by ExoPlayer overlay, not this DOM video element.
-        // Keep current element null so the placeholder video node is never exit-animated.
-        this._currentElement = null;
+        // Track the video element so transitions know what is currently showing.
+        this._currentElement = video;
         this.traceTransitionSnapshot('native-video-started', {
             itemName: item?.name || '',
             urlTail: (url || '').slice(-180)
@@ -4095,6 +4047,8 @@ class OmnexPlayer {
 
         if (this.isLegacyProfile() && this._transitionType !== 'none') {
             this._transitionDuration = Math.min(this._transitionDuration, 300);
+        } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
+            this._transitionDuration = Math.min(this._transitionDuration, 400);
         }
 
         document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
@@ -4126,8 +4080,7 @@ class OmnexPlayer {
             contentContainer.classList.remove('show-overlay-mask');
         }
 
-        const sourceUrl = api.getMediaUrl(item.url || (item.media && item.media.url));
-        const url = this.getConstrainedTvPlaybackUrl(sourceUrl);
+        const url = api.getMediaUrl(item.url || (item.media && item.media.url));
 
         if (!url) {
             this.scheduleNext(2);
@@ -4326,99 +4279,10 @@ class OmnexPlayer {
         // Keep video fully hidden until an actual frame is ready.
         this.hideVideoElement(video);
 
-        let startupWatchdog = null;
-        let startupRetryAttempted = false;
-        const clearStartupWatchdog = () => {
-            if (startupWatchdog) {
-                clearTimeout(startupWatchdog);
-                startupWatchdog = null;
-            }
-        };
-        const failWebViewStartup = (reason) => {
-            clearStartupWatchdog();
-            this.recordMediaDiagnostic('webview-video-startup-failed', {
-                reason,
-                itemName: item && item.name ? String(item.name) : '',
-                details: this.getVideoErrorDetails(video)
-            });
-            this.hideVideoElement(video);
-            this._currentVideoItem = null;
-            this.scheduleNext(2);
-        };
+        // Simple reveal helper — no aggressive watchdog/retry that can confuse hardware decoders
         const revealWebViewVideo = () => {
-            clearStartupWatchdog();
             this.revealVideoElement(video, item);
-            this.recordMediaDiagnostic('webview-video-revealed', {
-                itemName: item && item.name ? String(item.name) : '',
-                readyState: video.readyState,
-                networkState: video.networkState,
-                currentTime: this.roundDebugValue(video.currentTime || 0, 3)
-            });
         };
-        const attemptStartupRecovery = () => {
-            if (startupRetryAttempted || !this.isPlaying || this._currentVideoItem !== item) {
-                return false;
-            }
-
-            startupRetryAttempted = true;
-            const retryUrl = this.appendCacheBust(url, 'startup');
-            this.recordMediaDiagnostic('webview-video-startup-retry', {
-                itemName: item && item.name ? String(item.name) : '',
-                originalUrlTail: String(url || '').slice(-220),
-                retryUrlTail: String(retryUrl || '').slice(-220)
-            });
-
-            try {
-                video.pause();
-            } catch (pauseError) {}
-
-            try {
-                video.removeAttribute('src');
-                video.load();
-            } catch (resetError) {}
-
-            video.src = retryUrl;
-            video.load();
-
-            const retryPlayPromise = video.play();
-            if (retryPlayPromise !== undefined && typeof retryPlayPromise.then === 'function') {
-                retryPlayPromise.then(() => {
-                    this.recordMediaDiagnostic('webview-video-startup-retry-playing', {
-                        itemName: item && item.name ? String(item.name) : '',
-                        details: this.getVideoErrorDetails(video)
-                    });
-                    revealWebViewVideo();
-                }).catch((retryErr) => {
-                    this.recordMediaDiagnostic('webview-video-startup-retry-play-rejected', {
-                        itemName: item && item.name ? String(item.name) : '',
-                        errorName: retryErr && retryErr.name ? String(retryErr.name) : '',
-                        errorMessage: retryErr && retryErr.message ? String(retryErr.message) : ''
-                    });
-                    failWebViewStartup('retry-play-rejected');
-                });
-            }
-
-            return true;
-        };
-        const scheduleStartupWatchdog = (timeoutMs) => {
-            clearStartupWatchdog();
-            startupWatchdog = setTimeout(() => {
-                if (!this.isPlaying || this._currentVideoItem !== item) {
-                    return;
-                }
-                this.recordMediaDiagnostic('webview-video-startup-watchdog', {
-                    itemName: item && item.name ? String(item.name) : '',
-                    retryAttempted: startupRetryAttempted,
-                    details: this.getVideoErrorDetails(video)
-                });
-                if (!attemptStartupRecovery()) {
-                    failWebViewStartup('watchdog-timeout');
-                } else {
-                    scheduleStartupWatchdog(5000);
-                }
-            }, timeoutMs);
-        };
-        scheduleStartupWatchdog(9000);
 
         // Track current video URL
         this._currentVideoUrl = url;
@@ -4444,7 +4308,6 @@ class OmnexPlayer {
             };
 
             video.onended = () => {
-                clearStartupWatchdog();
                 // If loop count is set and we haven't reached it yet, restart video
                 if (maxLoops > 0 && this._currentLoopCount < maxLoops - 1) {
                     this._currentLoopCount++;
@@ -4464,15 +4327,10 @@ class OmnexPlayer {
             };
 
             video.onerror = () => {
-                this.recordMediaDiagnostic('webview-video-error', {
-                    itemName: item && item.name ? String(item.name) : '',
-                    details: this.getVideoErrorDetails(video)
-                });
-                if (!attemptStartupRecovery()) {
-                    failWebViewStartup('video-error');
-                } else {
-                    scheduleStartupWatchdog(5000);
+                if (this.debug) {
+                    console.warn('[Player] Video error:', this.getVideoErrorDetails(video));
                 }
+                this.scheduleNext(2);
             };
 
             video.onplay = () => {
@@ -4556,17 +4414,10 @@ class OmnexPlayer {
                     // If no duration and no loop, onended will call playNext
                     // If loop is true, onended handles the loop restart
                 }).catch(err => {
-                    this.recordMediaDiagnostic('webview-video-play-rejected', {
-                        itemName: item && item.name ? String(item.name) : '',
-                        errorName: err && err.name ? String(err.name) : '',
-                        errorMessage: err && err.message ? String(err.message) : ''
-                    });
                     if (err.name === 'AbortError') {
                         setTimeout(() => {
                             if (this.isPlaying && this._currentVideoItem === item) {
-                                video.play().catch(() => {
-                                    failWebViewStartup('play-retry-aborterror-failed');
-                                });
+                                video.play().catch(() => {});
                             }
                         }, 500);
                     } else if (err.name === 'NotAllowedError' && this._isIOS()) {
@@ -4574,11 +4425,8 @@ class OmnexPlayer {
                         this._iosInteractionGranted = false;
                         this._showIOSTapToPlayOverlay();
                     } else {
-                        if (!attemptStartupRecovery()) {
-                            failWebViewStartup('play-rejected');
-                        } else {
-                            scheduleStartupWatchdog(5000);
-                        }
+                        // Other error — skip to next item in 2s
+                        this.scheduleNext(2);
                     }
                 });
             } else {
@@ -5031,19 +4879,7 @@ class OmnexPlayer {
      * Play HTML/webpage content in iframe
      */
     playHtml(item) {
-        this.clearNativePreloadedVideo('play-html-start');
-
-        if (this.isConstrainedTvProfile()) {
-            this.stopNativeVideoForTransition('play-html-start-constrained');
-            this.setNativeVideoMode(false);
-        } else if (!this.isNativePlaybackActive()) {
-            this.setNativeVideoMode(false);
-        } else {
-            this.traceDebug('TRANS', 'playHtml waiting with native video active', {
-                itemId: item?.id || '',
-                itemName: item?.name || ''
-            });
-        }
+        this.setNativeVideoMode(false);
         const iframe = this.getActiveHtmlElement();
         if (!iframe) {
             this.scheduleNext(this.getScheduledDuration(item));
@@ -5243,23 +5079,9 @@ class OmnexPlayer {
                 nextType
             });
 
-            // Keep current native frame alive while waiting html iframe readiness,
-            // then stop native right before html enter starts (in finalizeHtmlPlayback()).
-            const shouldDeferNativeStop = nextType === 'html' && !this.isConstrainedTvProfile();
-
             // Only stop native ExoPlayer since it can't be crossfaded via CSS
             if (this.isNativePlaybackActive()) {
-                if (shouldDeferNativeStop) {
-                    this.clearNativePreloadedVideo('schedule-html-defer');
-                    this.traceDebug('TRANS', 'defer native stop until html is ready', {
-                        currentIndex: this.currentIndex,
-                        nextIndex,
-                        nextType
-                    });
-                    this.traceTransitionSnapshot('scheduleNext-defer-native-stop', {
-                        nextType
-                    });
-                } else if (window.AndroidBridge.stopVideoNative) {
+                if (window.AndroidBridge.stopVideoNative) {
                     window.AndroidBridge.stopVideoNative();
                     this.setNativeVideoMode(false);
                     if (this.debug) {

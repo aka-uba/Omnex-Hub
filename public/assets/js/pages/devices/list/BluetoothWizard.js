@@ -268,6 +268,20 @@ export class BluetoothWizard {
             this._deviceToken = newPassword.trim();
             this._log('Admin + User şifresi ayarlandı', 'success');
             Toast.success(this.__('bluetooth.toast.passwordSet'));
+
+            // Token'ı DB'ye de kaydet
+            try {
+                const existing = await this._resolveKnownDeviceForToken();
+                if (existing?.id) {
+                    await this.app.api.post(`/devices/${existing.id}/bt-password`, {
+                        password: this._deviceToken
+                    });
+                    this._log(this.__('bluetooth.tokenManagement.tokenSavedToDb'), 'success');
+                }
+            } catch (dbErr) {
+                this._log(`DB token kayıt hatası: ${dbErr.message}`, 'error');
+            }
+            this._updateTokenStatusUI();
         } catch (error) {
             this._log(`Şifre ayarlanamadı: ${error.message}`, 'error');
             Toast.error(error.message);
@@ -537,6 +551,42 @@ export class BluetoothWizard {
                         </button>
                     </div>
 
+                    <!-- Token Management -->
+                    <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                        <h4 style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="ti ti-shield-lock"></i>
+                            ${this.__('bluetooth.tokenManagement.title')}
+                        </h4>
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.8125rem; font-weight: 500;">${this.__('bluetooth.tokenManagement.status')}:</span>
+                                <span id="bt-token-status">
+                                    <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                                        <i class="ti ti-loader"></i> ${this.__('bluetooth.tokenManagement.checking')}
+                                    </span>
+                                </span>
+                            </div>
+                            <p class="form-hint" style="font-size: 0.75rem; margin: 0;">
+                                <i class="ti ti-info-circle"></i>
+                                ${this.__('bluetooth.tokenManagement.description')}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button type="button" id="bt-view-token-btn" class="btn btn-outline btn-sm">
+                                <i class="ti ti-eye"></i>
+                                ${this.__('bluetooth.tokenManagement.viewToken')}
+                            </button>
+                            <button type="button" id="bt-set-password-btn" class="btn btn-outline btn-sm">
+                                <i class="ti ti-lock"></i>
+                                ${this.__('bluetooth.tokenManagement.setToken')}
+                            </button>
+                            <button type="button" id="bt-clear-token-btn" class="btn btn-outline btn-sm text-warning">
+                                <i class="ti ti-lock-open"></i>
+                                ${this.__('bluetooth.tokenManagement.clearToken')}
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Control Buttons -->
                     <div class="card" style="padding: 1rem;">
                         <h4 style="margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -555,10 +605,6 @@ export class BluetoothWizard {
                             <button type="button" id="bt-factory-reset-btn" class="btn btn-outline btn-sm text-danger">
                                 <i class="ti ti-restore"></i>
                                 ${this.__('bluetooth.factoryReset')}
-                            </button>
-                            <button type="button" id="bt-set-password-btn" class="btn btn-outline btn-sm" title="BLE bağlantı güvenliği için cihaza şifre koy">
-                                <i class="ti ti-lock"></i>
-                                Cihaz Şifresi
                             </button>
                         </div>
                     </div>
@@ -758,7 +804,11 @@ export class BluetoothWizard {
         document.getElementById('bt-reboot-btn')?.addEventListener('click', () => this._reboot());
         document.getElementById('bt-clear-media-btn')?.addEventListener('click', () => this._clearMedia());
         document.getElementById('bt-factory-reset-btn')?.addEventListener('click', () => this._factoryReset());
+
+        // Token management buttons
         document.getElementById('bt-set-password-btn')?.addEventListener('click', () => this._setDevicePassword());
+        document.getElementById('bt-view-token-btn')?.addEventListener('click', () => this._viewToken());
+        document.getElementById('bt-clear-token-btn')?.addEventListener('click', () => this._clearDeviceToken());
 
         // Add device button
         document.getElementById('bt-add-device-btn')?.addEventListener('click', () => this._addDevice());
@@ -1670,10 +1720,13 @@ export class BluetoothWizard {
             this._ensureStaticIpDefaults();
 
             if (!this._tokenBypassMode) {
-                this._loadDeviceTokenFromServer().catch((error) => {
+                this._loadDeviceTokenFromServer().then(() => {
+                    this._updateTokenStatusUI();
+                }).catch((error) => {
                     Logger.debug('BluetoothWizard: token preload after connect failed', {
                         error: error?.message || String(error)
                     });
+                    this._updateTokenStatusUI();
                 });
             }
 
@@ -2414,6 +2467,76 @@ export class BluetoothWizard {
     }
 
     /**
+     * Token'ı görüntüle
+     * @private
+     */
+    async _viewToken() {
+        try {
+            await this._loadDeviceTokenFromServer(true);
+            if (this._deviceToken) {
+                Modal.show({
+                    title: this.__('bluetooth.tokenManagement.viewToken'),
+                    icon: 'ti-eye',
+                    content: `
+                        <div style="text-align: center; padding: 1rem;">
+                            <p style="margin-bottom: 0.5rem; font-size: 0.875rem;">${this.__('bluetooth.tokenManagement.currentToken')}:</p>
+                            <code style="font-size: 1.25rem; background: var(--bg-secondary); padding: 0.5rem 1rem; border-radius: 6px; display: inline-block; letter-spacing: 2px; user-select: all;">${this._escapeHtml(this._deviceToken)}</code>
+                            <p class="form-hint" style="margin-top: 0.75rem; font-size: 0.75rem;">
+                                <i class="ti ti-info-circle"></i>
+                                ${this.__('bluetooth.tokenManagement.tokenUsageHint')}
+                            </p>
+                        </div>`,
+                    size: 'sm',
+                    showConfirm: false,
+                    cancelText: this.__('bluetooth.wizard.close')
+                });
+            } else {
+                Toast.info(this.__('bluetooth.tokenManagement.noTokenFound'));
+            }
+        } catch (error) {
+            Toast.error(error.message);
+        }
+        this._updateTokenStatusUI();
+    }
+
+    /**
+     * Cihaz token'ını temizle (BLE + DB)
+     * @private
+     */
+    async _clearDeviceToken() {
+        if (!this._deviceToken) {
+            Toast.info(this.__('bluetooth.tokenManagement.noTokenFound'));
+            return;
+        }
+
+        if (!confirm(this.__('bluetooth.tokenManagement.clearTokenConfirm'))) {
+            return;
+        }
+
+        try {
+            // 1. BLE ile admin ve user şifresini temizle
+            if (this.bluetoothService.connected) {
+                this._log(this.__('bluetooth.tokenManagement.clearingBleToken'));
+                // Admin şifresini boşalt (mevcut token ile doğrulama)
+                await this.bluetoothService.setAdminPassword('', this._deviceToken);
+                await new Promise(r => setTimeout(r, 300));
+                // User şifresini boşalt
+                await this.bluetoothService.setUserPassword('', this._deviceToken);
+                this._log(this.__('bluetooth.tokenManagement.bleTokenCleared'), 'success');
+            }
+
+            // 2. DB'den token'ı sil
+            await this._clearTokenFromServer();
+            this._deviceToken = '';
+            this._updateTokenStatusUI();
+            Toast.success(this.__('bluetooth.tokenManagement.tokenCleared'));
+        } catch (error) {
+            this._log(`Token temizleme hatası: ${error.message}`, 'error');
+            Toast.error(error.message);
+        }
+    }
+
+    /**
      * Medya dosyalarını temizle
      * @private
      */
@@ -2450,16 +2573,27 @@ export class BluetoothWizard {
      * @private
      */
     async _factoryReset(allowRetry = true) {
-        if (!confirm(this.__('bluetooth.confirm.factoryReset'))) {
+        // Enhanced confirmation with token status info
+        const tokenStatus = this._deviceToken
+            ? this.__('bluetooth.tokenManagement.protected')
+            : this.__('bluetooth.tokenManagement.notProtected');
+        const confirmMsg = `${this.__('bluetooth.confirm.factoryReset')}\n\n`
+            + `${this.__('bluetooth.tokenManagement.status')}: ${tokenStatus}\n`
+            + `${this.__('bluetooth.tokenManagement.factoryResetWarning')}`;
+        if (!confirm(confirmMsg)) {
             return;
         }
 
         try {
             await this._loadDeviceTokenFromServer();
-            this._log(this.__('bluetooth.wizard.resetting'));
-            await this.bluetoothService.factoryReset(this._deviceToken);
+            const usedToken = this._deviceToken || '';
+            this._log(this.__('bluetooth.wizard.resetting') + (usedToken ? ` (Token: ${usedToken.substring(0, 4)}****)` : ' (Token yok)'));
+            await this.bluetoothService.factoryReset(usedToken);
 
-            // Factory reset clears device password — clear our token too
+            this._log(this.__('bluetooth.wizard.factoryResetSuccess'), 'success');
+
+            // Factory reset clears device password — clear DB token too
+            await this._clearTokenFromServer();
             this._deviceToken = '';
 
             Toast.success(this.__('bluetooth.toast.factoryResetDone'));
@@ -2469,6 +2603,7 @@ export class BluetoothWizard {
             this.workflowState.connected = false;
             this.workflowState.verified = false;
             this._updateStatus(false);
+            this._updateTokenStatusUI();
 
         } catch (error) {
             if (allowRetry && this._isTokenError(error)) {
@@ -2482,6 +2617,48 @@ export class BluetoothWizard {
             }
             this._log(this.__('bluetooth.wizard.resetError', { error: error.message }), 'error');
             Toast.error(error.message);
+        }
+    }
+
+    /**
+     * DB'deki BT token'ı sil (factory reset sonrası)
+     * @private
+     */
+    async _clearTokenFromServer() {
+        try {
+            const existing = await this._resolveKnownDeviceForToken();
+            if (!existing?.id) {
+                this._log('DB\'de cihaz kaydı bulunamadı, token temizleme atlandı', 'info');
+                return;
+            }
+            await this.app.api.delete(`/devices/${existing.id}/bt-password`);
+            this._log(this.__('bluetooth.tokenManagement.tokenCleared'), 'success');
+        } catch (error) {
+            this._log(`DB token temizleme hatası: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * Token durumunu UI'da güncelle
+     * @private
+     */
+    _updateTokenStatusUI() {
+        const statusEl = document.getElementById('bt-token-status');
+        if (!statusEl) return;
+
+        if (this._deviceToken) {
+            statusEl.innerHTML = `
+                <span class="badge badge-success" style="font-size: 0.75rem;">
+                    <i class="ti ti-lock"></i> ${this.__('bluetooth.tokenManagement.protected')}
+                </span>
+                <code style="font-size: 0.7rem; margin-left: 0.5rem; background: var(--bg-secondary); padding: 0.15rem 0.4rem; border-radius: 3px;">
+                    ${this._deviceToken.substring(0, 4)}${'*'.repeat(Math.max(0, this._deviceToken.length - 4))}
+                </code>`;
+        } else {
+            statusEl.innerHTML = `
+                <span class="badge badge-warning" style="font-size: 0.75rem;">
+                    <i class="ti ti-lock-open"></i> ${this.__('bluetooth.tokenManagement.notProtected')}
+                </span>`;
         }
     }
 

@@ -792,6 +792,7 @@
             "mediaCleared": "Medyalar temizlendi",
             "clearMediaError": "Medya temizleme hatası: {error}",
             "resetting": "Fabrika ayarlarına sıfırlanıyor...",
+            "factoryResetSuccess": "Fabrika ayarlarına başarıyla sıfırlandı",
             "resetError": "Fabrika sıfırlama hatası: {error}",
             "configuredViaBluetooth": "Bluetooth ile yapılandırıldı",
             "unknownDevice": "Bilinmeyen cihaz",
@@ -837,7 +838,27 @@
         "loadMqttSettings": "Sunucu ayarlarını yükle",
         "mqttSettingsLoaded": "MQTT ayarları yüklendi",
         "mqttNoSettings": "MQTT ayarları henüz yapılandırılmamış. Lütfen admin panelden MQTT ayarlarını yapın.",
-        "mqttUrlRequired": "MQTT Broker URL gereklidir"
+        "mqttUrlRequired": "MQTT Broker URL gereklidir",
+        "tokenManagement": {
+            "title": "Token Yönetimi",
+            "status": "Token Durumu",
+            "protected": "Korumalı",
+            "notProtected": "Korumasız",
+            "checking": "Kontrol ediliyor...",
+            "description": "BLE token, cihaza yetkisiz Bluetooth erişimini engeller. Factory reset sonrası token otomatik temizlenir.",
+            "viewToken": "Token Göster",
+            "setToken": "Token Ayarla",
+            "clearToken": "Token Temizle",
+            "currentToken": "Mevcut Token",
+            "tokenUsageHint": "Bu token BLE komutlarında kimlik doğrulama için kullanılır. Token olmadan cihaza Bluetooth ile erişilemez.",
+            "noTokenFound": "Cihazda kayıtlı token bulunamadı",
+            "clearTokenConfirm": "Cihaz token'ını silmek istediğinizden emin misiniz?\nBu işlem BLE şifresini cihazdan ve veritabanından kaldırır.",
+            "clearingBleToken": "BLE token temizleniyor...",
+            "bleTokenCleared": "BLE token cihazdan temizlendi",
+            "tokenCleared": "Token temizlendi (DB + cihaz)",
+            "tokenSavedToDb": "Token veritabanına kaydedildi",
+            "factoryResetWarning": "Factory reset sonrası tüm şifreler sıfırlanır ve DB token'ı otomatik temizlenir."
+        }
     },
     "control": {
         "title": "Cihaz Kontrolü",
