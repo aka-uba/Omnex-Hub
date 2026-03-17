@@ -5367,3 +5367,15 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/player.js.pre_restore_hard_disable_20260317_070159.bak`
   - Restored file source:
     - `.codex/tmp_backups/MainActivity.kt.pre_native_disable_20260317_064513.bak`
+## 2026-03-17 - Player cache-bust bump after hard-disable restore
+
+- Request: Ensure TV pulls updated player JS after native-session-lock restore.
+- Changes:
+  1. **public/player/index.html**
+     - Bumped player script cache-bust `v=70 -> v=71`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (already OK in same change set)
+- Risks/Follow-up:
+  - Clients with aggressive intermediary caching should fetch `player.js?v=71` immediately.
+- Backup/Restore safety:
+  - No file backup needed (single-line low-risk edit).
