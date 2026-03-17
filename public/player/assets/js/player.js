@@ -140,6 +140,8 @@ class OmnexPlayer {
         this.videoDebugTimer = null;
         this.videoDebugOverlay = null;
         this._nativeVideoMode = false;
+        this._nativeVideoFailureStreak = 0;
+        this._nativeVideoHardDisabled = false;
         this._enterTransitionTimers = new WeakMap();
         this._exitTransitionTimers = new WeakMap();
 
@@ -3595,6 +3597,9 @@ class OmnexPlayer {
      * âœ… PHASE 2: Check if native video playback is available (ExoPlayer)
      */
     hasNativeVideoSupport() {
+        if (this._nativeVideoHardDisabled) {
+            return false;
+        }
         return window.AndroidBridge && typeof window.AndroidBridge.playVideoNative === 'function';
     }
 
@@ -3696,6 +3701,17 @@ class OmnexPlayer {
         if (this.debug) {
             console.log('[Player] Falling back to WebView for:', url, 'Error:', error);
         }
+        this._nativeVideoFailureStreak += 1;
+        if (!this._nativeVideoHardDisabled && this._nativeVideoFailureStreak >= 1) {
+            this._nativeVideoHardDisabled = true;
+            this.traceTransitionSnapshot('native-video-disabled-after-failure', {
+                failureStreak: this._nativeVideoFailureStreak,
+                error: String(error || '')
+            });
+            if (this.debug) {
+                console.warn('[Player] Native playback disabled for this session after decoder failure');
+            }
+        }
         this.setNativeVideoMode(false);
         // WebView will handle playback through normal HTML5 video element
         // The video element is already set up, just continue with normal playback
@@ -3744,6 +3760,7 @@ class OmnexPlayer {
     }
 
     handleNativeVideoStarted(item, url, video) {
+        this._nativeVideoFailureStreak = 0;
         const isNewNativeItem = this._currentVideoUrl !== url || this._currentVideoItem !== item;
         if (isNewNativeItem) {
             this._currentLoopCount = 0;
