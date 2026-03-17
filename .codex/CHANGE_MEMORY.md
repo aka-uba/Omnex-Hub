@@ -5176,3 +5176,47 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/sw.js.20260317_040117.bak`
     - `.codex/tmp_backups/ExoPlayerManager.kt.20260317_035714.bak`
     - `.codex/tmp_backups/MainActivity.kt.20260317_035714.bak`
+
+## 2026-03-17 - TV direct live watch on port 46863 (no code changes)
+
+- Request: Directly monitor Omnex Player on TV and explain why preload icon appears but video does not play.
+- Scope: Live ADB observation only (no source edits in this step).
+- Device/session:
+  - TV ADB active port confirmed: `192.168.1.52:46863`
+  - APK: `com.omnex.player` `versionName=2.9.14` (`versionCode=43`)
+- Findings (from `.codex/tv_live_global_20260317_054344.log`):
+  1. Repeated decoder init/runtime failures on TV hardware codec `OMX.MS.AVC.Decoder`.
+  2. Error chain repeatedly observed: `setPortMode ... err -1010` -> `nBufferCountActual failed: -22` -> `ACodec ERROR(0x80001000)` -> `MediaCodec.onError` -> Chromium `PIPELINE_ERROR_DECODE`.
+  3. Failures occur in Chromium/WebView media path (`cr_MediaCodecBridge`), indicating issue is not only native Exo path.
+  4. This explains visible preload/loading state without rendered video frame on TV.
+- Changed files: none.
+- Checks run:
+  - ADB connectivity and package version checks on `192.168.1.52:46863`.
+  - 80-90s live global log capture and error pattern extraction.
+- Risks / follow-up:
+  - TV decoder instability remains active in current runtime; JS-only fallback cannot fully mask hardware codec failures for all content.
+  - Next step should be content-profile hardening and/or TV-specific decode policy (additional mitigation patch still needed).
+## 2026-03-17 - SW scope isolation for player and root SW bypass
+
+- Request: Investigate newly observed console errors (`contentScript.js`, `sw.js:443`) and stabilize player behavior by preventing service worker scope interference.
+- Findings:
+  1. `sw.js:443 [SW] Loaded. Development mode: false` maps to root app SW file (`public/sw.js`), not player SW (`public/player/sw.js`).
+  2. Player currently registers SW with relative path (`./sw.js`), which can coexist with root SW and create inconsistent control/order during first loads.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Updated SW registration to explicit player scope/path using `window.PLAYER_PATH` and `{ scope: scopePath }`.
+  2. **public/sw.js**
+     - Added fetch bypass guard for player routes/referrers and media (`video`/`audio`) so root SW never intercepts player runtime/media traffic.
+  3. **public/player/index.html**
+     - Bumped player script cache-bust version `v=66 -> v=67`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/sw.js` (OK)
+- Risks/Follow-up:
+  - Existing clients may need one refresh/reload cycle for the new SW control path to settle.
+  - TV hardware decoder instability may still occur independently of SW scope (codec-level errors were previously observed).
+- Backup/Restore safety:
+  - Temp backups created before edits:
+    - `.codex/tmp_backups/player.js.pre_sw_scope_isolation_20260317_060129.bak`
+    - `.codex/tmp_backups/public_sw.js.pre_player_bypass_20260317_060129.bak`
+    - `.codex/tmp_backups/index.html.pre_player_js_v67_20260317_060301.bak`

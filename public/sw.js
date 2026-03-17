@@ -140,6 +140,17 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // Never intercept player traffic; player has its own isolated SW at /player/sw.js.
+    const requestReferrer = request.referrer || '';
+    if (
+        /\/player(?:\/|$)/.test(url.pathname) ||
+        /\/player(?:\/|$)/.test(requestReferrer) ||
+        request.destination === 'video' ||
+        request.destination === 'audio'
+    ) {
+        return;
+    }
+
     // ============================================
     // DEVELOPMENT MODE: Always fetch from network
     // ============================================

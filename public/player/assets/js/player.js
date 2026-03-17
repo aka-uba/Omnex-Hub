@@ -5893,7 +5893,15 @@ class OmnexPlayer {
         }
         if ('serviceWorker' in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register('./sw.js');
+                const scopeUrl = new URL(window.PLAYER_PATH || '/player/', window.location.origin);
+                let scopePath = scopeUrl.pathname;
+                if (!scopePath.endsWith('/')) {
+                    scopePath += '/';
+                }
+
+                const registration = await navigator.serviceWorker.register(scopePath + 'sw.js', {
+                    scope: scopePath
+                });
 
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
