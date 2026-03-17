@@ -318,6 +318,16 @@ body {
     aspect-ratio: auto !important;
 }
 
+/* Prevent transition animation transforms from interfering with force-rotate layout.
+   On Android TV, animation keyframe transforms (translate3d) override the content-item's
+   transform:none, causing size/position changes during slide/push/wipe transitions.
+   With !important, the animation transform is blocked — transitions degrade gracefully
+   to opacity-only (all keyframes include opacity), keeping the rotated layout stable. */
+#player-screen .content-container[class*="force-rotate"] .content-item.transition-enter,
+#player-screen .content-container[class*="force-rotate"] .content-item.transition-exit {
+    transform: none !important;
+}
+
 /* ==================== Loading Screen ==================== */
 #loading-screen {
     background: linear-gradient(135deg, var(--player-bg) 0%, var(--player-bg-secondary) 100%);

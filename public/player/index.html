@@ -64,7 +64,7 @@
             window.PLAYER_PATH = playerPath;
 
             document.write('<base href="' + playerPath + '">');
-    document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=39">');
+    document.write('<link rel="stylesheet" href="' + playerPath + 'assets/css/player.css?v=40">');
             document.write('<link rel="manifest" href="' + playerPath + 'manifest.json?v=5">');
         })();
     </script>
@@ -387,7 +387,7 @@
     <script type="module">
         // Dynamic import of player module with full path
         const playerPath = window.PLAYER_PATH || '/player/';
-            const scriptUrl = playerPath + 'assets/js/player.js?v=75';
+            const scriptUrl = playerPath + 'assets/js/player.js?v=76';
 
         try {
             import(scriptUrl);

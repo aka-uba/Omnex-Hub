@@ -3091,6 +3091,26 @@ class OmnexPlayer {
             return;
         }
 
+        // For video elements: prevent poster/preload image from leaking during exit.
+        // On Android TV WebView, ended videos may revert to poster instead of last frame.
+        if (this._isVideoElement(element)) {
+            // Remove poster attribute so poster image cannot appear
+            element.removeAttribute('poster');
+            // If video has no displayable frame (readyState < 2 = HAVE_CURRENT_DATA),
+            // skip the exit animation entirely — there's nothing useful to show.
+            if (element.readyState < 2) {
+                element.style.display = 'none';
+                element.style.visibility = 'hidden';
+                element.style.opacity = '0';
+                this._cleanupVideoElement(element, true);
+                this.traceDebug('TRANS', 'exit transition SKIPPED — video has no frame', {
+                    element: this.getElementDebugLabel(element),
+                    readyState: element.readyState
+                });
+                return;
+            }
+        }
+
         const resolvedTransitionType = this.getResolvedTransitionType();
         const domTransitionType = this.getDomTransitionTypeForCurrentLayout(resolvedTransitionType);
 
@@ -3184,10 +3204,11 @@ class OmnexPlayer {
         // Clear any existing transition classes
         this.clearTransitionClasses(element);
 
-        // Show element
+        // Make element visible but keep opacity controlled by animation.
+        // Do NOT set opacity:1 here — the CSS animation handles the 0→1 reveal
+        // to prevent a 1-frame flash of preload/poster content.
         element.style.display = 'block';
         element.style.visibility = 'visible';
-        element.style.opacity = '1';
         element.style.zIndex = '2';
 
         if (domTransitionType !== 'none') {
@@ -3964,19 +3985,28 @@ class OmnexPlayer {
         }
 
         video.classList.remove('loading');
-        video.style.display = 'block';
-        video.style.visibility = 'visible';
-        video.style.opacity = '1';
-        video.style.zIndex = '2';
-        this._currentElement = video;
 
         // Apply enter transition for seamless crossfade
         const shouldRunEnterTransition =
             this._transitionType !== 'none' &&
             (wasLoading || previousCurrentElement !== video || hasPendingExit);
+
         if (shouldRunEnterTransition) {
+            // Start invisible — the enter-transition CSS animation handles 0→1 fade.
+            // This prevents a 1-frame flash of the preload/poster image.
+            video.style.display = 'block';
+            video.style.visibility = 'visible';
+            video.style.opacity = '0';
+            video.style.zIndex = '2';
+            this._currentElement = video;
             this.applyEnterTransition(video);
         } else {
+            // No transition — show immediately
+            video.style.display = 'block';
+            video.style.visibility = 'visible';
+            video.style.opacity = '1';
+            video.style.zIndex = '2';
+            this._currentElement = video;
             this.flushPendingExitTransition(video);
         }
 
