@@ -140,8 +140,6 @@ class OmnexPlayer {
         this.videoDebugTimer = null;
         this.videoDebugOverlay = null;
         this._nativeVideoMode = false;
-        this._nativeVideoFailureStreak = 0;
-        this._nativeVideoHardDisabled = false;
         this._enterTransitionTimers = new WeakMap();
         this._exitTransitionTimers = new WeakMap();
 
@@ -2557,7 +2555,8 @@ class OmnexPlayer {
             );
         } else if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
             const videoItem = items[nextVideoIndex];
-            const videoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
+            const sourceVideoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
+            const videoUrl = this.getConstrainedTvPlaybackUrl(sourceVideoUrl);
             if (videoUrl && videoUrl !== this._currentVideoUrl) {
                 try {
                     window.AndroidBridge.preloadNextVideoNative(videoUrl);
@@ -3597,24 +3596,22 @@ class OmnexPlayer {
      * âœ… PHASE 2: Check if native video playback is available (ExoPlayer)
      */
     hasNativeVideoSupport() {
-        if (this._nativeVideoHardDisabled) {
-            return false;
-        }
         if (!window.AndroidBridge || typeof window.AndroidBridge.playVideoNative !== 'function') {
             return false;
         }
         return true;
     }
 
+    isConstrainedTvProfile() {
+        const deviceInfo = this.detectDeviceType();
+        return (deviceInfo.isTV || deviceInfo.isAndroidTV) &&
+            this.config.enableMediaPrecache === false;
+    }
+
     getConstrainedTvPlaybackUrl(url) {
         if (!url) return url;
 
-        const deviceInfo = this.detectDeviceType();
-        const isConstrainedTv =
-            (deviceInfo.isTV || deviceInfo.isAndroidTV) &&
-            this.config.enableMediaPrecache === false;
-
-        if (!isConstrainedTv) {
+        if (!this.isConstrainedTvProfile()) {
             return url;
         }
 
@@ -3720,17 +3717,6 @@ class OmnexPlayer {
         if (this.debug) {
             console.log('[Player] Falling back to WebView for:', url, 'Error:', error);
         }
-        this._nativeVideoFailureStreak += 1;
-        if (!this._nativeVideoHardDisabled && this._nativeVideoFailureStreak >= 1) {
-            this._nativeVideoHardDisabled = true;
-            this.traceTransitionSnapshot('native-video-disabled-after-failure', {
-                failureStreak: this._nativeVideoFailureStreak,
-                error: String(error || '')
-            });
-            if (this.debug) {
-                console.warn('[Player] Native playback disabled for this session after decoder failure');
-            }
-        }
         this.setNativeVideoMode(false);
         // WebView will handle playback through normal HTML5 video element
         // The video element is already set up, just continue with normal playback
@@ -3779,7 +3765,6 @@ class OmnexPlayer {
     }
 
     handleNativeVideoStarted(item, url, video) {
-        this._nativeVideoFailureStreak = 0;
         const isNewNativeItem = this._currentVideoUrl !== url || this._currentVideoItem !== item;
         if (isNewNativeItem) {
             this._currentLoopCount = 0;
@@ -4222,6 +4207,26 @@ class OmnexPlayer {
         // Keep video fully hidden until an actual frame is ready.
         this.hideVideoElement(video);
 
+        let startupWatchdog = null;
+        const clearStartupWatchdog = () => {
+            if (startupWatchdog) {
+                clearTimeout(startupWatchdog);
+                startupWatchdog = null;
+            }
+        };
+        const revealWebViewVideo = () => {
+            clearStartupWatchdog();
+            this.revealVideoElement(video, item);
+        };
+        startupWatchdog = setTimeout(() => {
+            if (!this.isPlaying || this._currentVideoItem !== item) {
+                return;
+            }
+            this.hideVideoElement(video);
+            this._currentVideoItem = null;
+            this.scheduleNext(2);
+        }, 9000);
+
         // Track current video URL
         this._currentVideoUrl = url;
         this.showVideoDebugUrl(url, item);
@@ -4235,17 +4240,18 @@ class OmnexPlayer {
 
             // Show video only when ready to play
             video.oncanplaythrough = () => {
-                this.revealVideoElement(video, item);
+                revealWebViewVideo();
             };
 
             // Fallback - show after loadeddata if canplaythrough doesn't fire
             video.onloadeddata = () => {
                 setTimeout(() => {
-                    this.revealVideoElement(video, item);
+                    revealWebViewVideo();
                 }, 50);
             };
 
             video.onended = () => {
+                clearStartupWatchdog();
                 // If loop count is set and we haven't reached it yet, restart video
                 if (maxLoops > 0 && this._currentLoopCount < maxLoops - 1) {
                     this._currentLoopCount++;
@@ -4265,17 +4271,18 @@ class OmnexPlayer {
             };
 
             video.onerror = () => {
+                clearStartupWatchdog();
                 this.hideVideoElement(video);
                 this._currentVideoItem = null;
                 this.scheduleNext(2);
             };
 
             video.onplay = () => {
-                this.revealVideoElement(video, item);
+                revealWebViewVideo();
             };
 
             video.onplaying = () => {
-                this.revealVideoElement(video, item);
+                revealWebViewVideo();
             };
 
             // Only auto-resume if video paused unexpectedly (not at end)
@@ -4320,7 +4327,7 @@ class OmnexPlayer {
                     }
 
                     // Some WebViews never fire the ready callbacks reliably.
-                    this.revealVideoElement(video, item);
+                    revealWebViewVideo();
 
                     // âœ… Chrome browser autoplay policy workaround
                     if (isChromeBrowser) {
@@ -4350,6 +4357,7 @@ class OmnexPlayer {
                         setTimeout(() => {
                             if (this.isPlaying && this._currentVideoItem === item) {
                                 video.play().catch(() => {
+                                    clearStartupWatchdog();
                                     this._currentVideoItem = null;
                                     this.scheduleNext(2);
                                 });
@@ -4360,6 +4368,7 @@ class OmnexPlayer {
                         this._iosInteractionGranted = false;
                         this._showIOSTapToPlayOverlay();
                     } else {
+                        clearStartupWatchdog();
                         this._currentVideoItem = null;
                         this.scheduleNext(2);
                     }
@@ -4368,12 +4377,12 @@ class OmnexPlayer {
                 // Old browsers (iOS 9 and earlier) don't return a promise
                 setTimeout(() => {
                     if (video.readyState >= 2) {
-                        this.revealVideoElement(video, item);
+                        revealWebViewVideo();
                     }
                 }, 120);
 
                 setTimeout(() => {
-                    this.revealVideoElement(video, item);
+                    revealWebViewVideo();
                 }, 400);
 
                 // Just schedule based on duration if set
@@ -4392,6 +4401,26 @@ class OmnexPlayer {
         video.style.display = 'block';
         this._currentElement = video;
         this._currentVideoItem = item;
+
+        let startupWatchdog = null;
+        const clearStartupWatchdog = () => {
+            if (startupWatchdog) {
+                clearTimeout(startupWatchdog);
+                startupWatchdog = null;
+            }
+        };
+        const revealHlsVideo = () => {
+            clearStartupWatchdog();
+            this.revealVideoElement(video, item);
+        };
+        startupWatchdog = setTimeout(() => {
+            if (!this.isPlaying || this._currentVideoItem !== item) {
+                return;
+            }
+            this.hideVideoElement(video);
+            this._currentVideoItem = null;
+            this.scheduleNext(2);
+        }, 9000);
 
         // âœ… Video ses kontrolü - item.muted varsa kullan, yoksa varsayılan true
         const shouldMute = item.muted !== undefined ? item.muted : true;
@@ -4422,11 +4451,11 @@ class OmnexPlayer {
         };
 
         video.onplay = () => {
-            this.revealVideoElement(video, item);
+            revealHlsVideo();
         };
 
         video.onplaying = () => {
-            this.revealVideoElement(video, item);
+            revealHlsVideo();
         };
 
         // Keep video fully hidden until playback is actually ready.
@@ -4446,11 +4475,11 @@ class OmnexPlayer {
             this.hls.attachMedia(video);
 
             this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                this.revealVideoElement(video, item);
+                revealHlsVideo();
                 const hlsPlayPromise = video.play();
                 if (hlsPlayPromise !== undefined && typeof hlsPlayPromise.then === 'function') {
                     hlsPlayPromise.then(() => {
-                        this.revealVideoElement(video, item);
+                        revealHlsVideo();
                     }).catch(err => {
                         if (err.name === 'NotAllowedError' && this._isIOS()) {
                             // iOS PWA: Video autoplay blocked, need user interaction
@@ -4463,6 +4492,7 @@ class OmnexPlayer {
 
             this.hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
+                    clearStartupWatchdog();
                     this.hideVideoElement(video);
                     this._currentVideoItem = null;
                     this.scheduleNext(2);
@@ -4477,13 +4507,13 @@ class OmnexPlayer {
             video.src = url;
 
             video.oncanplaythrough = () => {
-                this.revealVideoElement(video, item);
+                revealHlsVideo();
             };
 
             const nativeHlsPlayPromise = video.play();
             if (nativeHlsPlayPromise !== undefined && typeof nativeHlsPlayPromise.then === 'function') {
                 nativeHlsPlayPromise.then(() => {
-                    this.revealVideoElement(video, item);
+                    revealHlsVideo();
                 }).catch(err => {
                     if (err.name === 'NotAllowedError' && this._isIOS()) {
                         // iOS PWA: Video autoplay blocked, need user interaction
@@ -4498,6 +4528,7 @@ class OmnexPlayer {
                 this.scheduleNext(scheduledDuration);
             }
         } else {
+            clearStartupWatchdog();
             video.classList.remove('loading');
             this._currentVideoItem = null;
             this.scheduleNext(2);
@@ -4661,6 +4692,7 @@ class OmnexPlayer {
                 }
             }
 
+            const constrainedTv = this.isConstrainedTvProfile();
             const videos = doc.querySelectorAll('video');
             videos.forEach((video) => {
                 video.controls = false;
@@ -4675,9 +4707,39 @@ class OmnexPlayer {
                 if (!video.getAttribute('preload')) {
                     video.setAttribute('preload', 'auto');
                 }
-                video.style.opacity = '0';
-                video.style.visibility = 'hidden';
-                video.style.transition = 'opacity 120ms linear';
+
+                const sources = video.querySelectorAll('source');
+                let sourceUpdated = false;
+                if (video.src) {
+                    const adaptedVideoSrc = this.getConstrainedTvPlaybackUrl(video.src);
+                    if (adaptedVideoSrc !== video.src) {
+                        video.src = adaptedVideoSrc;
+                        sourceUpdated = true;
+                    }
+                }
+                sources.forEach((sourceNode) => {
+                    const sourceSrc = sourceNode.getAttribute('src');
+                    if (!sourceSrc) return;
+                    const adaptedSourceSrc = this.getConstrainedTvPlaybackUrl(sourceSrc);
+                    if (adaptedSourceSrc !== sourceSrc) {
+                        sourceNode.setAttribute('src', adaptedSourceSrc);
+                        sourceUpdated = true;
+                    }
+                });
+                if (sourceUpdated && typeof video.load === 'function') {
+                    try {
+                        video.load();
+                    } catch (e) {}
+                }
+
+                if (constrainedTv) {
+                    video.style.visibility = 'visible';
+                    video.style.opacity = '1';
+                } else {
+                    video.style.opacity = '0';
+                    video.style.visibility = 'hidden';
+                    video.style.transition = 'opacity 120ms linear';
+                }
 
                 const revealVideo = () => {
                     video.style.visibility = 'visible';
@@ -4685,9 +4747,7 @@ class OmnexPlayer {
                 };
                 const revealIfReady = () => {
                     const hasFrame = video.readyState >= 2;
-                    const hasProgress = Number(video.currentTime || 0) > 0;
-                    const isPlaying = !video.paused && !video.ended;
-                    if (hasFrame && (isPlaying || hasProgress)) {
+                    if (hasFrame) {
                         revealVideo();
                         return true;
                     }
@@ -4702,8 +4762,15 @@ class OmnexPlayer {
                 }
 
                 // Keep video hidden until an actual decoded frame is available.
-                setTimeout(revealIfReady, 1200);
-                setTimeout(revealIfReady, 2600);
+                if (!constrainedTv) {
+                    setTimeout(revealIfReady, 1200);
+                    setTimeout(revealIfReady, 2600);
+                    setTimeout(() => {
+                        if (!revealIfReady()) {
+                            revealVideo();
+                        }
+                    }, 4200);
+                }
 
                 if (video.paused && video.autoplay) {
                     const playPromise = video.play();
