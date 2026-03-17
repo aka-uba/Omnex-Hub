@@ -1,8 +1,8 @@
-﻿{
+{
     "versionCode":  43,
     "versionName":  "2.9.14",
     "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=43",
-    "releaseNotes":  "- TV tarafinda html/video gecislerinde decoder cakisma riskini azaltan oynatma iyilestirmeleri`n- PWA tarafinda web-template endpoint cache davranisi guncellendi`n- Oynatma stabilitesi ve gecis guvenilirligi artirildi",
+    "releaseNotes":  "- TV tarafinda html/video gecislerinde decoder cakisma riskini azaltan oynatma iyilestirmeleri\n- PWA tarafinda web-template endpoint cache davranisi guncellendi\n- Oynatma stabilitesi ve gecis guvenilirligi artirildi",
     "mandatory":  false,
     "sha256":  "9fdc4e5dcfb83fceb2988416b503698adb14e794ccfd127a901ce981f31653ed"
 }
