@@ -66,6 +66,10 @@ class OmnexPlayer {
             queryParams.get('precache'),
             globalPlayerConfig.enableMediaPrecache !== false
         );
+        const enableNativeVideo = parseBooleanSetting(
+            queryParams.get('native') || queryParams.get('native_video') || queryParams.get('nativeVideo'),
+            globalPlayerConfig.enableNativeVideo !== false
+        );
         const enableMediaDiagnostics = parseBooleanSetting(
             queryParams.get('media_diag') || queryParams.get('mediaDiag'),
             false
@@ -110,6 +114,7 @@ class OmnexPlayer {
             statusBarHideDelay: 3000, // 3 seconds
             enableServiceWorker: enableServiceWorker,
             enableMediaPrecache: enableMediaPrecache,
+            enableNativeVideo: enableNativeVideo,
             showInstallPromptInAndroidApp: globalPlayerConfig.showInstallPromptInAndroidApp === true,
             apkDownloadUrl: (apkUrlFromQuery || globalPlayerConfig.apkDownloadUrl || '').trim() || null
         };
@@ -3682,6 +3687,12 @@ class OmnexPlayer {
      * âœ… PHASE 2: Check if native video playback is available (ExoPlayer)
      */
     hasNativeVideoSupport() {
+        if (this.config.enableNativeVideo === false) {
+            return false;
+        }
+        if (this.isConstrainedTvProfile()) {
+            return false;
+        }
         if (!window.AndroidBridge || typeof window.AndroidBridge.playVideoNative !== 'function') {
             return false;
         }

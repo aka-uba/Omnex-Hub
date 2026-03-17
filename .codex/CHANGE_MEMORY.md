@@ -5292,3 +5292,26 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Temp backups created before edit:
     - `.codex/tmp_backups/player.js.pre_startup_recovery_20260317_062738.bak`
     - `.codex/tmp_backups/index.html.pre_player_js_v69_20260317_062738.bak`
+## 2026-03-17 - Disable native video path on constrained TV profile
+
+- Request: Resolve repeated "Native video failed, using WebView" failures observed on TV.
+- Findings:
+  1. TV constrained profile (`isTV/isAndroidTV` + `enableMediaPrecache=false`) still attempted native Exo path, leading to recurring native fallback errors/toasts.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Added `enableNativeVideo` runtime config parsing (`native`, `native_video`, `nativeVideo`).
+     - Updated `hasNativeVideoSupport()` to return `false` when:
+       - `enableNativeVideo=false`, or
+       - constrained TV profile is detected.
+     - Result: constrained TV devices use WebView path directly; native failure toast cycle is avoided.
+  2. **public/player/index.html**
+     - Bumped player script cache-bust `v=69 -> v=70`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/sw.js` (OK)
+- Risks/Follow-up:
+  - Native Exo optimizations are intentionally bypassed on constrained TV profile; this favors stability over native performance.
+- Backup/Restore safety:
+  - Temp backups created before edit:
+    - `.codex/tmp_backups/player.js.pre_disable_native_tv_20260317_063754.bak`
+    - `.codex/tmp_backups/index.html.pre_player_js_v70_20260317_063754.bak`
