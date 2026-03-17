@@ -5422,3 +5422,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/Restore safety:
   - Temp backup created:
     - `.codex/tmp_backups/player.js.pre_remove_360_force_20260317_071955.bak`
+## 2026-03-17 - Restore forced 360p rewrite on user request
+
+- Request: Revert removal of forced 360p rewrite; restore previous behavior.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Restored constrained-TV `1080/720/540 -> 360` m3u8 rewrite in `getConstrainedTvPlaybackUrl()`.
+  2. **public/player/index.html**
+     - Bumped player script cache-bust `v=72 -> v=73`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+- Risks/Follow-up:
+  - Decoder-fragile TV profile will again force 360p variant.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/player.js.pre_revert_360_restore_20260317_072503.bak`
+    - `.codex/tmp_backups/index.html.pre_revert_360_restore_20260317_072503.bak`
