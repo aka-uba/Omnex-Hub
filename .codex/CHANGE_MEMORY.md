@@ -5700,9 +5700,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   4. **Device/runtime verification**
      - Confirmed APK version on G66: `versionName=2.9.15`, `versionCode=44`.
      - Confirmed runtime transition logs still honor JS timing (e.g. `Transition set ... 500ms`).
+  5. **Git + deploy**
+     - Commit: `bfde514` (`fix(player): stabilize apk image transitions and refresh player cache`).
+     - Pushed: `origin/main` (`f5746cc -> bfde514`).
+     - Server deploy completed on `/opt/omnex-hub` with `up -d --build --force-recreate app`.
+     - Post-deploy verification:
+       - `curl http://127.0.0.1:8080/player/index.html` -> `player.js?v=81`
+       - `curl http://127.0.0.1:8080/player/sw.js` -> `CACHE_VERSION = 'v1.3.18'`
 - Checks run:
   - `node --check public/player/assets/js/player.js` (OK)
   - `node --check public/player/sw.js` (OK)
+  - Deploy checks:
+    - `docker compose ... ps app` (healthy after recreate)
+    - `git rev-parse --short HEAD` on server (`bfde514`)
   - ADB verification:
     - `dumpsys package com.omnex.player` (version check OK)
     - `logcat` filtered for `OmnexPlayer`/`ExoPlayerManager` (transition timing and load URL observed)
