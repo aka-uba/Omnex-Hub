@@ -5264,3 +5264,31 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/Restore safety:
   - Temp backup created before edit:
     - `.codex/tmp_backups/public_sw.js.pre_preserve_player_cache_20260317_062304.bak`
+## 2026-03-17 - WebView startup watchdog recovery and SW re-register reduction
+
+- Request: Analyze latest media diagnostics where first video hits startup watchdog; continue hardening without assumptions.
+- Findings:
+  1. `webview-video-startup-watchdog` repeats on first cycle before any reveal event.
+  2. Diagnostics hooks were initialized after first playback start, reducing first-failure visibility.
+  3. Player SW registration always re-ran; in debug sessions this increases SW churn/noise.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Added `appendCacheBust()` utility for one-shot startup retries.
+     - Moved media diagnostics hook setup earlier in `init()` (before playback starts).
+     - Added startup recovery flow in `playVideoWebView()`:
+       - first watchdog/error/play-reject triggers one cache-busted retry,
+       - second failure falls back to next item.
+     - Added richer diagnostics for play promise rejections and startup failure reasons.
+     - Added SW registration short-circuit when an active matching player SW already exists.
+  2. **public/player/index.html**
+     - Bumped player script cache-bust `v=68 -> v=69`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/sw.js` (OK)
+- Risks/Follow-up:
+  - Browser extension-origin `contentScript.js` blob fetch errors remain external and can still pollute console.
+  - If source media itself is broken/unreachable, one-shot retry will still fail and skip item (expected).
+- Backup/Restore safety:
+  - Temp backups created before edit:
+    - `.codex/tmp_backups/player.js.pre_startup_recovery_20260317_062738.bak`
+    - `.codex/tmp_backups/index.html.pre_player_js_v69_20260317_062738.bak`

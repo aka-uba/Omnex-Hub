@@ -344,6 +344,17 @@ class OmnexPlayer {
         });
     }
 
+    appendCacheBust(url, tag = 'r') {
+        try {
+            const parsed = new URL(String(url || ''), window.location.href);
+            parsed.searchParams.set('_omx_retry', `${tag}_${Date.now()}`);
+            return parsed.toString();
+        } catch (error) {
+            const separator = String(url || '').includes('?') ? '&' : '?';
+            return `${url}${separator}_omx_retry=${tag}_${Date.now()}`;
+        }
+    }
+
     /**
      * Get device info from Android Bridge or browser
      * @returns {Object} Device information
@@ -521,6 +532,7 @@ class OmnexPlayer {
             this.cacheElements();
             this.applyDeviceProfileClasses();
             this.setupFullscreenListener();
+            this.setupMediaDiagnosticsHooks();
 
             await storage.init();
             await this.registerServiceWorker();
@@ -4287,11 +4299,23 @@ class OmnexPlayer {
         this.hideVideoElement(video);
 
         let startupWatchdog = null;
+        let startupRetryAttempted = false;
         const clearStartupWatchdog = () => {
             if (startupWatchdog) {
                 clearTimeout(startupWatchdog);
                 startupWatchdog = null;
             }
+        };
+        const failWebViewStartup = (reason) => {
+            clearStartupWatchdog();
+            this.recordMediaDiagnostic('webview-video-startup-failed', {
+                reason,
+                itemName: item && item.name ? String(item.name) : '',
+                details: this.getVideoErrorDetails(video)
+            });
+            this.hideVideoElement(video);
+            this._currentVideoItem = null;
+            this.scheduleNext(2);
         };
         const revealWebViewVideo = () => {
             clearStartupWatchdog();
@@ -4303,18 +4327,70 @@ class OmnexPlayer {
                 currentTime: this.roundDebugValue(video.currentTime || 0, 3)
             });
         };
-        startupWatchdog = setTimeout(() => {
-            if (!this.isPlaying || this._currentVideoItem !== item) {
-                return;
+        const attemptStartupRecovery = () => {
+            if (startupRetryAttempted || !this.isPlaying || this._currentVideoItem !== item) {
+                return false;
             }
-            this.recordMediaDiagnostic('webview-video-startup-watchdog', {
+
+            startupRetryAttempted = true;
+            const retryUrl = this.appendCacheBust(url, 'startup');
+            this.recordMediaDiagnostic('webview-video-startup-retry', {
                 itemName: item && item.name ? String(item.name) : '',
-                details: this.getVideoErrorDetails(video)
+                originalUrlTail: String(url || '').slice(-220),
+                retryUrlTail: String(retryUrl || '').slice(-220)
             });
-            this.hideVideoElement(video);
-            this._currentVideoItem = null;
-            this.scheduleNext(2);
-        }, 9000);
+
+            try {
+                video.pause();
+            } catch (pauseError) {}
+
+            try {
+                video.removeAttribute('src');
+                video.load();
+            } catch (resetError) {}
+
+            video.src = retryUrl;
+            video.load();
+
+            const retryPlayPromise = video.play();
+            if (retryPlayPromise !== undefined && typeof retryPlayPromise.then === 'function') {
+                retryPlayPromise.then(() => {
+                    this.recordMediaDiagnostic('webview-video-startup-retry-playing', {
+                        itemName: item && item.name ? String(item.name) : '',
+                        details: this.getVideoErrorDetails(video)
+                    });
+                    revealWebViewVideo();
+                }).catch((retryErr) => {
+                    this.recordMediaDiagnostic('webview-video-startup-retry-play-rejected', {
+                        itemName: item && item.name ? String(item.name) : '',
+                        errorName: retryErr && retryErr.name ? String(retryErr.name) : '',
+                        errorMessage: retryErr && retryErr.message ? String(retryErr.message) : ''
+                    });
+                    failWebViewStartup('retry-play-rejected');
+                });
+            }
+
+            return true;
+        };
+        const scheduleStartupWatchdog = (timeoutMs) => {
+            clearStartupWatchdog();
+            startupWatchdog = setTimeout(() => {
+                if (!this.isPlaying || this._currentVideoItem !== item) {
+                    return;
+                }
+                this.recordMediaDiagnostic('webview-video-startup-watchdog', {
+                    itemName: item && item.name ? String(item.name) : '',
+                    retryAttempted: startupRetryAttempted,
+                    details: this.getVideoErrorDetails(video)
+                });
+                if (!attemptStartupRecovery()) {
+                    failWebViewStartup('watchdog-timeout');
+                } else {
+                    scheduleStartupWatchdog(5000);
+                }
+            }, timeoutMs);
+        };
+        scheduleStartupWatchdog(9000);
 
         // Track current video URL
         this._currentVideoUrl = url;
@@ -4360,14 +4436,15 @@ class OmnexPlayer {
             };
 
             video.onerror = () => {
-                clearStartupWatchdog();
                 this.recordMediaDiagnostic('webview-video-error', {
                     itemName: item && item.name ? String(item.name) : '',
                     details: this.getVideoErrorDetails(video)
                 });
-                this.hideVideoElement(video);
-                this._currentVideoItem = null;
-                this.scheduleNext(2);
+                if (!attemptStartupRecovery()) {
+                    failWebViewStartup('video-error');
+                } else {
+                    scheduleStartupWatchdog(5000);
+                }
             };
 
             video.onplay = () => {
@@ -4451,13 +4528,16 @@ class OmnexPlayer {
                     // If no duration and no loop, onended will call playNext
                     // If loop is true, onended handles the loop restart
                 }).catch(err => {
+                    this.recordMediaDiagnostic('webview-video-play-rejected', {
+                        itemName: item && item.name ? String(item.name) : '',
+                        errorName: err && err.name ? String(err.name) : '',
+                        errorMessage: err && err.message ? String(err.message) : ''
+                    });
                     if (err.name === 'AbortError') {
                         setTimeout(() => {
                             if (this.isPlaying && this._currentVideoItem === item) {
                                 video.play().catch(() => {
-                                    clearStartupWatchdog();
-                                    this._currentVideoItem = null;
-                                    this.scheduleNext(2);
+                                    failWebViewStartup('play-retry-aborterror-failed');
                                 });
                             }
                         }, 500);
@@ -4466,9 +4546,11 @@ class OmnexPlayer {
                         this._iosInteractionGranted = false;
                         this._showIOSTapToPlayOverlay();
                     } else {
-                        clearStartupWatchdog();
-                        this._currentVideoItem = null;
-                        this.scheduleNext(2);
+                        if (!attemptStartupRecovery()) {
+                            failWebViewStartup('play-rejected');
+                        } else {
+                            scheduleStartupWatchdog(5000);
+                        }
                     }
                 });
             } else {
@@ -5835,8 +5917,6 @@ class OmnexPlayer {
      * Setup event listeners
      */
     setupEventListeners() {
-        this.setupMediaDiagnosticsHooks();
-
         if (this.elements.btnRetry) {
             this.elements.btnRetry.addEventListener('click', () => {
                 this.init();
@@ -5998,8 +6078,24 @@ class OmnexPlayer {
                 if (!scopePath.endsWith('/')) {
                     scopePath += '/';
                 }
+                const expectedSwPath = scopePath + 'sw.js';
+                let existingRegistration = null;
+                if (typeof navigator.serviceWorker.getRegistration === 'function') {
+                    existingRegistration = await navigator.serviceWorker.getRegistration(scopePath);
+                }
 
-                const registration = await navigator.serviceWorker.register(scopePath + 'sw.js', {
+                const activeScriptUrl = existingRegistration && existingRegistration.active
+                    ? String(existingRegistration.active.scriptURL || '')
+                    : '';
+                if (activeScriptUrl.endsWith(expectedSwPath)) {
+                    this.recordMediaDiagnostic('player-sw-existing-active', {
+                        scope: scopePath,
+                        activeScriptUrl
+                    });
+                    return;
+                }
+
+                const registration = await navigator.serviceWorker.register(expectedSwPath, {
                     scope: scopePath
                 });
                 this.recordMediaDiagnostic('player-sw-registered', {
