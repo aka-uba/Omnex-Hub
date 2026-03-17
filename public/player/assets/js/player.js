@@ -3005,7 +3005,8 @@ class OmnexPlayer {
         if (prevElement && hasTransition && !sameElementReuse) {
             const shouldDeferExit =
                 nextContentType === 'video' ||
-                nextContentType === 'stream';
+                nextContentType === 'stream' ||
+                nextContentType === 'html';
 
             if (shouldDeferExit) {
                 // Keep previous content visible until the next content is actually ready.
