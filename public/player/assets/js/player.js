@@ -2868,12 +2868,6 @@ class OmnexPlayer {
         if (item.transition) {
             this._transitionType = item.transition;
             this._transitionDuration = parseInt(item.transition_duration, 10) || this._playlistTransitionDuration || 500;
-            // Apply device profile caps
-            if (this.isLegacyProfile() && this._transitionType !== 'none') {
-                this._transitionDuration = Math.min(this._transitionDuration, 300);
-            } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
-                this._transitionDuration = Math.min(this._transitionDuration, 400);
-            }
             document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
         } else {
             // Restore playlist defaults
@@ -4152,12 +4146,6 @@ class OmnexPlayer {
         this._transitionType = this.playlist.transition || 'none';
         this._transitionDuration = parseInt(this.playlist.transition_duration, 10) || 500;
 
-        if (this.isLegacyProfile() && this._transitionType !== 'none') {
-            this._transitionDuration = Math.min(this._transitionDuration, 300);
-        } else if (this.isBalancedProfile() && this._transitionType !== 'none') {
-            this._transitionDuration = Math.min(this._transitionDuration, 400);
-        }
-
         // Store playlist-level defaults so per-item overrides can restore them
         this._playlistTransitionType = this._transitionType;
         this._playlistTransitionDuration = this._transitionDuration;
@@ -4959,7 +4947,99 @@ class OmnexPlayer {
         }
     }
 
-    finalizeHtmlPlayback(iframe, item, duration) {
+    waitForSameOriginIframeVideoReady(iframe, timeoutMs = 4200, loadToken = null) {
+        return new Promise((resolve) => {
+            if (!iframe) {
+                resolve(false);
+                return;
+            }
+
+            let doc = null;
+            try {
+                doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+            } catch (e) {
+                resolve(false);
+                return;
+            }
+
+            if (!doc) {
+                resolve(false);
+                return;
+            }
+
+            const videos = Array.from(doc.querySelectorAll('video'));
+            if (!videos.length) {
+                resolve(false);
+                return;
+            }
+
+            const pendingVideos = new Set();
+            const detachHandlers = [];
+            let finished = false;
+            let pollIntervalId = null;
+            let timeoutId = null;
+            const isVideoReady = (video) => video && video.readyState >= 2;
+
+            const finish = (readyReached) => {
+                if (finished) return;
+                finished = true;
+                if (pollIntervalId) clearInterval(pollIntervalId);
+                if (timeoutId) clearTimeout(timeoutId);
+                detachHandlers.forEach((detach) => {
+                    try { detach(); } catch (e) {}
+                });
+                resolve(readyReached);
+            };
+
+            const refreshPendingSet = () => {
+                pendingVideos.clear();
+                videos.forEach((video) => {
+                    if (!isVideoReady(video)) {
+                        pendingVideos.add(video);
+                    }
+                });
+            };
+
+            refreshPendingSet();
+            if (!pendingVideos.size) {
+                finish(true);
+                return;
+            }
+
+            videos.forEach((video) => {
+                const onReady = () => {
+                    if (!pendingVideos.has(video)) return;
+                    if (!isVideoReady(video)) return;
+                    pendingVideos.delete(video);
+                    if (!pendingVideos.size) {
+                        finish(true);
+                    }
+                };
+                ['loadeddata', 'canplay', 'playing', 'timeupdate'].forEach((eventName) => {
+                    video.addEventListener(eventName, onReady);
+                    detachHandlers.push(() => video.removeEventListener(eventName, onReady));
+                });
+            });
+
+            pollIntervalId = setInterval(() => {
+                if (loadToken && iframe.dataset.loadToken !== loadToken) {
+                    finish(false);
+                    return;
+                }
+
+                refreshPendingSet();
+                if (!pendingVideos.size) {
+                    finish(true);
+                }
+            }, 120);
+
+            timeoutId = setTimeout(() => {
+                finish(false);
+            }, Math.max(0, timeoutMs));
+        });
+    }
+
+    finalizeHtmlPlayback(iframe, item, duration, loadToken = null) {
         if (!iframe) return;
 
         this.traceDebug('HTML', 'finalize playback', {
@@ -4969,21 +5049,33 @@ class OmnexPlayer {
         });
 
         this.hardenSameOriginIframeContent(iframe);
-        this.clearNativePreloadedVideo('html-ready');
-        this.stopNativeVideoForTransition('html-ready');
-        this.traceTransitionSnapshot('html-finalize-before-enter', {
-            iframe: this.getElementDebugLabel(iframe),
-            itemName: item?.name || '',
-            duration
-        });
-        this.applyEnterTransition(iframe);
-
-        // Small paint buffer avoids timer starting before first stable frame.
-        setTimeout(() => {
-            if (this.isPlaying && this._currentElement === iframe) {
-                this.scheduleNext(duration);
+        this.waitForSameOriginIframeVideoReady(iframe, 4200, loadToken).then((videoReady) => {
+            if (loadToken && iframe.dataset.loadToken !== loadToken) {
+                return;
             }
-        }, 120);
+
+            this.traceDebug('HTML', 'iframe media-ready gate completed', {
+                iframe: this.getElementDebugLabel(iframe),
+                videoReady
+            });
+
+            this.clearNativePreloadedVideo('html-ready');
+            this.stopNativeVideoForTransition('html-ready');
+            this.traceTransitionSnapshot('html-finalize-before-enter', {
+                iframe: this.getElementDebugLabel(iframe),
+                itemName: item?.name || '',
+                duration,
+                videoReady
+            });
+            this.applyEnterTransition(iframe);
+
+            // Small paint buffer avoids timer starting before first stable frame.
+            setTimeout(() => {
+                if (this.isPlaying && this._currentElement === iframe) {
+                    this.scheduleNext(duration);
+                }
+            }, 120);
+        });
     }
 
     /**
@@ -5062,7 +5154,7 @@ class OmnexPlayer {
                 iframe: this.getElementDebugLabel(iframe),
                 finalUrlTail: (finalUrl || '').slice(-180)
             });
-            this.finalizeHtmlPlayback(iframe, item, duration);
+            this.finalizeHtmlPlayback(iframe, item, duration, loadToken);
         };
 
         iframe.onload = () => {
