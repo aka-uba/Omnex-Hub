@@ -380,6 +380,8 @@ class StreamChannelService
         $pid = (int)($state['pid'] ?? 0);
         $sameHash = (($state['encoder_hash'] ?? '') === $playlistHash);
         $isRunning = $this->isLikelyRunning($token, $profile, $state);
+        $keepPid = ($isRunning && $pid > 0) ? $pid : 0;
+        $this->stopDuplicateEncoders($token, $profile, $keepPid);
 
         if ($isRunning && !$forceRestart && $sameHash) {
             return [
@@ -838,6 +840,82 @@ class StreamChannelService
             }
         }
         return true;
+    }
+
+    private function stopDuplicateEncoders(string $token, string $profile, int $keepPid = 0): int
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            return 0;
+        }
+
+        $pids = $this->findEncoderPidsForChannel($token, $profile);
+        if (empty($pids)) {
+            return 0;
+        }
+
+        $stopped = 0;
+        foreach ($pids as $candidatePid) {
+            if ($keepPid > 0 && $candidatePid === $keepPid) {
+                continue;
+            }
+            @exec('kill -TERM ' . (int)$candidatePid . ' 2>/dev/null');
+            usleep(120000);
+            if ($this->isPidRunning($candidatePid)) {
+                @exec('kill -KILL ' . (int)$candidatePid . ' 2>/dev/null');
+            }
+            $stopped++;
+        }
+
+        return $stopped;
+    }
+
+    private function findEncoderPidsForChannel(string $token, string $profile): array
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            return [];
+        }
+
+        $channelDir = $this->getChannelDir($token, $profile);
+        if ($channelDir === '') {
+            return [];
+        }
+
+        $rows = [];
+        $code = 0;
+        @exec('ps -eo pid=,args=', $rows, $code);
+        if ($code !== 0 || empty($rows)) {
+            return [];
+        }
+
+        $pids = [];
+        foreach ($rows as $row) {
+            $line = trim((string)$row);
+            if ($line === '') {
+                continue;
+            }
+            if (!preg_match('/^(\d+)\s+(.+)$/', $line, $matches)) {
+                continue;
+            }
+            $pid = (int)$matches[1];
+            $args = (string)$matches[2];
+            if ($pid <= 0) {
+                continue;
+            }
+            if (stripos($args, 'ffmpeg') === false) {
+                continue;
+            }
+            if (strpos($args, $channelDir) === false) {
+                continue;
+            }
+            if (!$this->isPidRunning($pid)) {
+                continue;
+            }
+            $pids[] = $pid;
+        }
+
+        $pids = array_values(array_unique($pids));
+        sort($pids);
+        return $pids;
     }
 
     private function isLikelyRunning(string $token, string $profile, array $state): bool

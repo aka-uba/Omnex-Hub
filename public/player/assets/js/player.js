@@ -66,6 +66,10 @@ class OmnexPlayer {
             queryParams.get('precache'),
             globalPlayerConfig.enableMediaPrecache !== false
         );
+        const enableMediaDiagnostics = parseBooleanSetting(
+            queryParams.get('media_diag') || queryParams.get('mediaDiag'),
+            false
+        );
 
         // State
         this.state = 'loading'; // loading, registration, playing, error
@@ -122,6 +126,10 @@ class OmnexPlayer {
 
         // Debug mode
         this.debug = window.location.search.includes('debug');
+        this.mediaDiagnosticsEnabled = this.debug || enableMediaDiagnostics;
+        this.mediaDiagnosticsLimit = 300;
+        this.mediaDiagnostics = [];
+        this._mediaDiagnosticsHooked = false;
 
         // PWA Install
         this.deferredInstallPrompt = null;
@@ -268,6 +276,72 @@ class OmnexPlayer {
         // Detailed state snapshots disabled in production code path.
         // Keep method as no-op to avoid touching transition flow call sites.
         return;
+    }
+
+    recordMediaDiagnostic(eventName, payload = {}) {
+        if (!this.mediaDiagnosticsEnabled) {
+            return;
+        }
+
+        const entry = {
+            ts: new Date().toISOString(),
+            event: String(eventName || 'unknown'),
+            payload: payload && typeof payload === 'object' ? payload : {}
+        };
+
+        this.mediaDiagnostics.push(entry);
+        if (this.mediaDiagnostics.length > this.mediaDiagnosticsLimit) {
+            this.mediaDiagnostics.shift();
+        }
+
+        window.__omnexMediaDiagnostics = this.mediaDiagnostics.slice();
+        console.warn('[Player][MediaDiag]', entry);
+    }
+
+    getVideoErrorDetails(video) {
+        if (!video) {
+            return null;
+        }
+
+        const mediaError = video.error || null;
+        return {
+            code: mediaError ? mediaError.code : 0,
+            message: mediaError && typeof mediaError.message === 'string' ? mediaError.message : '',
+            networkState: video.networkState,
+            readyState: video.readyState,
+            currentTime: this.roundDebugValue(video.currentTime || 0, 3),
+            duration: Number.isFinite(video.duration) ? this.roundDebugValue(video.duration, 3) : null,
+            paused: !!video.paused,
+            ended: !!video.ended,
+            srcTail: (video.currentSrc || video.src || '').slice(-220)
+        };
+    }
+
+    setupMediaDiagnosticsHooks() {
+        if (!this.mediaDiagnosticsEnabled || this._mediaDiagnosticsHooked) {
+            return;
+        }
+
+        this._mediaDiagnosticsHooked = true;
+        this.recordMediaDiagnostic('diag-hooks-ready', {
+            href: window.location.href,
+            userAgent: navigator.userAgent
+        });
+
+        window.addEventListener('error', (event) => {
+            this.recordMediaDiagnostic('window-error', {
+                message: event && event.message ? String(event.message) : '',
+                source: event && event.filename ? String(event.filename) : '',
+                line: event && Number.isFinite(event.lineno) ? event.lineno : 0
+            });
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            const reason = event ? event.reason : null;
+            this.recordMediaDiagnostic('unhandled-rejection', {
+                reason: reason && reason.message ? String(reason.message) : String(reason || '')
+            });
+        });
     }
 
     /**
@@ -4125,6 +4199,11 @@ class OmnexPlayer {
         this.clearTransitionClasses(video);
         video.style.display = 'block';
         this._currentElement = video;
+        this.recordMediaDiagnostic('webview-video-begin', {
+            itemId: item && typeof item.id !== 'undefined' ? item.id : null,
+            itemName: item && item.name ? String(item.name) : '',
+            urlTail: String(url || '').slice(-220)
+        });
 
         // Track loop count for this item
         this._currentLoopCount = 0;
@@ -4217,11 +4296,21 @@ class OmnexPlayer {
         const revealWebViewVideo = () => {
             clearStartupWatchdog();
             this.revealVideoElement(video, item);
+            this.recordMediaDiagnostic('webview-video-revealed', {
+                itemName: item && item.name ? String(item.name) : '',
+                readyState: video.readyState,
+                networkState: video.networkState,
+                currentTime: this.roundDebugValue(video.currentTime || 0, 3)
+            });
         };
         startupWatchdog = setTimeout(() => {
             if (!this.isPlaying || this._currentVideoItem !== item) {
                 return;
             }
+            this.recordMediaDiagnostic('webview-video-startup-watchdog', {
+                itemName: item && item.name ? String(item.name) : '',
+                details: this.getVideoErrorDetails(video)
+            });
             this.hideVideoElement(video);
             this._currentVideoItem = null;
             this.scheduleNext(2);
@@ -4272,6 +4361,10 @@ class OmnexPlayer {
 
             video.onerror = () => {
                 clearStartupWatchdog();
+                this.recordMediaDiagnostic('webview-video-error', {
+                    itemName: item && item.name ? String(item.name) : '',
+                    details: this.getVideoErrorDetails(video)
+                });
                 this.hideVideoElement(video);
                 this._currentVideoItem = null;
                 this.scheduleNext(2);
@@ -4291,6 +4384,11 @@ class OmnexPlayer {
                 if (video.ended) {
                     return;
                 }
+
+                this.recordMediaDiagnostic('webview-video-paused-unexpected', {
+                    itemName: item && item.name ? String(item.name) : '',
+                    details: this.getVideoErrorDetails(video)
+                });
 
                 if (this.isPlaying && this._currentVideoItem === item) {
                     setTimeout(() => {
@@ -5737,6 +5835,8 @@ class OmnexPlayer {
      * Setup event listeners
      */
     setupEventListeners() {
+        this.setupMediaDiagnosticsHooks();
+
         if (this.elements.btnRetry) {
             this.elements.btnRetry.addEventListener('click', () => {
                 this.init();
@@ -5901,6 +6001,10 @@ class OmnexPlayer {
 
                 const registration = await navigator.serviceWorker.register(scopePath + 'sw.js', {
                     scope: scopePath
+                });
+                this.recordMediaDiagnostic('player-sw-registered', {
+                    scope: registration && registration.scope ? registration.scope : scopePath,
+                    controller: navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL : ''
                 });
 
                 registration.addEventListener('updatefound', () => {

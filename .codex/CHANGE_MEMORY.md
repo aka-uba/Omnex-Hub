@@ -5220,3 +5220,31 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/player.js.pre_sw_scope_isolation_20260317_060129.bak`
     - `.codex/tmp_backups/public_sw.js.pre_player_bypass_20260317_060129.bak`
     - `.codex/tmp_backups/index.html.pre_player_js_v67_20260317_060301.bak`
+## 2026-03-17 - Server load/zombie mitigation and browser-side media diagnostics
+
+- Request: Check server resources for possible stuck/zombie process; investigate first-refresh freeze in Chrome player; add debug hooks to capture decode/fallback behavior from browser side.
+- Findings:
+  1. Server load spike source was `omnex-channel-worker-1` running duplicate `ffmpeg` encoders for the same channel token/profile (~68% + ~61% CPU) and one `ffmpeg <defunct>` process.
+  2. Immediate mitigation via `omnex-channel-worker-1` restart dropped worker CPU to ~0% and removed active duplicate ffmpeg processes.
+  3. Browser log confusion remains valid: root `public/sw.js` logs can appear separately from player SW; player SW scope isolation already in place.
+- Changes:
+  1. **services/StreamChannelService.php**
+     - Added duplicate encoder cleanup path in `ensureEncoderRunning()`.
+     - Added `stopDuplicateEncoders()` and `findEncoderPidsForChannel()` to detect/terminate extra ffmpeg PIDs bound to same channel directory.
+  2. **public/player/assets/js/player.js**
+     - Added optional media diagnostics (`media_diag=1` or `debug`) with in-browser ring buffer `window.__omnexMediaDiagnostics`.
+     - Added hooks for `window error`, `unhandledrejection`, SW registration info, startup watchdog, WebView video error/pause/reveal events.
+  3. **public/player/index.html**
+     - Bumped player script cache-bust version `v=67 -> v=68`.
+- Checks run:
+  - `php -l services/StreamChannelService.php` (OK)
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/sw.js` (OK)
+- Risks/Follow-up:
+  - OMX decoder failures on TV WebView/Chromium path are still hardware/codec-level and may continue independently of server load.
+  - Media diagnostics can increase console noise when enabled (`media_diag=1`); disabled by default.
+- Backup/Restore safety:
+  - Temp backups created before edits:
+    - `.codex/tmp_backups/StreamChannelService.php.pre_ffmpeg_dedupe_20260317_061543.bak`
+    - `.codex/tmp_backups/player.js.pre_media_diag_20260317_061543.bak`
+    - `.codex/tmp_backups/index.html.pre_player_js_v68_20260317_061543.bak`
