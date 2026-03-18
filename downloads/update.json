@@ -1,8 +1,8 @@
 {
-    "versionCode":  49,
-    "versionName":  "2.9.20",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=49",
-    "releaseNotes":  "- Display tuning artik 3 kademe: L1/L2/L3\n- Legacy cihazlarda gorunur aralik aktif: 1.00/1.15/1.30\n- Overlay kontrolde kumanda veya dokunma ile ikonlar gorunur, tekrar gizlenir",
+    "versionCode":  50,
+    "versionName":  "2.9.21",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
+    "releaseNotes":  "- Display tuning 3 kademe sabitlendi: L1/L2/L3 = 1.00/1.15/1.30\n- Legacy dahil tum Android APK cihazlarda manual contrast ust limiti 1.30 olarak acildi\n- Kumanda/dokunma ile gorunen overlay kontrol davranisi korundu",
     "mandatory":  false,
-    "sha256":  "03eeab4cf8b9cbe067646f55f09608a5c7e0810c6140e6fa9638c1259c94ddbb"
+    "sha256":  "16604109b5be65c89f37749dbfeee0eea2117f0cdd348bbf4ef6e5529be81f2a"
 }

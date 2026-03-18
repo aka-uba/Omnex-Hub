@@ -1655,11 +1655,8 @@ class OmnexPlayer {
         const baseBrightness = Number.isFinite(Number(tuning?.brightness))
             ? Number(tuning.brightness)
             : 1.0;
-        const maxContrast = Number.isFinite(Number(tuning?.profileMaxContrast))
-            ? Number(tuning.profileMaxContrast)
-            : Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
         const contrastEnabled = tuning?.contrastEnabled !== false;
-        const safeMaxContrast = contrastEnabled ? Math.min(Math.max(maxContrast, 1.0), 1.16) : 1.0;
+        const safeMaxContrast = contrastEnabled ? 1.30 : 1.0;
         const profileId = String(this.performanceProfile || '').trim().toLowerCase();
         const profilePresetMap = {
             legacy: [1.00, 1.15, 1.30],
