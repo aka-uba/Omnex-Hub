@@ -4203,6 +4203,15 @@ class OmnexPlayer {
         if (!video) return;
         if (!this.isPlaying || this._currentVideoItem !== item) return;
 
+        // Do not reveal during metadata/preload phase.
+        // Wait until a real frame exists and playback has started, otherwise
+        // Android WebView can animate in poster/preload visuals.
+        const hasDecodedFrame = video.readyState >= 2;
+        const playbackStarted = !video.paused || video.currentTime > 0;
+        if (!hasDecodedFrame || !playbackStarted) {
+            return;
+        }
+
         const wasLoading = video.classList.contains('loading');
         const hasPendingExit = !!(this._pendingExitElement && this._pendingExitElement !== video);
         const alreadyVisible =
