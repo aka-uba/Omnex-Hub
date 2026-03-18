@@ -2942,6 +2942,11 @@
     padding: var(--space-4);
 }
 
+/* HTML generate modal preview - larger for better visibility */
+.modal .template-preview-card .template-preview-image.template-preview-live {
+    height: 360px;
+}
+
 .template-preview-image img {
     max-width: 100%;
     max-height: 100%;

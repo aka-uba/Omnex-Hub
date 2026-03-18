@@ -1068,6 +1068,18 @@ export class ProductListPage {
                         if (tid && previewCard && iframe) {
                             iframe.src = `${basePath}/api/templates/${tid}/preview-html?product_id=${productId}`;
                             previewCard.style.display = '';
+                            // Adjust preview height based on template aspect ratio
+                            const tpl = templates.find(t => String(t.id) === String(tid));
+                            if (tpl) {
+                                const w = parseInt(tpl.width) || 800;
+                                const h = parseInt(tpl.height) || 600;
+                                const previewImg = previewCard.querySelector('.template-preview-image');
+                                if (previewImg) {
+                                    const containerWidth = previewImg.offsetWidth || 400;
+                                    const aspectHeight = Math.round(containerWidth * (h / w));
+                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 500) + 'px';
+                                }
+                            }
                         } else if (previewCard) {
                             previewCard.style.display = 'none';
                         }
@@ -1219,6 +1231,18 @@ export class ProductListPage {
                         if (tid && previewCard && iframe && firstProductId) {
                             iframe.src = `${basePath}/api/templates/${tid}/preview-html?product_id=${firstProductId}`;
                             previewCard.style.display = '';
+                            // Adjust preview height based on template aspect ratio
+                            const tpl = templates.find(t => String(t.id) === String(tid));
+                            if (tpl) {
+                                const w = parseInt(tpl.width) || 800;
+                                const h = parseInt(tpl.height) || 600;
+                                const previewImg = previewCard.querySelector('.template-preview-image');
+                                if (previewImg) {
+                                    const containerWidth = previewImg.offsetWidth || 400;
+                                    const aspectHeight = Math.round(containerWidth * (h / w));
+                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 500) + 'px';
+                                }
+                            }
                         } else if (previewCard) {
                             previewCard.style.display = 'none';
                         }
