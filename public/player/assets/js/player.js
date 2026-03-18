@@ -165,7 +165,10 @@ class OmnexPlayer {
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
-        this._nativeOverlayOptimizationEnabled = this.isAndroidApp;
+        // Keep overlay-passive optimization limited to legacy profile only.
+        // Balanced/default profiles showed WebView/native compositing regressions
+        // on some Google TV devices during video->html handoff.
+        this._nativeOverlayOptimizationEnabled = this.isAndroidApp && this.isLegacyProfile();
         this._adaptiveTransitionState = {
             enabled: this.isAndroidApp && !this.isLegacyProfile(),
             constrained: false,
@@ -892,7 +895,7 @@ class OmnexPlayer {
         modal.innerHTML = `
             <div class="pwa-install-content">
                 <div class="pwa-install-icon">
-                    <img src="../branding/icon-192.png?v=5" alt="Omnex" width="60" height="60" style="border-radius: 12px;">
+                    <img src="../branding/pwa.png?v=5" alt="Omnex" width="60" height="60" style="border-radius: 12px; object-fit: cover;">
                 </div>
                 <h2>Kurulum Seçenekleri</h2>
                 <p>Tarayıcı için PWA kurabilir veya Android cihazlar için APK indirebilirsiniz.</p>
@@ -2828,7 +2831,7 @@ class OmnexPlayer {
 
         // ExoPlayer preload: find the next video item in playlist and preload it.
         // ExoPlayerManager.preloadNextVideo() is idempotent (skips if same URL).
-        if (nextVideoIndex >= 0 && this.hasNativeVideoSupport()) {
+        if (nextVideoIndex >= 0 && this.hasNativeVideoSupport() && this.config.enableMediaPrecache) {
             const videoItem = items[nextVideoIndex];
             const sourceVideoUrl = api.getMediaUrl(videoItem.url || (videoItem.media && videoItem.media.url));
             if (sourceVideoUrl && sourceVideoUrl !== this._currentVideoUrl) {
@@ -4110,11 +4113,19 @@ class OmnexPlayer {
         // Flush deferred exits immediately so previous HTML/image/video can
         // complete its exit animation and not stay above ExoPlayer.
         if (this._pendingExitElement && this._pendingExitElement !== video) {
-            this.traceDebug('TRANS', 'native video start - flushing pending exit', {
+            const overlapDelayMs = (this._transitionType === 'none')
+                ? 0
+                : Math.min(220, Math.max(80, Math.floor((this._transitionDuration || 300) * 0.3)));
+            this.traceDebug('TRANS', 'native video start - scheduling pending exit flush', {
                 pendingExitElement: this.getElementDebugLabel(this._pendingExitElement),
-                nativePlaceholder: this.getElementDebugLabel(video)
+                nativePlaceholder: this.getElementDebugLabel(video),
+                overlapDelayMs
             });
-            this.flushPendingExitTransition(null);
+            setTimeout(() => {
+                if (!this.isPlaying) return;
+                if (!this._pendingExitElement || this._pendingExitElement === video) return;
+                this.flushPendingExitTransition(video);
+            }, overlapDelayMs);
         }
 
         // Native enter transition runs on APK side, so release resolved transition
@@ -5148,17 +5159,13 @@ class OmnexPlayer {
                 return;
             }
 
-            const videos = Array.from(doc.querySelectorAll('video'));
-            if (!videos.length) {
-                resolve(false);
-                return;
-            }
-
-            const pendingVideos = new Set();
+            const noVideoGraceMs = Math.min(1200, Math.max(350, Math.floor(timeoutMs * 0.35)));
+            const trackedVideos = new Set();
             const detachHandlers = [];
             let finished = false;
             let pollIntervalId = null;
             let timeoutId = null;
+            const startedAt = Date.now();
             const isVideoReady = (video) => video && video.readyState >= 2;
 
             const finish = (readyReached) => {
@@ -5172,51 +5179,63 @@ class OmnexPlayer {
                 resolve(readyReached);
             };
 
-            const refreshPendingSet = () => {
-                pendingVideos.clear();
-                videos.forEach((video) => {
-                    if (!isVideoReady(video)) {
-                        pendingVideos.add(video);
-                    }
-                });
-            };
-
-            refreshPendingSet();
-            if (!pendingVideos.size) {
-                finish(true);
-                return;
-            }
-
-            videos.forEach((video) => {
+            const attachVideoGuards = (video) => {
+                if (!video || trackedVideos.has(video)) return;
+                trackedVideos.add(video);
                 const onReady = () => {
-                    if (!pendingVideos.has(video)) return;
-                    if (!isVideoReady(video)) return;
-                    pendingVideos.delete(video);
-                    if (!pendingVideos.size) {
-                        finish(true);
+                    if (loadToken && iframe.dataset.loadToken !== loadToken) {
+                        finish(false);
+                        return;
                     }
+                    refreshState();
                 };
                 ['loadeddata', 'canplay', 'playing', 'timeupdate'].forEach((eventName) => {
                     video.addEventListener(eventName, onReady);
                     detachHandlers.push(() => video.removeEventListener(eventName, onReady));
                 });
-            });
+            };
 
-            pollIntervalId = setInterval(() => {
+            const refreshState = () => {
+                if (finished) return;
                 if (loadToken && iframe.dataset.loadToken !== loadToken) {
                     finish(false);
                     return;
                 }
 
-                refreshPendingSet();
-                if (!pendingVideos.size) {
+                let videos = [];
+                try {
+                    videos = Array.from(doc.querySelectorAll('video'));
+                } catch (e) {
+                    finish(false);
+                    return;
+                }
+
+                if (!videos.length) {
+                    if ((Date.now() - startedAt) >= noVideoGraceMs) {
+                        finish(false);
+                    }
+                    return;
+                }
+
+                videos.forEach((video) => attachVideoGuards(video));
+                const pendingVideos = videos.filter((video) => !isVideoReady(video));
+                if (!pendingVideos.length) {
                     finish(true);
                 }
+            };
+
+            refreshState();
+            if (finished) {
+                return;
+            }
+
+            pollIntervalId = setInterval(() => {
+                refreshState();
             }, 120);
 
             timeoutId = setTimeout(() => {
                 finish(false);
-            }, Math.max(0, timeoutMs));
+            }, Math.max(noVideoGraceMs, timeoutMs));
         });
     }
 
@@ -5242,6 +5261,8 @@ class OmnexPlayer {
 
             this.clearNativePreloadedVideo('html-ready');
             this.stopNativeVideoForTransition('html-ready');
+            // Ensure WebView becomes opaque only when html is ready-to-enter.
+            this.setNativeVideoMode(false);
             this.traceTransitionSnapshot('html-finalize-before-enter', {
                 iframe: this.getElementDebugLabel(iframe),
                 itemName: item?.name || '',
@@ -5263,9 +5284,9 @@ class OmnexPlayer {
      * Play HTML/webpage content in iframe
      */
     playHtml(item) {
-        this.setNativeVideoMode(false);
         const iframe = this.getActiveHtmlElement();
         if (!iframe) {
+            this.setNativeVideoMode(false);
             this.scheduleNext(this.getScheduledDuration(item));
             return;
         }
@@ -5287,6 +5308,7 @@ class OmnexPlayer {
 
         const resolvedTarget = this.resolveHtmlPlaybackUrl(item);
         if (!resolvedTarget.originalUrl || !resolvedTarget.finalUrl) {
+            this.setNativeVideoMode(false);
             this.scheduleNext(this.getScheduledDuration(item));
             return;
         }

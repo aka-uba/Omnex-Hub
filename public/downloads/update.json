@@ -1,8 +1,8 @@
 {
-    "versionCode":  45,
-    "versionName":  "2.9.16",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=45",
-    "releaseNotes":  "- Native video katmanlamasi duzenlendi, yon ikonu video uzerinde kalici/surekli gorunur\n- ExoPlayer gecisinde WebView seffaflik yarisi giderildi, siyah ekran riski azaltildi\n- JS native video modu ile Android katman durumu senkronu guclendirildi",
+    "versionCode":  46,
+    "versionName":  "2.9.17",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=46",
+    "releaseNotes":  "- Video->HTML gecisinde html/video hazirlik kapisi iyilestirildi, gecis boslugu azaltildi\n- Native overlay optimizasyonu profile-bazli daraltildi (Google TV balanced uyumu)\n- Mobil ust bar ve player arkaplan tonu siyaha sabitlendi\n- Android launcher icon/adaptive icon kaynaklari duzenlendi",
     "mandatory":  false,
-    "sha256":  "6d7de3f034ca497f29127b037c0280bd2c68b72d938b89dd1839a0b33ef00cda"
+    "sha256":  "4d37336e4d0513955ea8ece8ef5478669dd12ece3fd6fc2c0316ca544be95f92"
 }

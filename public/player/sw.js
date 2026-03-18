@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const CACHE_VERSION = 'v1.3.19';
+const CACHE_VERSION = 'v1.3.20';
 const CACHE_NAME = `omnex-player-${CACHE_VERSION}`;
 const MEDIA_CACHE_NAME = `omnex-player-media-${CACHE_VERSION}`;
 
@@ -20,6 +20,7 @@ const STATIC_ASSETS = [
     './assets/js/storage.js',
     '../branding/favicon.png',
     '../branding/logo-player.png',
+    '../branding/pwa.png?v=5',
     '../branding/icon-192.png?v=5',
     '../branding/icon-512.png?v=5',
     '../branding/icon-maskable.png?v=5'
