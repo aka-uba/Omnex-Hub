@@ -3544,6 +3544,23 @@ class OmnexPlayer {
         return el === this.elements.htmlContent || el === this.elements.htmlContentAlt;
     }
 
+    isElementVisuallyActive(element) {
+        if (!element) return false;
+
+        const computed = window.getComputedStyle ? window.getComputedStyle(element) : null;
+        const display = (computed && computed.display) || element.style.display || '';
+        if (display === 'none') return false;
+
+        const visibility = (computed && computed.visibility) || element.style.visibility || '';
+        if (visibility === 'hidden') return false;
+
+        const opacityValue = (computed && computed.opacity) || element.style.opacity || '1';
+        const opacity = Number.parseFloat(opacityValue);
+        if (Number.isFinite(opacity) && opacity <= 0.02) return false;
+
+        return true;
+    }
+
     releaseIframeMediaDecoders(iframe, reason = 'native-budget') {
         if (!iframe) return false;
 
@@ -3597,19 +3614,27 @@ class OmnexPlayer {
             return;
         }
 
-        const candidates = [
-            this._pendingExitElement,
+        // Do not touch currently visible/pending-exit html elements here.
+        // Releasing their media too early causes visible preload-icon regressions.
+        const protectedElements = new Set([
             this._currentElement,
-            this.elements.htmlContent,
-            this.elements.htmlContentAlt
-        ];
+            this._pendingExitElement
+        ].filter(Boolean));
+
+        const candidates = [this.elements.htmlContent, this.elements.htmlContentAlt];
         const seen = new Set();
         candidates.forEach((candidate) => {
             if (!candidate || seen.has(candidate) || !this._isHtmlElement(candidate)) {
                 return;
             }
+            if (protectedElements.has(candidate)) {
+                return;
+            }
+            if (this.isElementVisuallyActive(candidate)) {
+                return;
+            }
             seen.add(candidate);
-            this.releaseIframeMediaDecoders(candidate, 'native-swap');
+            this.releaseIframeMediaDecoders(candidate, 'native-swap-hidden-slot');
         });
     }
 
