@@ -99,7 +99,9 @@ class OmnexPlayer {
         this.verifyPollingInterval = null;
         this.syncCodeTimer = null;
         this.statusBarTimer = null;
-        this.performanceProfile = perfProfileFromQuery || String(globalPlayerConfig.performanceProfile || 'default');
+        this.performanceProfile = (perfProfileFromQuery || String(globalPlayerConfig.performanceProfile || 'default'))
+            .trim()
+            .toLowerCase() || 'default';
         this._syncInFlight = false;
         this._queuedSyncPending = false;
         this._queuedSyncForceRestart = false;
@@ -173,10 +175,13 @@ class OmnexPlayer {
         this._nativeOverlayOptimizationEnabled = this.isAndroidApp && this.isLegacyProfile();
         this._adaptiveTransitionState = {
             enabled: this.isAndroidApp && !this.isLegacyProfile(),
+            strictMode: this.isAndroidApp && this.isBalancedProfile(),
             constrained: false,
             pressureScore: 0,
             highLagStreak: 0,
             stableStreak: 0,
+            pairRiskStreak: 0,
+            lastPair: '',
             intervalId: null,
             expectedTickAt: 0,
             lastReason: ''
@@ -195,6 +200,78 @@ class OmnexPlayer {
         return this.isLegacyProfile() || this.isBalancedProfile();
     }
 
+    normalizeContentType(contentType) {
+        const normalized = String(contentType || '').trim().toLowerCase();
+        if (!normalized) return 'none';
+        if (normalized === 'stream') return 'video';
+        return normalized;
+    }
+
+    isHtmlVideoPairTransition(fromType, toType) {
+        const from = this.normalizeContentType(fromType);
+        const to = this.normalizeContentType(toType);
+        return (from === 'html' && to === 'video') || (from === 'video' && to === 'html');
+    }
+
+    isStrictTransitionProfile() {
+        return this.isAndroidApp && (
+            this.isLegacyProfile() ||
+            this.isBalancedProfile() ||
+            !!this._adaptiveTransitionState?.constrained
+        );
+    }
+
+    getStrictTransitionDuration(durationMs, minMs = 220, maxMs = 320) {
+        const parsed = Number.parseInt(durationMs, 10);
+        const fallback = 300;
+        const base = Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+        return Math.min(Math.max(base, minMs), maxMs);
+    }
+
+    applyPairTransitionPolicy(previousContentType, nextContentType) {
+        const fromType = this.normalizeContentType(previousContentType);
+        const toType = this.normalizeContentType(nextContentType);
+        const pairKey = `${fromType}->${toType}`;
+        const isHtmlVideoPair = this.isHtmlVideoPairTransition(fromType, toType);
+        const state = this._adaptiveTransitionState;
+
+        if (state && state.enabled) {
+            state.lastPair = pairKey;
+            if (isHtmlVideoPair && this._transitionType !== 'none') {
+                state.pairRiskStreak = Math.min(12, (state.pairRiskStreak || 0) + 1);
+                if (!state.constrained && this.isBalancedProfile() && state.pairRiskStreak >= 3) {
+                    state.constrained = true;
+                    state.pressureScore = Math.max(state.pressureScore, 7);
+                    state.highLagStreak = Math.max(state.highLagStreak, 2);
+                    state.stableStreak = 0;
+                    state.lastReason = `pair:${pairKey}`;
+                }
+            } else {
+                state.pairRiskStreak = Math.max(0, (state.pairRiskStreak || 0) - 1);
+            }
+        }
+
+        if (this._transitionType === 'none' || !isHtmlVideoPair || !this.isStrictTransitionProfile()) {
+            return null;
+        }
+
+        const forcedDuration = this.getStrictTransitionDuration(this._transitionDuration || 300, 220, 300);
+        const previousType = this._transitionType;
+        const previousDuration = this._transitionDuration;
+
+        this._transitionType = 'fade';
+        this._transitionDuration = forcedDuration;
+        document.documentElement.style.setProperty('--transition-duration', this._transitionDuration + 'ms');
+
+        return {
+            pairKey,
+            previousType,
+            previousDuration,
+            forcedType: this._transitionType,
+            forcedDuration: this._transitionDuration
+        };
+    }
+
     mapBalancedTransition(transitionType) {
         const transition = String(transitionType || 'none').trim().toLowerCase();
         const balancedMap = {
@@ -208,7 +285,15 @@ class OmnexPlayer {
             'slide-down': 'push-down',
             'zoom': 'fade',
             'zoom-in': 'fade',
-            'zoom-out': 'fade'
+            'zoom-out': 'fade',
+            'rotate': 'fade',
+            'flip': 'fade',
+            'flip-x': 'fade',
+            'flip-y': 'fade',
+            'cube-left': 'fade',
+            'cube-right': 'fade',
+            'cube-up': 'fade',
+            'cube-down': 'fade'
         };
         return balancedMap[transition] || transition;
     }
@@ -250,10 +335,18 @@ class OmnexPlayer {
         }
 
         if (transition !== 'none' && this.isBalancedProfile()) {
+            const mappedTransition = this.mapBalancedTransition(transition);
+            const balancedWhitelist = new Set(['fade', 'crossfade', 'push-left', 'push-right', 'push-up', 'push-down']);
+            const strictBalanced = this.isAndroidApp && this.isBalancedProfile();
+            const safeType = strictBalanced && !balancedWhitelist.has(mappedTransition)
+                ? 'fade'
+                : mappedTransition;
             return {
-                type: this.mapBalancedTransition(transition),
-                duration: Math.min(Math.max(baseDuration, 260), 450),
-                policy: 'balanced',
+                type: safeType,
+                duration: strictBalanced
+                    ? this.getStrictTransitionDuration(baseDuration, 240, 360)
+                    : Math.min(Math.max(baseDuration, 260), 450),
+                policy: strictBalanced ? 'balanced-strict' : 'balanced',
                 adaptiveConstrained: false
             };
         }
@@ -301,6 +394,8 @@ class OmnexPlayer {
         state.pressureScore = 0;
         state.highLagStreak = 0;
         state.stableStreak = 0;
+        state.pairRiskStreak = 0;
+        state.lastPair = '';
         state.constrained = false;
         state.lastReason = '';
     }
@@ -312,29 +407,43 @@ class OmnexPlayer {
         }
 
         const lag = Math.max(0, Number(lagMs) || 0);
-        if (lag >= 180) {
+        const strictMode = !!state.strictMode;
+        const hardLagThreshold = strictMode ? 150 : 180;
+        const moderateLagThreshold = strictMode ? 105 : 120;
+        const lightLagThreshold = strictMode ? 70 : 80;
+        const stableLagThreshold = strictMode ? 28 : 35;
+        const pressureTrigger = strictMode ? 6 : 7;
+        const streakTrigger = strictMode ? 2 : 3;
+        const recoveryTicks = strictMode ? 75 : 45;
+
+        if (lag >= hardLagThreshold) {
             state.pressureScore = Math.min(12, state.pressureScore + 3);
             state.highLagStreak += 1;
             state.stableStreak = 0;
-        } else if (lag >= 120) {
+        } else if (lag >= moderateLagThreshold) {
             state.pressureScore = Math.min(12, state.pressureScore + 2);
             state.highLagStreak += 1;
             state.stableStreak = 0;
-        } else if (lag >= 80) {
+        } else if (lag >= lightLagThreshold) {
             state.pressureScore = Math.min(12, state.pressureScore + 1);
             state.highLagStreak = 0;
             state.stableStreak = 0;
-        } else if (lag <= 35) {
+        } else if (lag <= stableLagThreshold) {
             state.pressureScore = Math.max(0, state.pressureScore - 1);
             state.highLagStreak = 0;
             state.stableStreak += 1;
+            state.pairRiskStreak = Math.max(0, (state.pairRiskStreak || 0) - 1);
         } else {
             state.pressureScore = Math.max(0, state.pressureScore - 0.5);
             state.highLagStreak = 0;
             state.stableStreak = 0;
         }
 
-        if (!state.constrained && (state.highLagStreak >= 3 || state.pressureScore >= 7)) {
+        if (!state.constrained && (
+            state.highLagStreak >= streakTrigger ||
+            state.pressureScore >= pressureTrigger ||
+            (state.pairRiskStreak || 0) >= 4
+        )) {
             state.constrained = true;
             state.stableStreak = 0;
             state.lastReason = `${source}:${Math.round(lag)}ms`;
@@ -344,7 +453,12 @@ class OmnexPlayer {
             return;
         }
 
-        if (state.constrained && state.pressureScore <= 1 && state.stableStreak >= 45) {
+        if (
+            state.constrained &&
+            state.pressureScore <= 1 &&
+            state.stableStreak >= recoveryTicks &&
+            (state.pairRiskStreak || 0) <= 1
+        ) {
             state.constrained = false;
             state.highLagStreak = 0;
             state.stableStreak = 0;
@@ -3101,6 +3215,10 @@ class OmnexPlayer {
         const previousContentType = this._currentContentType;
         const wasVideo = previousContentType === 'video' || previousContentType === 'stream';
         const isVideo = contentType === 'video' || contentType === 'stream';
+        const pairTransitionPolicy = this.applyPairTransitionPolicy(previousContentType, contentType);
+        if (pairTransitionPolicy) {
+            this.traceTransitionSnapshot('pair-transition-policy', pairTransitionPolicy);
+        }
 
         this.hideAllContent(contentType);
 
@@ -4250,9 +4368,12 @@ class OmnexPlayer {
         // Flush deferred exits immediately so previous HTML/image/video can
         // complete its exit animation and not stay above ExoPlayer.
         if (this._pendingExitElement && this._pendingExitElement !== video) {
-            const overlapDelayMs = (this._transitionType === 'none')
+            let overlapDelayMs = (this._transitionType === 'none')
                 ? 0
                 : Math.min(220, Math.max(80, Math.floor((this._transitionDuration || 300) * 0.3)));
+            if (this.isStrictTransitionProfile() && this.isHtmlVideoPairTransition(this._nativeSwapSourceType, 'video')) {
+                overlapDelayMs = Math.min(overlapDelayMs, 70);
+            }
             this.traceDebug('TRANS', 'native video start - scheduling pending exit flush', {
                 pendingExitElement: this.getElementDebugLabel(this._pendingExitElement),
                 nativePlaceholder: this.getElementDebugLabel(video),
@@ -5661,6 +5782,7 @@ class OmnexPlayer {
             const items = Array.isArray(this.playlist?.items) ? this.playlist.items : [];
             const nextIndex = items.length > 0 ? ((this.currentIndex + 1) % items.length) : -1;
             const nextType = nextIndex >= 0 ? String(items[nextIndex]?.type || '').toLowerCase() : '';
+            const currentType = this._currentContentType;
             this.traceTransitionSnapshot('scheduleNext-tick', {
                 currentIndex: this.currentIndex,
                 nextIndex,
@@ -5700,9 +5822,12 @@ class OmnexPlayer {
                         // Next content is WebView-based (image/html). Delay making
                         // WebView opaque until the native exit animation finishes
                         // (typically 300ms) to avoid a poster/preload flash.
-                        const nativeExitDuration = this._transitionType === 'none'
+                        let nativeExitDuration = this._transitionType === 'none'
                             ? 0
                             : (this._transitionDuration || 300);
+                        if (this.isStrictTransitionProfile() && this.isHtmlVideoPairTransition(currentType, nextType)) {
+                            nativeExitDuration = Math.min(nativeExitDuration, 220);
+                        }
                         setTimeout(() => {
                             // Guard: only switch if we're still NOT in native mode
                             // (e.g. a rapid video→video transition might have re-entered)
