@@ -237,6 +237,20 @@ export class Api {
                     throw error;
                 }
 
+                // CSRF token expire — otomatik yenile ve retry
+                if (response.status === 403 && typeof result?.message === 'string' && result.message.toLowerCase().includes('csrf')) {
+                    if (!options._csrfRetried) {
+                        Logger.warn('CSRF token expired, refreshing and retrying...');
+                        this.csrfToken = null; // Force re-fetch
+                        return this.request(method, endpoint, data, { ...options, _csrfRetried: true });
+                    }
+                    // Retry da başarısız — kullanıcıya bildir
+                    const Toast = window.OmnexComponents?.Toast;
+                    if (Toast) {
+                        Toast.warning('Oturum güvenlik anahtarı yenilendi. Lütfen işlemi tekrar deneyin.', 'CSRF Token Yenilendi');
+                    }
+                }
+
                 const error = new Error(result.message || 'Request failed');
                 error.status = response.status;
                 error.data = result;
