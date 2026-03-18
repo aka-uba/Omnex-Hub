@@ -2944,7 +2944,7 @@
 
 /* HTML generate modal preview - larger for better visibility */
 .modal .template-preview-card .template-preview-image.template-preview-live {
-    height: 360px;
+    height: 280px;
 }
 
 .template-preview-image img {

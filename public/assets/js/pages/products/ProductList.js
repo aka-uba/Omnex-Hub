@@ -1077,7 +1077,7 @@ export class ProductListPage {
                                 if (previewImg) {
                                     const containerWidth = previewImg.offsetWidth || 400;
                                     const aspectHeight = Math.round(containerWidth * (h / w));
-                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 500) + 'px';
+                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 380) + 'px';
                                 }
                             }
                         } else if (previewCard) {
@@ -1240,7 +1240,7 @@ export class ProductListPage {
                                 if (previewImg) {
                                     const containerWidth = previewImg.offsetWidth || 400;
                                     const aspectHeight = Math.round(containerWidth * (h / w));
-                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 500) + 'px';
+                                    previewImg.style.height = Math.min(Math.max(aspectHeight, 200), 380) + 'px';
                                 }
                             }
                         } else if (previewCard) {
@@ -1319,7 +1319,15 @@ export class ProductListPage {
             ]);
 
             const devices = devicesRes.data?.devices || devicesRes.data || [];
-            const templates = templatesRes.data?.templates || templatesRes.data || [];
+            const allTemplates = templatesRes.data?.templates || templatesRes.data || [];
+            // Filter out TV/signage templates - ESL labels are typically ≤1280px wide
+            const templates = allTemplates.filter(t => {
+                const w = parseInt(t.width) || 0;
+                const h = parseInt(t.height) || 0;
+                // Exclude wide landscape templates (TV/signage: 1920x1080, 1280x720 etc.)
+                if (w >= 1280 && h <= 800 && w > h) return false;
+                return true;
+            });
             const currentLabels = existingLabels || [];
 
             // Check if editing existing assignment
@@ -2484,7 +2492,14 @@ export class ProductListPage {
             ]);
 
             devices = devicesRes.data || [];
-            templates = templatesRes.data || [];
+            const allTpls = templatesRes.data || [];
+            // Filter out TV/signage templates for ESL label assignment
+            templates = allTpls.filter(t => {
+                const w = parseInt(t.width) || 0;
+                const h = parseInt(t.height) || 0;
+                if (w >= 1280 && h <= 800 && w > h) return false;
+                return true;
+            });
         } catch (error) {
             Logger.error('Failed to load devices/templates:', error);
             Toast.error(this.__('sendToDevice.loadFailed'));
