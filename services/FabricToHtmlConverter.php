@@ -146,8 +146,11 @@ class FabricToHtmlConverter
             }
         }
 
+        // Kullanılan fontları topla
+        $usedFonts = $this->collectFonts($objects);
+
         // Tam HTML sayfası oluştur
-        $html = $this->buildFullHtml($htmlElements, $canvasWidth, $canvasHeight, $title, $designData);
+        $html = $this->buildFullHtml($htmlElements, $canvasWidth, $canvasHeight, $title, $designData, $usedFonts);
 
         return [
             'html'   => $html,
@@ -416,20 +419,51 @@ class FabricToHtmlConverter
             }
         }
 
-        $fontSize   = round((float)($obj['fontSize'] ?? 16) * (float)($obj['scaleX'] ?? 1), 1);
+        // Font boyutu: Fabric.js'te fontSize scale'den bağımsızdır
+        // scaleX/scaleY sadece nesne kutusunu (width/height) etkiler, font boyutunu DEĞİL
+        $fontSize   = round((float)($obj['fontSize'] ?? 16), 1);
         $fontFamily = $obj['fontFamily'] ?? 'Arial, sans-serif';
         $fontWeight = $obj['fontWeight'] ?? 'normal';
         $fontStyle  = $obj['fontStyle'] ?? 'normal';
-        $fill       = $obj['fill'] ?? '#000000';
+        $fill       = is_string($obj['fill'] ?? '') ? ($obj['fill'] ?? '#000000') : '#000000';
         $textAlign  = $obj['textAlign'] ?? 'left';
         $lineHeight = $obj['lineHeight'] ?? 1.16;
-        $underline  = !empty($obj['underline']) ? 'text-decoration:underline;' : '';
-        $linethrough = !empty($obj['linethrough']) ? 'text-decoration:line-through;' : '';
         $charSpacing = (float)($obj['charSpacing'] ?? 0);
         $letterSpacing = $charSpacing !== 0 ? round($charSpacing / 1000, 3) . 'em' : 'normal';
 
+        // Text decoration (birden fazla olabilir)
+        $decorations = [];
+        if (!empty($obj['underline'])) $decorations[] = 'underline';
+        if (!empty($obj['overline'])) $decorations[] = 'overline';
+        if (!empty($obj['linethrough'])) $decorations[] = 'line-through';
+        $textDecoration = !empty($decorations) ? 'text-decoration:' . implode(' ', $decorations) . ';' : '';
+
         // backgroundColor (text highlight)
         $bgColor = !empty($obj['backgroundColor']) ? "background-color:{$obj['backgroundColor']};" : '';
+
+        // Stroke (text outline)
+        $strokeCss = '';
+        $stroke = $obj['stroke'] ?? null;
+        $strokeWidth = (float)($obj['strokeWidth'] ?? 0);
+        if ($stroke && $strokeWidth > 0) {
+            $strokeCss = "-webkit-text-stroke:{$strokeWidth}px {$stroke};paint-order:stroke fill;";
+        }
+
+        // Shadow
+        $shadowCss = '';
+        $shadow = $obj['shadow'] ?? null;
+        if ($shadow) {
+            if (is_string($shadow) && !empty($shadow)) {
+                // Fabric.js string format: "offsetX offsetY blur color"
+                $shadowCss = "text-shadow:{$shadow};";
+            } elseif (is_array($shadow)) {
+                $sx = (float)($shadow['offsetX'] ?? 0);
+                $sy = (float)($shadow['offsetY'] ?? 0);
+                $sb = (float)($shadow['blur'] ?? 0);
+                $sc = $shadow['color'] ?? 'rgba(0,0,0,0.3)';
+                $shadowCss = "text-shadow:{$sx}px {$sy}px {$sb}px {$sc};";
+            }
+        }
 
         $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
         $style .= "font-size:{$fontSize}px;";
@@ -441,10 +475,10 @@ class FabricToHtmlConverter
         $style .= "line-height:{$lineHeight};";
         $style .= "letter-spacing:{$letterSpacing};";
         $style .= "overflow:hidden;word-wrap:break-word;white-space:pre-wrap;";
-        $style .= $underline . $linethrough . $bgColor;
+        $style .= $textDecoration . $bgColor . $strokeCss . $shadowCss;
 
-        // Dikey hizalama için display:flex
-        $style .= "display:flex;align-items:center;";
+        // Dikey hizalama: Fabric.js'te metin üstten başlar
+        $style .= "display:flex;align-items:flex-start;";
 
         $escapedText = nl2br($this->esc($text));
 
@@ -717,10 +751,101 @@ class FabricToHtmlConverter
     /**
      * Tam bağımsız HTML sayfası oluştur
      */
-    private function buildFullHtml(array $elements, int $width, int $height, string $title, array $designData): string
+    /**
+     * Tüm nesnelerden kullanılan font ailelerini topla
+     */
+    private function collectFonts(array $objects): array
+    {
+        $systemFonts = [
+            'arial', 'helvetica', 'times new roman', 'times', 'courier new', 'courier',
+            'georgia', 'verdana', 'tahoma', 'trebuchet ms', 'impact', 'comic sans ms',
+            'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy'
+        ];
+
+        $fonts = [];
+        foreach ($objects as $obj) {
+            $type = strtolower($obj['type'] ?? '');
+            if (!in_array($type, ['textbox', 'i-text', 'text'], true)) continue;
+
+            $fontFamily = $obj['fontFamily'] ?? 'Arial';
+            // İlk font adını al (virgüllü listeden)
+            $primaryFont = trim(explode(',', $fontFamily)[0], " '\"");
+            $fontLower = strtolower($primaryFont);
+
+            if (!empty($primaryFont) && !in_array($fontLower, $systemFonts, true)) {
+                $fontWeight = $obj['fontWeight'] ?? 'normal';
+                $fontStyle = $obj['fontStyle'] ?? 'normal';
+
+                $key = $primaryFont;
+                if (!isset($fonts[$key])) {
+                    $fonts[$key] = ['weights' => []];
+                }
+
+                // Ağırlık topla (Google Fonts formatı)
+                $w = ($fontWeight === 'bold' || (int)$fontWeight >= 700) ? '700' : '400';
+                if ($fontStyle === 'italic') $w .= 'italic';
+                $fonts[$key]['weights'][$w] = true;
+            }
+
+            // Grup içindeki nesneleri de tara
+            if (!empty($obj['objects'])) {
+                $subFonts = $this->collectFonts($obj['objects']);
+                foreach ($subFonts as $fk => $fv) {
+                    if (!isset($fonts[$fk])) {
+                        $fonts[$fk] = $fv;
+                    } else {
+                        $fonts[$fk]['weights'] = array_merge($fonts[$fk]['weights'], $fv['weights']);
+                    }
+                }
+            }
+        }
+
+        return $fonts;
+    }
+
+    /**
+     * Google Fonts link etiketi oluştur
+     */
+    private function buildGoogleFontsLink(array $fonts): string
+    {
+        if (empty($fonts)) return '';
+
+        $families = [];
+        foreach ($fonts as $fontName => $info) {
+            $weights = array_keys($info['weights']);
+            sort($weights);
+
+            $hasItalic = false;
+            $weightList = [];
+            foreach ($weights as $w) {
+                if (strpos($w, 'italic') !== false) {
+                    $hasItalic = true;
+                    $weightList[] = '1,' . str_replace('italic', '', $w);
+                } else {
+                    $weightList[] = '0,' . $w;
+                }
+            }
+
+            $safeName = str_replace(' ', '+', $fontName);
+            if ($hasItalic) {
+                $families[] = "family={$safeName}:ital,wght@" . implode(';', $weightList);
+            } else {
+                $wgts = array_map(function($w) { return str_replace('italic', '', $w); }, $weights);
+                $families[] = "family={$safeName}:wght@" . implode(';', $wgts);
+            }
+        }
+
+        if (empty($families)) return '';
+
+        $url = 'https://fonts.googleapis.com/css2?' . implode('&', $families) . '&display=swap';
+        return "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"{$url}\" rel=\"stylesheet\">";
+    }
+
+    private function buildFullHtml(array $elements, int $width, int $height, string $title, array $designData, array $usedFonts = []): string
     {
         $bg = $this->resolveCanvasBackground($designData);
         $elementsHtml = implode("\n        ", $elements);
+        $fontsLink = $this->buildGoogleFontsLink($usedFonts);
 
         $html = <<<HTML
 <!DOCTYPE html>
@@ -730,6 +855,7 @@ class FabricToHtmlConverter
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Omnex Display Hub - FabricToHtml">
     <title>{$this->esc($title)}</title>
+    {$fontsLink}
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
