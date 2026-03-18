@@ -3131,10 +3131,10 @@ class OmnexPlayer {
                 this.prepareNextMedia();
                 break;
             case 'video':
-                this.playVideo(item); // prepareNextMedia() called inside .then()
+                this.playVideo(item, previousContentType); // prepareNextMedia() called inside .then()
                 break;
             case 'stream':
-                this.playVideo(item); // prepareNextMedia() called inside .then()
+                this.playVideo(item, previousContentType); // prepareNextMedia() called inside .then()
                 break;
             case 'template':
                 this.playTemplate(item);
@@ -4349,7 +4349,7 @@ class OmnexPlayer {
     /**
      * Play video content (PHASE 2: Hybrid native/WebView playback)
      */
-    playVideo(item) {
+    playVideo(item, previousContentType = null) {
         // Use the active video element (ping-pong dual video for crossfade)
         const video = this.getActiveVideoElement();
         const applyVideoOrientationFromMetadata = () => {
@@ -4381,13 +4381,19 @@ class OmnexPlayer {
         });
 
         // âœ… PHASE 2: Try native playback first (ExoPlayer on Android)
+        const leavingHtmlToVideo = previousContentType === 'html';
+        const allowNativeForThisSwap = !(leavingHtmlToVideo && this.isBalancedProfile());
         const shouldTryNative =
+            allowNativeForThisSwap &&
             this.hasNativeVideoSupport() &&
             (url.includes('.m3u8') || url.includes('.mp4') || url.includes('.webm'));
 
         this.traceTransitionSnapshot('playVideo-mode-decision', {
             shouldTryNative,
-            hasNativeSupport: this.hasNativeVideoSupport()
+            hasNativeSupport: this.hasNativeVideoSupport(),
+            previousContentType: previousContentType || 'unknown',
+            leavingHtmlToVideo,
+            allowNativeForThisSwap
         });
 
         if (shouldTryNative) {
