@@ -230,6 +230,9 @@ class BranchService
             'sort_order' => $data['sort_order'] ?? 0
         ];
 
+        // Sort order çakışma kontrolü: aynı sıraya sahip varsa kaydır
+        self::shiftSortOrders($db, $data['company_id'], (int)$branch['sort_order'], null);
+
         $db->insert('branches', $branch);
 
         return ['success' => true, 'data' => $branch];
@@ -279,12 +282,61 @@ class BranchService
         }
 
         if (!empty($updateData)) {
+            // Sort order değiştiyse çakışma kontrolü
+            if (array_key_exists('sort_order', $updateData)) {
+                $newSort = (int)$updateData['sort_order'];
+                $oldSort = (int)($branch['sort_order'] ?? 0);
+                if ($newSort !== $oldSort) {
+                    self::shiftSortOrders($db, $branch['company_id'], $newSort, $branchId);
+                }
+            }
+
             $updateData['updated_at'] = date('Y-m-d H:i:s');
             $db->update('branches', $updateData, 'id = ?', [$branchId]);
         }
 
         $updated = $db->fetch("SELECT * FROM branches WHERE id = ?", [$branchId]);
         return ['success' => true, 'data' => $updated];
+    }
+
+    /**
+     * Aynı sort_order'a sahip şubeleri bir üst sıraya kaydır.
+     * Yeni/güncellenen şubenin istenen sırasını boşaltır.
+     *
+     * @param Database $db
+     * @param string $companyId
+     * @param int $sortOrder Hedef sıra numarası
+     * @param string|null $excludeId Güncellenen şubenin ID'si (kendisini hariç tut)
+     */
+    private static function shiftSortOrders($db, string $companyId, int $sortOrder, ?string $excludeId): void
+    {
+        $params = [$companyId, $sortOrder];
+        $excludeClause = '';
+        if ($excludeId) {
+            $excludeClause = ' AND id != ?';
+            $params[] = $excludeId;
+        }
+
+        // Bu sırada başka şube var mı?
+        $conflict = $db->fetch(
+            "SELECT id FROM branches WHERE company_id = ? AND sort_order = ?{$excludeClause} LIMIT 1",
+            $params
+        );
+
+        if ($conflict) {
+            // Bu sıra ve üstündeki tüm şubeleri 1 artır
+            $shiftParams = [$companyId, $sortOrder];
+            $shiftExclude = '';
+            if ($excludeId) {
+                $shiftExclude = ' AND id != ?';
+                $shiftParams[] = $excludeId;
+            }
+
+            $db->query(
+                "UPDATE branches SET sort_order = sort_order + 1 WHERE company_id = ? AND sort_order >= ?{$shiftExclude}",
+                $shiftParams
+            );
+        }
     }
 
     /**
