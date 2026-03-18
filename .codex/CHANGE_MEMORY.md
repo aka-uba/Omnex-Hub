@@ -5724,3 +5724,507 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/index.html.pre_image_transition_stabilize_20260318_004409.bak`
     - `.codex/tmp_backups/sw.js.pre_image_transition_stabilize_20260318_004409.bak`
     - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_image_transition_stabilize_20260318_004439.bak`
+## 2026-03-18 - APK native video overlay stabilization + OTA release (v2.9.16 / code 45)
+
+- Request: Keep orientation icon permanently visible over video on APK clients, avoid black drop during native video layer handoff, and publish OTA update for remote device rollout.
+- Changes:
+  1. **android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt**
+     - Kept WebView as top overlay layer for JS controls/icon during native playback.
+     - Added native-side WebView transparency guard:
+       - `switchToExoPlayer()` now forces WebView background `TRANSPARENT`.
+       - `switchToWebView()` now restores WebView background `BLACK`.
+     - Purpose: remove transparency race between JS/native handoff and keep overlay icon visible on top of video.
+  2. **android-player/omnex-player-app/app/build.gradle**
+     - Bumped Android app version to `versionCode 45`, `versionName 2.9.16`.
+  3. **APK artifacts**
+     - Rebuilt `:app:assembleStandaloneDebug`.
+     - Published updated APK to:
+       - `downloads/omnex-player.apk`
+       - `public/downloads/omnex-player.apk`
+       - `downloads/omnex-player-standalone-v2.9.16.apk`
+       - `public/downloads/omnex-player-standalone-v2.9.16.apk`
+     - New APK SHA256:
+       - `6d7de3f034ca497f29127b037c0280bd2c68b72d938b89dd1839a0b33ef00cda`
+  4. **OTA metadata**
+     - Updated both:
+       - `downloads/update.json`
+       - `public/downloads/update.json`
+     - Set `versionCode: 45`, `versionName: 2.9.16`, URL query `v=45`, and new `sha256`.
+  5. **Git + deploy**
+     - Commit: `0558db7` (`chore(apk): publish ota package v2.9.16 overlay fix`)
+     - Pushed: `origin/main` (`c55d00e -> 0558db7`)
+     - Server pull + app redeploy completed on `/opt/omnex-hub`.
+- Checks run:
+  - `.\gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `.\gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - ADB runtime verification:
+    - Install to G66 (`192.168.1.181:39855`) (OK)
+    - `dumpsys package com.omnex.player` => `versionCode=45`, `versionName=2.9.16` (OK)
+    - Screenshot sampling confirms overlay icon remains visible over content/video frames.
+  - OTA consistency:
+    - `ConvertFrom-Json` parse for both `update.json` files (OK)
+    - APK SHA vs `update.json.sha256` (both paths) match (OK)
+  - Server verification:
+    - `docker compose ... ps app` healthy after redeploy (OK)
+    - `curl http://127.0.0.1:8080/downloads/update.json` shows v45 metadata (OK)
+    - `sha256sum` on server `downloads/omnex-player.apk` and `public/downloads/omnex-player.apk` match expected hash (OK)
+- Risks/Follow-up:
+  - `android-player/` remains gitignored in root repository; native source edits are carried via built APK artifacts rather than tracked source diffs in this repo.
+  - Mixed-type boundary transitions (`html->video`, `video->html`, `html->html`) still require continued parity validation under long-run playlists.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/ExoPlayerManager.kt.pre_overlay_transparency_guard_20260318_012442.bak`
+    - `.codex/tmp_backups/build.gradle.pre_v45_overlay_20260318_012956.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_v45_overlay_20260318_012956.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_v45_overlay_20260318_012956.bak`
+    - `.codex/tmp_backups/downloads.omnex-player.apk.pre_v45_overlay_20260318_012956.bak`
+    - `.codex/tmp_backups/public.omnex-player.apk.pre_v45_overlay_20260318_012956.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v45_overlay_release_20260318_013626.bak`
+## 2026-03-18 - G66 soak test replay (10m cold + 10m warm) against user baseline
+
+- Request: Re-run the same field-style stability test methodology (`gfxinfo` + periodic CPU/RAM sampling) to compare with prior good baseline shared by user.
+- Changes:
+  - No application code edits.
+  - Collected two soak datasets on device `192.168.1.181:39855` with app `com.omnex.player` (`2.9.16 / code 45`):
+    - Cold run (force-stop + relaunch before soak): `tmp/perf/soak_20260318_013818/`
+    - Warm run (no relaunch, only gfx reset): `tmp/perf/soak_warm_20260318_015007/`
+- Checks run:
+  - Runtime/perf capture commands:
+    - `adb shell dumpsys gfxinfo com.omnex.player reset`
+    - `adb shell dumpsys gfxinfo com.omnex.player`
+    - `adb shell top -n 1 -b | grep com.omnex.player` (2-min cadence)
+    - `adb shell dumpsys meminfo com.omnex.player` (2-min cadence)
+    - `adb shell dumpsys package com.omnex.player` (version check)
+  - Quick log scan:
+    - `adb logcat -d` filtered for playback/http errors (no matching 4xx/5xx/main-frame errors in sampled window)
+- Risks/Follow-up:
+  - Both runs show materially higher jank and percentile latency than previously shared baseline.
+  - Warm and cold results are close, so startup-only bias does not explain the regression.
+  - Next investigation should target mixed-content transition boundary cost (html/video/html paths), especially compositor load during native-video + transparent WebView overlay periods.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_perf_soak_compare_20260318_020052.bak`
+## 2026-03-18 - Profile-based transition policy + adaptive degrade (legacy/balanced/default)
+
+- Request: Implement approved profile-based transition behavior for low-resource devices, apply low-risk native-overlay load reduction, and add adaptive degrade behavior for long field runtime.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - Added profile transition policy resolver:
+       - `legacy`: force lightweight transition (`fade`, `300ms`) for all non-`none` transitions.
+       - `balanced`: medium policy (maps expensive `wipe/slide/zoom` to lighter transitions and clamps duration range).
+       - `default`: keep full playlist transition behavior.
+     - Applied policy at both playlist default and per-item transition override paths.
+     - Added adaptive runtime degrade monitor (Android app only, non-legacy):
+       - Samples event-loop lag every second and schedule timer lag per content tick.
+       - Under sustained pressure, auto-switches to lightweight transition mode.
+       - Returns to normal policy after sustained stable period.
+     - Started/stopped adaptive monitor with playback lifecycle.
+     - Added low-risk native mode optimization:
+       - During native video mode, content container enters passive state to reduce WebView-side compositing load while keeping overlay controls visible.
+  2. **public/player/assets/css/player.css**
+     - Added `.content-container.native-overlay-passive` style (`opacity:0`, `pointer-events:none`) for lightweight WebView overlay behavior during native playback.
+  3. **public/player/index.html**
+     - Bumped player script cache key `player.js?v=81 -> v82`.
+  4. **public/player/sw.js**
+     - Bumped service worker cache version `v1.3.18 -> v1.3.19`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+- Risks/Follow-up:
+  - Balanced profile mapping intentionally softens expensive transition effects; visual parity is slightly reduced in exchange for lower render pressure.
+  - Adaptive degrade has hysteresis; it may remain in lightweight mode for a stabilization window after load spikes.
+  - Recommended next validation: 10m/30m soak on G66 with mixed playlist transitions to confirm jank reduction vs previous ~20% baseline.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/player.js.pre_profile_policy_20260318_022713.bak`
+    - `.codex/tmp_backups/player.css.pre_profile_policy_20260318_022713.bak`
+    - `.codex/tmp_backups/index.html.pre_profile_policy_20260318_022713.bak`
+    - `.codex/tmp_backups/sw.js.pre_profile_policy_20260318_022713.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_profile_transition_policy_20260318_023037.bak`
+## 2026-03-18 - Profile policy rollout deploy verification
+
+- Request: Push the profile-based transition changes live and verify device receives updated player bundle.
+- Changes:
+  - Commit: `c256342` (`fix(player): add profile-based transition policy and adaptive degrade`)
+  - Pushed to `origin/main` (`0558db7 -> c256342`)
+  - Server pull + app container rebuild/recreate completed on `/opt/omnex-hub`
+- Checks run:
+  - Server runtime checks:
+    - `docker compose ... ps app` -> healthy
+    - `curl /player/index.html` -> `player.js?v=82`
+    - `curl /player/sw.js` -> `CACHE_VERSION = 'v1.3.19'`
+  - Device verification (G66):
+    - App restart and logcat confirms player bundle load from `player.js?v=82`
+- Risks/Follow-up:
+  - Short post-deploy log window showed `Transition set: none -> none, 500ms`; transition mapping for heavy effects should be validated on a playlist item that explicitly uses non-`none` transition.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_profile_policy_deploy_20260318_023502.bak`
+## 2026-03-18 - transition=none ms-ignore fix + 5-minute validation run
+
+- Request: Verify that `transition=none` ignores playlist transition milliseconds and run a 5-minute performance test with the same methodology.
+- Changes:
+  1. **public/player/assets/js/player.js**
+     - `resolveTransitionPolicy(...)` now returns `duration=0` when transition type is `none`.
+     - Native transition handoff now sends `duration=0` when native transition type is `none`.
+     - Native exit delay calculations now honor `none` as `0ms` (no artificial 300ms delay).
+  2. **Git + deploy**
+     - Commit: `fbec9a8` (`fix(player): ignore transition ms when effect is none`)
+     - Pushed: `origin/main` (`c256342 -> fbec9a8`)
+     - Server pull + app rebuild/recreate completed on `/opt/omnex-hub`.
+  3. **Verification**
+     - Device log confirms behavior: `Transition set: none -> none, 0ms (jsOwns=false)`.
+     - Confirmed live bundle contains patched `player.js` logic on server.
+  4. **5-minute perf run**
+     - Pre-fix baseline folder: `tmp/perf/soak5_20260318_024031/`
+     - Post-fix folder: `tmp/perf/soak5_postfix_20260318_025014/`
+     - GFX summary (post-fix):
+       - Frames: `7356`
+       - Janky: `1171` (`15.92%`)
+       - p50/p90/p95/p99: `10/19/23/38 ms`
+     - Compared to pre-fix run:
+       - Jank `17.87% -> 15.92%`
+       - p99 `48ms -> 38ms`
+       - Missed Vsync `31 -> 23`
+       - Memory average improved (`PSS 193635KB -> 185511KB`, `RSS 290186KB -> 281765KB`)
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - Deploy/runtime checks:
+    - `docker compose ... ps app` healthy
+    - device `logcat` transition confirmation (`none, 0ms`) OK
+- Risks/Follow-up:
+  - Active playlist currently uses `transition=none`; non-`none` legacy mapping (`fade 300ms`) should be validated with a playlist that has non-`none` transition configured.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_none_ms_fix_5min_20260318_025612.bak`
+## 2026-03-18 - Playlist effect verification after user update
+
+- Request: Verify newly assigned playlist effect is applied on device.
+- Changes:
+  - No code changes.
+  - Verified DB state for playlist `9372958b-08cb-4539-a64c-a07d3f49252d`:
+    - `transition = fade`
+    - `transition_duration = 500`
+    - no per-item non-`none` transition override in playlist JSON.
+  - Verified device runtime (`G66`, app `2.9.16`) log output:
+    - `Transition set: fade -> fade, 300ms (jsOwns=false)`
+    - confirms legacy profile policy maps non-`none` transition to `fade 300ms`.
+- Checks run:
+  - Server DB query via `psql` in dockerized postgres (playlist transition check)
+  - ADB runtime log check (`logcat`) on `192.168.1.181:39855`
+- Risks/Follow-up:
+  - None for this verification step.
+- Backup/Restore safety:
+  - Temp backup created:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_effect_verify_20260318_030005.bak`
+## 2026-03-18 - TV html/video transition, mobile top-bar black, APK v2.9.17 + perf triage
+
+- Request: Fix html<->video transition anomalies (especially Google TV balanced), keep transition semantics aligned, remove mobile top bar old color tint, refresh APK/update artifacts in downloads, and run TV 5-minute perf checks.
+- Changes:
+  1. `public/player/assets/js/player.js`
+     - Limited `native-overlay-passive` usage to legacy profile.
+     - Deferred `playHtml` native->webview opacity switch until html ready gate.
+     - Improved iframe same-origin video readiness gate for dynamically inserted `<video>` elements.
+     - Added overlap delay before flushing pending exit on native video start.
+     - Disabled native next-video preload when `precache=0` (profile-driven) to reduce decoder contention.
+     - In balanced profile, disabled native path specifically on `html -> video` swaps to avoid codec races.
+     - Gated webview video enter transition to first decoded frame + playback started (preload/poster flash suppression).
+     - PWA install modal icon switched to `../branding/pwa.png`.
+  2. `public/player/index.html`
+     - Critical inline `html,body` background forced to black.
+     - Player bundle query bumped (`player.js?v=82 -> v83 -> v84 -> v85`).
+  3. `public/player/sw.js`
+     - Cache version bumped (`v1.3.19 -> v1.3.20 -> v1.3.21 -> v1.3.22`).
+     - Added `../branding/pwa.png?v=5` to static assets.
+  4. Android local build inputs (ignored path, used for APK build):
+     - `android-player/omnex-player-app/app/build.gradle`: `versionCode 46`, `versionName 2.9.17`.
+     - `AndroidManifest.xml`: TV banner resource set to `@drawable/tv_banner`.
+     - Added adaptive launcher xmls under `res/mipmap-anydpi-v26/`.
+     - Mobile splash logo source set to launcher foreground asset.
+  5. OTA artifacts updated:
+     - `downloads/omnex-player.apk` (new hash)
+     - `public/downloads/omnex-player.apk` (new hash)
+     - Added versioned APKs: `.../omnex-player-standalone-v2.9.17.apk` in both downloads dirs.
+     - Updated `downloads/update.json` and `public/downloads/update.json` to `versionCode=46`, `versionName=2.9.17`, new SHA256.
+  6. Git/deploy:
+     - Commits pushed: `1e4b6e6`, `9a10249`, `2ec9619`.
+     - Server pull + rebuild/recreate done on `/opt/omnex-hub`.
+
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (multiple passes, OK)
+  - `node --check public/player/sw.js` (multiple passes, OK)
+  - `android-player/omnex-player-app`: `./gradlew.bat clean publishDebugApk` (BUILD SUCCESSFUL)
+  - ADB install on both devices: `192.168.1.181:39855`, `192.168.1.52:44245` (Success)
+  - Version verification: `dumpsys package com.omnex.player` => `versionCode=46`, `versionName=2.9.17`
+  - Server runtime checks: `player.js?v=85`, `CACHE_VERSION='v1.3.22'`, app container healthy.
+  - TV perf runs (5 min each):
+    - `tmp/perf/tv_soak5_20260318_033138`
+    - `tmp/perf/tv_soak5_postfix_20260318_034034`
+    - `tmp/perf/tv_soak5_final_20260318_034822`
+
+- Risks/Follow-up:
+  - Google TV traces previously showed intermittent `MediaCodec ... NO_MEMORY` on decoder init during transition-heavy periods; this remains the core stability risk.
+  - Last patch (`2ec9619`) targets preload/poster flash specifically; full 5-minute post-`v85` measurement should be repeated to quantify impact after this final patch.
+
+- Backup/Restore safety:
+  - Temp backups created before edits for critical files (player.js, index.html, sw.js, update.json, Android build/manifest/layout resources) under `.codex/tmp_backups/`.
+## 2026-03-18 - v85 post-patch TV perf follow-up (no NO_MEMORY in window)
+
+- Request: Provide concrete performance values after latest preload-icon suppression patch and verify runtime behavior.
+- Changes:
+  - Commit/deploy: `2ec9619` (`player.js?v=85`, `CACHE_VERSION=v1.3.22`).
+  - Player change: webview video enter transition now waits for decoded frame + playback start.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - Server pull/build/recreate completed and verified serving `player.js?v=85`.
+  - TV 5-min run: `tmp/perf/tv_soak5_v85_20260318_035818`
+    - Frames: `7845`
+    - Jank: `4518 (57.59%)`
+    - p50/p90/p95/p99: `19/29/38/53 ms`
+    - Missed Vsync: `32`
+  - Log excerpt in this window: no `NO_MEMORY`/`Playback error` hit (`app_excerpt.txt`).
+- Risks/Follow-up:
+  - Render jank ratio remains high on this TV despite improved tail latency and absence of decoder init error in this sample window.
+  - Need pair-based transition profiling (`html->video`, `video->html`, `html->html`) with same playlist to isolate remaining jank-heavy swap path.
+- Backup/Restore safety:
+  - Memory backup: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v85_perf_addendum_*.bak`.
+## 2026-03-18 - html(video)->video preload-icon regression fix + v87 deploy + TV soak
+
+- Request: Fix TV-side regression where html içindeki video geçiş sonunda preload ikonuna düşüyor (özellikle `html(video) -> video`), keep temp-backup workflow, redeploy, and re-run TV performance checks.
+- Changes:
+  - `public/player/assets/js/player.js`
+    - Added `isElementVisuallyActive(element)` helper.
+    - Updated `prepareNativeSwapDecoderBudget()` to release iframe media decoders only for hidden/inactive html slots.
+    - Protected `_currentElement` and `_pendingExitElement` from early decoder release to prevent visible preload-icon fallback during transition.
+  - `public/player/index.html`
+    - Player bundle version bump: `player.js?v=87`.
+  - `public/player/sw.js`
+    - Cache version bump: `v1.3.24`.
+  - Git/deploy:
+    - Commit pushed: `91d8d63`.
+    - Server pulled and app rebuilt/restarted (healthy).
+
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - Runtime verify (server + CDN):
+    - `player.js?v=87` served
+    - `CACHE_VERSION='v1.3.24'` served
+  - TV app restart (force-stop + launch) and runtime version check in logcat:
+    - `player.js?v=87` loaded
+    - SW activation deleted old `v1.3.23` caches
+  - TV perf runs:
+    - Pre-fix baseline after previous patch: `tmp/perf/tv_soak5_v86_20260318_042336`
+      - Frames `8049`, Jank `32.91%`, p50/p90/p95/p99 `17/28/38/61 ms`
+    - Post-fix: `tmp/perf/tv_soak5_v87_20260318_043440`
+      - Frames `8069`, Jank `32.71%`, p50/p90/p95/p99 `17/26/42/65 ms`
+      - CPU steady samples: `171, 64.2, 0, 5, 118` (avg `71.64`, peak `171`)
+      - PSS steady range: `183399 -> 243653 KB` (delta `60254 KB`)
+      - RSS steady range: `271032 -> 332420 KB` (delta `61388 KB`)
+  - Log scan:
+    - No `NO_MEMORY`, no `Playback error`, no `HTTP 4xx/5xx` match in captured windows.
+
+- Risks/Follow-up:
+  - Gfx jank ratio still high on this TV class (~33%) despite transition regression fix; bottleneck remains transition-heavy mixed-content workload and codec churn.
+  - Next step: pair-level profiling (`html->video`, `video->html`, `html->html`) with per-transition frametime buckets to isolate dominant jank path before next policy adjustment.
+
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/player.js.pre_hidden_slot_decoder_budget_20260318_043100.bak`
+    - `.codex/tmp_backups/index.html.pre_v87_20260318_043128.bak`
+    - `.codex/tmp_backups/sw.js.pre_v87_20260318_043128.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v87_html_video_preload_fix_20260318_044029.bak`
+## 2026-03-18 - strict TV transition policy (balanced/legacy) + pair-aware degrade + v88 deploy
+
+- Request: Apply previously recommended TV-side transition hardening with temporary backup and full rollback possibility.
+- Changes:
+  - `public/player/assets/js/player.js`
+    - Normalized `performanceProfile` parsing to lowercase.
+    - Added strict transition helpers:
+      - `normalizeContentType()`
+      - `isHtmlVideoPairTransition()`
+      - `isStrictTransitionProfile()`
+      - `getStrictTransitionDuration()`
+      - `applyPairTransitionPolicy()`
+    - Strengthened balanced profile transition policy on Android:
+      - effect whitelist (`fade/crossfade/push-*`), unsupported/heavy effects fallback to `fade`.
+      - stricter duration clamp for balanced strict mode (`240-360ms`).
+    - Added pair-aware adaptive pressure (`pairRiskStreak`, `lastPair`) and stricter adaptive thresholds in balanced strict mode.
+    - For `html<->video` pair transitions under strict profiles:
+      - force `fade` with tight duration ceiling (`<=300ms`).
+      - reduced native overlap flush delay cap.
+      - reduced native exit wait cap before WebView opaque restore.
+  - `public/player/index.html`
+    - Player bundle version bump: `player.js?v=88`.
+  - `public/player/sw.js`
+    - Cache version bump: `v1.3.25`.
+  - Git/deploy:
+    - Commit pushed: `0456349`.
+    - Server pull + rebuild/recreate completed.
+
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - Server runtime checks:
+    - app container healthy
+    - serving `player.js?v=88`
+    - serving `CACHE_VERSION='v1.3.25'`
+  - Google TV runtime verify:
+    - app force-stop + relaunch
+    - log confirms `player.js?v=88`
+    - SW removed old caches `v1.3.24` and activated
+    - artifact: `tmp/perf/tv_verify_v88_20260318_045354`
+
+- Risks/Follow-up:
+  - Policy is intentionally stricter on balanced Android profiles; visual variety may reduce on heavy effects in exchange for stability.
+  - Need fresh 5-minute/10-minute soak on TV playlist to quantify jank delta after this stricter policy.
+
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/player.js.pre_strict_tv_policy_20260318_045110.bak`
+    - `.codex/tmp_backups/index.html.pre_v88_20260318_045110.bak`
+    - `.codex/tmp_backups/sw.js.pre_v88_20260318_045110.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_strict_tv_policy_20260318_045432.bak`
+## 2026-03-18 - TV 5-minute soak after strict policy (v88)
+
+- Request: Run a fresh 5-minute Google TV measurement after strict transition policy deploy.
+- Changes:
+  - No code changes.
+  - New measurement artifacts only:
+    - `tmp/perf/tv_soak5_v88_20260318_045655`
+- Checks run:
+  - ADB soak workflow (5 min):
+    - `dumpsys gfxinfo reset`
+    - app force-stop + relaunch
+    - minute-based `top` + `dumpsys meminfo` sampling
+    - final `dumpsys gfxinfo`
+    - `logcat` capture and scan
+  - Metrics:
+    - Frames `7789`
+    - Jank `36.10%`
+    - p50/p90/p95/p99 `18/28/40/65 ms`
+    - CPU steady avg/max `31.66 / 89.7`
+    - PSS steady delta `37591 KB`
+    - RSS steady delta `39144 KB`
+  - Log scan:
+    - No `NO_MEMORY`
+    - No `Playback error` / `ExoPlaybackException`
+    - No HTTP 4xx/5xx matches
+- Risks/Follow-up:
+  - Jank still high for this TV class in transition-heavy playlist.
+  - Recommended next step remains pair-based isolation under same playlist (`html->video`, `video->html`, `html->html`) to tune strict policy thresholds.
+- Backup/Restore safety:
+  - Memory backup:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_tv_soak_v88_20260318_050240.bak`
+## 2026-03-18 - G66 legacy 5-minute soak after v88 policy deploy
+
+- Request: Run the same performance measurement on legacy device (G66) after v88 deploy.
+- Changes:
+  - No code changes.
+  - New measurement artifacts only:
+    - `tmp/perf/g66_legacy_soak5_v88_20260318_050403`
+- Checks run:
+  - ADB soak workflow (5 min):
+    - `dumpsys gfxinfo reset`
+    - app force-stop + relaunch
+    - minute-based `top` + `dumpsys meminfo` sampling
+    - final `dumpsys gfxinfo`
+    - `logcat` capture and scan
+  - Runtime version verify:
+    - log confirms `player.js?v=88`
+    - SW activated and old cache cleaned
+  - Metrics:
+    - Frames `8554`
+    - Jank `14.13%`
+    - p50/p90/p95/p99 `9/19/26/46 ms`
+    - CPU steady avg/max `85.82 / 117`
+    - PSS steady delta `5195 KB`
+    - RSS steady delta `4088 KB`
+  - Log scan:
+    - No `NO_MEMORY`
+    - No `Playback error` / `ExoPlaybackException`
+    - No HTTP 4xx/5xx matches
+- Risks/Follow-up:
+  - G66 jank ratio is materially better than Google TV but still above previously observed best-case legacy windows.
+  - Mixed-content transition density remains the likely primary driver for residual jank.
+- Backup/Restore safety:
+  - Memory backup:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_g66_legacy_soak_v88_20260318_051005.bak`
+## 2026-03-18 - mobile top safe-area tint removal (player)
+
+- Request: Remove phone top status/safe-area blue tint so device/player black remains consistent.
+- Changes:
+  - `public/player/assets/css/player.css`
+    - Removed unified body gradient override and set neutral `background: #000`.
+    - This prevents top safe-area from inheriting blue theme colors in mobile playback.
+  - `public/player/index.html`
+    - CSS cache-bust bump: `player.css?v=41`.
+  - `public/player/sw.js`
+    - SW cache bump: `v1.3.26`.
+  - Git/deploy:
+    - Commit pushed: `3e1e2fc`.
+    - Server pull + rebuild/recreate completed.
+- Checks run:
+  - `node --check public/player/sw.js` (OK)
+  - Server runtime checks:
+    - app container healthy
+    - serving `player.css?v=41`
+    - serving `CACHE_VERSION='v1.3.26'`
+- Risks/Follow-up:
+  - Unified body gradient is now disabled globally in player page; registration/loading remain themed via screen-level gradient blocks.
+  - Mobile client may need one app restart/refresh to ensure new SW cache is active.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/player.css.pre_mobile_topbar_black_20260318_052847.bak`
+    - `.codex/tmp_backups/index.html.pre_v89_20260318_052847.bak`
+    - `.codex/tmp_backups/sw.js.pre_v89_20260318_052847.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_mobile_status_area_fix_20260318_053028.bak`
+## 2026-03-18 - Phase1 APK display tuning trial (brightness/contrast policy)
+
+- Request: Start Phase1 with temp-backup workflow; keep native mode and apply low-risk display tuning policy via APK.
+- Changes:
+  - Local Android source updates (gitignored in this repo):
+    - `android-player/omnex-player-app/app/src/main/java/com/omnex/player/PerformanceProfile.kt`
+      - Added `displayBrightness`, `displayContrast`, `maxContrast`, `enableContrastTuning`.
+      - Policy defaults:
+        - `default`: `1.00 / 1.06 / max 1.12 / enabled`
+        - `balanced`: `1.00 / 1.04 / max 1.08 / enabled`
+        - `legacy`: `1.00 / 1.00 / max 1.02 / disabled`
+    - `android-player/omnex-player-app/app/src/main/java/com/omnex/player/MainActivity.kt`
+      - Added profile-aware display tuning apply path (window brightness + WebView/PlayerView contrast filter).
+      - Re-apply points: on startup, on resume, on page finished, after profile override.
+      - Added bridge methods:
+        - `getDisplayTuning()`
+        - `setDisplayTuning(brightness, contrast)`
+        - `clearDisplayTuningOverride()`
+      - Extended `getPerformanceProfile()` JSON with display tuning fields.
+  - Release artifacts updated:
+    - `downloads/omnex-player.apk`
+    - `public/downloads/omnex-player.apk`
+    - `downloads/omnex-player-standalone-v2.9.18.apk`
+    - `public/downloads/omnex-player-standalone-v2.9.18.apk`
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+  - APK metadata:
+    - Version: `2.9.18` (`versionCode: 47`)
+    - SHA256: `b87d48d683f913413e3e897b8c73a608b3be2a1db5769799ad2a5f3acde3edae`
+- Checks run:
+  - `.\gradlew.bat :app:compileStandaloneDebugKotlin --console=plain` (OK)
+  - `.\gradlew.bat :app:compilePlaystoreDebugKotlin` (OK)
+  - `.\gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - `Get-Content downloads/update.json | ConvertFrom-Json` (OK)
+  - `Get-Content public/downloads/update.json | ConvertFrom-Json` (OK)
+  - `Get-FileHash -Algorithm SHA256 downloads/omnex-player.apk` (matched both directories)
+- Risks/Follow-up:
+  - Android source under `android-player/` is gitignored in this repository; persistence currently comes from rebuilt APK + updated OTA JSON.
+  - Contrast filter is intentionally capped (`<= 1.16`) to reduce rendering risk on low-end GPUs; if stronger visual boost is needed, increase in controlled increments with soak tests.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/MainActivity.kt.pre_phase1_display_tuning_20260318_054829.bak`
+    - `.codex/tmp_backups/PerformanceProfile.kt.pre_phase1_display_tuning_20260318_054829.bak`
+    - `.codex/tmp_backups/build.gradle.pre_phase1_release_20260318_055250.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_phase1_release_20260318_055250.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_phase1_release_20260318_055250.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_phase1_display_tuning_20260318_055511.bak`

@@ -1,8 +1,8 @@
 {
-    "versionCode":  46,
-    "versionName":  "2.9.17",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=46",
-    "releaseNotes":  "- Video->HTML gecisinde html/video hazirlik kapisi iyilestirildi, gecis boslugu azaltildi\n- Native overlay optimizasyonu profile-bazli daraltildi (Google TV balanced uyumu)\n- Mobil ust bar ve player arkaplan tonu siyaha sabitlendi\n- Android launcher icon/adaptive icon kaynaklari duzenlendi",
+    "versionCode":  47,
+    "versionName":  "2.9.18",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=47",
+    "releaseNotes":  "- Faz1 display tuning eklendi: profile bazli parlaklik/kontrast sinirlari\n- Native bridge uzerinden getDisplayTuning/setDisplayTuning/clearDisplayTuningOverride acildi\n- Profil degisiminde ve sayfa yuklenmesinde display tuning yeniden uygulanir hale getirildi",
     "mandatory":  false,
-    "sha256":  "4d37336e4d0513955ea8ece8ef5478669dd12ece3fd6fc2c0316ca544be95f92"
+    "sha256":  "b87d48d683f913413e3e897b8c73a608b3be2a1db5769799ad2a5f3acde3edae"
 }
