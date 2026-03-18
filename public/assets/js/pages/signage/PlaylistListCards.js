@@ -17,7 +17,7 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                         </div>
                         <div class="page-header-info">
                             <h1 class="page-title">Kart Hibrit Playlistler</h1>
-                            <p class="page-subtitle">Preview, saglik ve yayin aksiyonlarini satir yerine kart bazinda gosteren alternatif</p>
+                            <p class="page-subtitle">Preview, sağlık ve yayın aksiyonlarını satır yerine kart bazında gösteren alternatif</p>
                         </div>
                     </div>
                     <div class="page-header-right">
@@ -33,10 +33,10 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
 
             <div class="playlist-cards-toolbar">
                 <div class="playlist-lab-filters">
-                    <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tum</button>
-                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canliya Hazir</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tüm</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canlıya Hazır</button>
                     <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="attention">Dikkat Gereken</button>
-                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="rich">Zengin Icerik</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="rich">Zengin İçerik</button>
                 </div>
                 <div class="playlist-lab-search">
                     <i class="ti ti-search"></i>
@@ -122,9 +122,9 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                 <small>Bu filtredeki playlistler</small>
             </div>
             <div class="playlist-metric-card success">
-                <span class="metric-label">Canliya Hazir</span>
+                <span class="metric-label">Canlıya Hazır</span>
                 <strong>${stats.liveReady}</strong>
-                <small>Hemen yayinlanabilir</small>
+                <small>Hemen yayınlanabilir</small>
             </div>
             <div class="playlist-metric-card warning">
                 <span class="metric-label">Dikkat</span>
@@ -139,7 +139,7 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
         if (!grid) return;
 
         if (!filtered.length) {
-            grid.innerHTML = this.renderEmptyState('Gosterilecek kart bulunamadi');
+            grid.innerHTML = this.renderEmptyState('Gösterilecek kart bulunamadı');
             return;
         }
 
@@ -162,7 +162,7 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                         <div class="playlist-card-title-row">
                             <div>
                                 <h3>${escapeHTML(playlist.name || '')}</h3>
-                                <p>${escapeHTML(playlist.description || 'Aciklama eklenmemis')}</p>
+                                <p>${escapeHTML(playlist.description || 'Açıklama eklenmemiş')}</p>
                             </div>
                             <button class="btn btn-ghost btn-sm" data-card-action="edit" data-playlist-id="${playlist.id}">
                                 <i class="ti ti-edit"></i>
@@ -170,9 +170,9 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                         </div>
 
                         <div class="playlist-card-stats">
-                            <div><strong>${summary.totalItems}</strong><span>Icerik</span></div>
+                            <div><strong>${summary.totalItems}</strong><span>İçerik</span></div>
                             <div><strong>${assignedCount}</strong><span>Ekran</span></div>
-                            <div><strong>${escapeHTML(String(playlist.transition || 'none'))}</strong><span>Gecis</span></div>
+                            <div><strong>${escapeHTML(String(playlist.transition || 'none'))}</strong><span>Geçiş</span></div>
                         </div>
 
                         <div class="playlist-card-badges">
@@ -182,7 +182,7 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                         </div>
 
                         <div class="playlist-card-health">
-                            ${flags.length ? flags.map((flag) => `<span class="ops-attention-tag">${escapeHTML(flag)}</span>`).join('') : '<span class="playlist-card-healthy">Sahaya cikmaya hazir</span>'}
+                            ${flags.length ? flags.map((flag) => `<span class="ops-attention-tag">${escapeHTML(flag)}</span>`).join('') : '<span class="playlist-card-healthy">Sahaya çıkmaya hazır</span>'}
                         </div>
 
                         <div class="playlist-card-actions">
@@ -194,7 +194,7 @@ export class PlaylistListCardsPage extends PlaylistListExperienceBase {
                                     <i class="ti ti-devices"></i> Cihazlar
                                 </button>
                                 <button class="btn btn-outline btn-sm text-success" data-card-action="start" data-playlist-id="${playlist.id}">
-                                    <i class="ti ti-player-play"></i> Baslat
+                                    <i class="ti ti-player-play"></i> Başlat
                                 </button>
                                 <button class="btn btn-outline btn-sm text-info" data-card-action="refresh" data-playlist-id="${playlist.id}">
                                     <i class="ti ti-refresh"></i> Yenile

@@ -19,7 +19,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                         </div>
                         <div class="page-header-info">
                             <h1 class="page-title">Operasyon+ Playlistler</h1>
-                            <p class="page-subtitle">Mevcut yapiyi bozmadan daha iyi gorunurluk, filtre ve yayin kontrolu</p>
+                            <p class="page-subtitle">Mevcut yapıyı bozmadan daha iyi görünürlük, filtre ve yayın kontrolü</p>
                         </div>
                     </div>
                     <div class="page-header-right">
@@ -37,10 +37,10 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
 
             <div class="playlist-lab-toolbar">
                 <div class="playlist-lab-filters">
-                    <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tum</button>
-                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canliya Hazir</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tüm</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canlıya Hazır</button>
                     <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="attention">Dikkat Gereken</button>
-                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="unassigned">Atanmamis</button>
+                    <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="unassigned">Atanmamış</button>
                     <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="draft">Taslak</button>
                 </div>
                 <div class="playlist-lab-search">
@@ -54,8 +54,8 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                     <div class="card card-table">
                         <div class="card-header">
                             <div>
-                                <h3 class="card-title">Yayin Kontrol Listesi</h3>
-                                <p class="card-subtitle">Durum, saglik ve cihaz etkisi tek tabloda</p>
+                                <h3 class="card-title">Yayın Kontrol Listesi</h3>
+                                <p class="card-subtitle">Durum, sağlık ve cihaz etkisi tek tabloda</p>
                             </div>
                         </div>
                         <div class="card-body">
@@ -66,7 +66,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 <div class="xl:col-span-4">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Operasyon Ozeti</h3>
+                            <h3 class="card-title">Operasyon Özeti</h3>
                         </div>
                         <div class="card-body">
                             <div id="ops-attention-list"></div>
@@ -78,15 +78,15 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
             <div class="card mt-4">
                 <div class="card-header">
                     <div class="card-header-left">
-                        <h3 class="card-title">Cihaz Baglam Agaci</h3>
-                        <p class="card-subtitle">Playlist atama ve saha topolojisini ayni ekranda tutar</p>
+                        <h3 class="card-title">Cihaz Bağlam Ağacı</h3>
+                        <p class="card-subtitle">Playlist atama ve saha topolojisini aynı ekranda tutar</p>
                     </div>
                     <div class="card-header-right">
                         <button id="ops-tree-expand-all" class="btn btn-outline btn-sm">
-                            <i class="ti ti-arrows-maximize"></i> ${this.text('deviceTree.expandAll', 'Tumunu Ac')}
+                            <i class="ti ti-arrows-maximize"></i> ${this.text('deviceTree.expandAll', 'Tümünü Aç')}
                         </button>
                         <button id="ops-tree-collapse-all" class="btn btn-outline btn-sm">
-                            <i class="ti ti-arrows-minimize"></i> ${this.text('deviceTree.collapseAll', 'Tumunu Kapat')}
+                            <i class="ti ti-arrows-minimize"></i> ${this.text('deviceTree.collapseAll', 'Tümünü Kapat')}
                         </button>
                     </div>
                 </div>
@@ -125,7 +125,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                                     <span class="ops-state-pill tone-${state.tone}">${state.label}</span>
                                 </div>
                                 <div class="ops-row-meta">
-                                    <span>${summary.totalItems} icerik</span>
+                                    <span>${summary.totalItems} içerik</span>
                                     <span>${escapeHTML(row.layout_type || 'full')}</span>
                                     <span>${escapeHTML(row.orientation || 'landscape')}</span>
                                 </div>
@@ -135,7 +135,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 },
                 {
                     key: 'transition',
-                    label: 'Akis',
+                    label: 'Akış',
                     render: (val, row) => `
                         <div class="ops-flow-stack">
                             <span class="badge badge-info">${escapeHTML(String(val || 'none'))}</span>
@@ -145,14 +145,14 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 },
                 {
                     key: 'assigned_device_count',
-                    label: 'Yayin Etkisi',
+                    label: 'Yayın Etkisi',
                     sortable: true,
                     render: (val, row) => {
                         const assigned = parseInt(val, 10) || 0;
                         return `
                             <div class="ops-flow-stack">
                                 <strong>${assigned}</strong>
-                                <small>${assigned ? 'ekran bagli' : 'ekran bekliyor'}</small>
+                                <small>${assigned ? 'ekran bağlı' : 'ekran bekliyor'}</small>
                                 ${assigned > 1 ? `
                                     <button class="btn btn-xs btn-ghost text-primary" data-ops-devices="${row.id}">Listele</button>
                                 ` : ''}
@@ -162,12 +162,12 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 },
                 {
                     key: 'updated_at',
-                    label: 'Son Dokunus',
+                    label: 'Son Dokunuş',
                     sortable: true,
                     render: (val) => `
                         <div class="ops-flow-stack">
                             <span>${this.formatDateTime(val)}</span>
-                            <small>Kayit zamani</small>
+                            <small>Kayıt zamanı</small>
                         </div>
                     `
                 }
@@ -176,7 +176,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 {
                     name: 'play',
                     icon: 'ti-player-play',
-                    label: 'Baslat',
+                    label: 'Başlat',
                     class: 'btn-ghost text-success',
                     visible: (row) => (parseInt(row.assigned_device_count, 10) || 0) > 0,
                     onClick: (row) => this.sendPlaylistCommand(row, 'start')
@@ -207,14 +207,14 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
                 {
                     name: 'edit',
                     icon: 'ti-edit',
-                    label: 'Duzenle',
+                    label: 'Düzenle',
                     onClick: (row) => this.edit(row.id)
                 }
             ],
             pagination: true,
             pageSize: 15,
             searchable: false,
-            emptyText: 'Playlist bulunamadi'
+            emptyText: 'Playlist bulunamadı'
         });
     }
 
@@ -269,22 +269,22 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
             <div class="playlist-metric-card">
                 <span class="metric-label">Toplam Playlist</span>
                 <strong>${stats.total}</strong>
-                <small>Yonetilen tum akislari kapsar</small>
+                <small>Yönetilen tüm akışları kapsar</small>
             </div>
             <div class="playlist-metric-card success">
-                <span class="metric-label">Canliya Hazir</span>
+                <span class="metric-label">Canlıya Hazır</span>
                 <strong>${stats.liveReady}</strong>
-                <small>Icerik + cihaz atamasi tamam</small>
+                <small>İçerik + cihaz ataması tamam</small>
             </div>
             <div class="playlist-metric-card warning">
                 <span class="metric-label">Dikkat Gereken</span>
                 <strong>${stats.needsAttention}</strong>
-                <small>Eksik icerik, cihaz veya durum</small>
+                <small>Eksik içerik, cihaz veya durum</small>
             </div>
             <div class="playlist-metric-card info">
-                <span class="metric-label">Bagli Ekran</span>
+                <span class="metric-label">Bağlı Ekran</span>
                 <strong>${stats.assignedScreens}</strong>
-                <small>Bu gorunumde etkilenen ekran</small>
+                <small>Bu görünümde etkilenen ekran</small>
             </div>
         `;
     }
@@ -299,7 +299,7 @@ export class PlaylistListOpsPage extends PlaylistListExperienceBase {
             .slice(0, 6);
 
         if (!attention.length) {
-            container.innerHTML = this.renderEmptyState('Bu gorunumde kritik aksiyon yok');
+            container.innerHTML = this.renderEmptyState('Bu görünümde kritik aksiyon yok');
             return;
         }
 

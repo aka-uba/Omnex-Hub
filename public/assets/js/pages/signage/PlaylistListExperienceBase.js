@@ -57,7 +57,7 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
             Logger.error('Playlist load error:', error);
             this.playlists = [];
             this.refreshView();
-            Toast.error(this.text('messages.loadFailed', 'Veriler yuklenemedi'));
+            Toast.error(this.text('messages.loadFailed', 'Veriler yüklenemedi'));
         } finally {
             if (this.dataTable?.setLoading) {
                 this.dataTable.setLoading(false);
@@ -173,14 +173,14 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
         }
 
         if (!totalItems) {
-            return { key: 'empty', label: 'Icerik Bekliyor', tone: 'warning' };
+            return { key: 'empty', label: 'İçerik Bekliyor', tone: 'warning' };
         }
 
         if (!assigned) {
-            return { key: 'ready', label: 'Yayin Bekliyor', tone: 'info' };
+            return { key: 'ready', label: 'Yayın Bekliyor', tone: 'info' };
         }
 
-        return { key: 'live', label: 'Canliya Hazir', tone: 'success' };
+        return { key: 'live', label: 'Canlıya Hazır', tone: 'success' };
     }
 
     getHealthFlags(playlist) {
@@ -189,16 +189,16 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
         const flags = [];
 
         if (!summary.totalItems) {
-            flags.push('Icerik yok');
+            flags.push('İçerik yok');
         }
         if (!assigned) {
-            flags.push('Cihaz atamasi yok');
+            flags.push('Cihaz ataması yok');
         }
         if (String(playlist?.status || 'draft') !== 'active') {
-            flags.push('Yayin disi');
+            flags.push('Yayın dışı');
         }
         if ((playlist?.transition_duration ? parseInt(playlist.transition_duration, 10) : 0) > 700) {
-            flags.push('Gecis suresi uzun');
+            flags.push('Geçiş süresi uzun');
         }
 
         return flags;
@@ -352,7 +352,7 @@ export class PlaylistListExperienceBase extends PlaylistListPage {
         `;
     }
 
-    renderEmptyState(message = 'Playlist bulunamadi') {
+    renderEmptyState(message = 'Playlist bulunamadı') {
         return `
             <div class="playlist-variant-empty">
                 <i class="ti ti-layout-off"></i>

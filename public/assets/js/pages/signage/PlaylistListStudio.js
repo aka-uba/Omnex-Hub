@@ -17,7 +17,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                         </div>
                         <div class="page-header-info">
                             <h1 class="page-title">Studio Split Playlistler</h1>
-                            <p class="page-subtitle">Sol listede secim, sag panelde preview, yayin durumu ve saha etkisi</p>
+                            <p class="page-subtitle">Sol listede seçim, sağ panelde preview, yayın durumu ve saha etkisi</p>
                         </div>
                     </div>
                     <div class="page-header-right">
@@ -39,8 +39,8 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                             <input type="text" id="studio-search-input" placeholder="Playlist ara">
                         </div>
                         <div class="playlist-lab-filters">
-                            <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tum</button>
-                            <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canli</button>
+                            <button class="btn btn-outline btn-sm playlist-filter-chip active" data-filter="all">Tüm</button>
+                            <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="live">Canlı</button>
                             <button class="btn btn-outline btn-sm playlist-filter-chip" data-filter="attention">Riskli</button>
                         </div>
                     </div>
@@ -127,7 +127,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
         if (!container) return;
 
         if (!filtered.length) {
-            container.innerHTML = this.renderEmptyState('Secilebilir playlist yok');
+            container.innerHTML = this.renderEmptyState('Seçilebilir playlist yok');
             return;
         }
 
@@ -144,7 +144,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                         <span class="ops-state-pill tone-${state.tone}">${state.label}</span>
                     </div>
                     <div class="studio-list-item-meta">
-                        <span>${summary.totalItems} icerik</span>
+                        <span>${summary.totalItems} içerik</span>
                         <span>${assigned} ekran</span>
                         <span>${escapeHTML(String(playlist.transition || 'none'))}</span>
                     </div>
@@ -158,7 +158,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
         if (!panel) return;
 
         if (!playlist) {
-            panel.innerHTML = this.renderEmptyState('Detay gosterilecek playlist yok');
+            panel.innerHTML = this.renderEmptyState('Detay gösterilecek playlist yok');
             return;
         }
 
@@ -176,26 +176,26 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                 <div class="studio-hero-copy">
                     <div class="studio-hero-head">
                         <span class="ops-state-pill tone-${state.tone}">${state.label}</span>
-                        <span class="studio-hero-date">Son guncelleme: ${this.formatDateTime(playlist.updated_at)}</span>
+                        <span class="studio-hero-date">Son güncelleme: ${this.formatDateTime(playlist.updated_at)}</span>
                     </div>
                     <h2>${escapeHTML(playlist.name || '')}</h2>
-                    <p>${escapeHTML(playlist.description || 'Bu playlist icin aciklama eklenmemis.')}</p>
+                    <p>${escapeHTML(playlist.description || 'Bu playlist için açıklama eklenmemiş.')}</p>
                     <div class="studio-stat-strip">
-                        <div><strong>${summary.totalItems}</strong><span>Icerik</span></div>
-                        <div><strong>${assigned}</strong><span>Bagli ekran</span></div>
-                        <div><strong>${parseInt(playlist.transition_duration, 10) || 500}</strong><span>ms gecis</span></div>
-                        <div><strong>${escapeHTML(playlist.layout_type || 'full')}</strong><span>Yerlesim</span></div>
+                        <div><strong>${summary.totalItems}</strong><span>İçerik</span></div>
+                        <div><strong>${assigned}</strong><span>Bağlı ekran</span></div>
+                        <div><strong>${parseInt(playlist.transition_duration, 10) || 500}</strong><span>ms geçiş</span></div>
+                        <div><strong>${escapeHTML(playlist.layout_type || 'full')}</strong><span>Yerleşim</span></div>
                     </div>
                     <div class="studio-action-strip">
                         <button class="btn btn-primary" data-studio-action="edit" data-playlist-id="${playlist.id}">
-                            <i class="ti ti-edit"></i> Duzenle
+                            <i class="ti ti-edit"></i> Düzenle
                         </button>
                         <button class="btn btn-outline" data-studio-action="assign" data-playlist-id="${playlist.id}">
                             <i class="ti ti-device-tv"></i> Cihaz Ata
                         </button>
                         ${assigned ? `
                             <button class="btn btn-outline text-success" data-studio-action="start" data-playlist-id="${playlist.id}">
-                                <i class="ti ti-player-play"></i> Baslat
+                                <i class="ti ti-player-play"></i> Başlat
                             </button>
                             <button class="btn btn-outline text-info" data-studio-action="refresh" data-playlist-id="${playlist.id}">
                                 <i class="ti ti-refresh"></i> Yenile
@@ -212,7 +212,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                 <div class="xl:col-span-7">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Yayin Hazirlik Kontrolu</h3>
+                            <h3 class="card-title">Yayın Hazırlık Kontrolü</h3>
                         </div>
                         <div class="card-body">
                             <div class="studio-health-stack">
@@ -224,16 +224,16 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                                 `).join('') : `
                                     <div class="studio-health-item success">
                                         <i class="ti ti-check"></i>
-                                        <span>Bu playlist operasyon acisindan temiz gorunuyor.</span>
+                                        <span>Bu playlist operasyon açısından temiz görünüyor.</span>
                                     </div>
                                 `}
                                 <div class="studio-health-item">
                                     <i class="ti ti-sparkles"></i>
-                                    <span>Gecis: ${escapeHTML(String(playlist.transition || 'none'))} / ${parseInt(playlist.transition_duration, 10) || 500} ms</span>
+                                    <span>Geçiş: ${escapeHTML(String(playlist.transition || 'none'))} / ${parseInt(playlist.transition_duration, 10) || 500} ms</span>
                                 </div>
                                 <div class="studio-health-item">
                                     <i class="ti ti-template"></i>
-                                    <span>Sablon: ${escapeHTML(playlist.template_name || 'Sablon kullanilmiyor')}</span>
+                                    <span>Şablon: ${escapeHTML(playlist.template_name || 'Şablon kullanılmıyor')}</span>
                                 </div>
                             </div>
                         </div>
@@ -241,7 +241,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
 
                     <div class="card mt-4">
                         <div class="card-header">
-                            <h3 class="card-title">Icerik Sirasi</h3>
+                            <h3 class="card-title">İçerik Sırası</h3>
                         </div>
                         <div class="card-body">
                             ${itemsPreview.length ? `
@@ -250,17 +250,17 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                                         <div class="studio-sequence-item">
                                             <span class="studio-seq-index">${index + 1}</span>
                                             <div>
-                                                <strong>${escapeHTML(item.name || item.url || `Icerik ${index + 1}`)}</strong>
+                                                <strong>${escapeHTML(item.name || item.url || `İçerik ${index + 1}`)}</strong>
                                                 <small>${escapeHTML(String(item.type || 'media'))}</small>
                                             </div>
                                         </div>
                                     `).join('')}
                                     ${summary.items.length > itemsPreview.length ? `
-                                        <div class="studio-sequence-more">+${summary.items.length - itemsPreview.length} ek icerik daha</div>
+                                        <div class="studio-sequence-more">+${summary.items.length - itemsPreview.length} ek içerik daha</div>
                                     ` : ''}
                                 </div>
                             ` : `
-                                <div class="studio-sequence-more">Bu playlistte parse edilebilir icerik listesi bulunamadi.</div>
+                                <div class="studio-sequence-more">Bu playlistte parse edilebilir içerik listesi bulunamadı.</div>
                             `}
                         </div>
                     </div>
@@ -288,7 +288,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                                     ` : ''}
                                 </div>
                             ` : `
-                                <div class="studio-sequence-more">Bu playlist henuz bir ekrana baglanmamis.</div>
+                                <div class="studio-sequence-more">Bu playlist henüz bir ekrana bağlanmamış.</div>
                             `}
                         </div>
                     </div>
@@ -301,7 +301,7 @@ export class PlaylistListStudioPage extends PlaylistListExperienceBase {
                             <div class="studio-action-list">
                                 ${assigned ? `
                                     <button class="btn btn-outline" data-studio-action="stop" data-playlist-id="${playlist.id}">
-                                        <i class="ti ti-player-stop"></i> Yayin Durdur
+                                        <i class="ti ti-player-stop"></i> Yayın Durdur
                                     </button>
                                 ` : ''}
                                 <button class="btn btn-outline text-danger" data-studio-action="delete" data-playlist-id="${playlist.id}">
