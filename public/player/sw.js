@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const CACHE_VERSION = 'v1.3.29';
+const CACHE_VERSION = 'v1.3.30';
 const CACHE_NAME = `omnex-player-${CACHE_VERSION}`;
 const MEDIA_CACHE_NAME = `omnex-player-media-${CACHE_VERSION}`;
 

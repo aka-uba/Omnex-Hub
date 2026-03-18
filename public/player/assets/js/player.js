@@ -1667,15 +1667,9 @@ class OmnexPlayer {
         const contrastCandidates = preset
             .map((value) => Number(value.toFixed(2)))
             .filter((value) => value <= safeMaxContrast + 0.0001);
-        const currentContrast = Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
-
         if (contrastCandidates.length === 0) {
             contrastCandidates.push(1.0);
         }
-        if (!contrastCandidates.some((value) => Math.abs(value - currentContrast) < 0.005)) {
-            contrastCandidates.push(Math.min(Math.max(currentContrast, 1.0), safeMaxContrast));
-        }
-
         return contrastCandidates
             .sort((a, b) => a - b)
             .map((contrast) => ({
@@ -1758,10 +1752,10 @@ class OmnexPlayer {
             if (applied === false) {
                 return;
             }
-            this._displayTuningIndex = nextIndex;
-            this.updateDisplayTuningIndicator();
+            this.syncDisplayTuningStateFromBridge();
             this.showPlayerControlsOnActivity();
-            this.showToast(`L${nextIndex + 1} • ${nextLevel.contrast.toFixed(2)}`, 'info', 900);
+            const activeLevel = this._displayTuningLevels[this._displayTuningIndex] || nextLevel;
+            this.showToast(`L${this._displayTuningIndex + 1} • ${activeLevel.contrast.toFixed(2)}`, 'info', 900);
         } catch (error) {
             // Silent fail
         }
