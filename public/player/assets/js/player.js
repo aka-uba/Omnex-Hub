@@ -1660,7 +1660,15 @@ class OmnexPlayer {
             : Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
         const contrastEnabled = tuning?.contrastEnabled !== false;
         const safeMaxContrast = contrastEnabled ? Math.min(Math.max(maxContrast, 1.0), 1.16) : 1.0;
-        const contrastCandidates = [1.0, 1.02, 1.04, 1.06, 1.08, 1.10, 1.12, 1.14, 1.16]
+        const profileId = String(this.performanceProfile || '').trim().toLowerCase();
+        const profilePresetMap = {
+            legacy: [1.00, 1.15, 1.30],
+            balanced: [1.00, 1.12, 1.24],
+            default: [1.00, 1.15, 1.30]
+        };
+        const preset = profilePresetMap[profileId] || profilePresetMap.default;
+        const contrastCandidates = preset
+            .map((value) => Number(value.toFixed(2)))
             .filter((value) => value <= safeMaxContrast + 0.0001);
         const currentContrast = Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
 
@@ -1726,10 +1734,13 @@ class OmnexPlayer {
         if (!indicator) return;
         const activeLevel = this._displayTuningLevels[this._displayTuningIndex];
         if (!activeLevel) {
-            indicator.textContent = '1.00';
+            indicator.textContent = 'L1';
+            indicator.title = '1.00';
             return;
         }
-        indicator.textContent = activeLevel.contrast.toFixed(2);
+        const levelNo = this._displayTuningIndex + 1;
+        indicator.textContent = `L${levelNo}`;
+        indicator.title = activeLevel.contrast.toFixed(2);
     }
 
     cycleDisplayTuning() {
@@ -1753,7 +1764,7 @@ class OmnexPlayer {
             this._displayTuningIndex = nextIndex;
             this.updateDisplayTuningIndicator();
             this.showPlayerControlsOnActivity();
-            this.showToast(nextLevel.contrast.toFixed(2), 'info', 900);
+            this.showToast(`L${nextIndex + 1} • ${nextLevel.contrast.toFixed(2)}`, 'info', 900);
         } catch (error) {
             // Silent fail
         }
