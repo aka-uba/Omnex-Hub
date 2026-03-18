@@ -6260,3 +6260,45 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/index.html.pre_display_control_overlay_20260318_060455.bak`
     - `.codex/tmp_backups/sw.js.pre_display_control_overlay_20260318_060455.bak`
     - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_display_control_overlay_20260318_060724.bak`
+## 2026-03-18 - legacy profile display tuning visibility fix (G66) + APK v2.9.19
+
+- Request: Verify TV behavior and address report that G66 does not show display tuning icon.
+- Changes:
+  - Root cause verified on G66:
+    - Device runs `legacy` profile.
+    - Legacy had `enableContrastTuning=false`, so JS control intentionally stayed hidden.
+  - Local Android source update (gitignored path):
+    - `android-player/omnex-player-app/app/src/main/java/com/omnex/player/PerformanceProfile.kt`
+      - Legacy profile `enableContrastTuning` set to `true` (safe `maxContrast=1.02` remains).
+  - Release metadata bump (local Android build input):
+    - `android-player/omnex-player-app/app/build.gradle`
+      - `versionCode 48`, `versionName 2.9.19`
+  - OTA artifact updates:
+    - `downloads/omnex-player.apk`
+    - `public/downloads/omnex-player.apk`
+    - `downloads/omnex-player-standalone-v2.9.19.apk`
+    - `public/downloads/omnex-player-standalone-v2.9.19.apk`
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    - SHA256: `7bc35bbde28a037a561ec19b9f416a3a2352e670e00e7d28c9ac17fcea1b691b`
+- Checks run:
+  - `.\gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - `ConvertFrom-Json` for both update manifests (OK)
+  - SHA256 match check for both apk copies (OK)
+  - Device verification:
+    - Google TV (`192.168.1.52:44245`) and G66 (`192.168.1.181:39855`) connected
+    - G66 app upgraded to `2.9.19 / code 48` (OK)
+    - G66 runtime log confirms `Performance profile: legacy` (OK)
+    - Touch-only behavior verified via native prefs:
+      - first tap reveals controls (no value change)
+      - second tap toggles `display_contrast_override` (`1.00 -> 1.02`)
+- Risks/Follow-up:
+  - Legacy range intentionally tiny (`1.00-1.02`) to avoid GPU/compositor pressure increase.
+  - Android source remains gitignored at root; persistence is via rebuilt APK + OTA manifests.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/PerformanceProfile.kt.pre_legacy_display_tuning_20260318_062022.bak`
+    - `.codex/tmp_backups/build.gradle.pre_v48_legacy_display_tuning_20260318_062022.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_v48_legacy_display_tuning_20260318_062022.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_v48_legacy_display_tuning_20260318_062022.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v48_legacy_visibility_20260318_062356.bak`

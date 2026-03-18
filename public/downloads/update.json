@@ -1,8 +1,8 @@
 {
-    "versionCode":  47,
-    "versionName":  "2.9.18",
-    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=47",
-    "releaseNotes":  "- Faz1 display tuning eklendi: profile bazli parlaklik/kontrast sinirlari\n- Native bridge uzerinden getDisplayTuning/setDisplayTuning/clearDisplayTuningOverride acildi\n- Profil degisiminde ve sayfa yuklenmesinde display tuning yeniden uygulanir hale getirildi",
+    "versionCode":  48,
+    "versionName":  "2.9.19",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=48",
+    "releaseNotes":  "- G66/legacy profilde display tuning gorunurlugu acildi\n- Legacy cihazlarda dusuk riskli contrast araligi aktif: 1.00-1.02\n- Orientation+display overlay kontrolu kumanda ve dokunma aktivitesiyle gorunur",
     "mandatory":  false,
-    "sha256":  "b87d48d683f913413e3e897b8c73a608b3be2a1db5769799ad2a5f3acde3edae"
+    "sha256":  "7bc35bbde28a037a561ec19b9f416a3a2352e670e00e7d28c9ac17fcea1b691b"
 }
