@@ -2470,10 +2470,8 @@ body.device-tv #registration-screen #qr-code img {
 
 body {
     font-family: "Manrope", "Noto Sans", "Segoe UI", sans-serif;
-    background:
-        radial-gradient(circle at 15% 18%, rgba(24, 200, 200, 0.2), transparent 32%),
-        radial-gradient(circle at 84% 76%, rgba(26, 175, 207, 0.18), transparent 36%),
-        linear-gradient(145deg, var(--hub-bg-start) 0%, var(--hub-bg-mid) 50%, var(--hub-bg-end) 100%);
+    /* Keep OS/status area color neutral in player flow (avoid blue top strip on phones). */
+    background: #000;
     color: var(--hub-title);
 }
 
