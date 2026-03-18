@@ -1162,7 +1162,13 @@
         },
         "popupBlocked": "Popup-Fenster blockiert. Bitte erlauben Sie Popups in den Browser-Einstellungen.",
         "previewOpened": "Druckvorschau geöffnet",
-        "close": "Schließen"
+        "close": "Schließen",
+        "htmlPrint": {
+            "label": "HTML Druck (Neu)",
+            "hint": "Serverseitiges Rendering für bessere Schrift- und Vorlagengenauigkeit",
+            "generating": "Serverseitige Etiketten werden erstellt...",
+            "failed": "HTML-Druck fehlgeschlagen"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Multi-Produkt-Versand",

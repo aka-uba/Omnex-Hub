@@ -1159,7 +1159,13 @@
         },
         "popupBlocked": "Pop-upvenster geblokkeerd. Sta pop-ups van browserinstellingen toe.",
         "previewOpened": "Afdrukvoorbeeld geopend",
-        "close": "Dichtbij"
+        "close": "Dichtbij",
+        "htmlPrint": {
+            "label": "HTML Afdruk (Nieuw)",
+            "hint": "Server-side rendering voor betere lettertype- en sjabloonnauwkeurigheid",
+            "generating": "Server-side labels worden aangemaakt...",
+            "failed": "HTML-afdruk mislukt"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Verzenden van meerdere producten",

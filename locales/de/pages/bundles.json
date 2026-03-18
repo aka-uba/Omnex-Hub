@@ -184,6 +184,12 @@
         "printFailed": "Drucken fehlgeschlagen",
         "templateHint": "Ohne Vorlagenauswahl wird ein einfaches Design verwendet"
     },
+    "htmlPrint": {
+        "label": "HTML Druck (Neu)",
+        "hint": "Serverseitiges Template-Rendering",
+        "generating": "Etiketten werden vorbereitet...",
+        "failed": "HTML-Druck fehlgeschlagen"
+    },
     "priceHistory": {
         "title": "Preisverlauf",
         "toggle": "Preisverlauf ein-/ausblenden",

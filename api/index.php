@@ -366,6 +366,11 @@ $router->group(['prefix' => '/api/templates', 'middleware' => ['auth']], functio
         require API_PATH . '/templates/render.php';
     });
 
+    // Template print HTML - toplu etiket baskısı için HTML sayfa oluştur
+    $router->post('/{id}/print-html', function($request) {
+        require API_PATH . '/templates/print-html.php';
+    });
+
     // Template fork - sistem şablonunu firmaya kopyala
     $router->post('/{id}/fork', function($request) {
         require API_PATH . '/templates/fork.php';

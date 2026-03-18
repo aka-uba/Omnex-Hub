@@ -184,6 +184,12 @@
         "printQueued": "Print job queued",
         "printFailed": "Print failed"
     },
+    "htmlPrint": {
+        "label": "HTML Print (New)",
+        "hint": "Server-side template rendering",
+        "generating": "Preparing labels...",
+        "failed": "HTML print failed"
+    },
     "priceHistory": {
         "title": "Price History",
         "toggle": "Show/hide price history",

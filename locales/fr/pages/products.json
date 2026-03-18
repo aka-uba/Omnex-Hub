@@ -1162,7 +1162,13 @@
         },
         "popupBlocked": "Fenêtre popup bloquée. Veuillez autoriser les popups depuis les paramètres du navigateur.",
         "previewOpened": "Aperçu d'impression ouvert",
-        "close": "Fermer"
+        "close": "Fermer",
+        "htmlPrint": {
+            "label": "Impression HTML (Nouveau)",
+            "hint": "Rendu côté serveur pour une meilleure précision des polices et modèles",
+            "generating": "Génération des étiquettes côté serveur...",
+            "failed": "Échec de l'impression HTML"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Envoi multi-produits",

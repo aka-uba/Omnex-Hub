@@ -1160,7 +1160,13 @@
         },
         "popupBlocked": "Popup penceresi engellendi. Lütfen tarayıcı ayarlarından popup'lara izin verin.",
         "previewOpened": "Yazdırma önizlemesi açıldı",
-        "close": "Kapat"
+        "close": "Kapat",
+        "htmlPrint": {
+            "label": "HTML Baskı (Yeni)",
+            "hint": "Daha doğru font ve şablon uyumu için sunucu taraflı render",
+            "generating": "Sunucu taraflı etiketler oluşturuluyor...",
+            "failed": "HTML baskı başarısız oldu"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Çoklu Ürün Gönder",

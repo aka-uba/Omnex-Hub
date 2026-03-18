@@ -16,6 +16,9 @@ class FabricToHtmlConverter
     /** Company ID for media URL resolution */
     private $companyId;
 
+    /** Print mode: video'ları poster/placeholder olarak render et */
+    private $printMode = false;
+
     /**
      * Label text → field key mapping.
      * Fabric.js v7 bug: dynamicField/fieldBinding props are not saved.
@@ -157,6 +160,95 @@ class FabricToHtmlConverter
             'title'  => $title,
             'width'  => $canvasWidth,
             'height' => $canvasHeight,
+        ];
+    }
+
+    /**
+     * Sadece canvas fragment'ı döner (tam HTML sayfası DEĞİL).
+     * Print endpoint için kullanılır — wrapper sayfası dışarıda oluşturulur.
+     *
+     * @return array ['fragment' => string, 'fonts' => array, 'width' => int, 'height' => int, 'bg' => string]
+     */
+    public function convertToFragment(array $template, array $products, array $options = []): array
+    {
+        $designData = $this->parseDesignData($template['design_data'] ?? '');
+        if (empty($designData)) {
+            return ['fragment' => '', 'fonts' => [], 'width' => 0, 'height' => 0, 'bg' => '#fff'];
+        }
+
+        $canvasWidth  = (int)($options['width']  ?? $template['width']  ?? $designData['width']  ?? 800);
+        $canvasHeight = (int)($options['height'] ?? $template['height'] ?? $designData['height'] ?? 1280);
+        $currency = $options['currency'] ?? '₺';
+        $this->printMode = !empty($options['print_mode']);
+
+        $gridLayout = $template['grid_layout'] ?? 'single';
+        $regionsConfig = $this->parseDesignData($template['regions_config'] ?? '');
+        $objects = $designData['objects'] ?? [];
+
+        // Her ürün için field values
+        $productFieldValues = [];
+        foreach ($products as $idx => $p) {
+            $productFieldValues[$idx] = $this->buildFieldValues($p, $currency);
+        }
+
+        // Multi-product-frame slot eşleştirme
+        $slotProductMap = [];
+        $hasMultiProductFrame = false;
+        foreach ($objects as $obj) {
+            $ct = $obj['customType'] ?? '';
+            if ($ct === 'multi-product-frame' || (!empty($obj['frameCols']) && !empty($obj['frameRows']))) {
+                $hasMultiProductFrame = true;
+                $cols = (int)($obj['frameCols'] ?? 1);
+                $rows = (int)($obj['frameRows'] ?? 1);
+                $slotNo = 1;
+                for ($r = 0; $r < $rows; $r++) {
+                    for ($c = 0; $c < $cols; $c++) {
+                        if (isset($products[$slotNo - 1])) {
+                            $slotProductMap[$slotNo] = $slotNo - 1;
+                        }
+                        $slotNo++;
+                    }
+                }
+                break;
+            }
+        }
+
+        // Objeleri HTML'e dönüştür
+        $htmlElements = [];
+        foreach ($objects as $obj) {
+            $slotId = isset($obj['slotId']) ? (int)$obj['slotId'] : 0;
+            if ($slotId > 0 && $hasMultiProductFrame) {
+                $productIndex = $slotProductMap[$slotId] ?? 0;
+            } else {
+                $regionId = $obj['regionId'] ?? null;
+                $productIndex = $this->resolveProductIndex($regionId, $regionsConfig, $gridLayout);
+            }
+            $product = $products[$productIndex] ?? ($products[0] ?? []);
+            $fieldValues = $productFieldValues[$productIndex] ?? ($productFieldValues[0] ?? []);
+            $element = $this->convertObject($obj, $product, $fieldValues, $canvasWidth, $canvasHeight, $currency);
+            if ($element !== null) {
+                $htmlElements[] = $element;
+            }
+        }
+
+        $usedFonts = $this->collectFonts($objects);
+
+        // Canvas arka planı
+        $bg = $this->resolveCanvasBackground($designData);
+
+        // Fragment: sadece canvas div
+        $elementsHtml = implode("\n        ", $htmlElements);
+        $fragment = "<div class=\"canvas-container\" style=\"position:relative;width:{$canvasWidth}px;height:{$canvasHeight}px;{$bg};overflow:hidden;\">\n        {$elementsHtml}\n    </div>";
+
+        // printMode reset (sonraki convert() çağrılarını etkilemesin)
+        $this->printMode = false;
+
+        return [
+            'fragment' => $fragment,
+            'fonts'    => $usedFonts,
+            'width'    => $canvasWidth,
+            'height'   => $canvasHeight,
+            'bg'       => $bg,
         ];
     }
 
@@ -340,6 +432,16 @@ class FabricToHtmlConverter
             }
         }
 
+        // Barkod objesi → SVG placeholder (JsBarcode ile render edilecek)
+        if ($customType === 'barcode' || ($customType === 'dynamic-text' && ($obj['dynamicField'] ?? '') === 'barcode')) {
+            return $this->convertBarcode($obj, $fieldValues, $left, $top, $width, $height, $angle, $opacity);
+        }
+
+        // QR Kod objesi → div placeholder (qrcodejs ile render edilecek)
+        if ($customType === 'qrcode' || ($obj['dynamicField'] ?? '') === 'kunye_no') {
+            return $this->convertQrCode($obj, $fieldValues, $left, $top, $width, $height, $angle, $opacity);
+        }
+
         // Metin mi?
         if (in_array($type, ['textbox', 'i-text', 'text'], true)) {
             return $this->convertText($obj, $product, $fieldValues, $left, $top, $width, $height, $angle, $opacity, $currency);
@@ -486,6 +588,66 @@ class FabricToHtmlConverter
     }
 
     /**
+     * Barkod objesi → SVG placeholder (JsBarcode ile client-side render edilir)
+     */
+    private function convertBarcode(array $obj, array $fieldValues, float $left, float $top, float $width, float $height, float $angle, float $opacity): string
+    {
+        $value = $this->resolveDynamicFieldValue($obj, $fieldValues);
+        if (empty($value)) {
+            $value = $obj['text'] ?? $fieldValues['barcode'] ?? '';
+        }
+        $escapedVal = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
+        $style .= "display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;";
+        $uid = 'bc_' . substr(md5(uniqid()), 0, 8);
+        return "<div style=\"{$style}\"><svg id=\"{$uid}\" class=\"print-barcode\" data-barcode=\"{$escapedVal}\" data-width=\"{$width}\" data-height=\"{$height}\" style=\"max-width:100%;max-height:100%;\"></svg></div>";
+    }
+
+    /**
+     * QR kod objesi → div placeholder (qrcodejs ile client-side render edilir)
+     */
+    private function convertQrCode(array $obj, array $fieldValues, float $left, float $top, float $width, float $height, float $angle, float $opacity): string
+    {
+        $value = $this->resolveDynamicFieldValue($obj, $fieldValues);
+        if (empty($value)) {
+            $value = $obj['text'] ?? $fieldValues['kunye_no'] ?? $fieldValues['barcode'] ?? '';
+        }
+        $escapedVal = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
+        $style .= "display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;";
+        $uid = 'qr_' . substr(md5(uniqid()), 0, 8);
+        return "<div id=\"{$uid}\" class=\"print-qrcode\" data-qrcode=\"{$escapedVal}\" style=\"{$style}\"></div>";
+    }
+
+    /**
+     * Dinamik alan değerini çöz (4-tier cascade)
+     */
+    private function resolveDynamicFieldValue(array $obj, array $fieldValues): string
+    {
+        // 1. dynamicField prop
+        $dynamicField = $obj['dynamicField'] ?? $obj['dynamic_field'] ?? null;
+        if ($dynamicField) {
+            $key = trim(str_replace(['{{', '}}'], '', $dynamicField));
+            if (isset($fieldValues[$key])) return (string)$fieldValues[$key];
+        }
+
+        // 2. fieldBinding
+        $fieldBinding = $obj['fieldBinding'] ?? null;
+        if ($fieldBinding && is_array($fieldBinding)) {
+            $source = str_replace('product.', '', $fieldBinding['source'] ?? '');
+            if ($source && isset($fieldValues[$source])) return (string)$fieldValues[$source];
+        }
+
+        // 3. {{placeholder}} in text
+        $text = $obj['text'] ?? '';
+        if (preg_match('/\{\{(\w+)\}\}/', $text, $m)) {
+            if (isset($fieldValues[$m[1]])) return (string)$fieldValues[$m[1]];
+        }
+
+        return '';
+    }
+
+    /**
      * Görsel objesi → HTML img (veya video URL ise video elementi)
      */
     private function convertImage(array $obj, array $product, float $left, float $top, float $width, float $height, float $angle, float $opacity): string
@@ -579,6 +741,16 @@ class FabricToHtmlConverter
 
         $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
         $style .= "object-fit:cover;background:#000;";
+
+        // Print modunda video yerine ilk kare poster göster
+        if ($this->printMode) {
+            $style .= "display:flex;align-items:center;justify-content:center;";
+            $posterStyle = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;";
+            return "<div style=\"{$style}\">"
+                . "<video src=\"{$this->escAttr($videoSrc)}\" style=\"{$posterStyle}\" preload=\"metadata\" muted></video>"
+                . "<div style=\"position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;\">▶ Video</div>"
+                . "</div>";
+        }
 
         return "<video src=\"{$this->escAttr($videoSrc)}\" style=\"{$style}\" autoplay muted loop playsinline></video>";
     }

@@ -4136,6 +4136,16 @@ export class ProductListPage {
                         <i class="ti ti-layout-grid"></i>
                         <span id="bulk-print-grid-text"></span>
                     </div>
+
+                    <div class="form-group mt-3 mb-0">
+                        <label class="flex items-center gap-2 cursor-pointer" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" id="bulk-print-use-html" style="width:16px;height:16px;">
+                            <span style="font-size:13px;">
+                                <strong>${this.__('bulkPrint.htmlPrint.label')}</strong>
+                                <span style="color:var(--text-muted);margin-left:4px;font-size:12px;">${this.__('bulkPrint.htmlPrint.hint')}</span>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             `;
 
@@ -4185,8 +4195,21 @@ export class ProductListPage {
                         }
                     }
 
-                    // If paper size selected, use multi-label grid layout
-                    if (paperWidth > 0 && paperHeight > 0) {
+                    // HTML Baskı seçili mi?
+                    const useHtmlPrint = document.getElementById('bulk-print-use-html')?.checked;
+
+                    if (useHtmlPrint && templateId) {
+                        await this.bulkPrintViaHtml({
+                            templateId,
+                            copies,
+                            labelWidthMm: parseInt(width),
+                            labelHeightMm: parseInt(height),
+                            paperWidthMm: paperWidth,
+                            paperHeightMm: paperHeight,
+                            type: 'product'
+                        });
+                    } else if (paperWidth > 0 && paperHeight > 0) {
+                        // If paper size selected, use multi-label grid layout
                         this.bulkPrintPreviewGrid(copies, parseInt(width), parseInt(height), paperWidth, paperHeight, template);
                     } else {
                         // Original single label per page mode
@@ -4201,6 +4224,74 @@ export class ProductListPage {
         } catch (error) {
             Logger.error('Error showing bulk print modal:', error);
             Toast.error(this.__('bulkPrint.loadFailed'));
+        }
+    }
+
+    /**
+     * HTML Baskı - Sunucu taraflı FabricToHtmlConverter ile baskı
+     */
+    async bulkPrintViaHtml({ templateId, copies, labelWidthMm, labelHeightMm, paperWidthMm, paperHeightMm, type }) {
+        const items = this.selectedProducts;
+        if (!items || items.length === 0) return;
+
+        // Popup'u await öncesi aç (popup blocker engeli)
+        const popupWidth = Math.min(1400, window.screen.width - 100);
+        const popupHeight = Math.min(900, window.screen.height - 100);
+        const left = (window.screen.width - popupWidth) / 2;
+        const top = (window.screen.height - popupHeight) / 2;
+        const printWindow = window.open('', 'htmlPrintPreview',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`);
+
+        if (!printWindow) {
+            Toast.error(this.__('bulkPrint.popupBlocked') || 'Popup engellendi. Lütfen popup engelleyicisini kapatın.');
+            return;
+        }
+
+        // Yükleniyor durumu göster
+        printWindow.document.write(`<!DOCTYPE html><html><head><title>Yükleniyor...</title></head><body style="background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:12px;"><div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top:3px solid #228be6;border-radius:50%;animation:spin 1s linear infinite;"></div><p>Etiketler hazırlanıyor... (${items.length} ${type === 'bundle' ? 'paket' : 'ürün'})</p><style>@keyframes spin{to{transform:rotate(360deg)}}</style></body></html>`);
+
+        try {
+            const itemIds = items.map(p => p.id);
+            const basePath = window.OmnexConfig?.basePath || '';
+
+            const response = await fetch(
+                `${basePath}/api/templates/${templateId}/print-html`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.app.api.token || localStorage.getItem('omnex_token')}`,
+                        'X-Active-Company': localStorage.getItem('omnex_active_company') || ''
+                    },
+                    body: JSON.stringify({
+                        product_ids: itemIds,
+                        type: type || 'product',
+                        copies,
+                        label_width_mm: labelWidthMm,
+                        label_height_mm: labelHeightMm,
+                        paper_width_mm: paperWidthMm,
+                        paper_height_mm: paperHeightMm
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+            }
+
+            const html = await response.text();
+
+            printWindow.document.open();
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+
+            Toast.success(this.__('bulkPrint.previewOpened') || 'Baskı önizlemesi açıldı');
+        } catch (err) {
+            Logger.error('HTML print error:', err);
+            printWindow.close();
+            Toast.error(this.__('bulkPrint.htmlPrint.failed') || 'HTML baskı başarısız oldu');
         }
     }
 

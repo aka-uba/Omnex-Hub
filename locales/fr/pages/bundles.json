@@ -184,6 +184,12 @@
         "printFailed": "Échec de l'impression",
         "templateHint": "Un design simple sera utilisé si aucun modèle n'est sélectionné"
     },
+    "htmlPrint": {
+        "label": "Impression HTML (Nouveau)",
+        "hint": "Rendu de modèle côté serveur",
+        "generating": "Préparation des étiquettes...",
+        "failed": "Échec impression HTML"
+    },
     "priceHistory": {
         "title": "Historique des Prix",
         "toggle": "Afficher/masquer l'historique des prix",

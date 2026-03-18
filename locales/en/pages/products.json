@@ -1162,7 +1162,13 @@
         },
         "popupBlocked": "Popup window blocked. Please allow popups from browser settings.",
         "previewOpened": "Print preview opened",
-        "close": "Close"
+        "close": "Close",
+        "htmlPrint": {
+            "label": "HTML Print (New)",
+            "hint": "Server-side rendering for better font and template accuracy",
+            "generating": "Generating server-side labels...",
+            "failed": "HTML print failed"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Multi Product Send",

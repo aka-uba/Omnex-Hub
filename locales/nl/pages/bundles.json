@@ -184,6 +184,12 @@
         "printFailed": "Afdrukken mislukt",
         "templateHint": "Als er geen sjabloon wordt geselecteerd, wordt een eenvoudig ontwerp gebruikt"
     },
+    "htmlPrint": {
+        "label": "HTML Afdruk (Nieuw)",
+        "hint": "Server-side sjabloon rendering",
+        "generating": "Labels worden voorbereid...",
+        "failed": "HTML-afdruk mislukt"
+    },
     "priceHistory": {
         "title": "Prijsgeschiedenis",
         "toggle": "Prijsgeschiedenis tonen/verbergen",

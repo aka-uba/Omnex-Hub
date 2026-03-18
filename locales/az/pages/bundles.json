@@ -184,6 +184,12 @@
         "printFailed": "Çap uğursuz oldu",
         "templateHint": "Şablon seçilməzsə sadə dizayn istifadə olunacaq"
     },
+    "htmlPrint": {
+        "label": "HTML Çap (Yeni)",
+        "hint": "Server tərəfli şablon render",
+        "generating": "Etiketlər hazırlanır...",
+        "failed": "HTML çap uğursuz"
+    },
     "priceHistory": {
         "title": "Qiymət Tarixçəsi",
         "toggle": "Qiymət tarixçəsini göstər/gizlə",

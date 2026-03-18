@@ -184,6 +184,12 @@
         "printQueued": "Yazdırma kuyruğa eklendi",
         "printFailed": "Yazdırma başarısız"
     },
+    "htmlPrint": {
+        "label": "HTML Baskı (Yeni)",
+        "hint": "Sunucu taraflı şablon render",
+        "generating": "Etiketler hazırlanıyor...",
+        "failed": "HTML baskı başarısız"
+    },
     "priceHistory": {
         "title": "Fiyat Geçmişi",
         "toggle": "Fiyat geçmişini göster/gizle",

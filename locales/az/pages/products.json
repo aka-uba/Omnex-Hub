@@ -1160,7 +1160,13 @@
         },
         "popupBlocked": "Popup pəncərə bloklanıb. Brauzer parametrlərindən pop-uplara icazə verin.",
         "previewOpened": "Çap önizləməsi açıldı",
-        "close": "Bağlayın"
+        "close": "Bağlayın",
+        "htmlPrint": {
+            "label": "HTML Çap (Yeni)",
+            "hint": "Daha dəqiq şrift və şablon uyğunluğu üçün server tərəfli render",
+            "generating": "Server tərəfli etiketlər yaradılır...",
+            "failed": "HTML çap uğursuz oldu"
+        }
     },
     "multiProductSend": {
         "buttonLabel": "Çox Məhsul Göndər",
