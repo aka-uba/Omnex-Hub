@@ -26,7 +26,61 @@ $failedDir = $importDir . 'failed/';
 // =========================================================
 // GET: List files in import directory
 // =========================================================
-if ($method === 'GET') {
+if ($method === 'GET' && !empty($_GET['preview'])) {
+    // Preview a specific file for mapping configuration
+    $previewFilename = basename($_GET['preview']);
+    $filePath = $importDir . $previewFilename;
+
+    if (!file_exists($filePath) || !is_file($filePath)) {
+        Response::badRequest('Dosya bulunamadı: ' . $previewFilename);
+    }
+
+    $realImportDir = is_dir($importDir) ? realpath($importDir) : null;
+    $realPath = realpath($filePath);
+    if (!$realPath || !$realImportDir || strpos($realPath, $realImportDir) !== 0) {
+        Response::badRequest('Geçersiz dosya yolu');
+    }
+
+    require_once BASE_PATH . '/parsers/BaseParser.php';
+    require_once BASE_PATH . '/parsers/TxtParser.php';
+    require_once BASE_PATH . '/parsers/CsvParser.php';
+    require_once BASE_PATH . '/parsers/JsonParser.php';
+    require_once BASE_PATH . '/parsers/XmlParser.php';
+    require_once BASE_PATH . '/parsers/XlsxParser.php';
+    require_once BASE_PATH . '/parsers/ParserFactory.php';
+    require_once BASE_PATH . '/services/SmartFieldMapper.php';
+
+    $fileContent = file_get_contents($filePath);
+    $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+    try {
+        $parser = OmnexParserFactory::autoDetect($fileContent, $previewFilename);
+        $rawData = $parser->parse($fileContent);
+
+        if (empty($rawData) || !is_array($rawData)) {
+            throw new Exception('Dosya parse edilemedi veya boş');
+        }
+
+        $firstRow = $rawData[0] ?? [];
+        $headers = is_array($firstRow) ? array_keys($firstRow) : [];
+        $sampleData = array_slice($rawData, 0, 5);
+
+        $detected = SmartFieldMapper::detectMappings($headers, $sampleData);
+
+        Response::success([
+            'filename' => $previewFilename,
+            'total_rows' => count($rawData),
+            'detected_fields' => $headers,
+            'detected_mappings' => $detected['mappings'] ?? [],
+            'sample_data' => $sampleData,
+            'mapped_data' => $sampleData
+        ]);
+    } catch (Exception $e) {
+        Response::error('Dosya önizleme hatası: ' . $e->getMessage(), 422);
+    }
+}
+
+if ($method === 'GET' && empty($_GET['preview'])) {
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $perPage = min(100, max(1, (int) ($_GET['per_page'] ?? 10)));
     $files = [];

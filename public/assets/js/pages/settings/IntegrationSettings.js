@@ -3481,11 +3481,178 @@ export class IntegrationSettingsPage {
     }
 
     showTestImportModal() {
-        // Redirect to products page with import modal trigger
-        Toast.info(this.__('integrations.import.redirectingToImport'));
-        setTimeout(() => {
-            window.location.hash = '#/products?action=import';
-        }, 500);
+        const files = this.importFiles || [];
+        let fileOptions = '';
+        if (files.length > 0) {
+            fileOptions = files.map(f => `<option value="${escapeHTML(f.filename)}">${escapeHTML(f.filename)} (${f.size_formatted})</option>`).join('');
+        }
+
+        Modal.show({
+            title: this.__('integrations.import.testImportTitle'),
+            icon: 'ti-file-upload',
+            size: 'md',
+            content: `
+                <div class="space-y-4">
+                    <p class="text-muted mb-3">${this.__('integrations.import.testImportDesc')}</p>
+                    ${files.length > 0 ? `
+                        <div class="form-group">
+                            <label class="form-label">${this.__('integrations.import.testImportSelectFile')}</label>
+                            <select id="test-import-file-select" class="form-select">
+                                <option value="">-- ${this.__('integrations.import.testImportChoose')} --</option>
+                                ${fileOptions}
+                            </select>
+                        </div>
+                    ` : `
+                        <div class="alert alert-warning">
+                            <i class="ti ti-alert-triangle"></i>
+                            ${this.__('integrations.import.pendingFilesEmpty')}
+                        </div>
+                    `}
+                </div>
+            `,
+            confirmText: files.length > 0 ? this.__('integrations.import.configureMappings') : null,
+            cancelText: this.__('actions.close'),
+            onConfirm: files.length > 0 ? async () => {
+                const select = document.getElementById('test-import-file-select');
+                const filename = select?.value;
+                if (!filename) {
+                    Toast.warning(this.__('integrations.import.testImportChoose'));
+                    return;
+                }
+                Modal.close();
+                await this.showMappingModalForServerFile(filename);
+            } : undefined
+        });
+    }
+
+    async showMappingModalForServerFile(filename) {
+        // Fetch preview data from server
+        try {
+            const response = await this.app.api.get('/import/files', { preview: filename });
+            if (!response.success || !response.data) {
+                Toast.error(response.message || this.__('integrations.import.sampleFileFailed'));
+                return;
+            }
+
+            const previewData = response.data;
+            this._mappingPreviewData = previewData;
+            this._mappingImportFilename = filename;
+
+            // Open mapping modal with server file data
+            Modal.show({
+                title: this.__('integrations.import.configureMappingsTitle'),
+                icon: 'ti-arrows-exchange',
+                size: 'xl',
+                content: `
+                    <div class="space-y-4">
+                        <!-- File info -->
+                        <div class="alert alert-info mb-3">
+                            <div class="flex items-center gap-3">
+                                <i class="ti ti-file text-xl"></i>
+                                <div>
+                                    <strong>${escapeHTML(filename)}</strong>
+                                    <span class="text-sm text-muted ml-2">${previewData.total_rows || 0} ${this.__('integrations.import.testImportRows')}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Auto-detect info -->
+                        <div id="mapping-auto-detect-result" style="display:none" class="mb-3">
+                            <div class="alert alert-success">
+                                <i class="ti ti-sparkles"></i>
+                                <span id="mapping-auto-detect-text"></span>
+                            </div>
+                        </div>
+
+                        <!-- Mapping grid -->
+                        <h4 class="font-medium mb-3 flex items-center gap-2">
+                            <i class="ti ti-arrows-exchange text-primary-600"></i>
+                            ${this.__('integrations.import.mappingGridTitle')}
+                        </h4>
+                        <div class="grid grid-cols-3 gap-3 overflow-y-auto p-2" style="max-height: 400px;" id="mapping-select-grid">
+                        </div>
+
+                        <!-- Preview table -->
+                        <div class="label-info-box mt-4">
+                            <div style="flex: 1;">
+                                <h4 class="font-medium mb-2">${this.__('integrations.import.mappingPreviewTitle')}</h4>
+                                <div class="overflow-x-auto" id="mapping-preview-table"></div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmText: this.__('integrations.import.startImport'),
+                cancelText: this.__('actions.cancel'),
+                onConfirm: async () => {
+                    await this._runImportWithModalMappings(filename);
+                }
+            });
+
+            // Render grids after modal is shown
+            setTimeout(() => {
+                this._renderMappingSelectGrid(previewData);
+                this._renderMappingPreviewTable(previewData);
+            }, 100);
+
+        } catch (error) {
+            Logger.error('Server file preview failed:', error);
+            Toast.error(error.message || this.__('integrations.import.sampleFileFailed'));
+        }
+    }
+
+    async _runImportWithModalMappings(filename) {
+        // Collect mappings from modal selects
+        const mappings = {};
+        document.querySelectorAll('.mapping-select-field').forEach(select => {
+            const target = select.dataset.target;
+            const source = select.value;
+            if (target && source) {
+                mappings[target] = source;
+            }
+        });
+
+        if (Object.keys(mappings).length === 0) {
+            Toast.warning(this.__('integrations.import.noMappingSelected'));
+            return;
+        }
+
+        const s = this.importSettings || {};
+        const options = {
+            update_existing: s.update_existing !== false,
+            create_new: s.create_new !== false,
+            skip_errors: s.skip_errors !== false,
+            trigger_render: s.trigger_render !== false
+        };
+
+        try {
+            const response = await this.app.api.post('/import/files/import', {
+                filename,
+                mappings,
+                options
+            });
+
+            if (response.success) {
+                const d = response.data;
+                const summaryText = `${this.__('integrations.import.historyInserted')}: ${d.summary?.inserted || 0}, ` +
+                    `${this.__('integrations.import.historyUpdated')}: ${d.summary?.updated || 0}, ` +
+                    `${this.__('integrations.import.historyFailed')}: ${d.summary?.failed || 0}`;
+
+                if (d.status === 'completed') {
+                    Toast.success(`${response.message} - ${summaryText}`);
+                } else {
+                    Toast.warning(`${response.message} - ${summaryText}`);
+                }
+
+                this.showImportResultModal(d, filename);
+                await this.loadImportFiles();
+                await this.loadImportHistory();
+            } else {
+                Toast.error(response.message || this.__('integrations.import.importError'));
+            }
+        } catch (error) {
+            Logger.error('Import with mappings failed:', error);
+            Toast.error(error.message || this.__('integrations.import.importError'));
+        }
     }
 
     // =========================================
