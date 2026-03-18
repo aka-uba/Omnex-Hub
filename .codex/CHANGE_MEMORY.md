@@ -6228,3 +6228,35 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/downloads.update.json.pre_phase1_release_20260318_055250.bak`
     - `.codex/tmp_backups/public.downloads.update.json.pre_phase1_release_20260318_055250.bak`
     - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_phase1_display_tuning_20260318_055511.bak`
+## 2026-03-18 - player overlay control update (orientation + display tuning)
+
+- Request: Add display tuning control near orientation icon; keep controls hidden by default and show them on remote/user activity for better TV usability.
+- Changes:
+  - `public/player/index.html`
+    - Added `display-tuning-btn` + `display-tuning-level` above orientation button.
+    - Player JS cache query bump: `player.js?v=89`.
+  - `public/player/assets/css/player.css`
+    - Added styles for floating display tuning button and numeric indicator chip.
+    - Updated shared floating button size rule to include the new control.
+  - `public/player/assets/js/player.js`
+    - Added Android bridge-backed display tuning cycle control (`getDisplayTuning` / `setDisplayTuning`).
+    - Added activity-based player control overlay behavior:
+      - orientation + display controls hidden by default
+      - shown on mouse/touch/keydown/wheel activity
+      - auto-hide after `controlOverlayHideDelay` (2400ms)
+    - Wired display tuning button click to cycle safe contrast presets within profile limits.
+  - `public/player/sw.js`
+    - Service worker cache bump: `v1.3.27`.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+- Risks/Follow-up:
+  - Display tuning UI is active only in Android bridge environment; browser/PWA clients keep this control hidden.
+  - Current UI cycles presets with single button (no separate +/- yet); if field feedback requires finer control, add panel/step buttons next.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/player.js.pre_display_control_overlay_20260318_060455.bak`
+    - `.codex/tmp_backups/player.css.pre_display_control_overlay_20260318_060455.bak`
+    - `.codex/tmp_backups/index.html.pre_display_control_overlay_20260318_060455.bak`
+    - `.codex/tmp_backups/sw.js.pre_display_control_overlay_20260318_060455.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_display_control_overlay_20260318_060724.bak`

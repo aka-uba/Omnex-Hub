@@ -114,6 +114,7 @@ class OmnexPlayer {
             verifyPollingMs: verifyPollingMs,
             syncCodeExpiryMinutes: 15,
             statusBarHideDelay: 3000, // 3 seconds
+            controlOverlayHideDelay: 2400,
             enableServiceWorker: enableServiceWorker,
             enableMediaPrecache: enableMediaPrecache,
             enableNativeVideo: enableNativeVideo,
@@ -159,6 +160,12 @@ class OmnexPlayer {
         this._nativeVideoHardDisabled = false;
         this._enterTransitionTimers = new WeakMap();
         this._exitTransitionTimers = new WeakMap();
+        this._controlsOverlayVisible = false;
+        this._controlsOverlayTimer = null;
+        this._displayTuningInitialized = false;
+        this._displayTuningSupported = false;
+        this._displayTuningLevels = [];
+        this._displayTuningIndex = 0;
 
         // Dual video element ping-pong for seamless video-to-video crossfade
         this._activeVideoSlot = 'primary'; // 'primary' or 'alt'
@@ -1431,6 +1438,8 @@ class OmnexPlayer {
             installActions: document.getElementById('floating-install-actions'),
             pwaInstallBtn: document.getElementById('pwa-install-btn'),
             apkInstallBtn: document.getElementById('apk-install-btn'),
+            displayTuningBtn: document.getElementById('display-tuning-btn'),
+            displayTuningLevel: document.getElementById('display-tuning-level'),
             orientationToggleBtn: document.getElementById('orientation-toggle-btn'),
             registrationStatus: document.getElementById('registration-status'),
             qrContainer: document.getElementById('qr-container'),
@@ -1622,16 +1631,189 @@ class OmnexPlayer {
         }
     }
 
+    isDisplayTuningBridgeAvailable() {
+        return !!(
+            this.isAndroidApp &&
+            this.androidBridge &&
+            typeof this.androidBridge.getDisplayTuning === 'function' &&
+            typeof this.androidBridge.setDisplayTuning === 'function'
+        );
+    }
+
+    parseDisplayTuningPayload(payload) {
+        if (!payload) return null;
+        try {
+            const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
+            if (!parsed || typeof parsed !== 'object') return null;
+            return parsed;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    buildDisplayTuningLevels(tuning) {
+        const baseBrightness = Number.isFinite(Number(tuning?.brightness))
+            ? Number(tuning.brightness)
+            : 1.0;
+        const maxContrast = Number.isFinite(Number(tuning?.profileMaxContrast))
+            ? Number(tuning.profileMaxContrast)
+            : Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
+        const contrastEnabled = tuning?.contrastEnabled !== false;
+        const safeMaxContrast = contrastEnabled ? Math.min(Math.max(maxContrast, 1.0), 1.16) : 1.0;
+        const contrastCandidates = [1.0, 1.02, 1.04, 1.06, 1.08, 1.10, 1.12, 1.14, 1.16]
+            .filter((value) => value <= safeMaxContrast + 0.0001);
+        const currentContrast = Number.isFinite(Number(tuning?.contrast)) ? Number(tuning.contrast) : 1.0;
+
+        if (contrastCandidates.length === 0) {
+            contrastCandidates.push(1.0);
+        }
+        if (!contrastCandidates.some((value) => Math.abs(value - currentContrast) < 0.005)) {
+            contrastCandidates.push(Math.min(Math.max(currentContrast, 1.0), safeMaxContrast));
+        }
+
+        return contrastCandidates
+            .sort((a, b) => a - b)
+            .map((contrast) => ({
+                brightness: baseBrightness,
+                contrast: Number(contrast.toFixed(2))
+            }));
+    }
+
+    syncDisplayTuningStateFromBridge() {
+        if (!this.isDisplayTuningBridgeAvailable()) {
+            return null;
+        }
+
+        let tuning = null;
+        try {
+            tuning = this.parseDisplayTuningPayload(this.androidBridge.getDisplayTuning());
+        } catch (error) {
+            return null;
+        }
+        if (!tuning) {
+            return null;
+        }
+
+        const levels = this.buildDisplayTuningLevels(tuning);
+        this._displayTuningLevels = levels;
+
+        const currentContrast = Number.isFinite(Number(tuning.contrast)) ? Number(tuning.contrast) : 1.0;
+        let nearestIndex = 0;
+        let nearestDiff = Number.POSITIVE_INFINITY;
+        levels.forEach((level, index) => {
+            const diff = Math.abs(level.contrast - currentContrast);
+            if (diff < nearestDiff) {
+                nearestDiff = diff;
+                nearestIndex = index;
+            }
+        });
+        this._displayTuningIndex = nearestIndex;
+        this._displayTuningSupported = levels.length > 1;
+        this.updateDisplayTuningIndicator();
+        return tuning;
+    }
+
+    ensureDisplayTuningControlInitialized() {
+        if (this._displayTuningInitialized) {
+            return;
+        }
+        this._displayTuningInitialized = true;
+        this.syncDisplayTuningStateFromBridge();
+    }
+
+    updateDisplayTuningIndicator() {
+        const indicator = this.elements?.displayTuningLevel;
+        if (!indicator) return;
+        const activeLevel = this._displayTuningLevels[this._displayTuningIndex];
+        if (!activeLevel) {
+            indicator.textContent = '1.00';
+            return;
+        }
+        indicator.textContent = activeLevel.contrast.toFixed(2);
+    }
+
+    cycleDisplayTuning() {
+        this.ensureDisplayTuningControlInitialized();
+        if (!this._displayTuningSupported || !this.isDisplayTuningBridgeAvailable()) {
+            return;
+        }
+
+        const levels = this._displayTuningLevels;
+        if (!levels || levels.length < 2) {
+            return;
+        }
+
+        const nextIndex = (this._displayTuningIndex + 1) % levels.length;
+        const nextLevel = levels[nextIndex];
+        try {
+            const applied = this.androidBridge.setDisplayTuning(nextLevel.brightness, nextLevel.contrast);
+            if (applied === false) {
+                return;
+            }
+            this._displayTuningIndex = nextIndex;
+            this.updateDisplayTuningIndicator();
+            this.showPlayerControlsOnActivity();
+            this.showToast(nextLevel.contrast.toFixed(2), 'info', 900);
+        } catch (error) {
+            // Silent fail
+        }
+    }
+
+    setPlayerControlOverlayVisible(visible) {
+        const allowVisible = visible && this.state === 'player';
+        this._controlsOverlayVisible = !!allowVisible;
+
+        const orientationBtn = this.elements?.orientationToggleBtn;
+        if (orientationBtn) {
+            orientationBtn.style.display = this._controlsOverlayVisible ? 'inline-flex' : 'none';
+            orientationBtn.classList.toggle('visible', this._controlsOverlayVisible);
+        }
+
+        const displayBtn = this.elements?.displayTuningBtn;
+        const displayVisible = this._controlsOverlayVisible && this._displayTuningSupported;
+        if (displayBtn) {
+            displayBtn.style.display = displayVisible ? 'inline-flex' : 'none';
+            displayBtn.classList.toggle('visible', displayVisible);
+        }
+
+        if (this._controlsOverlayVisible) {
+            this.updateOrientationToggleState();
+            this.updateDisplayTuningIndicator();
+        }
+    }
+
+    showPlayerControlsOnActivity() {
+        if (this.state !== 'player') {
+            return;
+        }
+        this.ensureDisplayTuningControlInitialized();
+        this.setPlayerControlOverlayVisible(true);
+        if (this._controlsOverlayTimer) {
+            clearTimeout(this._controlsOverlayTimer);
+        }
+        this._controlsOverlayTimer = setTimeout(() => {
+            this.setPlayerControlOverlayVisible(false);
+        }, this.config.controlOverlayHideDelay);
+    }
+
+    hidePlayerControlsOverlay() {
+        if (this._controlsOverlayTimer) {
+            clearTimeout(this._controlsOverlayTimer);
+            this._controlsOverlayTimer = null;
+        }
+        this.setPlayerControlOverlayVisible(false);
+    }
+
     /**
-     * Show/hide orientation toggle button.
+     * Show/hide orientation and display tuning controls.
      */
     updateOrientationToggleVisibility() {
-        const btn = this.elements?.orientationToggleBtn;
-        if (!btn) return;
-        const visible = this.state === 'player';
-        btn.style.display = visible ? 'inline-flex' : 'none';
-        btn.classList.toggle('visible', visible);
-        this.updateOrientationToggleState();
+        if (this.state !== 'player') {
+            this.hidePlayerControlsOverlay();
+            return;
+        }
+        this.ensureDisplayTuningControlInitialized();
+        this.setPlayerControlOverlayVisible(this._controlsOverlayVisible);
     }
 
     getPlaylistOrientation() {
@@ -6543,7 +6725,14 @@ class OmnexPlayer {
 
         if (this.elements.orientationToggleBtn) {
             this.elements.orientationToggleBtn.addEventListener('click', () => {
+                this.showPlayerControlsOnActivity();
                 this.togglePreferredOrientation();
+            });
+        }
+
+        if (this.elements.displayTuningBtn) {
+            this.elements.displayTuningBtn.addEventListener('click', () => {
+                this.cycleDisplayTuning();
             });
         }
 
@@ -6643,7 +6832,10 @@ class OmnexPlayer {
         }, false);
 
         // Status bar activity detection - show on mouse move or touch
-        const showStatusBarOnActivity = () => this.showStatusBar();
+        const showStatusBarOnActivity = () => {
+            this.showStatusBar();
+            this.showPlayerControlsOnActivity();
+        };
 
         document.addEventListener('mousemove', showStatusBarOnActivity);
         document.addEventListener('touchstart', showStatusBarOnActivity);
@@ -6747,6 +6939,7 @@ class OmnexPlayer {
         if (this.verifyPollingInterval) clearInterval(this.verifyPollingInterval);
         if (this.syncCodeTimer) clearInterval(this.syncCodeTimer);
         if (this.contentTimer) clearTimeout(this.contentTimer);
+        if (this._controlsOverlayTimer) clearTimeout(this._controlsOverlayTimer);
     }
 }
 

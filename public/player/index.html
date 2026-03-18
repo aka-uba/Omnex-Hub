@@ -260,6 +260,14 @@
         </a>
     </div>
 
+    <button id="display-tuning-btn" class="display-tuning-btn" style="display: none;">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="13" cy="11" r="6"/>
+            <path d="M19 5l1.5-1.5M21 11h2M19 17l1.5 1.5M13 19v2M7 17l-1.5 1.5M5 11H3M7 5 5.5 3.5"/>
+        </svg>
+        <span id="display-tuning-level" class="display-tuning-level">1.00</span>
+    </button>
+
     <button id="orientation-toggle-btn" class="orientation-toggle-btn" style="display: none;" title="Yatay G&#246;r&#252;n&#252;m">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="7" width="18" height="10" rx="2"/>
@@ -384,7 +392,7 @@
     <script type="module">
         // Dynamic import of player module with full path
         const playerPath = window.PLAYER_PATH || '/player/';
-                const scriptUrl = playerPath + 'assets/js/player.js?v=88';
+                const scriptUrl = playerPath + 'assets/js/player.js?v=89';
 
         try {
             import(scriptUrl);

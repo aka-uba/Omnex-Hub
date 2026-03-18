@@ -2438,6 +2438,53 @@ body.device-tv #registration-screen #qr-code img {
     transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+.display-tuning-btn {
+    position: fixed;
+    right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 4.25rem);
+    z-index: 1500;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.display-tuning-btn.visible {
+    display: inline-flex !important;
+}
+
+.display-tuning-btn:hover,
+.display-tuning-btn:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.9);
+    outline: none;
+}
+
+.display-tuning-level {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.25rem);
+    transform: translateX(-50%);
+    min-width: 2.35rem;
+    padding: 0.1rem 0.28rem;
+    border-radius: 999px;
+    border: 1px solid rgba(169, 210, 255, 0.42);
+    background: rgba(4, 12, 27, 0.86);
+    color: rgba(238, 248, 255, 0.96);
+    font-size: 0.62rem;
+    line-height: 1;
+    text-align: center;
+    letter-spacing: 0.01em;
+    pointer-events: none;
+}
+
 .orientation-toggle-btn.visible {
     display: inline-flex !important;
 }
@@ -2777,6 +2824,7 @@ body {
 
 .floating-install-actions .pwa-install-btn,
 .floating-install-actions .apk-install-btn,
+.display-tuning-btn,
 .orientation-toggle-btn {
     width: 52px;
     height: 52px;
