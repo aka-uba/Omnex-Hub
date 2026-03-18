@@ -162,6 +162,8 @@ class OmnexPlayer {
         this._activeVideoSlot = 'primary'; // 'primary' or 'alt'
         this._activeHtmlSlot = 'primary';  // 'primary' or 'alt'
         this._pendingExitElement = null;   // Deferred exit transition until next content is ready
+        this._nativeOwnsVideoSwap = false;
+        this._nativeSwapSourceType = null;
         this._isEdgeBrowser = /Edg\//i.test(navigator.userAgent || '');
         this._isEdgePwa = this._isEdgeBrowser && this.isInstalled;
         this._lastEdgeTransitionFallbackLog = null;
@@ -3538,6 +3540,116 @@ class OmnexPlayer {
         return el === this.elements.videoContent || el === this.elements.videoContentAlt;
     }
 
+    _isHtmlElement(el) {
+        return el === this.elements.htmlContent || el === this.elements.htmlContentAlt;
+    }
+
+    releaseIframeMediaDecoders(iframe, reason = 'native-budget') {
+        if (!iframe) return false;
+
+        let doc = null;
+        try {
+            doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+        } catch (e) {
+            return false;
+        }
+        if (!doc) return false;
+
+        const mediaNodes = Array.from(doc.querySelectorAll('video, audio'));
+        if (!mediaNodes.length) return false;
+
+        mediaNodes.forEach((media) => {
+            try {
+                media.pause();
+            } catch (e) {}
+            try {
+                media.removeAttribute('autoplay');
+                media.setAttribute('preload', 'none');
+            } catch (e) {}
+            try {
+                media.removeAttribute('src');
+            } catch (e) {}
+            try {
+                const sources = media.querySelectorAll('source');
+                sources.forEach((sourceNode) => {
+                    sourceNode.removeAttribute('src');
+                });
+            } catch (e) {}
+            try {
+                media.load();
+            } catch (e) {}
+        });
+
+        this.traceDebug('TRANS', 'released iframe media decoders', {
+            reason,
+            iframe: this.getElementDebugLabel(iframe),
+            mediaCount: mediaNodes.length
+        });
+        return true;
+    }
+
+    prepareNativeSwapDecoderBudget(previousContentType = null) {
+        // Keep aggressive decoder budget lock scoped to balanced profile.
+        if (!this.isBalancedProfile()) {
+            return;
+        }
+        if (previousContentType !== 'html') {
+            return;
+        }
+
+        const candidates = [
+            this._pendingExitElement,
+            this._currentElement,
+            this.elements.htmlContent,
+            this.elements.htmlContentAlt
+        ];
+        const seen = new Set();
+        candidates.forEach((candidate) => {
+            if (!candidate || seen.has(candidate) || !this._isHtmlElement(candidate)) {
+                return;
+            }
+            seen.add(candidate);
+            this.releaseIframeMediaDecoders(candidate, 'native-swap');
+        });
+    }
+
+    forceHideElementForNativeSwap(element, reason = 'native-owned-swap') {
+        if (!element) return;
+
+        const enterTimer = this._enterTransitionTimers.get(element);
+        if (enterTimer) {
+            clearTimeout(enterTimer);
+            this._enterTransitionTimers.delete(element);
+        }
+        const exitTimer = this._exitTransitionTimers.get(element);
+        if (exitTimer) {
+            clearTimeout(exitTimer);
+            this._exitTransitionTimers.delete(element);
+        }
+
+        this.clearTransitionClasses(element);
+        element.style.display = 'none';
+        element.style.visibility = 'hidden';
+        element.style.opacity = '0';
+        element.style.zIndex = '0';
+
+        if (this._isVideoElement(element)) {
+            this._cleanupVideoElement(element, true);
+        }
+
+        if (this._isHtmlElement(element)) {
+            this.releaseIframeMediaDecoders(element, reason);
+            try {
+                element.src = 'about:blank';
+            } catch (e) {}
+        }
+
+        this.traceDebug('TRANS', 'force hide element for native swap', {
+            element: this.getElementDebugLabel(element),
+            reason
+        });
+    }
+
     getResolvedTransitionType() {
         if (this._transitionType === 'none') {
             return 'none';
@@ -4119,11 +4231,19 @@ class OmnexPlayer {
             this.traceDebug('TRANS', 'native video start - scheduling pending exit flush', {
                 pendingExitElement: this.getElementDebugLabel(this._pendingExitElement),
                 nativePlaceholder: this.getElementDebugLabel(video),
-                overlapDelayMs
+                overlapDelayMs,
+                nativeOwnsSwap: this._nativeOwnsVideoSwap
             });
             setTimeout(() => {
                 if (!this.isPlaying) return;
                 if (!this._pendingExitElement || this._pendingExitElement === video) return;
+                const pendingExitElement = this._pendingExitElement;
+                this._pendingExitElement = null;
+                if (this._nativeOwnsVideoSwap) {
+                    this.forceHideElementForNativeSwap(pendingExitElement, 'native-owned-video-swap');
+                    return;
+                }
+                this._pendingExitElement = pendingExitElement;
                 this.flushPendingExitTransition(video);
             }, overlapDelayMs);
         }
@@ -4140,9 +4260,15 @@ class OmnexPlayer {
         if (window.AndroidBridge && window.AndroidBridge.onPlaybackStarted) {
             window.AndroidBridge.onPlaybackStarted();
         }
+
+        this._nativeOwnsVideoSwap = false;
+        this._nativeSwapSourceType = null;
     }
 
     onNativeVideoEnded() {
+        this._nativeOwnsVideoSwap = false;
+        this._nativeSwapSourceType = null;
+
         if (!this.isPlaying) {
             return;
         }
@@ -4359,6 +4485,8 @@ class OmnexPlayer {
      * Play video content (PHASE 2: Hybrid native/WebView playback)
      */
     playVideo(item, previousContentType = null) {
+        this._nativeOwnsVideoSwap = false;
+        this._nativeSwapSourceType = previousContentType || null;
         // Use the active video element (ping-pong dual video for crossfade)
         const video = this.getActiveVideoElement();
         const applyVideoOrientationFromMetadata = () => {
@@ -4391,7 +4519,8 @@ class OmnexPlayer {
 
         // âœ… PHASE 2: Try native playback first (ExoPlayer on Android)
         const leavingHtmlToVideo = previousContentType === 'html';
-        const allowNativeForThisSwap = !(leavingHtmlToVideo && this.isBalancedProfile());
+        const nativeOwnsSwap = this.isBalancedProfile();
+        const allowNativeForThisSwap = true;
         const shouldTryNative =
             allowNativeForThisSwap &&
             this.hasNativeVideoSupport() &&
@@ -4402,10 +4531,14 @@ class OmnexPlayer {
             hasNativeSupport: this.hasNativeVideoSupport(),
             previousContentType: previousContentType || 'unknown',
             leavingHtmlToVideo,
-            allowNativeForThisSwap
+            allowNativeForThisSwap,
+            nativeOwnsSwap
         });
 
         if (shouldTryNative) {
+            this._nativeOwnsVideoSwap = nativeOwnsSwap;
+            this.prepareNativeSwapDecoderBudget(previousContentType);
+
             // Pass transition info to native player before starting video
             if (window.AndroidBridge && typeof window.AndroidBridge.setVideoTransition === 'function') {
                 try {
@@ -4457,6 +4590,8 @@ class OmnexPlayer {
                     return; // ExoPlayer handling, skip WebView playback
                 } else {
                     // Fallback to WebView
+                    this._nativeOwnsVideoSwap = false;
+                    this._nativeSwapSourceType = null;
                     if (this.debug) {
                         console.log('[Player] âš ï¸ ExoPlayer failed, using WebView:', result.error);
                     }
@@ -4468,6 +4603,8 @@ class OmnexPlayer {
                     this.prepareNextMedia();
                 }
             }).catch(error => {
+                this._nativeOwnsVideoSwap = false;
+                this._nativeSwapSourceType = null;
                 if (this.debug) {
                     console.error('[Player] Native playback error:', error);
                 }
@@ -4482,6 +4619,8 @@ class OmnexPlayer {
         }
 
         // No native support or unsupported format - use WebView
+        this._nativeOwnsVideoSwap = false;
+        this._nativeSwapSourceType = null;
         this.playVideoWebView(item, url, video, applyVideoOrientationFromMetadata);
         this.traceTransitionSnapshot('playVideo-direct-webview', {
             itemName: item?.name || ''
