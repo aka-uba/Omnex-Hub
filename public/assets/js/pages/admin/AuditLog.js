@@ -779,7 +779,23 @@ export class AuditLogPage {
             'clear_all_data': 'trash-x',
             'truncate': 'file-off',
             'cleanup': 'broom',
-            'send_report': 'send-2'
+            'send_report': 'send-2',
+            'bt_password_set': 'bluetooth',
+            'bt_password_removed': 'bluetooth-off',
+            'network_config': 'network',
+            'clear_device_content': 'device-desktop-off',
+            'render_invalidation': 'refresh-alert',
+            'login_failed': 'login-2',
+            'seed': 'database-plus',
+            'seed_demo_data': 'database-plus',
+            'send_to_device': 'send',
+            'device_info': 'info-circle',
+            'web_template_created': 'template',
+            'web_template_updated': 'template',
+            'web_template_deleted': 'template-off',
+            'web_templates_bulk_deleted': 'template-off',
+            'clear_demo_data': 'eraser',
+            'clear_all_data': 'trash-x'
         };
         return icons[action] || 'activity';
     }
@@ -819,7 +835,21 @@ export class AuditLogPage {
             'clear_all_data': '#fa5252',
             'truncate': '#fd7e14',
             'cleanup': '#228be6',
-            'send_report': '#7950f2'
+            'send_report': '#7950f2',
+            'bt_password_set': '#228be6',
+            'bt_password_removed': '#fa5252',
+            'network_config': '#228be6',
+            'clear_device_content': '#fa5252',
+            'render_invalidation': '#fd7e14',
+            'login_failed': '#fa5252',
+            'seed': '#40c057',
+            'seed_demo_data': '#40c057',
+            'send_to_device': '#228be6',
+            'device_info': '#868e96',
+            'web_template_created': '#40c057',
+            'web_template_updated': '#fab005',
+            'web_template_deleted': '#fa5252',
+            'web_templates_bulk_deleted': '#fa5252'
         };
         return colors[action] || '#868e96';
     }

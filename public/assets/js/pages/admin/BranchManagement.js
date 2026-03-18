@@ -180,10 +180,11 @@ export class BranchManagementPage {
                 {
                     key: 'is_active',
                     label: this.__('form.isActive'),
-                    type: 'status',
-                    statusConfig: {
-                        1: { label: this.__('status.active') || 'Aktif', class: 'badge-success' },
-                        0: { label: this.__('status.inactive') || 'Pasif', class: 'badge-secondary' }
+                    render: (value) => {
+                        const isActive = value === true || value === 1 || value === '1' || value === 't' || value === 'true';
+                        const label = isActive ? (this.__('status.active') || 'Aktif') : (this.__('status.inactive') || 'Pasif');
+                        const cls = isActive ? 'badge-success' : 'badge-secondary';
+                        return `<span class="badge ${cls}">${escapeHTML(label)}</span>`;
                     }
                 }
             ],

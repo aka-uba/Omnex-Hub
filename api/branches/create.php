@@ -51,7 +51,10 @@ $branchData = [
     'is_active' => $request->input('is_active', 1),
     'is_virtual' => $request->input('is_virtual', 0),
     'settings' => $request->input('settings'),
-    'sort_order' => $request->input('sort_order', 0)
+    'sort_order' => $request->input('sort_order') ?: (function() use ($db, $companyId) {
+        $max = $db->fetch("SELECT COALESCE(MAX(sort_order), 0) as max_sort FROM branches WHERE company_id = ?", [$companyId]);
+        return ($max['max_sort'] ?? 0) + 1;
+    })()
 ];
 
 $result = BranchService::create($branchData);

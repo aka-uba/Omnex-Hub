@@ -1126,8 +1126,14 @@ class TamsoftGateway
                     // Mevcut branch'e eşle
                     $branchId = $existingBranch['id'];
                 } else {
-                    // 3. Yeni branch oluştur
+                    // 3. Yeni branch oluştur - sort_order otomatik ata
                     $branchCode = $depoKod ?: "TAMSOFT_{$depoId}";
+                    $maxSort = $this->db->fetch(
+                        "SELECT COALESCE(MAX(sort_order), 0) as max_sort FROM branches WHERE company_id = ?",
+                        [$companyId]
+                    );
+                    $nextSort = ($maxSort['max_sort'] ?? 0) + 1;
+
                     $createResult = BranchService::create([
                         'company_id' => $companyId,
                         'code' => $branchCode,
@@ -1135,7 +1141,8 @@ class TamsoftGateway
                         'name' => $depoAdi,
                         'type' => 'store',
                         'parent_id' => $regionId,
-                        'is_active' => 1
+                        'is_active' => 1,
+                        'sort_order' => $nextSort
                     ]);
 
                     if (!$createResult['success']) {
