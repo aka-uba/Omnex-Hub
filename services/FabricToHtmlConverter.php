@@ -1059,7 +1059,27 @@ class FabricToHtmlConverter
     <div class="canvas-container" id="canvas">
         {$elementsHtml}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script>
+        // Barkod render (JsBarcode)
+        document.querySelectorAll('.print-barcode').forEach(function(svg) {
+            var val = svg.getAttribute('data-barcode');
+            if (val) {
+                try {
+                    JsBarcode(svg, val, {
+                        format: 'CODE128',
+                        displayValue: true,
+                        fontSize: 14,
+                        width: 2,
+                        height: parseInt(svg.getAttribute('data-height')) || 60,
+                        margin: 0,
+                        textMargin: 2
+                    });
+                } catch(e) {
+                    try { JsBarcode(svg, val, { format: 'CODE128', displayValue: true }); } catch(e2) {}
+                }
+            }
+        });
         // Ekrana sığdırma (contain)
         function fitToScreen() {
             var c = document.getElementById('canvas');
