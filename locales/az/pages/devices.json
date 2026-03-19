@@ -26,7 +26,8 @@
             "general": "General",
             "content": "Məzmun",
             "status": "Vəziyyət və Əməliyyatlar",
-            "record": "Məlumatı qeyd edin"
+            "record": "Məlumatı qeyd edin",
+            "priceview": "PriceView"
         },
         "notFound": "Cihaz tapılmadı",
         "deviceNotFound": "Cihaz tapılmadı",
@@ -1067,5 +1068,20 @@
         "enableFirst": "Stream rejimini aktivləşdirin",
         "vlcInstructions": "VLC > Media > Şəbəkə Axını Aç > URL-i yapışdırın",
         "badge": "Stream"
+    },
+    "priceview": {
+        "syncStatus": "Sinxronizasiya Vəziyyəti",
+        "lastSync": "Son Sinxronizasiya",
+        "productCount": "Yüklənən Məhsul Sayı",
+        "syncNow": "İndi Sinxronizasiya Et",
+        "displaySettings": "Ekran Parametrləri",
+        "overlayTimeout": "Qiymət Göstərmə Müddəti (san)",
+        "fontSize": "Şrift Ölçüsü",
+        "printSettings": "Çap Parametrləri",
+        "printEnabled": "Çap Aktiv",
+        "defaultTemplate": "Standart Çap Şablonu",
+        "selectTemplate": "Şablon seçin...",
+        "signageEnabled": "Signage Yayımı",
+        "saved": "PriceView parametrləri saxlanıldı"
     }
 }

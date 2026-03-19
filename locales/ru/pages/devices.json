@@ -26,7 +26,8 @@
             "general": "Общие",
             "content": "Контент",
             "status": "Статус и операции",
-            "record": "Информация о записи"
+            "record": "Информация о записи",
+            "priceview": "PriceView"
         },
         "notFound": "Устройство не найдено",
         "deviceNotFound": "Устройство не найдено",
@@ -983,5 +984,20 @@
         "deviceNotFound": "Устройство ещё не найдено по адресу {ip}. Проверьте вручную.",
         "ipVerifyFailed": "Не удалось проверить новый IP. Проверьте вручную.",
         "ipAlreadyUsed": "Этот IP‑адрес уже используется ({name})"
+    },
+    "priceview": {
+        "syncStatus": "Статус синхронизации",
+        "lastSync": "Последняя синхронизация",
+        "productCount": "Загружено товаров",
+        "syncNow": "Синхронизировать сейчас",
+        "displaySettings": "Настройки отображения",
+        "overlayTimeout": "Время показа цены (сек)",
+        "fontSize": "Размер шрифта",
+        "printSettings": "Настройки печати",
+        "printEnabled": "Печать включена",
+        "defaultTemplate": "Шаблон печати по умолчанию",
+        "selectTemplate": "Выберите шаблон...",
+        "signageEnabled": "Вещание Signage",
+        "saved": "Настройки PriceView сохранены"
     }
 }

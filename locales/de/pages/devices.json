@@ -26,7 +26,8 @@
             "general": "Allgemein",
             "content": "Inhalt",
             "status": "Status & Vorgänge",
-            "record": "Datensatzinformationen"
+            "record": "Datensatzinformationen",
+            "priceview": "PriceView"
         },
         "notFound": "Gerät nicht gefunden",
         "deviceNotFound": "Gerät nicht gefunden",
@@ -983,5 +984,20 @@
         "deviceNotFound": "Gerät noch nicht unter {ip} Adresse gefunden. Bitte manuell überprüfen.",
         "ipVerifyFailed": "Neue IP konnte nicht überprüft werden. Bitte manuell überprüfen.",
         "ipAlreadyUsed": "Diese IP-Adresse wird bereits verwendet ({name})"
+    },
+    "priceview": {
+        "syncStatus": "Synchronisierungsstatus",
+        "lastSync": "Letzte Synchronisierung",
+        "productCount": "Heruntergeladene Produktanzahl",
+        "syncNow": "Jetzt synchronisieren",
+        "displaySettings": "Anzeigeeinstellungen",
+        "overlayTimeout": "Preisanzeigedauer (Sek.)",
+        "fontSize": "Schriftgröße",
+        "printSettings": "Druckeinstellungen",
+        "printEnabled": "Drucken aktiviert",
+        "defaultTemplate": "Standard-Druckvorlage",
+        "selectTemplate": "Vorlage auswählen...",
+        "signageEnabled": "Signage-Übertragung",
+        "saved": "PriceView-Einstellungen gespeichert"
     }
 }

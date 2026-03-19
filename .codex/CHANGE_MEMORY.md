@@ -11,6 +11,44 @@ Format:
 
 ---
 
+## 2026-03-19 - FiyatGor (PriceView) tab in Integration Settings page
+- Request: Add PriceView tab to IntegrationSettings page with sync, display, print, and status cards
+- Changes:
+  - `public/assets/js/pages/settings/IntegrationSettings.js`: Added priceviewSettings to constructor, priceview tab button, renderPriceviewTab(), loadPriceviewSettings(), savePriceviewSettings(), syncPriceviewNow(), _populatePriceviewForm(), _loadPriceviewStatus()
+  - `locales/{tr,en,ru,az,de,nl,fr,ar}/pages/settings.json`: Added integrations.tabs.priceview and integrations.priceview translation blocks in all 8 languages
+- Checks: JSON structure verified via grep, JS method references verified
+- Risk: None - additive change, no existing functionality modified
+
+## 2026-03-19 - PriceView settings tab in Device Detail page
+- Request: Add FiyatGor tab to Device Detail page, only visible when device model is 'priceview'. Shows sync status, display settings, print settings, signage toggle. Saves via PUT /api/settings with priceview_* keys.
+- Changes:
+  1. public/assets/js/pages/devices/DeviceDetail.js: Added conditional priceview tab button + tab content with 4 cards (Sync Status, Display Settings, Print Settings, Signage). Added loadPriceViewSettings(), savePriceViewSettings(), priceviewSyncNow() methods. Template dropdown loaded from /api/templates?device_types=priceview.
+  2. locales/tr/pages/devices.json: Added detailPage.tabs.priceview + priceview section (14 keys)
+  3. locales/en/pages/devices.json: Same as TR (English translations)
+  4. locales/ru/pages/devices.json: Same (Russian translations)
+  5. locales/az/pages/devices.json: Same (Azerbaijani translations)
+  6. locales/de/pages/devices.json: Same (German translations)
+  7. locales/nl/pages/devices.json: Same (Dutch translations)
+  8. locales/fr/pages/devices.json: Same (French translations)
+  9. locales/ar/pages/devices.json: Same (Arabic translations)
+- Files: DeviceDetail.js, 8x devices.json locale files
+- Checks: node -c DeviceDetail.js OK, php json_decode all 8 locale files OK
+- Risk/Follow-up: None. Tab only renders for model=priceview. Existing tabs unaffected.
+
+---
+
+## 2026-03-19 - PriceView configurable product display template system
+- Request: PriceView overlay uses hardcoded native Android layout. Make it configurable so admins can send custom HTML templates from backend that device renders in WebView.
+- Changes:
+  1. api/priceview/display-template.php (NEW): GET endpoint returning HTML template for product display. Uses DeviceAuthMiddleware. Reads priceview_product_display_template from company settings; if set, renders via FabricToHtmlConverter; otherwise returns default dark-theme responsive HTML template with {{placeholder}} variables for client-side replacement.
+  2. api/index.php: Registered GET /api/priceview/display-template route in priceview group (device middleware).
+  3. api/priceview/config.php: Added product_display_mode ('native'/'html') and display_template_url fields to config response.
+- Files: api/priceview/display-template.php (new), api/index.php, api/priceview/config.php
+- Checks: php -l OK (3 files)
+- Risk/Follow-up: APK needs to implement WebView overlay and template fetching/caching. Admin UI for selecting custom template (priceview_product_display_template setting) not yet built.
+
+---
+
 ## 2026-03-18 - Sunucu tarafli HTML etiket baski sistemi (Secenek A)
 - Request: Mevcut yazdirma sistemi frontend'de Fabric.js nesnelerini tek tek HTML div'lere ceviriyor (renderFabricObject ~300 satir, ProductList + BundleList'te duplicate). Her yeni ozellikte 4 farkli renderer guncellenmeli. Bunun yerine backend FabricToHtmlConverter ile sunucu tarafli HTML render yapilsin.
 - Changes:
@@ -6636,4 +6674,35 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Migration 22_priceview.sql must be applied to PG
   - DeviceList.js action visibility rules for priceview not yet added (DeviceDetail.js also pending)
   - ADB deploy to G66 (192.168.1.181:40959) for integration test pending
+
+## 2026-03-19 - PriceView: always-on camera pip, remove FAB, auto-sync, camera permission
+- Request: Fix 4 device testing issues: FAB overlaps WebView controls, camera not always-on, permissions not requested on first run, product sync not triggered after registration
+- Changes:
+  1. Removed FAB (FloatingActionButton) entirely from layout and Kotlin code
+  2. Added always-on camera pip (160x120dp PreviewView) in top-left corner with scan indicator dot
+  3. Added scan trigger button (44dp circle matching PWA player style) positioned above display-tuning button
+  4. Camera starts automatically in initPriceView() if permission granted, continuous barcode scanning
+  5. Barcode detection auto-triggers product overlay (no FAB press needed)
+  6. Added requestCameraPermissionIfNeeded() to requestStartupPermissionsIfNeeded()
+  7. Camera permission result now calls startAlwaysOnCamera() instead of showPriceViewOverlay()
+  8. Added triggerInitialSyncIfNeeded() - checks SyncMetadata.lastSyncAt, triggers SyncWorker.syncNow() if null
+  9. onResume restarts camera if pip was visible before pause
+  10. D-pad CENTER toggles overlay hide / starts camera instead of showPriceViewOverlay()
+  11. overlay_scan_prompt.xml minimized to empty placeholder (replaced by always-on pip)
+  12. Created 3 new drawables: player_control_circle, camera_pip_border, scan_indicator_dot
+  13. Removed FloatingActionButton import, all fabScan references, showPriceViewOverlay() method
+- Files:
+  - Omnex-PriceView/app/src/main/res/layout/activity_main.xml (rewritten)
+  - Omnex-PriceView/app/src/main/res/layout/overlay_scan_prompt.xml (minimized)
+  - Omnex-PriceView/app/src/main/res/drawable/player_control_circle.xml (new)
+  - Omnex-PriceView/app/src/main/res/drawable/camera_pip_border.xml (new)
+  - Omnex-PriceView/app/src/main/res/drawable/scan_indicator_dot.xml (new)
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt (edited)
+- Checks: Grep verified no remaining fabScan/FloatingActionButton/showPriceViewOverlay references
+- Risk/Follow-up:
+  - Gradle build not tested (requires Android SDK)
+  - PriceViewOverlayManager constructor still expects scanPrompt param - passed as empty View fallback
+  - BarcodeScannerManager.hasCameraPermission() and setTorch() must exist (assumed from existing code)
+  - SyncMetadata DAO get("products") must exist (assumed from sync module)
+  - PriceViewConfig.cameraTorchDefault property assumed to exist
 

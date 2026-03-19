@@ -26,7 +26,8 @@
             "general": "عام",
             "content": "محتوى",
             "status": "الحالة والعمليات",
-            "record": "سجل المعلومات"
+            "record": "سجل المعلومات",
+            "priceview": "عرض الأسعار"
         },
         "notFound": "لم يتم العثور على الجهاز",
         "deviceNotFound": "لم يتم العثور على الجهاز",
@@ -1067,5 +1068,20 @@
         "enableFirst": "قم بتفعيل وضع البث أولاً",
         "vlcInstructions": "VLC > وسائط > فتح بث شبكة > لصق العنوان",
         "badge": "بث"
+    },
+    "priceview": {
+        "syncStatus": "حالة المزامنة",
+        "lastSync": "آخر مزامنة",
+        "productCount": "عدد المنتجات المحملة",
+        "syncNow": "مزامنة الآن",
+        "displaySettings": "إعدادات العرض",
+        "overlayTimeout": "مدة عرض السعر (ثانية)",
+        "fontSize": "حجم الخط",
+        "printSettings": "إعدادات الطباعة",
+        "printEnabled": "الطباعة مفعلة",
+        "defaultTemplate": "قالب الطباعة الافتراضي",
+        "selectTemplate": "اختر قالباً...",
+        "signageEnabled": "بث اللافتات الرقمية",
+        "saved": "تم حفظ إعدادات PriceView"
     }
 }

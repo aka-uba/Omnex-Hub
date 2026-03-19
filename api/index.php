@@ -1290,6 +1290,9 @@ $router->group(['prefix' => '/api/priceview', 'middleware' => ['device']], funct
     $router->post('/print/{id}', function($request) {
         require API_PATH . '/priceview/print.php';
     });
+    $router->get('/display-template', function($request) {
+        require API_PATH . '/priceview/display-template.php';
+    });
 });
 
 // =====================================================

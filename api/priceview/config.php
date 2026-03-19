@@ -45,6 +45,8 @@ Response::success([
     'default_template_id' => $settingsData['priceview_default_template'] ?? null,
     'print_enabled' => boolval($settingsData['priceview_print_enabled'] ?? true),
     'signage_enabled' => boolval($settingsData['priceview_signage_enabled'] ?? true),
+    'product_display_mode' => $settingsData['priceview_product_display_mode'] ?? 'native',
+    'display_template_url' => '/api/priceview/display-template',
     'templates' => $templates,
     'product_count' => intval($productCount['cnt'] ?? 0),
     'server_time' => date('c')

@@ -215,6 +215,7 @@
             "api": "API",
             "import": "Bestand Import",
             "payment": "Betalingssysteem",
+            "priceview": "PriceView",
             "mqtt": "MQTT Broker"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "API-foutopsporing - Reactie van de voorraadlijst testen",
                 "modalTitle": "TAMSOFT API-foutopsporing - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "PriceView-instellingen",
+            "description": "Configuratie voor prijscontroloapparaten",
+            "syncSettings": "Synchronisatie-instellingen",
+            "displaySettings": "Weergave-instellingen",
+            "printSettings": "Afdrukinstellingen",
+            "statusInfo": "Statusinformatie",
+            "fields": {
+                "syncInterval": "Synchronisatie-interval (minuten)",
+                "autoSync": "Automatische synchronisatie",
+                "overlayTimeout": "Prijsweergaveduur (seconden)",
+                "fontSize": "Lettertypegroottemultiplicator",
+                "displayTemplate": "Weergavesjabloon",
+                "printEnabled": "Afdrukken ingeschakeld",
+                "defaultPrintTemplate": "Standaard afdruksjabloon",
+                "signageEnabled": "Signage-afspelen ingeschakeld"
+            },
+            "hints": {
+                "syncInterval": "Hoe vaak productgegevens worden gesynchroniseerd met de server",
+                "overlayTimeout": "Hoe lang het prijsscherm wordt weergegeven na het scannen",
+                "fontSize": "1.0 = Normaal, 1.5 = Groot, 2.0 = Extra groot",
+                "displayTemplate": "Sjabloon voor productinformatieweergave (leeg = standaard)"
+            },
+            "status": {
+                "lastSync": "Laatste synchronisatie",
+                "productCount": "Totaal producten",
+                "deviceCount": "Aantal PriceView-apparaten"
+            },
+            "saved": "PriceView-instellingen opgeslagen",
+            "buttons": {
+                "save": "Opslaan",
+                "syncNow": "Nu synchroniseren"
             }
         },
         "payment": {

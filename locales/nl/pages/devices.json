@@ -26,7 +26,8 @@
             "general": "Algemeen",
             "content": "Inhoud",
             "status": "Status en bewerkingen",
-            "record": "Informatie opnemen"
+            "record": "Informatie opnemen",
+            "priceview": "PriceView"
         },
         "notFound": "Apparaat niet gevonden",
         "deviceNotFound": "Apparaat niet gevonden",
@@ -1067,5 +1068,20 @@
         "enableFirst": "Schakel eerst de streammodus in",
         "vlcInstructions": "VLC > Media > Netwerkstream openen > URL plakken",
         "badge": "Stream"
+    },
+    "priceview": {
+        "syncStatus": "Synchronisatiestatus",
+        "lastSync": "Laatste synchronisatie",
+        "productCount": "Gedownloade producten",
+        "syncNow": "Nu synchroniseren",
+        "displaySettings": "Weergave-instellingen",
+        "overlayTimeout": "Prijsweergaveduur (sec)",
+        "fontSize": "Lettergrootte",
+        "printSettings": "Afdrukinstellingen",
+        "printEnabled": "Afdrukken ingeschakeld",
+        "defaultTemplate": "Standaard afdruksjabloon",
+        "selectTemplate": "Selecteer sjabloon...",
+        "signageEnabled": "Signage-uitzending",
+        "saved": "PriceView-instellingen opgeslagen"
     }
 }

@@ -215,6 +215,7 @@
             "api": "واجهة برمجة التطبيقات",
             "import": "استيراد الملفات",
             "payment": "نظام الدفع",
+            "priceview": "عرض الأسعار",
             "mqtt": "وسيط MQTT"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "تصحيح أخطاء واجهة برمجة التطبيقات (API) - اختبار استجابة قائمة المخزون",
                 "modalTitle": "تصحيح أخطاء واجهة برمجة التطبيقات TAMSOFT - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "إعدادات عرض الأسعار",
+            "description": "تكوين أجهزة فحص الأسعار",
+            "syncSettings": "إعدادات المزامنة",
+            "displaySettings": "إعدادات العرض",
+            "printSettings": "إعدادات الطباعة",
+            "statusInfo": "معلومات الحالة",
+            "fields": {
+                "syncInterval": "فترة المزامنة (دقائق)",
+                "autoSync": "مزامنة تلقائية",
+                "overlayTimeout": "مدة عرض السعر (ثوانٍ)",
+                "fontSize": "مضاعف حجم الخط",
+                "displayTemplate": "قالب العرض",
+                "printEnabled": "الطباعة مفعّلة",
+                "defaultPrintTemplate": "قالب الطباعة الافتراضي",
+                "signageEnabled": "تشغيل اللافتات الرقمية مفعّل"
+            },
+            "hints": {
+                "syncInterval": "مدى تكرار مزامنة بيانات المنتجات من الخادم",
+                "overlayTimeout": "مدة ظهور شاشة السعر بعد المسح الضوئي",
+                "fontSize": "1.0 = عادي، 1.5 = كبير، 2.0 = كبير جداً",
+                "displayTemplate": "قالب عرض معلومات المنتج (فارغ = افتراضي)"
+            },
+            "status": {
+                "lastSync": "آخر مزامنة",
+                "productCount": "إجمالي المنتجات",
+                "deviceCount": "عدد أجهزة عرض الأسعار"
+            },
+            "saved": "تم حفظ إعدادات عرض الأسعار",
+            "buttons": {
+                "save": "حفظ",
+                "syncNow": "مزامنة الآن"
             }
         },
         "payment": {

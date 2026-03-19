@@ -26,7 +26,8 @@
             "general": "General",
             "content": "Content",
             "status": "Status & Operations",
-            "record": "Record Information"
+            "record": "Record Information",
+            "priceview": "PriceView"
         },
         "notFound": "Device not found",
         "deviceNotFound": "Device not found",
@@ -1050,5 +1051,20 @@
         "deviceNotFound": "Device not yet found at {ip} address. Please check manually.",
         "ipVerifyFailed": "New IP could not be verified. Please check manually.",
         "ipAlreadyUsed": "This IP address is already in use ({name})"
+    },
+    "priceview": {
+        "syncStatus": "Sync Status",
+        "lastSync": "Last Sync",
+        "productCount": "Downloaded Product Count",
+        "syncNow": "Sync Now",
+        "displaySettings": "Display Settings",
+        "overlayTimeout": "Price Display Timeout (sec)",
+        "fontSize": "Font Size",
+        "printSettings": "Print Settings",
+        "printEnabled": "Printing Enabled",
+        "defaultTemplate": "Default Print Template",
+        "selectTemplate": "Select template...",
+        "signageEnabled": "Signage Broadcast",
+        "saved": "PriceView settings saved"
     }
 }

@@ -215,6 +215,7 @@
             "api": "API",
             "import": "Datei-Import",
             "payment": "Zahlungssystem",
+            "priceview": "PriceView",
             "mqtt": "MQTT Broker"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "API-Debug - Test StokListesi-Antwort",
                 "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "PriceView-Einstellungen",
+            "description": "Konfiguration für Preisanzeigegeräte",
+            "syncSettings": "Synchronisierungseinstellungen",
+            "displaySettings": "Anzeigeeinstellungen",
+            "printSettings": "Druckeinstellungen",
+            "statusInfo": "Statusinformation",
+            "fields": {
+                "syncInterval": "Synchronisierungsintervall (Minuten)",
+                "autoSync": "Automatische Synchronisierung",
+                "overlayTimeout": "Preisanzeigedauer (Sekunden)",
+                "fontSize": "Schriftgrößenmultiplikator",
+                "displayTemplate": "Anzeigevorlage",
+                "printEnabled": "Drucken aktiviert",
+                "defaultPrintTemplate": "Standard-Druckvorlage",
+                "signageEnabled": "Signage-Wiedergabe aktiviert"
+            },
+            "hints": {
+                "syncInterval": "Wie oft Produktdaten vom Server synchronisiert werden",
+                "overlayTimeout": "Wie lange der Preisbildschirm nach dem Scannen angezeigt wird",
+                "fontSize": "1.0 = Normal, 1.5 = Groß, 2.0 = Sehr groß",
+                "displayTemplate": "Vorlage für Produktinformationsanzeige (leer = Standard)"
+            },
+            "status": {
+                "lastSync": "Letzte Synchronisierung",
+                "productCount": "Produkte gesamt",
+                "deviceCount": "Anzahl PriceView-Geräte"
+            },
+            "saved": "PriceView-Einstellungen gespeichert",
+            "buttons": {
+                "save": "Speichern",
+                "syncNow": "Jetzt synchronisieren"
             }
         },
         "payment": {

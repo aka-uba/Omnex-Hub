@@ -26,7 +26,8 @@
             "general": "Général",
             "content": "Contenu",
             "status": "Statut et opérations",
-            "record": "Informations d'enregistrement"
+            "record": "Informations d'enregistrement",
+            "priceview": "PriceView"
         },
         "notFound": "Appareil non trouvé",
         "deviceNotFound": "Appareil non trouvé",
@@ -983,5 +984,20 @@
         "deviceNotFound": "Appareil pas encore trouvé à l'adresse {ip}. Veuillez vérifier manuellement.",
         "ipVerifyFailed": "La nouvelle IP n'a pas pu être vérifiée. Veuillez vérifier manuellement.",
         "ipAlreadyUsed": "Cette adresse IP est déjà utilisée ({name})"
+    },
+    "priceview": {
+        "syncStatus": "Statut de synchronisation",
+        "lastSync": "Dernière synchronisation",
+        "productCount": "Produits téléchargés",
+        "syncNow": "Synchroniser maintenant",
+        "displaySettings": "Paramètres d'affichage",
+        "overlayTimeout": "Durée d'affichage du prix (sec)",
+        "fontSize": "Taille de police",
+        "printSettings": "Paramètres d'impression",
+        "printEnabled": "Impression activée",
+        "defaultTemplate": "Modèle d'impression par défaut",
+        "selectTemplate": "Sélectionner un modèle...",
+        "signageEnabled": "Diffusion Signage",
+        "saved": "Paramètres PriceView enregistrés"
     }
 }

@@ -148,6 +148,12 @@ export class DeviceDetailPage {
                     <i class="ti ti-file-info"></i>
                     ${this.__('detailPage.tabs.record')}
                 </button>
+                ${d?.model === 'priceview' ? `
+                <button class="settings-tab" data-dd-tab="priceview">
+                    <i class="ti ti-tag"></i>
+                    ${this.__('detailPage.tabs.priceview')}
+                </button>
+                ` : ''}
             </div>
 
             <!-- Tab 1: General -->
@@ -469,6 +475,105 @@ export class DeviceDetailPage {
                     </div>
                 </div>
             </div>
+
+            ${d?.model === 'priceview' ? `
+            <!-- Tab 5: PriceView Settings -->
+            <div class="settings-tab-content" id="dd-tab-priceview">
+                <div class="dd-tab-grid dd-general-layout">
+                    <!-- Left column -->
+                    <div>
+                        <!-- Sync Status -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h2 class="chart-card-title"><i class="ti ti-refresh"></i> ${this.__('priceview.syncStatus')}</h2>
+                            </div>
+                            <div class="chart-card-body">
+                                <div class="dd-prop-grid">
+                                    <div class="dd-prop-item">
+                                        <span class="dd-prop-label">${this.__('priceview.lastSync')}</span>
+                                        <span class="dd-prop-value" id="pv-last-sync">-</span>
+                                    </div>
+                                    <div class="dd-prop-item">
+                                        <span class="dd-prop-label">${this.__('priceview.productCount')}</span>
+                                        <span class="dd-prop-value" id="pv-product-count">-</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    <button class="btn btn-primary btn-sm" id="pv-sync-now-btn">
+                                        <i class="ti ti-refresh"></i> ${this.__('priceview.syncNow')}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Display Settings -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h2 class="chart-card-title"><i class="ti ti-eye"></i> ${this.__('priceview.displaySettings')}</h2>
+                            </div>
+                            <div class="chart-card-body">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.overlayTimeout')}</label>
+                                    <input type="number" class="form-input" id="pv-overlay-timeout" min="1" max="120" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.fontSize')}</label>
+                                    <input type="number" class="form-input" id="pv-font-size" min="0.5" max="3" step="0.1" value="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column -->
+                    <div>
+                        <!-- Print Settings -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h2 class="chart-card-title"><i class="ti ti-printer"></i> ${this.__('priceview.printSettings')}</h2>
+                            </div>
+                            <div class="chart-card-body">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.printEnabled')}</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="pv-print-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.defaultTemplate')}</label>
+                                    <select class="form-select" id="pv-default-template">
+                                        <option value="">${this.__('priceview.selectTemplate')}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Signage Settings -->
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h2 class="chart-card-title"><i class="ti ti-broadcast"></i> ${this.__('priceview.signageEnabled')}</h2>
+                            </div>
+                            <div class="chart-card-body">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.signageEnabled')}</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="pv-signage-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save -->
+                        <div style="margin-top: 1rem; text-align: right;">
+                            <button class="btn btn-primary" id="pv-save-settings-btn">
+                                <i class="ti ti-device-floppy"></i> ${this.__('actions.save')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
 
             <!-- Bottom Mini Cards -->
             <div class="dd-bottom-cards">
@@ -1421,6 +1526,107 @@ export class DeviceDetailPage {
                 }
             });
         });
+
+        // PriceView tab events
+        if (this.device?.model === 'priceview') {
+            this.loadPriceViewSettings();
+
+            document.getElementById('pv-sync-now-btn')?.addEventListener('click', () => this.priceviewSyncNow());
+            document.getElementById('pv-save-settings-btn')?.addEventListener('click', () => this.savePriceViewSettings());
+        }
+    }
+
+    /**
+     * Load PriceView settings from company settings
+     */
+    async loadPriceViewSettings() {
+        try {
+            const response = await this.app.api.get('/settings');
+            const data = response.data?.data || response.data || {};
+
+            const pvOverlayTimeout = document.getElementById('pv-overlay-timeout');
+            const pvFontSize = document.getElementById('pv-font-size');
+            const pvPrintEnabled = document.getElementById('pv-print-enabled');
+            const pvSignageEnabled = document.getElementById('pv-signage-enabled');
+            const pvDefaultTemplate = document.getElementById('pv-default-template');
+            const pvLastSync = document.getElementById('pv-last-sync');
+            const pvProductCount = document.getElementById('pv-product-count');
+
+            if (pvOverlayTimeout) pvOverlayTimeout.value = data.priceview_overlay_timeout || 10;
+            if (pvFontSize) pvFontSize.value = data.priceview_font_size || 1;
+            if (pvPrintEnabled) pvPrintEnabled.checked = !!data.priceview_print_enabled;
+            if (pvSignageEnabled) pvSignageEnabled.checked = !!data.priceview_signage_enabled;
+            if (pvLastSync) pvLastSync.textContent = data.priceview_last_sync ? this.formatDateTime(data.priceview_last_sync) : '-';
+            if (pvProductCount) pvProductCount.textContent = data.priceview_product_count ?? '-';
+
+            // Load templates for template selector
+            try {
+                const tplResponse = await this.app.api.get('/templates?device_types=priceview');
+                const templates = tplResponse.data || [];
+                if (pvDefaultTemplate && templates.length) {
+                    templates.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
+                        opt.textContent = t.name;
+                        if (data.priceview_default_template === t.id) opt.selected = true;
+                        pvDefaultTemplate.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                Logger.warn('Could not load priceview templates:', e);
+            }
+        } catch (error) {
+            Logger.error('PriceView settings load error:', error);
+        }
+    }
+
+    /**
+     * Save PriceView settings to company settings
+     */
+    async savePriceViewSettings() {
+        try {
+            const settingsPayload = {
+                priceview_overlay_timeout: parseInt(document.getElementById('pv-overlay-timeout')?.value) || 10,
+                priceview_font_size: parseFloat(document.getElementById('pv-font-size')?.value) || 1,
+                priceview_print_enabled: !!document.getElementById('pv-print-enabled')?.checked,
+                priceview_signage_enabled: !!document.getElementById('pv-signage-enabled')?.checked,
+                priceview_default_template: document.getElementById('pv-default-template')?.value || null
+            };
+
+            await this.app.api.put('/settings', settingsPayload);
+            Toast.success(this.__('priceview.saved'));
+        } catch (error) {
+            Logger.error('PriceView settings save error:', error);
+            Toast.error(error.message || this.__('toast.saveFailed'));
+        }
+    }
+
+    /**
+     * Trigger PriceView sync
+     */
+    async priceviewSyncNow() {
+        try {
+            const btn = document.getElementById('pv-sync-now-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="ti ti-loader animate-spin"></i> ${this.__('priceview.syncNow')}`;
+            }
+
+            await this.app.api.post(`/devices/${this.deviceId}/control`, { action: 'sync' });
+            Toast.success(this.__('toast.commandSent'));
+
+            // Refresh settings after a short delay to reflect sync result
+            setTimeout(() => this.loadPriceViewSettings(), 3000);
+        } catch (error) {
+            Logger.error('PriceView sync error:', error);
+            Toast.error(error.message || this.__('toast.commandFailed'));
+        } finally {
+            const btn = document.getElementById('pv-sync-now-btn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ti ti-refresh"></i> ${this.__('priceview.syncNow')}`;
+            }
+        }
     }
 
     mapResyncErrorMessage(error) {

@@ -223,6 +223,7 @@
             "api": "API",
             "import": "File Import",
             "mqtt": "MQTT Broker",
+            "priceview": "PriceView",
             "payment": "Payment System"
         },
         "import": {
@@ -704,6 +705,40 @@
             "debug": {
                 "tooltip": "API Debug - Test Stock List response",
                 "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "PriceView Settings",
+            "description": "Configuration for price checker devices",
+            "syncSettings": "Sync Settings",
+            "displaySettings": "Display Settings",
+            "printSettings": "Print Settings",
+            "statusInfo": "Status Info",
+            "fields": {
+                "syncInterval": "Sync Interval (minutes)",
+                "autoSync": "Auto Sync",
+                "overlayTimeout": "Price Display Duration (seconds)",
+                "fontSize": "Font Size Multiplier",
+                "displayTemplate": "Display Template",
+                "printEnabled": "Print Enabled",
+                "defaultPrintTemplate": "Default Print Template",
+                "signageEnabled": "Signage Playback Enabled"
+            },
+            "hints": {
+                "syncInterval": "How often product data syncs from server",
+                "overlayTimeout": "How long the price screen shows after scanning",
+                "fontSize": "1.0 = Normal, 1.5 = Large, 2.0 = Extra Large",
+                "displayTemplate": "Product info display template (empty = default)"
+            },
+            "status": {
+                "lastSync": "Last Sync",
+                "productCount": "Total Products",
+                "deviceCount": "PriceView Device Count"
+            },
+            "saved": "PriceView settings saved",
+            "buttons": {
+                "save": "Save",
+                "syncNow": "Sync Now"
             }
         },
         "payment": {

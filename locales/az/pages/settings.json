@@ -215,6 +215,7 @@
             "api": "API",
             "import": "Fayl İdxalı",
             "payment": "Ödəniş sistemi",
+            "priceview": "FiyatGör",
             "mqtt": "MQTT Broker"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "API Debug - Səhm siyahısı cavabını sınayın",
                 "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "FiyatGör Parametrləri",
+            "description": "Qiymət yoxlama cihazları üçün konfiqurasiya",
+            "syncSettings": "Sinxronizasiya Parametrləri",
+            "displaySettings": "Ekran Parametrləri",
+            "printSettings": "Çap Parametrləri",
+            "statusInfo": "Status Məlumatı",
+            "fields": {
+                "syncInterval": "Sinxronizasiya Aralığı (dəqiqə)",
+                "autoSync": "Avtomatik Sinxronizasiya",
+                "overlayTimeout": "Qiymət Göstərmə Müddəti (saniyə)",
+                "fontSize": "Şrift Ölçüsü Çarpanı",
+                "displayTemplate": "Göstərmə Şablonu",
+                "printEnabled": "Çap Aktiv",
+                "defaultPrintTemplate": "Standart Çap Şablonu",
+                "signageEnabled": "Signage Yayımı Aktiv"
+            },
+            "hints": {
+                "syncInterval": "Məhsul verilərinin serverdən çəkilmə aralığı",
+                "overlayTimeout": "Barkod oxudulduqdan sonra qiymət ekranının görünmə müddəti",
+                "fontSize": "1.0 = Normal, 1.5 = Böyük, 2.0 = Çox Böyük",
+                "displayTemplate": "Məhsul məlumatı göstərmə şablonu (boş = standart)"
+            },
+            "status": {
+                "lastSync": "Son Sinxronizasiya",
+                "productCount": "Ümumi Məhsul",
+                "deviceCount": "PriceView Cihaz Sayı"
+            },
+            "saved": "FiyatGör parametrləri yadda saxlanıldı",
+            "buttons": {
+                "save": "Yadda Saxla",
+                "syncNow": "İndi Sinxronizasiya Et"
             }
         },
         "payment": {

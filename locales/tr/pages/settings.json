@@ -223,6 +223,7 @@
             "api": "API",
             "import": "Dosya Import",
             "mqtt": "MQTT Broker",
+            "priceview": "FiyatGör",
             "payment": "Ödeme Sistemi"
         },
         "import": {
@@ -704,6 +705,40 @@
             "debug": {
                 "tooltip": "API Debug - Stok Listesi yanıtını test et",
                 "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "FiyatGör Ayarları",
+            "description": "Fiyat görüntüleme cihazları için yapılandırma",
+            "syncSettings": "Senkronizasyon Ayarları",
+            "displaySettings": "Görüntüleme Ayarları",
+            "printSettings": "Yazdırma Ayarları",
+            "statusInfo": "Durum Bilgisi",
+            "fields": {
+                "syncInterval": "Senkronizasyon Aralığı (dakika)",
+                "autoSync": "Otomatik Senkronizasyon",
+                "overlayTimeout": "Fiyat Gösterim Süresi (saniye)",
+                "fontSize": "Yazı Boyutu Çarpanı",
+                "displayTemplate": "Görüntüleme Şablonu",
+                "printEnabled": "Yazdırma Aktif",
+                "defaultPrintTemplate": "Varsayılan Yazdırma Şablonu",
+                "signageEnabled": "Signage Yayını Aktif"
+            },
+            "hints": {
+                "syncInterval": "Ürün verilerinin sunucudan çekilme aralığı",
+                "overlayTimeout": "Barkod okutulduktan sonra fiyat ekranının görünme süresi",
+                "fontSize": "1.0 = Normal, 1.5 = Büyük, 2.0 = Çok Büyük",
+                "displayTemplate": "Ürün bilgisi gösterim şablonu (boş = varsayılan)"
+            },
+            "status": {
+                "lastSync": "Son Senkronizasyon",
+                "productCount": "Toplam Ürün",
+                "deviceCount": "PriceView Cihaz Sayısı"
+            },
+            "saved": "FiyatGör ayarları kaydedildi",
+            "buttons": {
+                "save": "Kaydet",
+                "syncNow": "Şimdi Senkronize Et"
             }
         },
         "payment": {

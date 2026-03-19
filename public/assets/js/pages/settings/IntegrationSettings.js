@@ -25,6 +25,8 @@ export class IntegrationSettingsPage {
         this.tamsoftSettings = {};
         this.tamsoftDepolar = [];
         this.mqttSettings = {};
+        this.priceviewSettings = {};
+        this.priceviewTemplates = [];
         this.importSettings = {};
         this.importHistory = [];
         this.importFiles = [];
@@ -93,6 +95,10 @@ export class IntegrationSettingsPage {
                 <button class="settings-tab ${this.activeTab === 'import' ? 'active' : ''}" data-tab="import">
                     <i class="ti ti-file-import"></i>
                     <span>${this.__('integrations.tabs.import')}</span>
+                </button>
+                <button class="settings-tab ${this.activeTab === 'priceview' ? 'active' : ''}" data-tab="priceview">
+                    <i class="ti ti-tag"></i>
+                    <span>${this.__('integrations.tabs.priceview')}</span>
                 </button>
                 <button class="settings-tab ${this.activeTab === 'mqtt' ? 'active' : ''}" data-tab="mqtt">
                     <i class="ti ti-broadcast"></i>
@@ -526,6 +532,8 @@ export class IntegrationSettingsPage {
 
             ${this.renderImportTab()}
 
+            ${this.renderPriceviewTab()}
+
             ${this.renderMqttTab()}
 
             ${this.isSuperAdmin ? this.renderPaymentTab() : ''}
@@ -564,6 +572,7 @@ export class IntegrationSettingsPage {
         this.generateApiKeyIfNeeded();
         this.refreshImportApiDocumentation();
         await this.loadMqttSettings();
+        await this.loadPriceviewSettings();
         await this.loadImportSettings();
 
         // Load payment settings if SuperAdmin
@@ -684,6 +693,15 @@ export class IntegrationSettingsPage {
             if (intervalGroup) {
                 intervalGroup.style.display = e.target.checked ? '' : 'none';
             }
+        });
+
+        // PriceView events
+        document.getElementById('save-priceview-btn')?.addEventListener('click', () => {
+            this.savePriceviewSettings();
+        });
+
+        document.getElementById('sync-priceview-btn')?.addEventListener('click', () => {
+            this.syncPriceviewNow();
         });
 
         // MQTT events
@@ -5006,6 +5024,311 @@ export class IntegrationSettingsPage {
                 </label>
             `;
         }).join('');
+    }
+
+    // ========== PriceView (FiyatGör) Tab ==========
+
+    renderPriceviewTab() {
+        const s = this.priceviewSettings;
+        const templateOptions = this.priceviewTemplates.map(t =>
+            `<option value="${t.id}" ${s.product_display_template === t.id ? 'selected' : ''}>${this._escapeHtml(t.name)}</option>`
+        ).join('');
+        const printTemplateOptions = this.priceviewTemplates.map(t =>
+            `<option value="${t.id}" ${s.default_template === t.id ? 'selected' : ''}>${this._escapeHtml(t.name)}</option>`
+        ).join('');
+
+        return `
+            <!-- PriceView Tab -->
+            <div id="tab-priceview" class="settings-tab-content ${this.activeTab === 'priceview' ? 'active' : ''}">
+                <div class="settings-grid">
+                    <!-- Sync Settings Card -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h2 class="chart-card-title">
+                                <i class="ti ti-refresh"></i>
+                                ${this.__('integrations.priceview.syncSettings')}
+                            </h2>
+                        </div>
+                        <div class="chart-card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.syncInterval')}</label>
+                                    <input type="number" id="pv-sync-interval" class="form-input"
+                                        min="1" max="1440" value="${s.sync_interval || 30}">
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.syncInterval')}</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.autoSync')}</label>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pv-auto-sync" ${s.auto_sync !== false ? 'checked' : ''}>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Settings Card -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h2 class="chart-card-title">
+                                <i class="ti ti-eye"></i>
+                                ${this.__('integrations.priceview.displaySettings')}
+                            </h2>
+                        </div>
+                        <div class="chart-card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.overlayTimeout')}</label>
+                                    <input type="number" id="pv-overlay-timeout" class="form-input"
+                                        min="3" max="120" value="${s.overlay_timeout || 10}">
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.overlayTimeout')}</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.fontSize')}</label>
+                                    <input type="number" id="pv-font-size" class="form-input"
+                                        min="1.0" max="2.0" step="0.1" value="${s.font_size_multiplier || 1.0}">
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.fontSize')}</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.displayTemplate')}</label>
+                                    <select id="pv-display-template" class="form-select">
+                                        <option value="">${this.__('integrations.priceview.hints.displayTemplate')}</option>
+                                        ${templateOptions}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.signageEnabled')}</label>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pv-signage-enabled" ${s.signage_enabled !== false ? 'checked' : ''}>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Print Settings Card -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h2 class="chart-card-title">
+                                <i class="ti ti-printer"></i>
+                                ${this.__('integrations.priceview.printSettings')}
+                            </h2>
+                        </div>
+                        <div class="chart-card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.printEnabled')}</label>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pv-print-enabled" ${s.print_enabled !== false ? 'checked' : ''}>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.defaultPrintTemplate')}</label>
+                                    <select id="pv-default-template" class="form-select">
+                                        <option value="">${this.__('integrations.priceview.hints.displayTemplate')}</option>
+                                        ${printTemplateOptions}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Card -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h2 class="chart-card-title">
+                                <i class="ti ti-info-circle"></i>
+                                ${this.__('integrations.priceview.statusInfo')}
+                            </h2>
+                        </div>
+                        <div class="chart-card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.status.lastSync')}</label>
+                                    <p id="pv-last-sync" class="text-muted">-</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.status.productCount')}</label>
+                                    <p id="pv-product-count" class="text-muted">-</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.status.deviceCount')}</label>
+                                    <p id="pv-device-count" class="text-muted">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 mt-4">
+                    <button id="sync-priceview-btn" class="btn btn-outline">
+                        <i class="ti ti-refresh"></i>
+                        ${this.__('integrations.priceview.buttons.syncNow')}
+                    </button>
+                    <button id="save-priceview-btn" class="btn btn-primary">
+                        <i class="ti ti-device-floppy"></i>
+                        ${this.__('integrations.priceview.buttons.save')}
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    async loadPriceviewSettings() {
+        try {
+            const response = await this.app.api.get('/settings');
+            const data = response.data?.data || response.data || {};
+            this.priceviewSettings = {
+                sync_interval: data.priceview_sync_interval || 30,
+                auto_sync: data.priceview_auto_sync !== false,
+                overlay_timeout: data.priceview_overlay_timeout || 10,
+                print_enabled: data.priceview_print_enabled !== false,
+                signage_enabled: data.priceview_signage_enabled !== false,
+                default_template: data.priceview_default_template || '',
+                font_size_multiplier: data.priceview_font_size_multiplier || 1.0,
+                product_display_template: data.priceview_product_display_template || ''
+            };
+
+            // Load templates for dropdowns
+            try {
+                const templatesRes = await this.app.api.get('/templates');
+                const templates = templatesRes.data?.data || templatesRes.data || [];
+                this.priceviewTemplates = Array.isArray(templates) ? templates : [];
+            } catch (e) {
+                Logger.warn('Failed to load templates for PriceView', e);
+                this.priceviewTemplates = [];
+            }
+
+            // Populate form fields
+            this._populatePriceviewForm();
+
+            // Load status info
+            this._loadPriceviewStatus(data);
+        } catch (e) {
+            Logger.warn('Failed to load PriceView settings', e);
+        }
+    }
+
+    _populatePriceviewForm() {
+        const s = this.priceviewSettings;
+
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el && val !== undefined && val !== null) el.value = val;
+        };
+
+        const setChecked = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.checked = !!val;
+        };
+
+        setVal('pv-sync-interval', s.sync_interval);
+        setVal('pv-overlay-timeout', s.overlay_timeout);
+        setVal('pv-font-size', s.font_size_multiplier);
+        setChecked('pv-auto-sync', s.auto_sync);
+        setChecked('pv-print-enabled', s.print_enabled);
+        setChecked('pv-signage-enabled', s.signage_enabled);
+
+        // Populate template dropdowns
+        const displaySelect = document.getElementById('pv-display-template');
+        const printSelect = document.getElementById('pv-default-template');
+
+        if (displaySelect && this.priceviewTemplates.length) {
+            const defaultOpt = displaySelect.querySelector('option[value=""]');
+            displaySelect.innerHTML = '';
+            if (defaultOpt) displaySelect.appendChild(defaultOpt);
+            this.priceviewTemplates.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                if (s.product_display_template === t.id) opt.selected = true;
+                displaySelect.appendChild(opt);
+            });
+        }
+
+        if (printSelect && this.priceviewTemplates.length) {
+            const defaultOpt = printSelect.querySelector('option[value=""]');
+            printSelect.innerHTML = '';
+            if (defaultOpt) printSelect.appendChild(defaultOpt);
+            this.priceviewTemplates.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                if (s.default_template === t.id) opt.selected = true;
+                printSelect.appendChild(opt);
+            });
+        }
+    }
+
+    _loadPriceviewStatus(data) {
+        const lastSyncEl = document.getElementById('pv-last-sync');
+        const productCountEl = document.getElementById('pv-product-count');
+        const deviceCountEl = document.getElementById('pv-device-count');
+
+        if (lastSyncEl) {
+            lastSyncEl.textContent = data.priceview_last_sync || '-';
+        }
+        if (productCountEl) {
+            productCountEl.textContent = data.priceview_product_count ?? '-';
+        }
+        if (deviceCountEl) {
+            deviceCountEl.textContent = data.priceview_device_count ?? '-';
+        }
+    }
+
+    async savePriceviewSettings() {
+        try {
+            const settings = {
+                priceview_sync_interval: parseInt(document.getElementById('pv-sync-interval')?.value) || 30,
+                priceview_auto_sync: document.getElementById('pv-auto-sync')?.checked ?? true,
+                priceview_overlay_timeout: parseInt(document.getElementById('pv-overlay-timeout')?.value) || 10,
+                priceview_print_enabled: document.getElementById('pv-print-enabled')?.checked ?? true,
+                priceview_signage_enabled: document.getElementById('pv-signage-enabled')?.checked ?? true,
+                priceview_default_template: document.getElementById('pv-default-template')?.value || null,
+                priceview_font_size_multiplier: parseFloat(document.getElementById('pv-font-size')?.value) || 1.0,
+                priceview_product_display_template: document.getElementById('pv-display-template')?.value || null
+            };
+
+            await this.app.api.put('/settings', settings);
+            Toast.success(this.__('integrations.priceview.saved'));
+        } catch (error) {
+            Logger.error('Failed to save PriceView settings', error);
+            Toast.error(error.message || 'Failed to save PriceView settings');
+        }
+    }
+
+    async syncPriceviewNow() {
+        try {
+            const btn = document.getElementById('sync-priceview-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="ti ti-loader animate-spin"></i> ${this.__('integrations.priceview.buttons.syncNow')}`;
+            }
+
+            await this.app.api.post('/priceview/sync');
+            Toast.success(this.__('integrations.priceview.saved'));
+
+            // Reload status
+            await this.loadPriceviewSettings();
+        } catch (error) {
+            Logger.error('PriceView sync failed', error);
+            Toast.error(error.message || 'Sync failed');
+        } finally {
+            const btn = document.getElementById('sync-priceview-btn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ti ti-refresh"></i> ${this.__('integrations.priceview.buttons.syncNow')}`;
+            }
+        }
     }
 
     destroy() {

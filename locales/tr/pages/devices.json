@@ -26,7 +26,8 @@
             "general": "Genel",
             "content": "İçerik",
             "status": "Durum & İşlemler",
-            "record": "Kayıt Bilgisi"
+            "record": "Kayıt Bilgisi",
+            "priceview": "FiyatGör"
         },
         "notFound": "Cihaz bulunamadı",
         "deviceNotFound": "Cihaz bulunamadı",
@@ -1050,5 +1051,20 @@
         "deviceNotFound": "Cihaz henüz {ip} adresinde bulunamadı. Lütfen manuel kontrol edin.",
         "ipVerifyFailed": "Yeni IP doğrulanamadı. Lütfen manuel kontrol edin.",
         "ipAlreadyUsed": "Bu IP adresi zaten kullanımda ({name})"
+    },
+    "priceview": {
+        "syncStatus": "Senkronizasyon Durumu",
+        "lastSync": "Son Senkronizasyon",
+        "productCount": "İndirilen Ürün Sayısı",
+        "syncNow": "Şimdi Senkronize Et",
+        "displaySettings": "Görüntüleme Ayarları",
+        "overlayTimeout": "Fiyat Gösterim Süresi (sn)",
+        "fontSize": "Yazı Boyutu",
+        "printSettings": "Yazdırma Ayarları",
+        "printEnabled": "Yazdırma Aktif",
+        "defaultTemplate": "Varsayılan Yazdırma Şablonu",
+        "selectTemplate": "Şablon seçin...",
+        "signageEnabled": "Signage Yayını",
+        "saved": "PriceView ayarları kaydedildi"
     }
 }

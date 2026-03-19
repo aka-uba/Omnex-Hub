@@ -215,6 +215,7 @@
             "api": "API",
             "import": "Импорт файлов",
             "payment": "Платёжная система",
+            "priceview": "PriceView",
             "mqtt": "MQTT Broker"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "API Debug — протестировать ответ Stock List",
                 "modalTitle": "TAMSOFT API Debug - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "Настройки PriceView",
+            "description": "Конфигурация устройств проверки цен",
+            "syncSettings": "Настройки синхронизации",
+            "displaySettings": "Настройки отображения",
+            "printSettings": "Настройки печати",
+            "statusInfo": "Информация о статусе",
+            "fields": {
+                "syncInterval": "Интервал синхронизации (минуты)",
+                "autoSync": "Автосинхронизация",
+                "overlayTimeout": "Длительность отображения цены (секунды)",
+                "fontSize": "Множитель размера шрифта",
+                "displayTemplate": "Шаблон отображения",
+                "printEnabled": "Печать включена",
+                "defaultPrintTemplate": "Шаблон печати по умолчанию",
+                "signageEnabled": "Воспроизведение Signage включено"
+            },
+            "hints": {
+                "syncInterval": "Частота синхронизации данных о товарах с сервера",
+                "overlayTimeout": "Длительность отображения экрана цены после сканирования",
+                "fontSize": "1.0 = Обычный, 1.5 = Крупный, 2.0 = Очень крупный",
+                "displayTemplate": "Шаблон отображения информации о товаре (пусто = по умолчанию)"
+            },
+            "status": {
+                "lastSync": "Последняя синхронизация",
+                "productCount": "Всего товаров",
+                "deviceCount": "Количество устройств PriceView"
+            },
+            "saved": "Настройки PriceView сохранены",
+            "buttons": {
+                "save": "Сохранить",
+                "syncNow": "Синхронизировать сейчас"
             }
         },
         "payment": {

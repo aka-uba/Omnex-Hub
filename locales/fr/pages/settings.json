@@ -215,6 +215,7 @@
             "api": "API",
             "import": "Import Fichier",
             "payment": "Système de paiement",
+            "priceview": "PriceView",
             "mqtt": "MQTT Broker"
         },
         "import": {
@@ -641,6 +642,40 @@
             "debug": {
                 "tooltip": "Débogage API - Tester la réponse de la liste de stock",
                 "modalTitle": "Débogage API TAMSOFT - StokListesi"
+            }
+        },
+        "priceview": {
+            "title": "Paramètres PriceView",
+            "description": "Configuration des appareils de vérification des prix",
+            "syncSettings": "Paramètres de synchronisation",
+            "displaySettings": "Paramètres d'affichage",
+            "printSettings": "Paramètres d'impression",
+            "statusInfo": "Informations sur le statut",
+            "fields": {
+                "syncInterval": "Intervalle de synchronisation (minutes)",
+                "autoSync": "Synchronisation automatique",
+                "overlayTimeout": "Durée d'affichage du prix (secondes)",
+                "fontSize": "Multiplicateur de taille de police",
+                "displayTemplate": "Modèle d'affichage",
+                "printEnabled": "Impression activée",
+                "defaultPrintTemplate": "Modèle d'impression par défaut",
+                "signageEnabled": "Lecture Signage activée"
+            },
+            "hints": {
+                "syncInterval": "Fréquence de synchronisation des données produits depuis le serveur",
+                "overlayTimeout": "Durée d'affichage de l'écran de prix après le scan",
+                "fontSize": "1.0 = Normal, 1.5 = Grand, 2.0 = Très grand",
+                "displayTemplate": "Modèle d'affichage des informations produit (vide = par défaut)"
+            },
+            "status": {
+                "lastSync": "Dernière synchronisation",
+                "productCount": "Total des produits",
+                "deviceCount": "Nombre d'appareils PriceView"
+            },
+            "saved": "Paramètres PriceView enregistrés",
+            "buttons": {
+                "save": "Enregistrer",
+                "syncNow": "Synchroniser maintenant"
             }
         },
         "payment": {
