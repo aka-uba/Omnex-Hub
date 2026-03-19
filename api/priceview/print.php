@@ -96,12 +96,18 @@ if (!empty($fonts)) {
 
 $productName = htmlspecialchars($product['name'] ?? '', ENT_QUOTES, 'UTF-8');
 
+// Determine server base URL for resolving relative paths in print HTML
+$serverUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+    . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
 // Output print-ready HTML
 header('Content-Type: text/html; charset=UTF-8');
 echo <<<HTML
 <!DOCTYPE html>
 <html>
 <head>
+<base href="{$serverUrl}/">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PriceView Print - {$productName}</title>
