@@ -7,6 +7,8 @@
  * Returns: text/html - ready for Android PrintManager
  */
 
+try {
+
 require_once SERVICES_PATH . '/FabricToHtmlConverter.php';
 
 $db = Database::getInstance();
@@ -127,3 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </html>
 HTML;
 exit;
+
+} catch (Throwable $e) {
+    Response::error('Print error: ' . $e->getMessage() . ' at ' . basename($e->getFile()) . ':' . $e->getLine(), 500);
+}
