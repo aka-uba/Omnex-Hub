@@ -610,7 +610,8 @@ class Database
             'transcode_queue', 'transcode_variants', 'stream_access_logs',
             'license_device_pricing',
             'erp_import_files',
-            'tenant_backups'
+            'tenant_backups',
+            'product_deletions'
         ];
 
         if (!in_array($table, $allowedTables, true)) {

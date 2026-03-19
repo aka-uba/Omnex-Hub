@@ -302,7 +302,8 @@
         "web_display": "Web Display",
         "pc_browser": "Web Display (PC)",
         "tv": "TV (Signage)",
-        "panel": "Panel"
+        "panel": "Panel",
+        "priceview": "Price Checker"
     },
     "statuses": {
         "online": "Online",

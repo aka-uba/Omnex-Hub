@@ -296,7 +296,8 @@
         "web_display": "Веб‑дисплей",
         "pc_browser": "Веб‑дисплей (ПК)",
         "tv": "TV (Signage)",
-        "panel": "Панель"
+        "panel": "Панель",
+        "priceview": "Прайс-чекер"
     },
     "statuses": {
         "online": "В сети",

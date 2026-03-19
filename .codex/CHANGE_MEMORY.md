@@ -1,4 +1,4 @@
-﻿# Change Memory
+# Change Memory
 
 Format:
 
@@ -8,6 +8,49 @@ Format:
 - Files: ...
 - Checks: ...
 - Risk/Follow-up: ...
+
+---
+
+## 2026-03-18 - Sunucu tarafli HTML etiket baski sistemi (Secenek A)
+- Request: Mevcut yazdirma sistemi frontend'de Fabric.js nesnelerini tek tek HTML div'lere ceviriyor (renderFabricObject ~300 satir, ProductList + BundleList'te duplicate). Her yeni ozellikte 4 farkli renderer guncellenmeli. Bunun yerine backend FabricToHtmlConverter ile sunucu tarafli HTML render yapilsin.
+- Changes:
+  1. FabricToHtmlConverter.php: convertToFragment() metodu eklendi � sadece canvas div doner (tam sayfa degil)
+  2. FabricToHtmlConverter.php: convertBarcode() + convertQrCode() � SVG/div placeholder, JsBarcode/qrcodejs ile client-side render
+  3. FabricToHtmlConverter.php: resolveDynamicFieldValue() � 4-tier cascade (dynamicField, fieldBinding, placeholder, labelToFieldMap)
+  4. FabricToHtmlConverter.php: printMode flag � video'lari poster/first-frame olarak gosterir, autoplay yerine
+  5. api/templates/print-html.php: Yeni endpoint (POST) � toplu urun/paket etiket HTML sayfasi olusturur
+  6. api/index.php: POST /{id}/print-html route kaydedildi
+  7. ProductList.js: "HTML Baski (Yeni)" checkbox + bulkPrintViaHtml() metodu (popup-before-await pattern)
+  8. BundleList.js: Ayni degisiklik (bundle_ids, type:'bundle')
+  9. i18n: htmlPrint.label/hint/generating/failed � 8 dil x 2 sayfa (products + bundles)
+- Files: services/FabricToHtmlConverter.php, api/templates/print-html.php (yeni), api/index.php, public/assets/js/pages/products/ProductList.js, public/assets/js/pages/bundles/BundleList.js, locales/{8 dil}/pages/products.json, locales/{8 dil}/pages/bundles.json
+- Checks: PHP lint OK (3 dosya), JSON valid (16 dosya), local test OK
+- Risk/Follow-up:
+  - **KALDIRILACAK ESKI KOD (test sonrasi):**
+    - ProductList.js: renderTemplateLabel() (~satir 5175), renderFabricObject() (~satir 5255), extractDynamicFieldKey(), getDynamicFieldValue(), renderDefaultLabel() � toplam ~600 satir
+    - BundleList.js: _renderTemplateLabelForBundle() (~satir 1340), _renderFabricObjectForBundle() (~satir 1411), _extractDynamicKey(), _getBundleDynamicValue(), _renderSimpleBundleLabel() � toplam ~400 satir
+    - Kaldirildiginda showBulkPrintModal() icindeki eski dal (useHtmlPrint false) da kaldirilir, checkbox gereksiz olur
+  - Barkod/QR render FabricToHtmlConverter'a eklendi � mevcut signage HTML onizleme (preview-html.php) icin de faydali
+  - printMode sadece convertToFragment() ile aktif, normal convert() etkilenmez
+
+---
+
+## 2026-03-18 - Signage playlist varyant route'lari + Turkce karakter duzeltmeleri
+- Request: Signage sayfasi icin 3 farkli tasarim varyanti (Ops, Cards, Studio) route'lari app.js'e eklenmemis. Ayrica 4 dosyada ~50 Turkce karakter eksikligi var.
+- Changes:
+  1. app.js: /signage/playlists/ops, /cards, /studio route'lari eklendi
+  2. PlaylistListOps.js, PlaylistListCards.js, PlaylistListStudio.js, PlaylistListExperienceBase.js: ~50 Turkce karakter duzeltmesi (Icerik�I�erik, Baslat�Ba�lat, Duzenle�D�zenle vb.)
+- Files: public/assets/js/app.js, public/assets/js/pages/signage/PlaylistList{Ops,Cards,Studio,ExperienceBase}.js
+- Checks: Syntax OK
+- Risk/Follow-up: Yok
+
+---
+
+## 2026-03-18 - Import dosya yukleme, silme, test import akisi + audit log + sube duzeltmeleri
+- Request: Entegrasyon sayfasi dosya import sekmesine upload butonu, dosya silme, test import akisi, audit log cevirileri, sube siralamasi duzeltmeleri
+- Changes: web-upload.php, files.php, upload.php, IntegrationSettings.js, settings.css, AuditLog.js, BranchManagement.js, BranchService.php, 8 dil cevirileri
+- Checks: PHP lint OK, JSON valid
+- Risk/Follow-up: Yok
 
 ---
 
@@ -28,43 +71,43 @@ Format:
 
 ## 2026-03-17 - TV video oynatma regresyonu duzeltmesi (11 bug fix)
 - Request: TV cihazlarda video siyah ekran, preload gorselden ileri gidemiyor. OMX.MS.AVC.Decoder ERROR, PIPELINE_ERROR_DECODE. Codex ile eklenen constrained TV, native video kilitleme ve agresif watchdog regresyona neden oldu.
-- Changes: 11 fix — hasNativeVideoSupport basitlesti, _nativeVideoHardDisabled kaldirildi, isConstrainedTvProfile etkisizlesti, 360p rewrite kaldirildi, handleNativeVideoStarted _currentElement=video geri geldi, attemptStartupRecovery/watchdog kaldirildi, deferred exit sadece video/stream, balanced profile cap geri geldi, prepareNextMedia sadelelesti, playHtml constrained guard kaldirildi, scheduleNext deferred native stop kaldirildi
+- Changes: 11 fix � hasNativeVideoSupport basitlesti, _nativeVideoHardDisabled kaldirildi, isConstrainedTvProfile etkisizlesti, 360p rewrite kaldirildi, handleNativeVideoStarted _currentElement=video geri geldi, attemptStartupRecovery/watchdog kaldirildi, deferred exit sadece video/stream, balanced profile cap geri geldi, prepareNextMedia sadelelesti, playHtml constrained guard kaldirildi, scheduleNext deferred native stop kaldirildi
 - Files: public/player/assets/js/player.js (6215->6037), public/player/index.html (v74), public/player/sw.js (v1.3.11)
 - Checks: node -c syntax OK
 - Risk/Follow-up: TV'de test edilmeli. Yedekler: player.js.bak.20260317
 
 ---
 
-## 2026-03-15 - HTML Åablon OluÅŸtur modallarÄ±na canlÄ± Ã¶nizleme
-- Request: ÃœrÃ¼nlerde HTML icon/buton ile aÃ§Ä±lan modalda ÅŸablon seÃ§iminde canlÄ± HTML Ã¶nizleme eksik
+## 2026-03-15 - HTML Şablon Oluştur modallarına canlı önizleme
+- Request: Ürünlerde HTML icon/buton ile açılan modalda şablon seçiminde canlı HTML önizleme eksik
 - Changes:
-  1. `ProductList.js` â€” `handleGenerateHtml()`: Åablon seÃ§ilince iframe ile canlÄ± HTML Ã¶nizleme
-  2. `ProductList.js` â€” `bulkGenerateHtml()`: AynÄ± Ã¶nizleme (ilk Ã¼rÃ¼n ile)
+  1. `ProductList.js` — `handleGenerateHtml()`: Şablon seçilince iframe ile canlı HTML önizleme
+  2. `ProductList.js` — `bulkGenerateHtml()`: Aynı önizleme (ilk ürün ile)
 - Files: ProductList.js
 - Checks: CSS mevcut (template-preview-live, live-preview-badge)
 - Risk/Follow-up: Yok
 
 ---
 
-## 2026-03-15 - Modal.confirm Promise dÃ¼zeltmesi + TÃ¼mÃ¼nÃ¼ SeÃ§ gÃ¶rÃ¼nÃ¼rlÃ¼k
-- Request: (1) Web Templates silme ikonu onay olmadan siliyor. (2) TÃ¼mÃ¼nÃ¼ SeÃ§ seÃ§eneÄŸi gÃ¶rÃ¼nmÃ¼yor.
+## 2026-03-15 - Modal.confirm Promise düzeltmesi + Tümünü Seç görünürlük
+- Request: (1) Web Templates silme ikonu onay olmadan siliyor. (2) Tümünü Seç seçeneği görünmüyor.
 - Changes:
-  1. `Modal.js` â€” `confirm()` metodu: onConfirm callback geÃ§irilmezse Promise dÃ¶ndÃ¼rÃ¼yor (true/false). BÃ¶ylece `const ok = await Modal.confirm({...})` doÄŸru Ã§alÄ±ÅŸÄ±yor. Eskiden modal instance objesi (truthy) dÃ¶ndÃ¼ÄŸÃ¼ iÃ§in onay modal'Ä± beklemeden hemen siliyordu.
-  2. `web-templates.css` â€” `.wt-select-all-wrapper .filter-label` iÃ§in `display: inline !important` eklendi (mobil :has() gizleme kuralÄ±ndan korunmasÄ± iÃ§in). Wrapper'a hover efekti, checkbox boyutu bÃ¼yÃ¼tme eklendi.
+  1. `Modal.js` — `confirm()` metodu: onConfirm callback geçirilmezse Promise döndürüyor (true/false). Böylece `const ok = await Modal.confirm({...})` doğru çalışıyor. Eskiden modal instance objesi (truthy) döndüğü için onay modal'ı beklemeden hemen siliyordu.
+  2. `web-templates.css` — `.wt-select-all-wrapper .filter-label` için `display: inline !important` eklendi (mobil :has() gizleme kuralından korunması için). Wrapper'a hover efekti, checkbox boyutu büyütme eklendi.
 - Files: public/assets/js/components/Modal.js, public/assets/css/pages/web-templates.css
-- Checks: Manuel test gerekli (Modal.confirm kullanÄ±lan tÃ¼m yerler)
-- Risk/Follow-up: Modal.confirm onConfirm ile Ã§aÄŸrÄ±lan yerler eski davranÄ±ÅŸÄ± koruyor (backward compat). Promise yolu sadece onConfirm geÃ§irilmediÄŸinde aktif.
+- Checks: Manuel test gerekli (Modal.confirm kullanılan tüm yerler)
+- Risk/Follow-up: Modal.confirm onConfirm ile çağrılan yerler eski davranışı koruyor (backward compat). Promise yolu sadece onConfirm geçirilmediğinde aktif.
 
 ---
 
-## 2026-03-15 - Web Templates sayfa iyileÅŸtirmeleri + HTML ÅŸablon filtre dÃ¼zeltmesi
-- Request: (1) WebTemplateList sayfasÄ±na DataTable benzeri grid: Ã§oklu seÃ§im, toplu silme, sayfalama, sayfa baÅŸÄ± Ã¶ÄŸe. (2) Silme modalÄ± arka planÄ± gereksiz yenilemesin. (3) ÃœrÃ¼nler sayfasÄ± HTML Åablon OluÅŸtur modalÄ± tÃ¼m ÅŸablonlarÄ± gÃ¶stersin (sadece TV+signage deÄŸil).
+## 2026-03-15 - Web Templates sayfa iyileştirmeleri + HTML şablon filtre düzeltmesi
+- Request: (1) WebTemplateList sayfasına DataTable benzeri grid: çoklu seçim, toplu silme, sayfalama, sayfa başı öğe. (2) Silme modalı arka planı gereksiz yenilemesin. (3) Ürünler sayfası HTML Şablon Oluştur modalı tüm şablonları göstersin (sadece TV+signage değil).
 - Changes:
-  1. `WebTemplateList.js` â€” Tam yeniden yazÄ±ldÄ±: checkbox seÃ§im, tÃ¼mÃ¼nÃ¼ seÃ§, toplu silme butonu, sayfalama (prev/next/sayfa numaralarÄ±), sayfa baÅŸÄ± Ã¶ÄŸe sayÄ±sÄ± (12/24/48/96), silme sonrasÄ± DOM animasyonu (yeniden yÃ¼kleme yok).
-  2. `web-templates.css` â€” Pagination stilleri (.wt-pagination-*), kart seÃ§im stilleri (.wt-card-select, .template-card.selected), select-all wrapper, dark mode desteÄŸi eklendi.
-  3. `ProductList.js` â€” `handleGenerateHtml()` ve `bulkGenerateHtml()`: `/templates?type=signage` + `type=tv` filtresi kaldÄ±rÄ±ldÄ±, tÃ¼m ÅŸablonlar yÃ¼kleniyor (`/templates?per_page=200`). Åablon seÃ§eneklerine tip etiketi eklendi.
-  4. `api/web-templates/bulk-delete.php` â€” Yeni endpoint: POST, { ids: [] }, soft delete, aktif atama atlama, audit log.
-  5. `api/index.php` â€” bulk-delete route eklendi.
+  1. `WebTemplateList.js` — Tam yeniden yazıldı: checkbox seçim, tümünü seç, toplu silme butonu, sayfalama (prev/next/sayfa numaraları), sayfa başı öğe sayısı (12/24/48/96), silme sonrası DOM animasyonu (yeniden yükleme yok).
+  2. `web-templates.css` — Pagination stilleri (.wt-pagination-*), kart seçim stilleri (.wt-card-select, .template-card.selected), select-all wrapper, dark mode desteği eklendi.
+  3. `ProductList.js` — `handleGenerateHtml()` ve `bulkGenerateHtml()`: `/templates?type=signage` + `type=tv` filtresi kaldırıldı, tüm şablonlar yükleniyor (`/templates?per_page=200`). Şablon seçeneklerine tip etiketi eklendi.
+  4. `api/web-templates/bulk-delete.php` — Yeni endpoint: POST, { ids: [] }, soft delete, aktif atama atlama, audit log.
+  5. `api/index.php` — bulk-delete route eklendi.
   6. i18n: 8 dilde `selectAll`, `perPage`, `saving`, `bulkDeleted`, `bulkSkipped`, `bulkDeleteMessage` key'leri eklendi.
 - Files: WebTemplateList.js, web-templates.css, ProductList.js, api/web-templates/bulk-delete.php (yeni), api/index.php, locales/*/pages/web-templates.json (8 dil)
 - Checks: PHP syntax OK (bulk-delete.php, FabricToHtmlConverter.php)
@@ -81,27 +124,27 @@ Format:
 
 ---
 
-## 2026-03-15 - slot-media video fix + HTML ÅŸablon gÃ¼ncelleme (upsert)
-- Request: (1) Ã‡oklu Ã¼rÃ¼n ÅŸablonunda elle eklenen video HTML'e gelmiyor. (2) AynÄ± ÅŸablon+Ã¼rÃ¼n ile tekrar HTML oluÅŸturulduÄŸunda yeni kayÄ±t yerine mevcut gÃ¼ncellenmeli.
+## 2026-03-15 - slot-media video fix + HTML şablon güncelleme (upsert)
+- Request: (1) Çoklu ürün şablonunda elle eklenen video HTML'e gelmiyor. (2) Aynı şablon+ürün ile tekrar HTML oluşturulduğunda yeni kayıt yerine mevcut güncellenmeli.
 - Changes:
-  1. `FabricToHtmlConverter.php` â€” `convertObject()`: `slot-media` customType iÃ§in video/gÃ¶rsel ayrÄ±mÄ± eklendi. `staticVideos`, `videoSrc`, `video_placeholder_url` kontrolleri ile doÄŸru render yÃ¶ntemine yÃ¶nlendirme.
-  2. `FabricToHtmlConverter.php` â€” `convertVideo()`: `video_placeholder_url` ve `staticVideos` dizisi desteÄŸi eklendi (slot-media objeleri iÃ§in).
-  3. `generate-from-fabric.php` â€” Upsert mantÄ±ÄŸÄ±: AynÄ± `fabric_template_id` + `product_ids` kombinasyonu varsa mevcut web_templates kaydÄ±nÄ± gÃ¼ncelle (versiyon artÄ±r), yoksa yeni oluÅŸtur.
-  4. `ProductList.js` â€” TÃ¼m generate-from-fabric Ã§aÄŸrÄ±larÄ±nda `is_update` flag'ine gÃ¶re farklÄ± toast mesajÄ± gÃ¶ster.
+  1. `FabricToHtmlConverter.php` — `convertObject()`: `slot-media` customType için video/görsel ayrımı eklendi. `staticVideos`, `videoSrc`, `video_placeholder_url` kontrolleri ile doğru render yöntemine yönlendirme.
+  2. `FabricToHtmlConverter.php` — `convertVideo()`: `video_placeholder_url` ve `staticVideos` dizisi desteği eklendi (slot-media objeleri için).
+  3. `generate-from-fabric.php` — Upsert mantığı: Aynı `fabric_template_id` + `product_ids` kombinasyonu varsa mevcut web_templates kaydını güncelle (versiyon artır), yoksa yeni oluştur.
+  4. `ProductList.js` — Tüm generate-from-fabric çağrılarında `is_update` flag'ine göre farklı toast mesajı göster.
   5. i18n: `htmlUpdated` ve `generateHtml.updated` key'leri 8 dile eklendi.
 - Files: services/FabricToHtmlConverter.php, api/web-templates/generate-from-fabric.php, ProductList.js, locales/*/pages/products.json (8 dil)
 - Checks: PHP syntax OK (2 dosya), JSON validation OK (8 dil)
-- Risk/Follow-up: Upsert eÅŸleÅŸtirme `data_sources` JSON parse ile yapÄ±lÄ±yor â€” performans sorunu olursa `source_template_id` + `source_product_ids_hash` kolon eklenmeli.
+- Risk/Follow-up: Upsert eşleştirme `data_sources` JSON parse ile yapılıyor — performans sorunu olursa `source_template_id` + `source_product_ids_hash` kolon eklenmeli.
 
 ---
 
-## 2026-03-15 - Multi-product modal: baÄŸÄ±msÄ±z HTML ÅŸablon kaydet butonu
-- Request: Ã‡oklu Ã¼rÃ¼n modalÄ±nda cihaza gÃ¶ndermeden ve checkbox iÅŸaretlemeden doÄŸrudan HTML ÅŸablon olarak kaydetme
+## 2026-03-15 - Multi-product modal: bağımsız HTML şablon kaydet butonu
+- Request: Çoklu ürün modalında cihaza göndermeden ve checkbox işaretlemeden doğrudan HTML şablon olarak kaydetme
 - Changes:
-  1. Checkbox kaldÄ±rÄ±ldÄ±, yerine "HTML Åablon Olarak Kaydet" butonu eklendi (btn-mp-save-html)
-  2. Yeni `_mpSaveAsHtmlTemplate()` metodu: baÄŸÄ±msÄ±z API Ã§aÄŸrÄ±sÄ±, loading state, validasyon
-  3. `_executeMultiProductSend()` iÃ§indeki eski checkbox kodu temizlendi
-  4. i18n: `alsoCreateHtml/alsoCreateHtmlHint` â†’ `saveAsHtml/saveAsHtmlHint/htmlSaved/htmlSaveFailed/noSlotAssigned` (8 dil)
+  1. Checkbox kaldırıldı, yerine "HTML Şablon Olarak Kaydet" butonu eklendi (btn-mp-save-html)
+  2. Yeni `_mpSaveAsHtmlTemplate()` metodu: bağımsız API çağrısı, loading state, validasyon
+  3. `_executeMultiProductSend()` içindeki eski checkbox kodu temizlendi
+  4. i18n: `alsoCreateHtml/alsoCreateHtmlHint` → `saveAsHtml/saveAsHtmlHint/htmlSaved/htmlSaveFailed/noSlotAssigned` (8 dil)
 - Files: ProductList.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/products.json
 - Checks: JSON validation OK (8 dil)
 - Risk/Follow-up: Yok
@@ -109,15 +152,15 @@ Format:
 ---
 
 ## 2026-03-15 - FabricToHtmlConverter: static video/image fix + multi-product slot mapping
-- Request: Statik (dinamik olmayan, elle eklenen) video ve gÃ¶rsellerin HTML Ã§Ä±ktÄ±sÄ±nda gÃ¶rÃ¼nmesi, Ã§oklu Ã¼rÃ¼n Ã§erÃ§evesi slotâ†’Ã¼rÃ¼n eÅŸleÅŸtirmesi, helper objelerin gizlenmesi
+- Request: Statik (dinamik olmayan, elle eklenen) video ve görsellerin HTML çıktısında görünmesi, çoklu ürün çerçevesi slot→ürün eşleştirmesi, helper objelerin gizlenmesi
 - Changes:
-  1. `convertImage()` â€” Video URL tespiti eklendi; `.mp4/.webm/.ogg/.mov` uzantÄ±lÄ± src'ler `<video>` olarak render edilir (`<img>` yerine)
-  2. `convert()` â€” Multi-product-frame slotâ†’product eÅŸleÅŸtirme haritasÄ± oluÅŸturuldu (frameColsÃ—frameRows matris)
-  3. `convertObject()` â€” Helper obje filtreleme: isSlotBackground, isSlotLabel, isSlotPlaceholder, isTransient, multi-product-frame container, slot-label skip kurallarÄ±
-  4. Slot objelerinde (`slotId > 0`) doÄŸru Ã¼rÃ¼n verisi Ã§Ã¶zÃ¼mleme
+  1. `convertImage()` — Video URL tespiti eklendi; `.mp4/.webm/.ogg/.mov` uzantılı src'ler `<video>` olarak render edilir (`<img>` yerine)
+  2. `convert()` — Multi-product-frame slot→product eşleştirme haritası oluşturuldu (frameCols×frameRows matris)
+  3. `convertObject()` — Helper obje filtreleme: isSlotBackground, isSlotLabel, isSlotPlaceholder, isTransient, multi-product-frame container, slot-label skip kuralları
+  4. Slot objelerinde (`slotId > 0`) doğru ürün verisi çözümleme
 - Files: services/FabricToHtmlConverter.php
 - Checks: `php -l` syntax check passed
-- Risk/Follow-up: KullanÄ±cÄ± tÃ¼m tasarÄ±m Ã¶zelliklerinin (font, renk vb.) HTML'de korunduÄŸunu doÄŸrulayacak. convertText() zaten fontSize, fontFamily, fontWeight, fontStyle, fill, textAlign, lineHeight, charSpacing, underline, linethrough, backgroundColor destekliyor.
+- Risk/Follow-up: Kullanıcı tüm tasarım özelliklerinin (font, renk vb.) HTML'de korunduğunu doğrulayacak. convertText() zaten fontSize, fontFamily, fontWeight, fontStyle, fill, textAlign, lineHeight, charSpacing, underline, linethrough, backgroundColor destekliyor.
 
 ---
 
@@ -130,121 +173,121 @@ Format:
 
 ---
 
-## TAKÄ°P: HTML Ã–nizleme Performans Optimizasyonu (beklemede)
-- **Durum**: KullanÄ±cÄ± test edecek, tecrÃ¼beye gÃ¶re karar verecek
-- **Sorun alanÄ±**: Web Åablonlar listesinde Ã§ok sayÄ±da Fabric kaynaklÄ± kart olursa her biri serve endpoint â†’ FabricToHtmlConverter Ã§alÄ±ÅŸtÄ±rÄ±r
-- **Etkilenen dosyalar**: WebTemplateList.js (card iframe), serve.php (dinamik render), preview-html.php (anlÄ±k render)
-- **SeÃ§enek A**: Web ÅŸablon listesinde iframe yerine statik placeholder/thumbnail kullan (sadece detay/Ã¶nizlemede canlÄ±)
-- **SeÃ§enek B**: serve.php'de kÄ±sa sÃ¼reli cache (5dk) â€” Ã¼rÃ¼n updated_at deÄŸiÅŸmemiÅŸse cache'den sun
-- **KullanÄ±cÄ± mesajÄ±**: "HTML Ã¶nizleme performans optimizasyonunu yapalÄ±m" dediÄŸinde bu notu referans al
+## TAKİP: HTML Önizleme Performans Optimizasyonu (beklemede)
+- **Durum**: Kullanıcı test edecek, tecrübeye göre karar verecek
+- **Sorun alanı**: Web Şablonlar listesinde çok sayıda Fabric kaynaklı kart olursa her biri serve endpoint → FabricToHtmlConverter çalıştırır
+- **Etkilenen dosyalar**: WebTemplateList.js (card iframe), serve.php (dinamik render), preview-html.php (anlık render)
+- **Seçenek A**: Web şablon listesinde iframe yerine statik placeholder/thumbnail kullan (sadece detay/önizlemede canlı)
+- **Seçenek B**: serve.php'de kısa süreli cache (5dk) — ürün updated_at değişmemişse cache'den sun
+- **Kullanıcı mesajı**: "HTML önizleme performans optimizasyonunu yapalım" dediğinde bu notu referans al
 
 ---
 
-## 2026-03-15 - Cihaz Detay Ä°Ã§erik Sekmesi: CanlÄ± HTML Ã–nizleme
-- Request: Cihaz detay sayfasÄ±ndaki iÃ§erik sekmesinde statik render gÃ¶rseli yerine canlÄ± HTML Ã¶nizleme
+## 2026-03-15 - Cihaz Detay İçerik Sekmesi: Canlı HTML Önizleme
+- Request: Cihaz detay sayfasındaki içerik sekmesinde statik render görseli yerine canlı HTML önizleme
 - Changes:
-  1. DeviceDetail.js: renderDeviceRenderPreview() â€” ÅŸablon+Ã¼rÃ¼n atanmÄ±ÅŸsa canlÄ± iframe, yoksa statik fallback
-  2. Yeni getProductIdFromContent() â€” current_content JSON'dan product_id parse
-  3. "CanlÄ± Ã–nizleme" badge + "Tam Ekran" butonu eklendi
-  4. 8 dil Ã§eviri: livePreview, livePreviewHint, fullscreenPreview
+  1. DeviceDetail.js: renderDeviceRenderPreview() — şablon+ürün atanmışsa canlı iframe, yoksa statik fallback
+  2. Yeni getProductIdFromContent() — current_content JSON'dan product_id parse
+  3. "Canlı Önizleme" badge + "Tam Ekran" butonu eklendi
+  4. 8 dil çeviri: livePreview, livePreviewHint, fullscreenPreview
 - Files: DeviceDetail.js, locales/*/pages/devices.json
 - Checks: Mevcut fallback korundu
-- Risk: Åablon/Ã¼rÃ¼n silinmiÅŸse 404 â†’ iframe boÅŸ
+- Risk: Şablon/ürün silinmişse 404 → iframe boş
 
 ---
 
-## 2026-03-15 - Evrensel HTML Ã–nizleme Servisi + ÃœrÃ¼n Detay "Cihaz Ä°Ã§eriÄŸi" Sekmesi
-- Request: ÅablonlarÄ±n canlÄ± HTML olarak her yerde Ã¶nizlenebilmesi iÃ§in evrensel bir render servisi, Ã¼rÃ¼n detay sayfasÄ±nda cihaz iÃ§eriÄŸi sekmesi
+## 2026-03-15 - Evrensel HTML Önizleme Servisi + Ürün Detay "Cihaz İçeriği" Sekmesi
+- Request: Şablonların canlı HTML olarak her yerde önizlenebilmesi için evrensel bir render servisi, ürün detay sayfasında cihaz içeriği sekmesi
 - Changes:
-  1. Yeni API: `GET /api/templates/:id/preview-html?product_id=xxx` â€” auth gerektirmez, veritabanÄ±na kaydetmez, anlÄ±k HTML render
-  2. ProductDetail.js: Yeni "Cihaz Ä°Ã§eriÄŸi" sekmesi â€” Ã¼rÃ¼ne atanmÄ±ÅŸ her ÅŸablon iÃ§in canlÄ± iframe Ã¶nizleme
+  1. Yeni API: `GET /api/templates/:id/preview-html?product_id=xxx` — auth gerektirmez, veritabanına kaydetmez, anlık HTML render
+  2. ProductDetail.js: Yeni "Cihaz İçeriği" sekmesi — ürüne atanmış her şablon için canlı iframe önizleme
   3. CSS: `.pd-device-content-grid/card/preview/info/actions` stilleri eklendi
-  4. Route: `api/index.php`'de `/api/templates/{id}/preview-html` tanÄ±mlandÄ± (auth-free)
-  5. 8 dil Ã§eviri: `detail.tabs.deviceContent` + `detail.deviceContent.*` eklendi
+  4. Route: `api/index.php`'de `/api/templates/{id}/preview-html` tanımlandı (auth-free)
+  5. 8 dil çeviri: `detail.tabs.deviceContent` + `detail.deviceContent.*` eklendi
 - Files: api/templates/preview-html.php (yeni), api/index.php, public/assets/js/pages/products/ProductDetail.js, public/assets/css/pages/products.css, locales/*/pages/products.json
 - Checks: PHP syntax OK (preview-html.php, index.php)
-- Risk/Follow-up: Auth-free endpoint â€” sadece UUID ile eriÅŸilebilir (gÃ¼venli); iframe sandbox kÄ±sÄ±tlamalÄ±
+- Risk/Follow-up: Auth-free endpoint — sadece UUID ile erişilebilir (güvenli); iframe sandbox kısıtlamalı
 
 ---
 
-## 2026-03-15 - Web ÅŸablonlar: Fabric kaynak badge, dinamik serve, editÃ¶r yÃ¶nlendirme
-- Request: Fabric.js'den oluÅŸturulan web ÅŸablonlarÄ±n card'da Ã¶nizleme resmi yok, kaynaÄŸÄ± belli deÄŸil, edit HTML editÃ¶re gidiyor, Ã¼rÃ¼n deÄŸiÅŸiklikleri yansÄ±mÄ±yor
+## 2026-03-15 - Web şablonlar: Fabric kaynak badge, dinamik serve, editör yönlendirme
+- Request: Fabric.js'den oluşturulan web şablonların card'da önizleme resmi yok, kaynağı belli değil, edit HTML editöre gidiyor, ürün değişiklikleri yansımıyor
 - Changes:
-  1. serve.php: Fabric kaynaÄŸÄ± olan ÅŸablonlar her istekte gÃ¼ncel Ã¼rÃ¼n verileriyle taze render yapÄ±yor (statik HTML yerine dinamik)
-  2. WebTemplateList.js: Card'da Fabric kaynak badge ("Åablondan"), iframe Ã¶nizleme, edit â†’ ÅŸablon editÃ¶rÃ¼ne yÃ¶nlendirme
-  3. index.php: data_sources alanÄ± list response'a eklendi
-  4. FabricToHtmlConverter.php: canvas-container baÅŸlangÄ±Ã§ta visibility:hidden, fitToScreen() sonrasÄ± visible (flash dÃ¼zeltme)
-  5. 8 dil Ã§eviri dosyasÄ±: source.fabricTemplate, source.fabricHint, actions.editTemplate eklendi
+  1. serve.php: Fabric kaynağı olan şablonlar her istekte güncel ürün verileriyle taze render yapıyor (statik HTML yerine dinamik)
+  2. WebTemplateList.js: Card'da Fabric kaynak badge ("Şablondan"), iframe önizleme, edit → şablon editörüne yönlendirme
+  3. index.php: data_sources alanı list response'a eklendi
+  4. FabricToHtmlConverter.php: canvas-container başlangıçta visibility:hidden, fitToScreen() sonrası visible (flash düzeltme)
+  5. 8 dil çeviri dosyası: source.fabricTemplate, source.fabricHint, actions.editTemplate eklendi
 - Files: api/web-templates/serve.php, api/web-templates/index.php, services/FabricToHtmlConverter.php, public/assets/js/pages/web-templates/WebTemplateList.js, locales/*/pages/web-templates.json
 - Checks: PHP syntax OK (serve.php, index.php)
-- Risk/Follow-up: serve.php her istekte render â†’ performans etkisi (ama cache-control no-cache zaten var); kaynak ÅŸablon silinirse fallback cached HTML kullanÄ±lÄ±r
+- Risk/Follow-up: serve.php her istekte render → performans etkisi (ama cache-control no-cache zaten var); kaynak şablon silinirse fallback cached HTML kullanılır
 
 ---
 
-## 2026-03-15 - Player HTML iÃ§erik Ã§oklu yenilenme (flicker) dÃ¼zeltmesi
-- Request: Playlist'teki HTML Ã¶ÄŸesi birkaÃ§ kez yenilenerek aÃ§Ä±lÄ±yor, video ise tek seferde aÃ§Ä±lÄ±yor
-- Root cause: Ä°ki sorun â€”
-  1. `playHtml()` iframe yÃ¼klenmeden Ã–NCE `applyEnterTransition()` Ã§aÄŸÄ±rÄ±yordu (playImage ise onload SONRASI Ã§aÄŸÄ±rÄ±r)
-  2. `hideAllContent()` HTMLâ†’HTML geÃ§iÅŸinde bile iframe.src'yi `about:blank`'e set ediyordu â†’ iframe iki kez yÃ¼kleniyordu (about:blank â†’ yeni url)
+## 2026-03-15 - Player HTML içerik çoklu yenilenme (flicker) düzeltmesi
+- Request: Playlist'teki HTML öğesi birkaç kez yenilenerek açılıyor, video ise tek seferde açılıyor
+- Root cause: İki sorun —
+  1. `playHtml()` iframe yüklenmeden ÖNCE `applyEnterTransition()` çağırıyordu (playImage ise onload SONRASI çağırır)
+  2. `hideAllContent()` HTML→HTML geçişinde bile iframe.src'yi `about:blank`'e set ediyordu → iframe iki kez yükleniyordu (about:blank → yeni url)
 - Changes:
-  1. `player.js playHtml()` â€” `iframe.onload` callback pattern eklendi (playImage ile aynÄ± yaklaÅŸÄ±m). Transition ve scheduleNext yÃ¼kleme bittikten sonra Ã§alÄ±ÅŸÄ±r. 5sn safety timeout eklendi.
-  2. `player.js hideAllContent()` â€” `nextContentType !== 'html'` koÅŸulu eklendi, HTMLâ†’HTML geÃ§iÅŸinde about:blank atanmaz
-  3. `public/player/sw.js` â€” Cache version v1.2.7 â†’ v1.2.8
+  1. `player.js playHtml()` — `iframe.onload` callback pattern eklendi (playImage ile aynı yaklaşım). Transition ve scheduleNext yükleme bittikten sonra çalışır. 5sn safety timeout eklendi.
+  2. `player.js hideAllContent()` — `nextContentType !== 'html'` koşulu eklendi, HTML→HTML geçişinde about:blank atanmaz
+  3. `public/player/sw.js` — Cache version v1.2.7 → v1.2.8
 - Files: public/player/assets/js/player.js, public/player/sw.js
 - Checks: JS syntax OK
-- Risk/Follow-up: iframe.onload bazÄ± cross-origin sayfalar iÃ§in gecikmeli ateÅŸlenebilir â€” 5sn safety timeout bunu karÅŸÄ±lar
+- Risk/Follow-up: iframe.onload bazı cross-origin sayfalar için gecikmeli ateşlenebilir — 5sn safety timeout bunu karşılar
 
 ---
 
-## 2026-03-15 - Playlist ÅŸablon sekmesi kaldÄ±rÄ±ldÄ± (HTML sekmesi yeterli)
-- Request: Playlist iÃ§erik ekleme modalÄ±ndan "Åablonlar" sekmesini, backend kodlarÄ±nÄ± ve Ã§evirilerini kaldÄ±r â€” HTML Åablonlar sekmesi aynÄ± iÅŸi yapÄ±yor
+## 2026-03-15 - Playlist şablon sekmesi kaldırıldı (HTML sekmesi yeterli)
+- Request: Playlist içerik ekleme modalından "Şablonlar" sekmesini, backend kodlarını ve çevirilerini kaldır — HTML Şablonlar sekmesi aynı işi yapıyor
 - Changes:
-  1. `PlaylistDetail.js` â€” KaldÄ±rÄ±lan: `signageTemplates` property, `loadSignageTemplates()`, `renderTemplatesLibrary()`, `selectTemplate()`, `getTemplatePreviewUrl()`, templates tab butonu, templates tab switch case, templates event binding
-  2. 8 dil Ã§eviri dosyasÄ± â€” `tabTemplates`, `emptyTemplates`, `emptyTemplatesHint`, `createTemplate` key'leri kaldÄ±rÄ±ldÄ±
+  1. `PlaylistDetail.js` — Kaldırılan: `signageTemplates` property, `loadSignageTemplates()`, `renderTemplatesLibrary()`, `selectTemplate()`, `getTemplatePreviewUrl()`, templates tab butonu, templates tab switch case, templates event binding
+  2. 8 dil çeviri dosyası — `tabTemplates`, `emptyTemplates`, `emptyTemplatesHint`, `createTemplate` key'leri kaldırıldı
 - Files: public/assets/js/pages/signage/PlaylistDetail.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/signage.json
 - Checks: JS syntax OK, JSON valid (8 dosya)
-- Risk/Follow-up: Backend show.php'de type='template' desteÄŸi geriye uyumluluk iÃ§in korundu (eski playlist'ler Ã§alÄ±ÅŸmaya devam eder)
+- Risk/Follow-up: Backend show.php'de type='template' desteği geriye uyumluluk için korundu (eski playlist'ler çalışmaya devam eder)
 
 ---
 
 ## 2026-03-15 - Player CSS transition/centering fix + FabricToHtmlConverter bug fixes
-- Request: 4 kritik FabricToHtmlConverter bug dÃ¼zeltme (dinamik alanlar, pozisyonlama, video, gÃ¶rsel), video doldurma, HTML ortalama, player ÅŸablon geÃ§iÅŸ animasyonu saÄŸa kayma dÃ¼zeltmesi
+- Request: 4 kritik FabricToHtmlConverter bug düzeltme (dinamik alanlar, pozisyonlama, video, görsel), video doldurma, HTML ortalama, player şablon geçiş animasyonu sağa kayma düzeltmesi
 - Changes:
-  1. `services/FabricToHtmlConverter.php` â€” Tam yeniden yazÄ±m: labelToFieldMap (60+ giriÅŸ) ile dinamik alan Ã§Ã¶zÃ¼mleme, center origin pozisyon dÃ¼zeltmesi, video-placeholder customType tanÄ±ma, isDataField guard ile image ambiguity Ã§Ã¶zÃ¼mÃ¼, object-fit:cover video doldurma, detectBasePath/resolveMediaUrl dÃ¼zeltmeleri
-  2. `public/player/assets/css/player.css` â€” Orientation-mismatch CSS'de transform tabanlÄ± ortalamadan flexbox tabanlÄ± ortalamaya geÃ§iÅŸ (translateX(-50%) animasyon Ã§akÄ±ÅŸmasÄ± dÃ¼zeltmesi)
-  3. `public/assets/js/pages/web-templates/WebTemplateList.js` â€” Ã–nizleme butonu (ti-external-link) ve openPreview() metodu eklendi
-  4. `public/player/sw.js` â€” Cache version v1.2.6 â†’ v1.2.7
+  1. `services/FabricToHtmlConverter.php` — Tam yeniden yazım: labelToFieldMap (60+ giriş) ile dinamik alan çözümleme, center origin pozisyon düzeltmesi, video-placeholder customType tanıma, isDataField guard ile image ambiguity çözümü, object-fit:cover video doldurma, detectBasePath/resolveMediaUrl düzeltmeleri
+  2. `public/player/assets/css/player.css` — Orientation-mismatch CSS'de transform tabanlı ortalamadan flexbox tabanlı ortalamaya geçiş (translateX(-50%) animasyon çakışması düzeltmesi)
+  3. `public/assets/js/pages/web-templates/WebTemplateList.js` — Önizleme butonu (ti-external-link) ve openPreview() metodu eklendi
+  4. `public/player/sw.js` — Cache version v1.2.6 → v1.2.7
 - Files: services/FabricToHtmlConverter.php, public/player/assets/css/player.css, public/assets/js/pages/web-templates/WebTemplateList.js, public/player/sw.js
 - Checks: PHP syntax OK (FabricToHtmlConverter.php), JS syntax OK (WebTemplateList.js)
-- Risk/Follow-up: Player CSS deÄŸiÅŸikliÄŸi PWA cihazlarda SW cache gÃ¼ncellemesi gerektirir (v1.2.7). Login yapÄ±larak gÃ¶rsel doÄŸrulama yapÄ±lmalÄ±.
+- Risk/Follow-up: Player CSS değişikliği PWA cihazlarda SW cache güncellemesi gerektirir (v1.2.7). Login yapılarak görsel doğrulama yapılmalı.
 
 ---
 
-## 2026-03-14 - Fabric.js â†’ HTML conversion for signage playlists (Phase 1)
-- Request: Dinamik alanlÄ± ve videolu Fabric.js ÅŸablonlarÄ± HTML'e dÃ¶nÃ¼ÅŸtÃ¼rerek playlist'lere eklenip signage cihazlarÄ±na gÃ¶nderilebilmesini saÄŸla. Mevcut render akÄ±ÅŸÄ±na dokunmadan hibrit Ã§Ã¶zÃ¼m.
+## 2026-03-14 - Fabric.js → HTML conversion for signage playlists (Phase 1)
+- Request: Dinamik alanlı ve videolu Fabric.js şablonları HTML'e dönüştürerek playlist'lere eklenip signage cihazlarına gönderilebilmesini sağla. Mevcut render akışına dokunmadan hibrit çözüm.
 - Changes:
-  1. `services/FabricToHtmlConverter.php` â€” Fabric.js JSON â†’ baÄŸÄ±msÄ±z HTML dÃ¶nÃ¼ÅŸtÃ¼rÃ¼cÃ¼. Text, image, video, rect, circle, group, gradient destegi. Dinamik alan Ã§Ã¶zÃ¼mleme (fieldBinding + {{placeholder}}). Ekrana sÄ±ÄŸdÄ±rma JS ile contain scaling.
-  2. `api/web-templates/generate-from-fabric.php` â€” POST endpoint. Template ID + product ID(s) alÄ±r, HTML oluÅŸturur, diske kaydeder (`storage/companies/{id}/html-templates/`), web_templates tablosuna insert eder (versiyon kaydÄ± dahil).
-  3. `api/web-templates/serve.php` â€” GET /{id}/serve endpoint. web_templates tablosundan HTML iÃ§eriÄŸi doÄŸrudan sunar (iframe/player iÃ§in, auth gerektirmez).
-  4. `api/index.php` â€” 2 yeni route: `POST /generate-from-fabric`, `GET /{id}/serve`
-  5. `PlaylistDetail.js` â€” "HTML Åablonlar" sekmesi eklendi. web_templates API'den published ÅŸablonlarÄ± Ã§eker, kart grid'de gÃ¶sterir, seÃ§ince playlist'e type='html' olarak ekler (serve endpoint URL ile).
-  6. `ProductList.js` â€” DataTable aksiyonlarÄ±na "HTML OluÅŸtur" (ti-code) eklendi. Modal ile ÅŸablon seÃ§ â†’ API'ye gÃ¶nder â†’ HTML oluÅŸtur akÄ±ÅŸÄ±.
-  7. 16 Ã§eviri dosyasÄ± gÃ¼ncellendi (8 dil Ã— 2 sayfa: products.json + signage.json)
+  1. `services/FabricToHtmlConverter.php` — Fabric.js JSON → bağımsız HTML dönüştürücü. Text, image, video, rect, circle, group, gradient destegi. Dinamik alan çözümleme (fieldBinding + {{placeholder}}). Ekrana sığdırma JS ile contain scaling.
+  2. `api/web-templates/generate-from-fabric.php` — POST endpoint. Template ID + product ID(s) alır, HTML oluşturur, diske kaydeder (`storage/companies/{id}/html-templates/`), web_templates tablosuna insert eder (versiyon kaydı dahil).
+  3. `api/web-templates/serve.php` — GET /{id}/serve endpoint. web_templates tablosundan HTML içeriği doğrudan sunar (iframe/player için, auth gerektirmez).
+  4. `api/index.php` — 2 yeni route: `POST /generate-from-fabric`, `GET /{id}/serve`
+  5. `PlaylistDetail.js` — "HTML Şablonlar" sekmesi eklendi. web_templates API'den published şablonları çeker, kart grid'de gösterir, seçince playlist'e type='html' olarak ekler (serve endpoint URL ile).
+  6. `ProductList.js` — DataTable aksiyonlarına "HTML Oluştur" (ti-code) eklendi. Modal ile şablon seç → API'ye gönder → HTML oluştur akışı.
+  7. 16 çeviri dosyası güncellendi (8 dil × 2 sayfa: products.json + signage.json)
 - Files: services/FabricToHtmlConverter.php (yeni), api/web-templates/generate-from-fabric.php (yeni), api/web-templates/serve.php (yeni), api/index.php, public/assets/js/pages/signage/PlaylistDetail.js, public/assets/js/pages/products/ProductList.js, locales/{tr,en,ru,az,de,nl,fr,ar}/pages/{products,signage}.json
 - Checks: PHP syntax OK (4 dosya), JS syntax OK (2 dosya), JSON valid (16 dosya)
 - Risk/Follow-up:
-  - Fabric.js canvas â†’ HTML dÃ¶nÃ¼ÅŸÃ¼mÃ¼ piksel-piksel aynÄ± olmayabilir (karmaÅŸÄ±k efektler, Ã¶zel fontlar)
-  - Faz 2: TV/tablet/mobil/Ã¶zel Ã¶lÃ§Ã¼ seÃ§enekleri, responsive CSS
-  - Faz 3: Widget sistemi (saat, tarih, kayan yazÄ±), VvvebJs editÃ¶r entegrasyonu, Ã¼rÃ¼n gÃ¼ncellenince otomatik HTML yenileme
-  - serve.php ÅŸu an auth kontrolÃ¼ yapmÄ±yor â€” cihazlar doÄŸrudan eriÅŸebilmeli ama ileride token bazlÄ± eriÅŸim dÃ¼ÅŸÃ¼nÃ¼lebilir
+  - Fabric.js canvas → HTML dönüşümü piksel-piksel aynı olmayabilir (karmaşık efektler, özel fontlar)
+  - Faz 2: TV/tablet/mobil/özel ölçü seçenekleri, responsive CSS
+  - Faz 3: Widget sistemi (saat, tarih, kayan yazı), VvvebJs editör entegrasyonu, ürün güncellenince otomatik HTML yenileme
+  - serve.php şu an auth kontrolü yapmıyor — cihazlar doğrudan erişebilmeli ama ileride token bazlı erişim düşünülebilir
 
 ---
 
 ## 2026-03-14 - Fix i18n folder name translations in media library
-- Request: Sub-folder names in Ortak KÃ¼tÃ¼phane always showed Turkish regardless of selected language
-- Root cause: `$FOLDER_NAME_KEY_MAP` in `_folder_i18n.php` was defined at file scope. When loaded via `require` inside a Router closure (`api/index.php`), the variable lived in the closure's local scope. `getFolderNameKey()` used `global $FOLDER_NAME_KEY_MAP` which searched PHP's global scope and found nothing â†’ returned null for ALL paths.
+- Request: Sub-folder names in Ortak Kütüphane always showed Turkish regardless of selected language
+- Root cause: `$FOLDER_NAME_KEY_MAP` in `_folder_i18n.php` was defined at file scope. When loaded via `require` inside a Router closure (`api/index.php`), the variable lived in the closure's local scope. `getFolderNameKey()` used `global $FOLDER_NAME_KEY_MAP` which searched PHP's global scope and found nothing → returned null for ALL paths.
 - Changes:
-  1. Moved `$FOLDER_NAME_KEY_MAP` inside `getFolderNameKey()` as a `static` variable â€” eliminates global scope dependency
+  1. Moved `$FOLDER_NAME_KEY_MAP` inside `getFolderNameKey()` as a `static` variable — eliminates global scope dependency
   2. Added `tc()` method to i18n.js for common-only translation lookup (skips page translations)
   3. Added object type guard in `getNestedValue()` to prevent partial key match shadowing
   4. Updated `getFolderDisplayName()` in MediaLibrary.js, MediaPicker.js, PlaylistDetail.js to use `tc()` instead of `__()`
@@ -272,7 +315,7 @@ Format:
 - Request: Fix restore test FK errors, orphan records, disk stat card format inconsistency
 - Changes:
   1. Cleaned 45 orphan render_queue records (referenced deleted templates) from production
-  2. Updated FK constraints: render_queueâ†’templates ON DELETE CASCADE, render_queueâ†’products ON DELETE SET NULL
+  2. Updated FK constraints: render_queue→templates ON DELETE CASCADE, render_queue→products ON DELETE SET NULL
   3. Improved restore script: --dry-run, --yes flags, archive verification, --single-transaction, error reporting, health retry
   4. Added pre-dump orphan cleanup to backup script
   5. Fixed disk stat card: was showing app storage size on initial load but partition percent on live refresh - now consistently shows partition used/total
@@ -289,8 +332,8 @@ Format:
   1. Memory stat card now shows actual server RAM (e.g. "1.04 GB / 15.6 GB") via /proc/meminfo
   2. PHP process memory moved to PHP Bilgileri card (phpMemoryUsage, phpMemoryPeak)
   3. Added getSystemMemory() helper (Linux /proc/meminfo + Windows wmic)
-  4. Dockerfile optimized: opcache 128â†’192, interned_strings 8â†’16, JIT tracing enabled
-  5. max_input_vars 1000â†’3000, realpath_cache_ttl 120â†’600
+  4. Dockerfile optimized: opcache 128→192, interned_strings 8→16, JIT tracing enabled
+  5. max_input_vars 1000→3000, realpath_cache_ttl 120→600
   6. Security: session.cookie_httponly/secure/strict_mode enabled
   7. Added phpMemoryUsage/phpMemoryPeak i18n keys (8 langs), SW cache v13
 - Files: deploy/Dockerfile, api/system/status.php, SystemStatus.js, locales/*/pages/admin.json, sw.js
@@ -302,7 +345,7 @@ Format:
 ## 2026-03-14 - System status stat cards with detailed values
 - Request: CPU/Memory/Disk stat cards only show bare numbers, need context (cores, totals)
 - Changes:
-  1. CPU card: "45% / 4 Ã‡ekirdek" (percentage + core count)
+  1. CPU card: "45% / 4 Çekirdek" (percentage + core count)
   2. Memory card: "12.5 MB / 256M" (used / limit)
   3. Disk card: "5.2 GB / 50 GB" (app used / partition total)
   4. Backend live endpoint updated with cores, memory details, disk partition info
@@ -448,16 +491,16 @@ Format:
 
 ## 2026-03-13 - Fix VLC stream transition freezing and title overlay
 
-- Request: Fix VLC donma/takÄ±lma ve playlist ismi gÃ¶rÃ¼nmesi sorunlarÄ±. variant.php discontinuity kaldÄ±r, FFmpeg keyframe normalizasyonu ekle, re-encode mekanizmasÄ± oluÅŸtur.
+- Request: Fix VLC donma/takılma ve playlist ismi görünmesi sorunları. variant.php discontinuity kaldır, FFmpeg keyframe normalizasyonu ekle, re-encode mekanizması oluştur.
 - Changes:
-  1. variant.php: `#EXT-X-DISCONTINUITY` tag'Ä± ve ilgili tÃ¼m mantÄ±k kaldÄ±rÄ±ldÄ± (videoCount, needsDiscontinuity). VLC decoder pipeline reset'i ve OSD title gÃ¶sterimini Ã§Ã¶zer.
-  2. HlsTranscoder.php: FFmpeg komutuna `-g`, `-keyint_min`, `-sc_threshold 0`, `-force_key_frames` parametreleri eklendi. TÃ¼m videolarÄ±n aynÄ± keyframe yapÄ±sÄ±na sahip olmasÄ±nÄ± garanti eder.
-  3. TranscodeQueueService.php: `reEncodeAll()` metodu eklendi - mevcut tÃ¼m transcode edilmiÅŸ videolarÄ± yeni ayarlarla re-encode kuyruÄŸuna ekler.
-  4. api/transcode/re-encode-all.php: Yeni endpoint (POST, admin only) - mevcut videolarÄ±n re-encode'unu tetikler.
+  1. variant.php: `#EXT-X-DISCONTINUITY` tag'ı ve ilgili tüm mantık kaldırıldı (videoCount, needsDiscontinuity). VLC decoder pipeline reset'i ve OSD title gösterimini çözer.
+  2. HlsTranscoder.php: FFmpeg komutuna `-g`, `-keyint_min`, `-sc_threshold 0`, `-force_key_frames` parametreleri eklendi. Tüm videoların aynı keyframe yapısına sahip olmasını garanti eder.
+  3. TranscodeQueueService.php: `reEncodeAll()` metodu eklendi - mevcut tüm transcode edilmiş videoları yeni ayarlarla re-encode kuyruğuna ekler.
+  4. api/transcode/re-encode-all.php: Yeni endpoint (POST, admin only) - mevcut videoların re-encode'unu tetikler.
   5. api/index.php: `/api/transcode/re-encode-all` route eklendi.
 - Files: api/stream/variant.php, services/HlsTranscoder.php, services/TranscodeQueueService.php, api/transcode/re-encode-all.php (yeni), api/index.php
-- Checks: php -l tÃ¼m dosyalar OK
-- Risk/Follow-up: Mevcut videolar eski keyframe ayarlarÄ±yla encode edilmiÅŸ. `POST /api/transcode/re-encode-all` Ã§aÄŸrÄ±larak yeniden encode yapÄ±lmalÄ±. Re-encode sÃ¼resi video sayÄ±sÄ±na baÄŸlÄ±. Discontinuity kaldÄ±rÄ±ldÄ±ÄŸÄ± iÃ§in eski encode'lu videolarda farklÄ± GOP yapÄ±sÄ±ndan dolayÄ± minor glitch olabilir - re-encode ile tamamen Ã§Ã¶zÃ¼lÃ¼r.
+- Checks: php -l tüm dosyalar OK
+- Risk/Follow-up: Mevcut videolar eski keyframe ayarlarıyla encode edilmiş. `POST /api/transcode/re-encode-all` çağrılarak yeniden encode yapılmalı. Re-encode süresi video sayısına bağlı. Discontinuity kaldırıldığı için eski encode'lu videolarda farklı GOP yapısından dolayı minor glitch olabilir - re-encode ile tamamen çözülür.
 
 ---
 
@@ -465,10 +508,10 @@ Format:
 - Request: Detect and fix ALL Toast messages not connected to i18n (hardcoded text, English fallbacks, catch blocks losing error details)
 - Changes:
   - **4 issue categories fixed:**
-    - ğŸ”´ Pure hardcoded strings â†’ replaced with i18n keys
-    - ğŸŸ¡ Hardcoded fallbacks (`this.__('key') || 'fallback'`) â†’ removed fallback
-    - ğŸŸ  Catch blocks losing error detail â†’ added `+ ': ' + (error.message || '')`
-    - ğŸ”µ Double fallbacks (`|| i18n || hardcoded`) â†’ removed hardcoded
+    - 🔴 Pure hardcoded strings → replaced with i18n keys
+    - 🟡 Hardcoded fallbacks (`this.__('key') || 'fallback'`) → removed fallback
+    - 🟠 Catch blocks losing error detail → added `+ ': ' + (error.message || '')`
+    - 🔵 Double fallbacks (`|| i18n || hardcoded`) → removed hardcoded
   - **BluetoothWizard.js**: 26 fixes (12 new bluetooth.wizard.* i18n keys)
   - **TenantBackupPage.js**: 15 fixes (8 new backup.json keys across errors.* and import_modal.*)
   - **NetworkScanner.js**: 1 fix (new scan.gatewayNotReady key)
@@ -496,7 +539,7 @@ Format:
   - public/assets/js/pages/notifications/NotificationSettings.js
   - locales/{tr,en,ru,az,de,nl,fr,ar}/pages/devices.json (8 files)
   - locales/{tr,en,ru,az,de,nl,fr,ar}/pages/backup.json (8 files)
-- Checks: node --check on all 15 JS files passed âœ“, JSON.parse on all 16 translation files passed âœ“
+- Checks: node --check on all 15 JS files passed ✓, JSON.parse on all 16 translation files passed ✓
 - Risk/Follow-up: None. All i18n keys exist in all 8 languages. Comprehensive grep confirmed zero remaining hardcoded Toast strings.
 
 ---
@@ -650,8 +693,8 @@ Format:
 - Risk/Follow-up: Device-send classification currently relies on queue links (`#/admin/queue*` or `#/queue*`); if future queue notifications use different links, filter/cleanup condition should be updated accordingly.
 
 ## 2026-03-09 - Turkish diacritics fix for device notification labels
-- Request: Correct Turkish wording with proper diacritics (`Cihaz GÃ¶nderim Bildirimleri`).
-- Changes: Updated new Turkish notification keys to proper Turkish characters (`GÃ¶nderim`, `sÃ¼resi`, `gÃ¼n`, `oluÅŸan`, `gÃ¶rebilir`).
+- Request: Correct Turkish wording with proper diacritics (`Cihaz Gönderim Bildirimleri`).
+- Changes: Updated new Turkish notification keys to proper Turkish characters (`Gönderim`, `süresi`, `gün`, `oluşan`, `görebilir`).
 - Files: locales/tr/pages/notifications.json
 - Checks: node JSON parse check for locales/tr/pages/notifications.json
 - Risk/Follow-up: Keep locale writes diacritic-safe on future automated edits.
@@ -680,25 +723,25 @@ Format:
 - Risk/Follow-up: Historical SQLite references may still remain in long-form docs (`.claude/CLAUDE.md` etc.); runtime path is now PostgreSQL-only.
 
 ## 2026-03-09 - frame picker colored designs regression fix
-- Request: Frame modaldaki bazÄ± Ã¶zel tasarÄ±m frame'ler seÃ§ildiÄŸinde kendi deseni yerine dÃ¼z kenarlÄ±k gÃ¶rÃ¼nmesi regresyonunu dÃ¼zelt.
-- Changes: FrameService.applyFrame iÃ§inde defaultColor olmayan frame'lere zorunlu `#000000` tint verilmesini kaldÄ±rdÄ±m; defaultColor yoksa tint uygulanmÄ±yor ve frame'in Ã¶zgÃ¼n tasarÄ±mÄ± korunuyor.
+- Request: Frame modaldaki bazı özel tasarım frame'ler seçildiğinde kendi deseni yerine düz kenarlık görünmesi regresyonunu düzelt.
+- Changes: FrameService.applyFrame içinde defaultColor olmayan frame'lere zorunlu `#000000` tint verilmesini kaldırdım; defaultColor yoksa tint uygulanmıyor ve frame'in özgün tasarımı korunuyor.
 - Files: public/assets/js/editor/services/FrameService.js
 - Checks: node --check public/assets/js/editor/services/FrameService.js
-- Risk/Follow-up: Property panel frame color alanÄ± defaultta siyah gÃ¶steriyor olabilir; yalnÄ±zca kullanÄ±cÄ± renk deÄŸiÅŸtirirse tint uygulanÄ±r.
+- Risk/Follow-up: Property panel frame color alanı defaultta siyah gösteriyor olabilir; yalnızca kullanıcı renk değiştirirse tint uygulanır.
 ## 2026-03-09 - frame tint capability-aware inspector behavior
-- Request: Frame modaldan seï¿½ilen bazï¿½ ï¿½zel tasarï¿½mlarda desenin dï¿½z kenarlï¿½ï¿½a dï¿½nmesi regresyonunu koruyarak; denetï¿½ide renklenebilen frame ile renklenmeyen frame davranï¿½ï¿½ï¿½nï¿½ ayï¿½rmak (renk desteï¿½i olmayan frame iï¿½in sahte siyah renk gï¿½stermemek).
+- Request: Frame modaldan se�ilen baz� �zel tasar�mlarda desenin d�z kenarl��a d�nmesi regresyonunu koruyarak; denet�ide renklenebilen frame ile renklenmeyen frame davran���n� ay�rmak (renk deste�i olmayan frame i�in sahte siyah renk g�stermemek).
 - Changes: Kept FrameService default tint fallback empty when frame has no `defaultColor`; updated PropertyPanel frame section to resolve frame definition via `getFrameById`, detect tint support (`defaultColor` / explicit support / stored frameColor), show frame color picker only when tint is supported, and keep opacity sync to frame overlay in opacity inspector path.
 - Files: public/assets/js/editor/services/FrameService.js, public/assets/js/editor/panels/PropertyPanel.js
 - Checks: node --check public/assets/js/editor/panels/PropertyPanel.js; node --check public/assets/js/editor/services/FrameService.js
 - Risk/Follow-up: Existing frame data currently infers tint support mostly from `defaultColor`; if future non-default tintable frames are added, frame metadata should include explicit `supportsTint` for deterministic UI behavior.
 ## 2026-03-09 - rollback frame color conditional UI
-- Request: Frame color alanï¿½ hiï¿½bir frame'de gï¿½rï¿½nmediï¿½i iï¿½in son koï¿½ullu gï¿½sterim deï¿½iï¿½ikliï¿½ini geri al; sahte alan kalsa da her frame'de manuel renk deï¿½iï¿½imi mï¿½mkï¿½n olsun.
+- Request: Frame color alan� hi�bir frame'de g�r�nmedi�i i�in son ko�ullu g�sterim de�i�ikli�ini geri al; sahte alan kalsa da her frame'de manuel renk de�i�imi m�mk�n olsun.
 - Changes: Restored PropertyPanel frame inspector to always render frame color input (removed tint-capability conditional UI/helpers/import logic).
 - Files: public/assets/js/editor/panels/PropertyPanel.js
 - Checks: node --check public/assets/js/editor/panels/PropertyPanel.js
-- Risk/Follow-up: Non-tint frame'lerde color input gï¿½rï¿½necek; kullanï¿½cï¿½ renk seï¿½erse tint uygulanabilir (ï¿½nceki davranï¿½ï¿½a dï¿½nï¿½ï¿½).
+- Risk/Follow-up: Non-tint frame'lerde color input g�r�necek; kullan�c� renk se�erse tint uygulanabilir (�nceki davran��a d�n��).
 ## 2026-03-09 - line picker presets dedupe and quality pass
-- Request: ï¿½izgi ekleme modalï¿½ndaki tekrar eden/anlamsï¿½z gï¿½rï¿½nen ï¿½izgi tï¿½rlerini kaldï¿½r; her preset gerï¿½ekten farklï¿½ ve ï¿½ï¿½k gï¿½rï¿½nsï¿½n.
+- Request: �izgi ekleme modal�ndaki tekrar eden/anlams�z g�r�nen �izgi t�rlerini kald�r; her preset ger�ekten farkl� ve ��k g�r�ns�n.
 - Changes: Replaced algorithmic 60-item generated line preset set with a curated 24-item preset library (`basic/dashed/dotted/decorative`) where each item has unique visual signature (renderType + dash/cap/width/color). This removes near-duplicate variants and keeps modal output cleaner and more intentional for tablet/signage/ESL/digital layouts.
 - Files: public/assets/js/editor/data/LineStyleLibraryData.js
 - Checks: node --check public/assets/js/editor/data/LineStyleLibraryData.js; module sanity check for preset uniqueness (24 total, duplicate names=0, duplicate visual signatures=0).
@@ -720,7 +763,7 @@ Format:
 - Changes: Reworked decorative preset `renderType` assignments to unique silhouettes and added corresponding render implementations in both picker preview and editor insertion path. Added new decorative render types: `pulseWave, scallop, chevron, notch, arc, chain, ribbon, stitch, skyline, ticket, hook, twinline` (plus existing simple/wave/zigzag/step/bracket).
 - Files: public/assets/js/editor/data/LineStyleLibraryData.js, public/assets/js/editor/components/LinePicker.js, public/assets/js/editor/TemplateEditorV7.js
 - Checks: node --check public/assets/js/editor/data/LineStyleLibraryData.js; node --check public/assets/js/editor/components/LinePicker.js; node --check public/assets/js/editor/TemplateEditorV7.js; decorative uniqueness script (17 decorative presets, duplicate non-color style signatures=0).
-- Risk/Follow-up: Some new decorative paths are visually expressive; if you want stricter corporate/minimal tone, we can trim to a ï¿½minimal decorativeï¿½ subset toggle.
+- Risk/Follow-up: Some new decorative paths are visually expressive; if you want stricter corporate/minimal tone, we can trim to a �minimal decorative� subset toggle.
 ## 2026-03-09 - input icon hover cursor disappearance fix
 - Request: Investigate project-wide cursor/caret disappearance around icon-enhanced input/value fields and fix the causing rule.
 - Changes: Added a global safety rule so decorative icons inside `.input-icon-wrapper` never capture pointer events; patched template editor search/icon blocks (`product-search`, `field-search`, `shape-picker`, `frame-picker`) with `pointer-events: none` on icon overlays; added missing line-picker search icon layout styles with non-interactive icon overlay.
@@ -789,8 +832,8 @@ Format:
 - Risk/Follow-up: Existing saved plans with unusual legacy exchange inputs are normalized on next edit/save cycle.
 
 ## 2026-03-09 - bulk product descriptions (1064 SKU)
-- Request: Generate unique Turkish SEO-like product descriptions for all 1064 products (Baharat, Bakliyat, Ã‡erez, Deniz ÃœrÃ¼nleri, DondurulmuÅŸ, Donuk, FÄ±rÄ±n, Ä°Ã§ecek, KahvaltÄ±lÄ±k, Kasap, Manav, TatlÄ±, ÅarkÃ¼teri).
-- Changes: Created 5 PHP description files (desc_part1a, 1b, 2, 3, 4) with SKU-keyed arrays. Ran bulk updater script to write descriptions to all 2128 product rows (1064 unique SKUs Ã— ~2 companies). Zero errors, zero not-found.
+- Request: Generate unique Turkish SEO-like product descriptions for all 1064 products (Baharat, Bakliyat, Çerez, Deniz Ürünleri, Dondurulmuş, Donuk, Fırın, İçecek, Kahvaltılık, Kasap, Manav, Tatlı, Şarküteri).
+- Changes: Created 5 PHP description files (desc_part1a, 1b, 2, 3, 4) with SKU-keyed arrays. Ran bulk updater script to write descriptions to all 2128 product rows (1064 unique SKUs × ~2 companies). Zero errors, zero not-found.
 - Files: C:/xampp/tmp/desc_part1a.php, C:/xampp/tmp/desc_part1b.php, C:/xampp/tmp/desc_part2.php, C:/xampp/tmp/desc_part3.php, C:/xampp/tmp/desc_part4.php, C:/xampp/tmp/update_all_descriptions.php
 - Checks: PHP syntax check on all 5 part files; verified 2128 updated rows, 0 errors, 0 not-found via verify script.
 - Risk/Follow-up: Temp files in C:/xampp/tmp/ - can be deleted after confirming descriptions are correct in production.
@@ -854,7 +897,7 @@ Format:
 - Risk/Follow-up: Existing already-seeded product rows are unchanged until products are seeded again (or a one-time normalization migration is run). When category is promoted from child to parent, deeper third-level source detail may be compressed into available 2-level model.
 ## 2026-03-09 - one-time live product category/subcategory normalization for existing data
 - Request: Apply solution for existing subcategory preferences on live data.
-- Changes: Added `scripts/normalize_product_category_hierarchy.php` (dry-run/apply modes) to normalize existing product rows to parent-category + child-subcategory model and optionally auto-create missing child categories to preserve current user preferences. Ran apply for active company `Omnex Default` (`d1c946f3-4058-4b72-8e24-6c4b3cb9e9cb`) in two passes. Added group->parent alias mapping for non-1:1 labels (`Fï¿½rï¿½n`->`Fï¿½rï¿½n ï¿½rï¿½nleri`, `ï¿½erez`->`Kuruyemiï¿½`, etc.). Also updated `database/seeders/ProductSeeder.php` with same alias logic to prevent reoccurrence in setup wizard seed.
+- Changes: Added `scripts/normalize_product_category_hierarchy.php` (dry-run/apply modes) to normalize existing product rows to parent-category + child-subcategory model and optionally auto-create missing child categories to preserve current user preferences. Ran apply for active company `Omnex Default` (`d1c946f3-4058-4b72-8e24-6c4b3cb9e9cb`) in two passes. Added group->parent alias mapping for non-1:1 labels (`F�r�n`->`F�r�n �r�nleri`, `�erez`->`Kuruyemi�`, etc.). Also updated `database/seeders/ProductSeeder.php` with same alias logic to prevent reoccurrence in setup wizard seed.
 - Files: scripts/normalize_product_category_hierarchy.php, database/seeders/ProductSeeder.php
 - Checks: php -l scripts/normalize_product_category_hierarchy.php; php -l database/seeders/ProductSeeder.php; php scripts/normalize_product_category_hierarchy.php --apply; php scripts/normalize_product_category_hierarchy.php --company=d1c946f3-4058-4b72-8e24-6c4b3cb9e9cb --apply; post-apply DB audit query (cat_not_parent=0, sub_not_child=0).
 - Risk/Follow-up: Normalization intentionally remapped some rows based on group/category aliases; if a specific SKU needs custom exception, add a small SKU-level override map in the script before future runs.
@@ -865,13 +908,13 @@ Format:
 - Checks: node --check public/assets/js/components/DataTable.js; node --check public/assets/js/pages/products/ProductList.js; php -l api/products/groups.php
 - Risk/Follow-up: Even with correct sorting, first page may still show one dominant group/category when distribution is skewed (expected behavior with paginated sorting). If desired, add a distinct-value summary strip above table.
 ## 2026-03-09 - products API interleaved sorting for group/category headers only
-- Request: Header sorting seemed to show only Baharat/ï¿½arkï¿½teri on first page; user expected other values to appear across clicks for group/category.
+- Request: Header sorting seemed to show only Baharat/�ark�teri on first page; user expected other values to appear across clicks for group/category.
 - Changes: Updated products API ORDER BY logic: only when `sort_by` is `group` or `category`, apply interleaved ordering via `ROW_NUMBER() OVER (PARTITION BY ...)` so first page does not collapse into a single dominant value block. All other headers keep standard ASC/DESC ordering.
 - Files: api/products/index.php
 - Checks: php -l api/products/index.php; direct SQL spot check confirmed first page includes 15 distinct groups in group-sort mode.
 - Risk/Follow-up: Interleaved mode is intentionally different from strict block ordering for these two columns; if needed, can be toggled by query flag later.
 ## 2026-03-09 - revert interleaved group/category sorting to strict block order
-- Request: User wants same values to appear consecutively (e.g., all ï¿½arkï¿½teri rows together), not interleaved every few rows.
+- Request: User wants same values to appear consecutively (e.g., all �ark�teri rows together), not interleaved every few rows.
 - Changes: Removed temporary interleaved ORDER BY logic for `group/category` in products API. Restored strict sort order for all headers: `sortExpr sortDir NULLS LAST, LOWER(name), id`.
 - Files: api/products/index.php
 - Checks: php -l api/products/index.php
@@ -986,7 +1029,7 @@ Format:
 - Changes: Ran safe comparative benchmark with indexes ON vs simulated OFF (`enable_indexscan=off`, `enable_bitmapscan=off`) and generated (1) machine-readable output `.codex/plan_compare_results.json`, (2) human report `C:/Users/test/.codex/memories/DB_PLAN_BEFORE_AFTER_2026-03-10.md`.
 - Files: .codex/CHANGE_MEMORY.md, .codex/plan_compare_results.json, C:/Users/test/.codex/memories/DB_PLAN_BEFORE_AFTER_2026-03-10.md
 - Checks: Runtime DB benchmark execution via `php .codex/tmp_plan_compare.php` (temporary script removed after run).
-- Risk/Follow-up: ï¿½Beforeï¿½ side is simulated planner behavior without index scans, not physical index drop; for final production sign-off, repeat on production-like dataset during low-traffic window.
+- Risk/Follow-up: �Before� side is simulated planner behavior without index scans, not physical index drop; for final production sign-off, repeat on production-like dataset during low-traffic window.
 - Backup/Restore Safety: No application code modified; no backup required.
 ## 2026-03-10 - local vs prod-like DB plan comparison completed
 - Request: Continue with production-like comparison and provide local vs prod-like difference table.
@@ -1075,7 +1118,7 @@ Format:
   - `docker compose -f deploy/docker-compose.local.yml ps` -> app/postgres healthy
   - Startup log confirms `PostgreSQL migrate+seed OK` and `/api/health` returns 200
   - DB checks: `core.companies=1`, `core.users=2`, `core.migrations` contains `seed:php:all`, `audit.tenant_backups` exists
-  - End-to-end tenant-backup validation: login -> export -> download -> `peek-manifest` -> delete; `peek-manifest` result `success=true`, message `Arï¿½iv bilgileri okundu`
+  - End-to-end tenant-backup validation: login -> export -> download -> `peek-manifest` -> delete; `peek-manifest` result `success=true`, message `Ar�iv bilgileri okundu`
 - Risk/Follow-up:
   - Entrypoint currently runs migrate+seed at every container start (idempotent; seed runs once via marker). Startup time impact is acceptable for now; can be gated via dedicated env flag in production if needed.
 - Backup/Restore Safety:
@@ -1317,8 +1360,8 @@ Format:
   - Existing historical mojibake characters in locale files were preserved; only target keys were added.
 - Backup/Restore Safety:
   - Backups created at `.codex/tmp_backups/20260311-template-preview-setupwizard/` before edits.
-## 2026-03-11 - HAL menu visibility for Kï¿½nye Daï¿½ï¿½tï¿½m by role/integration
-- Request: Keep `Kï¿½nye Daï¿½ï¿½tï¿½m` menu always visible for `SuperAdmin`; for company `Admin`/users show it only when HAL integration is active/configured, otherwise hide.
+## 2026-03-11 - HAL menu visibility for K�nye Da��t�m by role/integration
+- Request: Keep `K�nye Da��t�m` menu always visible for `SuperAdmin`; for company `Admin`/users show it only when HAL integration is active/configured, otherwise hide.
 - Changes:
   - `public/assets/js/layouts/LayoutManager.js`
     - Added HAL visibility state (`hasActiveHalIntegration`).
@@ -1397,8 +1440,8 @@ Format:
 - Request: Correct Turkish hover texts to use proper Turkish characters (not ASCII-transliterated) for quick layout switch tooltips.
 - Changes:
   - `locales/tr/common.json`
-    - `layout.quickSwitchToTopNav`: `ï¿½st Menï¿½ Dï¿½zenine Geï¿½`
-    - `layout.quickSwitchToSidebar`: `Kenar Menï¿½ Dï¿½zenine Geï¿½`
+    - `layout.quickSwitchToTopNav`: `�st Men� D�zenine Ge�`
+    - `layout.quickSwitchToSidebar`: `Kenar Men� D�zenine Ge�`
 - Files:
   - locales/tr/common.json
   - .codex/CHANGE_MEMORY.md
@@ -1683,7 +1726,7 @@ Format:
   - Targeted insertion only under existing `layout` object in each locale file.
 ## 2026-03-11 - integrations mqtt info card style aligned + locale backup rule noted
 - Request:
-  - On `/settings/integrations`, make "MQTT Hakkï¿½nda" card text styling consistent with other cards.
+  - On `/settings/integrations`, make "MQTT Hakk�nda" card text styling consistent with other cards.
   - Add a persistent note to be extra careful with locale files and never work without backups.
 - Changes:
   - `public/assets/js/pages/settings/IntegrationSettings.js`
@@ -1769,13 +1812,13 @@ Format:
       - from: `layout.header.selectCompany`
       - to: `layout.selectCompany` fallback to `layout.header.selectCompany`.
   - Added `layout.selectCompany` to 8 locale files:
-    - `locales/tr/common.json` = `Firma Seï¿½`
+    - `locales/tr/common.json` = `Firma Se�`
     - `locales/en/common.json` = `Select Company`
-    - `locales/de/common.json` = `Unternehmen auswï¿½hlen`
-    - `locales/fr/common.json` = `Sï¿½lectionner une entreprise`
+    - `locales/de/common.json` = `Unternehmen ausw�hlen`
+    - `locales/fr/common.json` = `S�lectionner une entreprise`
     - `locales/nl/common.json` = `Selecteer bedrijf`
     - `locales/ru/common.json` = `???????? ????????`
-    - `locales/az/common.json` = `ï¿½irk?ti seï¿½in`
+    - `locales/az/common.json` = `�irk?ti se�in`
     - `locales/ar/common.json` = `???? ??????`
 - Backup:
   - `.codex/tmp_backups/locales_common_select_company_20260311_024803`
@@ -1987,7 +2030,7 @@ Format:
   - Pre-edit backup created:
     - `public/assets/js/pages/settings/IntegrationSettings.js.bak-20260311-031746`
 ## 2026-03-11 - import API simulation + auto-import hardening + company import dirs
-- Request: Verify `/settings/integrations` import API flow with provided API key and `MANAV ï¿½Rï¿½NLERï¿½.xlsx`, ensure dynamic API key appears in docs, confirm company-specific API key behavior, validate auto-import interval behavior, improve changed-file handling flow, and guarantee new companies have import directories.
+- Request: Verify `/settings/integrations` import API flow with provided API key and `MANAV �R�NLER�.xlsx`, ensure dynamic API key appears in docs, confirm company-specific API key behavior, validate auto-import interval behavior, improve changed-file handling flow, and guarantee new companies have import directories.
 - Changes:
   - `public/assets/js/pages/settings/IntegrationSettings.js`
     - Added dynamic API key injection for API/Import documentation code blocks via `data-import-api-key-template` + `refreshImportApiDocumentation()`.
@@ -2104,7 +2147,7 @@ Format:
 - Risk/Follow-up:
   - Visual confirmation should be done on /settings/integrations import tab for both history and files footer labels.
 ## 2026-03-11 - line picker presets expanded from Divider / Line Studio reference
-- Request: Add missing line tool options in template editor from Bï¿½lï¿½m 4 (Divider / Line Studio), with backup-first and encoding-safe handling.
+- Request: Add missing line tool options in template editor from B�l�m 4 (Divider / Line Studio), with backup-first and encoding-safe handling.
 - Changes:
   - public/assets/js/editor/data/LineStyleLibraryData.js
     - Added 43 new presets (line_51..line_93) so all names from reference list in kutuphane/cizgi-tesitleri are available in editor line picker.
@@ -2177,7 +2220,7 @@ Format:
 - Risk/Follow-up:
   - Presets were normalized by renderType uniqueness rather than deleting names; if strict item-count reduction is required, a separate removal pass can hide/remove selected thematic aliases.
 ## 2026-03-11 - Production server media scan 500 fix + AuthMiddleware RLS + omnex.local audit
-- Request: Fix media scan returning 500 on production server (hub.omnexcore.com); verify omnex.local â†’ omnexcore.com migration complete.
+- Request: Fix media scan returning 500 on production server (hub.omnexcore.com); verify omnex.local → omnexcore.com migration complete.
 - Changes:
   - `api/media/scan.php`
     - Root cause: Turkish filenames on Linux filesystem stored in ISO-8859-9 encoding cause PostgreSQL SQLSTATE[22021] ("invalid byte sequence for UTF8") on INSERT. PHP warning from this triggers global `set_error_handler` in `api/index.php` which calls `exit;`, returning 500.
@@ -2191,32 +2234,32 @@ Format:
 - Checks:
   - Server: media scan POST returned success (imported 1163 files from public/samples)
   - Local: user confirmed scan also fixed locally
-  - `omnex.local` grep: 0 matches in local codebase, 0 matches on server â€” migration complete
+  - `omnex.local` grep: 0 matches in local codebase, 0 matches on server — migration complete
   - `omnexcore.com` grep: all references correct (config.php, seeds, docker-compose, deploy scripts)
 - Risk/Follow-up:
-  - Files with non-UTF-8 names are silently converted via `mb_convert_encoding` â€” if conversion fails, original bytes are used and may cause display issues.
+  - Files with non-UTF-8 names are silently converted via `mb_convert_encoding` — if conversion fails, original bytes are used and may cause display issues.
   - RLS context is set per-request; connection pooling (if added later) must reset context per request.
-## 2026-03-11 - Fabric.js CDN â†’ lokal vendor (Tracking Prevention fix)
-- Request: Edge Tracking Prevention cdn.jsdelivr.net fabric storage eriÅŸimini engelliyor. Lokal serve'e geÃ§iÅŸ.
+## 2026-03-11 - Fabric.js CDN → lokal vendor (Tracking Prevention fix)
+- Request: Edge Tracking Prevention cdn.jsdelivr.net fabric storage erişimini engelliyor. Lokal serve'e geçiş.
 - Changes:
-  - `public/assets/vendor/fabric/fabric.min.js` â€” CDN'den 7.1.0 indirildi (eski 7.0.0 Ã¼zerine)
-  - `public/index.html` â€” CDN script â†’ `assets/vendor/fabric/fabric.min.js`
-  - `public/assets/js/editor/core/FabricExports.js` â€” waitForFabric() fallback URL lokale Ã§evrildi
+  - `public/assets/vendor/fabric/fabric.min.js` — CDN'den 7.1.0 indirildi (eski 7.0.0 üzerine)
+  - `public/index.html` — CDN script → `assets/vendor/fabric/fabric.min.js`
+  - `public/assets/js/editor/core/FabricExports.js` — waitForFabric() fallback URL lokale çevrildi
 - Checks:
   - `node --check FabricExports.js` pass; CDN fabric grep: 0 match; lokal versiyon: 7.1.0
 - Risk/Follow-up:
-  - Fabric gÃ¼ncelleme: `curl -sL "https://cdn.jsdelivr.net/npm/fabric@X.Y.Z/dist/index.min.js" -o public/assets/vendor/fabric/fabric.min.js`
+  - Fabric güncelleme: `curl -sL "https://cdn.jsdelivr.net/npm/fabric@X.Y.Z/dist/index.min.js" -o public/assets/vendor/fabric/fabric.min.js`
 
-## 2026-03-12 - MQTT Broker URL override fix (IP â†’ domain dÃ¶nÃ¼ÅŸÃ¼m sorunu)
-- Request: Admin panelde MQTT Broker URL alanÄ±na IP adresi girildiÄŸinde sayfa yenilenince otomatik domain'e dÃ¶nÃ¼ÅŸÃ¼yordu.
-- Root cause: `_populateMqttForm()` satÄ±r 3464-3470, DB'deki broker_url mevcut hostname'den farklÄ±ysa otomatik `window.location.hostname` ile deÄŸiÅŸtiriyordu. Cihaz DNS Ã§Ã¶zemiyorsa IP ile baÄŸlanmasÄ± gerektiÄŸinden bu yanlÄ±ÅŸ.
+## 2026-03-12 - MQTT Broker URL override fix (IP → domain dönüşüm sorunu)
+- Request: Admin panelde MQTT Broker URL alanına IP adresi girildiğinde sayfa yenilenince otomatik domain'e dönüşüyordu.
+- Root cause: `_populateMqttForm()` satır 3464-3470, DB'deki broker_url mevcut hostname'den farklıysa otomatik `window.location.hostname` ile değiştiriyordu. Cihaz DNS çözemiyorsa IP ile bağlanması gerektiğinden bu yanlış.
 - Changes:
-  - `public/assets/js/pages/settings/IntegrationSettings.js` â€” Broker URL override mantÄ±ÄŸÄ± deÄŸiÅŸtirildi: ArtÄ±k sadece `localhost`/`127.0.0.1` gibi kesinlikle yanlÄ±ÅŸ deÄŸerler otomatik dÃ¼zeltilir. IP adresi veya farklÄ± domain girilmiÅŸse dokunulmaz.
+  - `public/assets/js/pages/settings/IntegrationSettings.js` — Broker URL override mantığı değiştirildi: Artık sadece `localhost`/`127.0.0.1` gibi kesinlikle yanlış değerler otomatik düzeltilir. IP adresi veya farklı domain girilmişse dokunulmaz.
 - Checks:
   - JS module syntax: OK (node vm.createScript)
 - Risk/Follow-up:
   - Sunucuda rebuild gerekli: `docker compose build app && docker compose up -d app && docker compose restart nginx`
-  - Cihaz Bluetooth ile tekrar yapÄ±landÄ±rÄ±lmalÄ± (sunucu Ã¼zerinden, doÄŸru IP/URL ile)
+  - Cihaz Bluetooth ile tekrar yapılandırılmalı (sunucu üzerinden, doğru IP/URL ile)
 ## 2026-03-12 - Production invalid origin 403 fix for gateway/device machine-to-machine calls
 - Request: Docker production ortaminda local gateway heartbeat/devices register istekleri `403 Invalid origin` aliyordu; HTTP/MQTT cihaz aktarimlarinda da veri gitmeme sorunu incelendi.
 - Root cause:
@@ -2287,7 +2330,7 @@ Format:
   - Sunucuya kopyalanan `api/gateway` dosyalari local patch; GitHub/CI deploy ile ezilmemesi icin repository'ye commit edilmesi gerekir.
   - Local gateway tarafinda gecici DNS kesintisi (`Could not resolve host`) istemci ag kaynakliydi; server fix'inden bagimsiz.
 ## 2026-03-12 - Gateway send_label file-name sanitize fix (MAC client_id with ':')
-- Request: Tï¿½m gateway endpointleri 200 oldugu halde cihazlara gonderim olmuyor; log inceleme.
+- Request: T�m gateway endpointleri 200 oldugu halde cihazlara gonderim olmuyor; log inceleme.
 - Findings:
   - Local gateway log: komut aliniyor ve `send_label` calisiyor, ancak `Gorsel zorunlu ancak hazir degil` ile fail ediyor.
   - Komut hedef cihaz client_id degeri `20:51:F5:4F:50:59` (':' iceriyor).
@@ -2297,7 +2340,7 @@ Format:
     - `client_id` icin dosya-guvenli `safeClientId` olusturuldu (alfa-numerik + `_.-` disindakiler `_`).
     - Temp dosyalar, remote dosya adlari ve task path olusumlari `safeClientId` ile guncellendi.
     - `handleRefreshDevice()` task path olusumu da ayni sekilde sanitize edildi.
-    - Gorsel dosya okuma/JPEG olusturma asamasina ek uyarï¿½ loglari eklendi.
+    - Gorsel dosya okuma/JPEG olusturma asamasina ek uyar� loglari eklendi.
   - `local-gateway-manager/dist/win-unpacked/resources/gateway/gateway.php`
     - Hemen test icin ayni dosya kopyalandi.
 - Checks:
@@ -2315,7 +2358,7 @@ Format:
   - `api/gateway/devices-register.php`
     - Company-scoped, normalized (`device_id`/`mqtt_client_id`) + IP bazli deterministik existing-device eslestirme eklendi.
     - `allow_create` bayragi yoksa yeni cihaz olusturma varsayilani `false` yapildi (bulunamayanlar `skipped`).
-    - Link update'lerde ortak `now` timestamp kullanildi, `skipped` sayaï¿½i response'a eklendi.
+    - Link update'lerde ortak `now` timestamp kullanildi, `skipped` saya�i response'a eklendi.
   - `api/gateway/devices.php`
     - `syncDevice()` eslestirmesi normalize serial + `mqtt_client_id` + company + IP fallback ile guclendirildi.
     - Existing kayitta serial normalizasyonu ayniysa `device_id` formati korunuyor.
@@ -2643,7 +2686,7 @@ Format:
   - Static risk taramasi (`api/**/(update|delete).php`): transaction eksigi olan yuksek riskli endpoint listesi cikartildi.
 - Risks/Follow-up:
   - Ayni tip partial-success/500 riski, transaction ve non-critical side-effect sarmasi olmayan bazi update/delete endpointlerinde devam ediyor (device-groups, devices, licenses, products, templates, users, web-templates vb.).
-  - Service worker cache'i olan istemcilerde eski bundle gecici olarak kalabilir; hard reload ï¿½nerilir.
+  - Service worker cache'i olan istemcilerde eski bundle gecici olarak kalabilir; hard reload �nerilir.
 - Backup/Restore Safety:
   - Temp backup created: `.codex/tmp_backups/20260312_230723-logger-warning-and-company-update-delete`
   - Restore not required.
@@ -2710,7 +2753,7 @@ Format:
 - Risks/Follow-up:
   - Eski videolarin variantlari anlik olusmaz; worker kuyrugu isledikce olusur.
   - Auto-enqueue stream/master tarafinda best-effort calisir; ilk isteklerde passthrough devam edebilir.
-  - Bazï¿½ uzak script calistirmalarinda BOM/CRLF kaynakli shell sikintisi goruldu; deploy sonucu dogrulandi, ancak script pipeline icin dikkat edilmeli.
+  - Baz� uzak script calistirmalarinda BOM/CRLF kaynakli shell sikintisi goruldu; deploy sonucu dogrulandi, ancak script pipeline icin dikkat edilmeli.
 - Backup/Restore Safety:
   - Local temp backup: `.codex/tmp_backups/20260312_232217-stream-transcode-activation`
   - Remote backup: `.codex_remote_backups/20260312_202803-stream-transcode`
@@ -2810,7 +2853,7 @@ Format:
   - `public/assets/js/pages/devices/DeviceList.js`
     - Client-side IP conflict pre-check yalniz ESL ailesi icin calisacak hale getirildi.
   - `api/stream/master.php`
-    - Tekrarlï¿½ M3U passthrough blok kaldirildi.
+    - Tekrarl� M3U passthrough blok kaldirildi.
     - Variant hazir degilken `503 Stream is preparing` JSON + `Retry-After: 5` donusu eklendi.
 - Files:
   - api/devices/show.php
@@ -3092,7 +3135,7 @@ Format:
   - Local temp backuplar bu turda degistirilmedi; onceki temp backuplar korunuyor.
 ## 2026-03-13 - apk welcome/splash theme restore + OTA v27 publish
 - Request context:
-  - Kullanici APK ilk karÅŸÄ±lama ekranÄ± tasariminin eskiye dondugunu, arka planin player eslestirme sayfasi ile ayni stile alinmasini istedi.
+  - Kullanici APK ilk karşılama ekranı tasariminin eskiye dondugunu, arka planin player eslestirme sayfasi ile ayni stile alinmasini istedi.
 - Changes:
   - Android source (local, gitignore kapsaminda):
     - `android-player/omnex-player-app/app/src/main/res/drawable/wizard_mobile_background.xml`
@@ -3102,7 +3145,7 @@ Format:
     - `android-player/omnex-player-app/app/src/main/res/drawable/wizard_mobile_card_bg.xml`
       - Mobil kart da ayni tema ile hizalandi.
     - `android-player/omnex-player-app/app/src/main/res/layout/activity_wizard_tv.xml`
-      - Root background dÃ¼z renk yerine `@drawable/wizard_mobile_background` yapildi.
+      - Root background düz renk yerine `@drawable/wizard_mobile_background` yapildi.
     - `android-player/omnex-player-app/app/build.gradle`
       - `versionCode 27`, `versionName 2.8.3` (local source).
   - Distribution artifacts:
@@ -3382,7 +3425,7 @@ Format:
     - M3U satiri `#EXTINF:-1` ve content-type `audio/x-mpegurl` olarak duzenlendi.
   - `public/assets/js/pages/devices/DeviceList.js`
     - Stream copy aksiyonu `playlist.m3u` linkini direkt kopyalayacak sekilde guncellendi (redirect parametresi kaldirildi).
-    - Stream download aksiyonu `playlist.m3u?download=1` akisina sadeleï¿½tirildi.
+    - Stream download aksiyonu `playlist.m3u?download=1` akisina sadele�tirildi.
 - Checks:
   - `php -l api/stream/playlist.php`
   - `node --check public/assets/js/pages/devices/DeviceList.js`
@@ -3402,7 +3445,7 @@ Format:
     - `copyStreamUrl()` artik resolved direct variant URL'i kopyaliyor.
     - `downloadStreamPlaylist()` artik client-side `.m3u` dosyasi uretiyor ve icine direct variant URL yaziyor (nested wrapper bagimliligi kaldirildi).
   - `api/stream/playlist.php`
-    - M3U satiri `#EXTINF:0` olarak sadeleï¿½tirildi.
+    - M3U satiri `#EXTINF:0` olarak sadele�tirildi.
     - Satir sonlari `\n` yapildi.
     - Content-Type `application/x-mpegURL; charset=utf-8` oldu.
     - `Content-Disposition` sadece `download=1` durumunda set ediliyor.
@@ -3712,7 +3755,7 @@ es/drawable/wizard_card_bg.xml
 - Changes:
   - public/player/assets/js/player.js
     - Sync race engeli icin `_syncInFlight`, `_queuedSyncPending`, `_queuedSyncForceRestart` eklendi.
-    - In-flight iken gelen sync istekleri tek bir kuyruï¿½a birlestirildi (coalesced follow-up sync).
+    - In-flight iken gelen sync istekleri tek bir kuyru�a birlestirildi (coalesced follow-up sync).
     - Karsilastirma snapshot'i tek noktadan alinacak sekilde current playlist/hash/signature hesaplamasi normalize edildi.
 - Checks:
   - node --check public/player/assets/js/player.js
@@ -3740,7 +3783,7 @@ es/drawable/wizard_card_bg.xml
 - Checks:
   - node --check public/player/assets/js/player.js
 - Risks/Follow-up:
-  - Debug mode acikken log hacmi yuksek olur; sorun tespitinden sonra bu enstrumantasyon sadeleï¿½tirilmeli.
+  - Debug mode acikken log hacmi yuksek olur; sorun tespitinden sonra bu enstrumantasyon sadele�tirilmeli.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
   - Restore not required.
@@ -3762,7 +3805,7 @@ es/drawable/wizard_card_bg.xml
 - Checks:
   - node --check public/player/assets/js/player.js
 - Risks/Follow-up:
-  - Debug enstrumantasyonu halen acik; kok neden kapandiktan sonra loglar sadeleï¿½tirilmeli.
+  - Debug enstrumantasyonu halen acik; kok neden kapandiktan sonra loglar sadele�tirilmeli.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/player.js.20260314_003639.transition-debug.bak
   - Restore not required.
@@ -3834,7 +3877,7 @@ es/drawable/wizard_card_bg.xml
   - node --check public/assets/js/pages/signage/PlaylistList.js
   - node --check public/player/assets/js/player.js
 - Risks/Follow-up:
-  - EÄŸer Edge tarafinda bazi cihazlarda push gecisleri de tutarsiz olursa sonraki adimda Edge PWA icin gecis seti `fade/crossfade` ile daha da daraltilabilir.
+  - Eğer Edge tarafinda bazi cihazlarda push gecisleri de tutarsiz olursa sonraki adimda Edge PWA icin gecis seti `fade/crossfade` ile daha da daraltilabilir.
   - Signage API tarafinda duplicate assignment kaydi olusuyorsa backend tarafinda da unique constraint veya dedupe katmani ile sertlestirme dusunulmeli.
 - Backup/Restore Safety:
   - Temp backup: .codex/tmp_backups/20260314_010548_refresh-edge-healthy
@@ -4328,19 +4371,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - During mute window, truly new notifications are intentionally not shown as visual toast/desktop popups; this is expected and scoped to short duration.
 
 ## 2026-03-14 - Form validation UX: required field indicators + lifetime license bug fix
-- Request: Zorunlu alan uyarÄ±larÄ± genel/belirsiz, hangi alanÄ±n eksik olduÄŸu toast'ta belli deÄŸil. Ã–mÃ¼r boyu lisanslar "SÃ¼resi Doldu" gÃ¶steriyor.
+- Request: Zorunlu alan uyarıları genel/belirsiz, hangi alanın eksik olduğu toast'ta belli değil. Ömür boyu lisanslar "Süresi Doldu" gösteriyor.
 - Changes:
-  **Lisans YÃ¶netimi (LicenseManagement.js):**
-  - `isLifetimeLicense()` helper eklendi - plan_type (enterprise/ultimate/unlimited) veya null expires_at kontrolÃ¼
-  - `getStatusInfo()` lifetime lisanslarÄ± her zaman "Aktif" gÃ¶steriyor (eskiden new Date(null) â†’ epoch â†’ expired)
-  - `updateStatsFromData()` lifetime lisanslarÄ± active sayar, expired/expiring saymaz
-  - `_toggleEndDateRequirement()` metodu: plan lifetime olduÄŸunda bitiÅŸ tarihi zorunluluÄŸu kalkar, label "(Ã–mÃ¼r Boyu)" gÃ¶sterir
-  - Create/Edit modal validation: alan-spesifik Toast mesajlarÄ± (`validation.requiredField` key), hatalÄ± inputlara `.error` class
-  - `form-label-required` CSS class'Ä± ile kÄ±rmÄ±zÄ± `*` gÃ¶stergesi (plan name, price, company, dates)
+  **Lisans Yönetimi (LicenseManagement.js):**
+  - `isLifetimeLicense()` helper eklendi - plan_type (enterprise/ultimate/unlimited) veya null expires_at kontrolü
+  - `getStatusInfo()` lifetime lisansları her zaman "Aktif" gösteriyor (eskiden new Date(null) → epoch → expired)
+  - `updateStatsFromData()` lifetime lisansları active sayar, expired/expiring saymaz
+  - `_toggleEndDateRequirement()` metodu: plan lifetime olduğunda bitiş tarihi zorunluluğu kalkar, label "(Ömür Boyu)" gösterir
+  - Create/Edit modal validation: alan-spesifik Toast mesajları (`validation.requiredField` key), hatalı inputlara `.error` class
+  - `form-label-required` CSS class'ı ile kırmızı `*` göstergesi (plan name, price, company, dates)
   **Backend (api/licenses/):**
-  - `update.php`: BoÅŸ `expires_at` sadece unlimited/lifetime planlarda null olarak kabul edilir; diÄŸer planlarda "BitiÅŸ tarihi zorunludur" hatasÄ± dÃ¶ner
-  - `create.php`: BoÅŸ `expires_at` null olarak alÄ±nÄ±r (unlimited plan kontrolÃ¼ mevcut satÄ±r 63-68)
-  **DiÄŸer sayfalar (validation UX):**
+  - `update.php`: Boş `expires_at` sadece unlimited/lifetime planlarda null olarak kabul edilir; diğer planlarda "Bitiş tarihi zorunludur" hatası döner
+  - `create.php`: Boş `expires_at` null olarak alınır (unlimited plan kontrolü mevcut satır 63-68)
+  **Diğer sayfalar (validation UX):**
   - `UserManagement.js`: Alan-spesifik validation, `form-label-required` class, `.error` highlight
   - `CompanyManagement.js`: Alan-spesifik validation, `form-label-required` class
   - `BranchManagement.js`: Alan-spesifik validation, `form-label-required` class
@@ -4374,19 +4417,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - forms.css'de `.form-input.error` stili mevcut (border-color: danger), ek CSS gerekmedi
 
 ## 2026-03-14 - ProductForm: validation label fix + auto-generate SKU for new products
-- Request: ÃœrÃ¼n formundaki zorunlu alan label'larÄ±nÄ± dÃ¼zelt, yeni Ã¼rÃ¼nde SKU otomatik Ã¼retilsin.
+- Request: Ürün formundaki zorunlu alan label'larını düzelt, yeni üründe SKU otomatik üretilsin.
 - Changes:
   **ProductForm.js:**
-  - Label'larda manual ` *` â†’ `form-label-required` CSS class'Ä±na dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼ (name, sku, salePrice, cat-name, pt-name)
-  - Kategori inline modal: genel `validation.required` â†’ alan-spesifik `validation.requiredField` + `.error` highlight
-  - Ãœretim ÅŸekli inline modal: genel `productionTypes.toast.required` â†’ alan-spesifik `validation.requiredField` + `.error` highlight
-  - `_generateSkuValue()`: `PRD-XXXXXX` formatÄ±nda 6 haneli alfanÃ¼merik SKU Ã¼retir (karÄ±ÅŸtÄ±rÄ±labilir 0/O/1/I karakterleri hariÃ§)
-  - `_autoGenerateSku()`: Yeni Ã¼rÃ¼n formunda (`!this.productId`) SKU alanÄ±nÄ± otomatik doldurur
-  - SKU input'u yanÄ±na yenile butonu (`generate-sku-btn`) eklendi â€” istediÄŸinde yeni SKU Ã¼retir
-  - DÃ¼zenle modunda SKU alanÄ± doluysa auto-generate Ã§alÄ±ÅŸmaz, ERP/import ile gelen SKU korunur
+  - Label'larda manual ` *` → `form-label-required` CSS class'ına dönüştürüldü (name, sku, salePrice, cat-name, pt-name)
+  - Kategori inline modal: genel `validation.required` → alan-spesifik `validation.requiredField` + `.error` highlight
+  - Üretim şekli inline modal: genel `productionTypes.toast.required` → alan-spesifik `validation.requiredField` + `.error` highlight
+  - `_generateSkuValue()`: `PRD-XXXXXX` formatında 6 haneli alfanümerik SKU üretir (karıştırılabilir 0/O/1/I karakterleri hariç)
+  - `_autoGenerateSku()`: Yeni ürün formunda (`!this.productId`) SKU alanını otomatik doldurur
+  - SKU input'u yanına yenile butonu (`generate-sku-btn`) eklendi — istediğinde yeni SKU üretir
+  - Düzenle modunda SKU alanı doluysa auto-generate çalışmaz, ERP/import ile gelen SKU korunur
   **forms.css:**
-  - `.form-input-error` class tanÄ±mÄ± eklendi (ProductValidator.js'in kullandÄ±ÄŸÄ± class)
-  - `.form-error-message` class tanÄ±mÄ± eklendi (input altÄ± hata mesajÄ± div'i)
+  - `.form-input-error` class tanımı eklendi (ProductValidator.js'in kullandığı class)
+  - `.form-error-message` class tanımı eklendi (input altı hata mesajı div'i)
   **i18n (8 dil):**
   - `form.generateSku` key eklendi: tr, en, de, fr, nl, ru, az, ar
 - Changed files:
@@ -4397,36 +4440,36 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - `node -c ProductForm.js`: OK
   - JSON validation for all 8 products.json: OK
 - Risks/Follow-up:
-  - Auto-SKU `PRD-XXXXXX` formatÄ± firma bazlÄ± benzersizlik backend'de kontrol ediliyor (store.php satÄ±r 25-31)
-  - ERP/import ile gelen Ã¼rÃ¼nlerin SKU'su korunur â€” sadece elle eklenen yeni Ã¼rÃ¼nlerde auto-generate Ã§alÄ±ÅŸÄ±r
+  - Auto-SKU `PRD-XXXXXX` formatı firma bazlı benzersizlik backend'de kontrol ediliyor (store.php satır 25-31)
+  - ERP/import ile gelen ürünlerin SKU'su korunur — sadece elle eklenen yeni ürünlerde auto-generate çalışır
 
 ## 2026-03-14 - i18n folder name translation fix + resource exhaustion fixes
 
 ### Resource Exhaustion Fixes
-- Request: CPU/RAM tÃ¼ketimi risklerini tespit et ve dÃ¼zelt (zombie process, sonsuz Ã§alÄ±ÅŸma, lock korumasÄ±)
+- Request: CPU/RAM tüketimi risklerini tespit et ve düzelt (zombie process, sonsuz çalışma, lock koruması)
 - Changes:
-  - 4 cron script'e flock overlap korumasÄ± eklendi (tamsoft-auto-sync, device-heartbeat, check-device-status, tenant-backup)
+  - 4 cron script'e flock overlap koruması eklendi (tamsoft-auto-sync, device-heartbeat, check-device-status, tenant-backup)
   - HlsTranscoder.php: blocking exec() yerine proc_open() + 30dk wallclock timeout + SIGTERM/SIGKILL escalation
   - TranscodeWorker.php: 4 saat maxRuntime guard + pcntl zombie reaping (SIGCHLD)
 - Changed files: cron/tamsoft-auto-sync.php, cron/device-heartbeat.php, cron/check-device-status.php, cron/tenant-backup.php, services/HlsTranscoder.php, workers/TranscodeWorker.php
 
 ### Docker Turkish Filename Fix
-- Request: Sunucuda (Docker) Ortak KÃ¼tÃ¼phane altÄ±ndaki TÃ¼rkÃ§e karakterli dizinler gÃ¶rÃ¼nmÃ¼yordu
+- Request: Sunucuda (Docker) Ortak Kütüphane altındaki Türkçe karakterli dizinler görünmüyordu
 - Changes:
-  - Dockerfile'a UTF-8 locale desteÄŸi eklendi (locales paketi + en_US.UTF-8)
-  - Sunucudaki Windows-1254 kodlu dosya isimleri UTF-8'e dÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼ (iconv rename)
+  - Dockerfile'a UTF-8 locale desteği eklendi (locales paketi + en_US.UTF-8)
+  - Sunucudaki Windows-1254 kodlu dosya isimleri UTF-8'e dönüştürüldü (iconv rename)
 - Changed files: deploy/Dockerfile
 
 ### i18n Folder Name Translation Fix
-- Request: Ortak KÃ¼tÃ¼phane alt dizin isimleri (Manav, Kasap vb.) dil deÄŸiÅŸtirildiÄŸinde Ã§evrilmiyordu
-- Root cause: i18n.t() page translation chain'de products.json/templates.json'daki mediaLibrary key'i, common.json'daki mediaLibrary.folders lookup'Ä±nÄ± gÃ¶lgeleyebiliyordu. getNestedValue() intermediate object dÃ¶ndÃ¼ÄŸÃ¼nde bu valid match olarak sayÄ±lÄ±yordu.
+- Request: Ortak Kütüphane alt dizin isimleri (Manav, Kasap vb.) dil değiştirildiğinde çevrilmiyordu
+- Root cause: i18n.t() page translation chain'de products.json/templates.json'daki mediaLibrary key'i, common.json'daki mediaLibrary.folders lookup'ını gölgeleyebiliyordu. getNestedValue() intermediate object döndüğünde bu valid match olarak sayılıyordu.
 - Changes:
-  1. **i18n.js**: `tc()` metodu eklendi â€” sadece common.json'dan Ã§eviri arar (page translations atlar)
-  2. **i18n.js**: `getNestedValue()` artÄ±k sadece leaf deÄŸerler (string/number/boolean) dÃ¶ner, intermediate object'ler undefined dÃ¶ner â†’ partial key match'lerde fallthrough saÄŸlar
-  3. **MediaLibrary.js**: `getFolderDisplayName()` artÄ±k `this.app.i18n.tc()` kullanÄ±yor
-  4. **MediaPicker.js**: `_getFolderDisplayName()` artÄ±k `this.app.i18n.tc()` kullanÄ±yor
-  5. **PlaylistDetail.js**: `_getFolderDisplayName()` artÄ±k `this.app.i18n.tc()` kullanÄ±yor
-  6. **_folder_i18n.php**: preg_replace regex dÃ¼zeltildi (eksik `[]` karakter sÄ±nÄ±fÄ±)
+  1. **i18n.js**: `tc()` metodu eklendi — sadece common.json'dan çeviri arar (page translations atlar)
+  2. **i18n.js**: `getNestedValue()` artık sadece leaf değerler (string/number/boolean) döner, intermediate object'ler undefined döner → partial key match'lerde fallthrough sağlar
+  3. **MediaLibrary.js**: `getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  4. **MediaPicker.js**: `_getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  5. **PlaylistDetail.js**: `_getFolderDisplayName()` artık `this.app.i18n.tc()` kullanıyor
+  6. **_folder_i18n.php**: preg_replace regex düzeltildi (eksik `[]` karakter sınıfı)
 - Changed files:
   - public/assets/js/core/i18n.js
   - public/assets/js/pages/media/MediaLibrary.js
@@ -4461,8 +4504,8 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 
 - Request: Fix 4 critical bugs in FabricToHtmlConverter (dynamic fields not resolving, wrong positioning, video not playing, images not showing) + add preview icon to web-templates page cards
 - Changes:
-  1. **FabricToHtmlConverter.php** â€” Complete rewrite:
-     - Added `buildFieldValues()` method matching PavoDisplayGateway's implementation (formatted prices, HAL kÃ¼nye fields, dates etc.)
+  1. **FabricToHtmlConverter.php** — Complete rewrite:
+     - Added `buildFieldValues()` method matching PavoDisplayGateway's implementation (formatted prices, HAL künye fields, dates etc.)
      - Added `$labelToFieldMap` static array (60+ entries) for customType='dynamic-text' fallback resolution when dynamicField/fieldBinding are missing (v7 bug)
      - Fixed Fabric.js v7 center origin positioning: `originX/Y='center'` now subtracts half width/height from left/top
      - Fixed video-placeholder customType: now accepts 'video-placeholder' (hyphen) in addition to 'video_placeholder' (underscore)
@@ -4471,64 +4514,64 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
      - Fixed group child positioning with center origin handling
      - Added vertical centering for text elements (display:flex;align-items:center)
      - `convertObject()` now takes `$fieldValues` parameter (pre-computed per product)
-  2. **WebTemplateList.js** â€” Added preview button (ti-external-link icon) to template card overlay, opens serve endpoint in new tab
+  2. **WebTemplateList.js** — Added preview button (ti-external-link icon) to template card overlay, opens serve endpoint in new tab
   3. Deleted temp debug files: temp_check_bindings.php, temp_check_templates.php, temp_check_texts.php
 - Files changed: services/FabricToHtmlConverter.php, public/assets/js/pages/web-templates/WebTemplateList.js
 - Checks: PHP syntax check passed (FabricToHtmlConverter.php)
 - Risks/Follow-up:
-  - Existing saved web_templates will NOT auto-update â€” they contain the old (broken) HTML. Users need to regenerate.
-  - labelToFieldMap depends on exact placeholder text matches â€” custom/unusual field labels won't be resolved
+  - Existing saved web_templates will NOT auto-update — they contain the old (broken) HTML. Users need to regenerate.
+  - labelToFieldMap depends on exact placeholder text matches — custom/unusual field labels won't be resolved
 
-## 2026-03-15 - Cihaza gÃ¶nder/ata modallarÄ±nda canlÄ± HTML Ã¶nizleme
+## 2026-03-15 - Cihaza gönder/ata modallarında canlı HTML önizleme
 
-- Request: ÃœrÃ¼nler sayfasÄ±ndaki "Cihaza GÃ¶nder" ve "Etiket Ata" modallarÄ±na canlÄ± HTML iframe Ã¶nizlemesi ekle
+- Request: Ürünler sayfasındaki "Cihaza Gönder" ve "Etiket Ata" modallarına canlı HTML iframe önizlemesi ekle
 - Changes:
-  1. **ProductList.js `_renderTemplatePreview()`** â€” `productId` parametresi eklendi; productId varsa statik gÃ¶rsel yerine `/api/templates/:id/preview-html?product_id=xxx` iframe'i render eder, "CanlÄ± HTML Ã–nizleme" badge gÃ¶sterir
-  2. **ProductList.js `_showSingleProductSendModal()`** â€” Preview card ve template change handler artÄ±k productId geÃ§irir â†’ ÅŸablon seÃ§ildikÃ§e canlÄ± HTML anÄ±nda gÃ¼ncellenir
-  3. **ProductList.js `showAssignLabelModal()`** â€” Åablon seÃ§imi altÄ±na Ã¶nizleme card eklendi + template change event listener ile canlÄ± gÃ¼ncelleme
-  4. **products.css** â€” `.template-preview-live` (iframe container), `.live-preview-badge` (mavi badge), `.assign-label-preview` (kÃ¼Ã§Ã¼k Ã¶nizleme) stilleri
-  5. **i18n** â€” `sendToDevice.liveHtmlPreview` key'i 8 dilde eklendi
+  1. **ProductList.js `_renderTemplatePreview()`** — `productId` parametresi eklendi; productId varsa statik görsel yerine `/api/templates/:id/preview-html?product_id=xxx` iframe'i render eder, "Canlı HTML Önizleme" badge gösterir
+  2. **ProductList.js `_showSingleProductSendModal()`** — Preview card ve template change handler artık productId geçirir → şablon seçildikçe canlı HTML anında güncellenir
+  3. **ProductList.js `showAssignLabelModal()`** — Şablon seçimi altına önizleme card eklendi + template change event listener ile canlı güncelleme
+  4. **products.css** — `.template-preview-live` (iframe container), `.live-preview-badge` (mavi badge), `.assign-label-preview` (küçük önizleme) stilleri
+  5. **i18n** — `sendToDevice.liveHtmlPreview` key'i 8 dilde eklendi
 - Files changed: ProductList.js, products.css, locales/*/pages/products.json (8 dil)
 - Checks: PHP syntax check passed
-- Risks/Follow-up: Performans â€” her modal aÃ§Ä±lÄ±ÅŸÄ±nda iframe yÃ¼klenir. TAKÄ°P notu mevcut.
+- Risks/Follow-up: Performans — her modal açılışında iframe yüklenir. TAKİP notu mevcut.
 
-## 2026-03-15 - Toplu gÃ¶nderim modalÄ±na HTML Ã¶nizleme + HTML ÅŸablon oluÅŸturma
+## 2026-03-15 - Toplu gönderim modalına HTML önizleme + HTML şablon oluşturma
 
-- Request: Ã‡oklu Ã¼rÃ¼n gÃ¶nder modalÄ±nda cihaz tipi seÃ§ildikten sonra Ã¼rÃ¼nlerin HTML Ã¶nizlemesi ve HTML ÅŸablon oluÅŸturma seÃ§eneÄŸi
+- Request: Çoklu ürün gönder modalında cihaz tipi seçildikten sonra ürünlerin HTML önizlemesi ve HTML şablon oluşturma seçeneği
 - Changes:
-  1. **ProductList.js `_showBulkSendByDeviceTypeModal()`** â€” Cihaz tipi seÃ§ildikten sonra ÅŸablonu olan Ã¼rÃ¼nlerin canlÄ± HTML iframe Ã¶nizlemesi grid'de gÃ¶steriliyor + "HTML Åablon OluÅŸtur" butonu eklendi
-  2. **ProductList.js `_bulkCreateHtmlFromSendModal()`** â€” Yeni method: seÃ§ilen Ã¼rÃ¼nler iÃ§in ayrÄ± ayrÄ± veya birleÅŸik HTML ÅŸablon oluÅŸturma (generate-from-fabric API'si ile)
-  3. **products.css** â€” `.bulk-html-preview-grid/card/iframe/info/header/section` stilleri (grid layout, 220px card'lar, 160px iframe yÃ¼ksekliÄŸi)
-  4. **i18n** â€” `sendToDevice.htmlPreviewTitle`, `createHtmlTemplate`, `createHtmlTitle`, `createHtmlInfo`, `createHtmlCombined` key'leri 8 dilde
+  1. **ProductList.js `_showBulkSendByDeviceTypeModal()`** — Cihaz tipi seçildikten sonra şablonu olan ürünlerin canlı HTML iframe önizlemesi grid'de gösteriliyor + "HTML Şablon Oluştur" butonu eklendi
+  2. **ProductList.js `_bulkCreateHtmlFromSendModal()`** — Yeni method: seçilen ürünler için ayrı ayrı veya birleşik HTML şablon oluşturma (generate-from-fabric API'si ile)
+  3. **products.css** — `.bulk-html-preview-grid/card/iframe/info/header/section` stilleri (grid layout, 220px card'lar, 160px iframe yüksekliği)
+  4. **i18n** — `sendToDevice.htmlPreviewTitle`, `createHtmlTemplate`, `createHtmlTitle`, `createHtmlInfo`, `createHtmlCombined` key'leri 8 dilde
 - Files changed: ProductList.js, products.css, locales/*/pages/products.json (8 dil)
 - Checks: JSON validation passed (tr, en), JS file readable
-- Risks/Follow-up: Ã‡ok fazla Ã¼rÃ¼n seÃ§ildiÄŸinde grid'deki iframe sayÄ±sÄ± performansÄ± etkileyebilir (max-height:360px scroll ile sÄ±nÄ±rlandÄ±rÄ±ldÄ±)
+- Risks/Follow-up: Çok fazla ürün seçildiğinde grid'deki iframe sayısı performansı etkileyebilir (max-height:360px scroll ile sınırlandırıldı)
 
-## 2026-03-15 - Ã‡oklu Ã¼rÃ¼n ÅŸablonu tespit edilemiyor (design_data eksik)
+## 2026-03-15 - Çoklu ürün şablonu tespit edilemiyor (design_data eksik)
 
-- Request: ÅablonlarÄ± tekliâ†’Ã§oklu Ã¼rÃ¼ne Ã§evirince Ã¼rÃ¼nler sayfasÄ± Ã§oklu Ã¼rÃ¼n ÅŸablonu olarak gÃ¶rmÃ¼yor, tekli de artÄ±k gÃ¶rmÃ¼yor
-- Root cause (3 katmanlÄ±):
-  1. **API `design_data` dÃ¶nmÃ¼yor**: `/templates` list endpoint'i `design_data`'yÄ± varsayÄ±lan SELECT'e dahil etmiyor (performans iÃ§in). Ama `showMultiProductSendModal()` `design_data` iÃ§indeki `multi-product-frame` objelerini arÄ±yor â†’ hiÃ§bir zaman bulamÄ±yor
-  2. **`grid_layout` kolonu SELECT'te yok**: API response'da `grid_layout` alanÄ± hiÃ§ dÃ¶nmÃ¼yordu
-  3. **`regions_config` kaydedilmiyor**: EditorWrapper.js save payload'Ä±nda `regions_config` hiÃ§ gÃ¶nderilmiyordu â†’ UPDATE'te DB'de null kalÄ±yordu
+- Request: Şablonları tekli→çoklu ürüne çevirince ürünler sayfası çoklu ürün şablonu olarak görmüyor, tekli de artık görmüyor
+- Root cause (3 katmanlı):
+  1. **API `design_data` dönmüyor**: `/templates` list endpoint'i `design_data`'yı varsayılan SELECT'e dahil etmiyor (performans için). Ama `showMultiProductSendModal()` `design_data` içindeki `multi-product-frame` objelerini arıyor → hiçbir zaman bulamıyor
+  2. **`grid_layout` kolonu SELECT'te yok**: API response'da `grid_layout` alanı hiç dönmüyordu
+  3. **`regions_config` kaydedilmiyor**: EditorWrapper.js save payload'ında `regions_config` hiç gönderilmiyordu → UPDATE'te DB'de null kalıyordu
 - Changes:
-  1. **api/templates/index.php** â€” `grid_layout` SELECT kolonlarÄ±na eklendi
-  2. **ProductList.js `showMultiProductSendModal()`** â€” API Ã§aÄŸrÄ±sÄ± `?include_content=1&per_page=200` ile yapÄ±lÄ±yor (design_data dahil geliyor)
-  3. **EditorWrapper.js save payload** â€” `regions_config: gridManager.exportConfig()` eklendi (JSON string olarak)
+  1. **api/templates/index.php** — `grid_layout` SELECT kolonlarına eklendi
+  2. **ProductList.js `showMultiProductSendModal()`** — API çağrısı `?include_content=1&per_page=200` ile yapılıyor (design_data dahil geliyor)
+  3. **EditorWrapper.js save payload** — `regions_config: gridManager.exportConfig()` eklendi (JSON string olarak)
 - Files changed: api/templates/index.php, ProductList.js, EditorWrapper.js
 - Checks: PHP syntax OK
-- Risk: `include_content=1` payload boyutunu artÄ±rÄ±r ama sadece multi-product modal aÃ§Ä±ldÄ±ÄŸÄ±nda isteniyor (normal list etkilenmez)
+- Risk: `include_content=1` payload boyutunu artırır ama sadece multi-product modal açıldığında isteniyor (normal list etkilenmez)
 
-## 2026-03-15 - FabricToHtmlConverter multi-product-frame desteÄŸi
+## 2026-03-15 - FabricToHtmlConverter multi-product-frame desteği
 
-- Request: Ã‡oklu Ã¼rÃ¼n Ã§erÃ§eveli ÅŸablonlarÄ±n HTML Ã§Ä±ktÄ±sÄ±nda slot iÃ§erikleri doÄŸru Ã¼rÃ¼n verileriyle gÃ¶sterilmiyor
-- Root cause: FabricToHtmlConverter `multi-product-frame` customType'Ä±nÄ± ve `slotId` prop'unu tanÄ±mÄ±yordu. Slot objeleri sadece ilk Ã¼rÃ¼nÃ¼n verisiyle render ediliyordu.
+- Request: Çoklu ürün çerçeveli şablonların HTML çıktısında slot içerikleri doğru ürün verileriyle gösterilmiyor
+- Root cause: FabricToHtmlConverter `multi-product-frame` customType'ını ve `slotId` prop'unu tanımıyordu. Slot objeleri sadece ilk ürünün verisiyle render ediliyordu.
 - Changes:
-  1. **FabricToHtmlConverter.php `convert()`** â€” Multi-product-frame tespit ve slotâ†’Ã¼rÃ¼n eÅŸleÅŸtirme eklendi. `frameColsÃ—frameRows` matrisinden slotIdâ†’productIndex map oluÅŸturulur. `slotId` prop'lu objelere doÄŸru Ã¼rÃ¼n verileri atanÄ±r.
-  2. **FabricToHtmlConverter.php `convertObject()`** â€” Frame helper objeleri atlanÄ±yor: `multi-product-frame` kendisi, `isSlotBackground`, `isSlotLabel`, `isSlotPlaceholder`, `isTransient`, `slot-label` customType
+  1. **FabricToHtmlConverter.php `convert()`** — Multi-product-frame tespit ve slot→ürün eşleştirme eklendi. `frameCols×frameRows` matrisinden slotId→productIndex map oluşturulur. `slotId` prop'lu objelere doğru ürün verileri atanır.
+  2. **FabricToHtmlConverter.php `convertObject()`** — Frame helper objeleri atlanıyor: `multi-product-frame` kendisi, `isSlotBackground`, `isSlotLabel`, `isSlotPlaceholder`, `isTransient`, `slot-label` customType
 - Files changed: services/FabricToHtmlConverter.php
 - Checks: PHP syntax OK
-- Risk: Slot objelerinin `slotId` prop'u doÄŸru atanmÄ±ÅŸ olmalÄ± (editÃ¶r bu prop'u otomatik atar)
+- Risk: Slot objelerinin `slotId` prop'u doğru atanmış olmalı (editör bu prop'u otomatik atar)
 
 ## 2026-03-16 - Player HTML gecis/preload stabilizasyonu (TV/Android)
 
@@ -4635,29 +4678,29 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/Restore safety:
   - Edit oncesi temp backup alindi: `public/player/assets/js/player.js.bak_native_transition_fix_20260316_020957`, `android-player/omnex-player-app/app/src/main/java/com/omnex/player/ExoPlayerManager.kt.bak_native_transition_fix_20260316_020957`.
 
-## 2026-03-16 - BluetoothWizard Token YÃ¶netimi ve Factory Reset Ä°yileÅŸtirmesi
+## 2026-03-16 - BluetoothWizard Token Yönetimi ve Factory Reset İyileştirmesi
 
-- Request: PavoDisplay cihazlarÄ±nda factory reset sonrasÄ± DB token temizleme, token yÃ¶netim arayÃ¼zÃ¼ ekleme
-- Context: 3 Pavo cihaz (@B2A401A977/172-httpserver, @B2A301AB37/160-http, @B2A401A959/161-mqtt) token ile kuruldu ama sunucuda token DB'de kalÄ±yordu, factory reset sonrasÄ± token temizlenmiyordu
-- Diagnostics: 3 cihazda tÃ¼m portlar kapalÄ± (80,8080,1883,5555), HTTP/MQTT Ã¼zerinden factory reset mÃ¼mkÃ¼n deÄŸil, sadece BLE ile yapÄ±labilir. DB'de 3 cihazÄ±n token'Ä± mevcut (16 karakter).
+- Request: PavoDisplay cihazlarında factory reset sonrası DB token temizleme, token yönetim arayüzü ekleme
+- Context: 3 Pavo cihaz (@B2A401A977/172-httpserver, @B2A301AB37/160-http, @B2A401A959/161-mqtt) token ile kuruldu ama sunucuda token DB'de kalıyordu, factory reset sonrası token temizlenmiyordu
+- Diagnostics: 3 cihazda tüm portlar kapalı (80,8080,1883,5555), HTTP/MQTT üzerinden factory reset mümkün değil, sadece BLE ile yapılabilir. DB'de 3 cihazın token'ı mevcut (16 karakter).
 - Changes:
-  1. **BluetoothWizard.js** (`_factoryReset`): Factory reset sonrasÄ± `_clearTokenFromServer()` Ã§aÄŸrÄ±sÄ± eklendi - DB'deki token otomatik silinir
-  2. **BluetoothWizard.js** (Token YÃ¶netimi UI): Verify step'e "Token YÃ¶netimi" kartÄ± eklendi - Token durumu (korumalÄ±/korumasÄ±z), Token gÃ¶ster, Token ayarla, Token temizle butonlarÄ±
+  1. **BluetoothWizard.js** (`_factoryReset`): Factory reset sonrası `_clearTokenFromServer()` çağrısı eklendi - DB'deki token otomatik silinir
+  2. **BluetoothWizard.js** (Token Yönetimi UI): Verify step'e "Token Yönetimi" kartı eklendi - Token durumu (korumalı/korumasız), Token göster, Token ayarla, Token temizle butonları
   3. **BluetoothWizard.js** (`_clearTokenFromServer`): Yeni metod - API DELETE /devices/:id/bt-password ile DB token temizleme
-  4. **BluetoothWizard.js** (`_updateTokenStatusUI`): Token durumunu UI'da badge ile gÃ¶sterme
-  5. **BluetoothWizard.js** (`_viewToken`): Token'Ä± modal ile gÃ¶rÃ¼ntÃ¼leme
-  6. **BluetoothWizard.js** (`_clearDeviceToken`): BLE + DB'den token temizleme (admin/user password boÅŸaltma + DB delete)
-  7. **BluetoothWizard.js** (`_setDevicePassword`): Token ayarlandÄ±ktan sonra DB'ye otomatik kayÄ±t
-  8. **BluetoothWizard.js** (`_connect`): BaÄŸlantÄ± sonrasÄ± token durumunu UI'da gÃ¶sterme
+  4. **BluetoothWizard.js** (`_updateTokenStatusUI`): Token durumunu UI'da badge ile gösterme
+  5. **BluetoothWizard.js** (`_viewToken`): Token'ı modal ile görüntüleme
+  6. **BluetoothWizard.js** (`_clearDeviceToken`): BLE + DB'den token temizleme (admin/user password boşaltma + DB delete)
+  7. **BluetoothWizard.js** (`_setDevicePassword`): Token ayarlandıktan sonra DB'ye otomatik kayıt
+  8. **BluetoothWizard.js** (`_connect`): Bağlantı sonrası token durumunu UI'da gösterme
   9. **i18n**: `bluetooth.tokenManagement.*` ve `bluetooth.wizard.factoryResetSuccess` key'leri 8 dile eklendi
 - Files changed: public/assets/js/pages/devices/list/BluetoothWizard.js, locales/tr/pages/devices.json, locales/en/pages/devices.json, locales/az/pages/devices.json, locales/de/pages/devices.json, locales/fr/pages/devices.json, locales/nl/pages/devices.json, locales/ru/pages/devices.json, locales/ar/pages/devices.json
 - Checks run: JS syntax OK (node -e), TR JSON OK, EN JSON OK
 - Backup: BluetoothWizard.js.bak.20260316
 - Risks/Follow-up:
-  - HTTP/MQTT modlu cihazlara aÄŸ Ã¼zerinden factory reset gÃ¶ndermek mÃ¼mkÃ¼n deÄŸil (portlar kapalÄ±, protokol desteklemiyor)
-  - Factory reset sadece BLE ile yapÄ±labilir (Web Bluetooth API gerektirir)
-  - 172 ve 161 cihazlarÄ± zaten resetlendi, eski tokenlar artÄ±k geÃ§ersiz
-  - 160 (@B2A301AB37, HTTP) cihazÄ± hala token aktif: BLE ile factory reset yapÄ±labilir
+  - HTTP/MQTT modlu cihazlara ağ üzerinden factory reset göndermek mümkün değil (portlar kapalı, protokol desteklemiyor)
+  - Factory reset sadece BLE ile yapılabilir (Web Bluetooth API gerektirir)
+  - 172 ve 161 cihazları zaten resetlendi, eski tokenlar artık geçersiz
+  - 160 (@B2A301AB37, HTTP) cihazı hala token aktif: BLE ile factory reset yapılabilir
 ## 2026-03-16 - APK native gecis yonu ve video->HTML exit animasyonu hizalamasi
 
 - Request: Cihazda APK oynatici `player.js` ile birebir davranmiyor; HTML->video gecis yonu ters (sunucuda yukaridan asagi, cihazda asagidan yukari) ve video->HTML gecisinde animasyon kayboluyor.
@@ -4853,10 +4896,10 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   1. **public/player/assets/js/player.js**
      - DOM enter/exit gecisleri icin yeni layout-aware map eklendi: `getDomTransitionTypeForCurrentLayout(...)`.
      - Force-rotate fallback siniflarinda (portrait/landscape) DOM transition class'i ekran eksenine gore remap edilir hale getirildi.
-     - Native transition mapping sadeleştirildi: `getNativeTransitionTypeForCurrentLayout(...)` artik resolved tipi dogrudan kullanir (native katman screen coordinates).
+     - Native transition mapping sadele�tirildi: `getNativeTransitionTypeForCurrentLayout(...)` artik resolved tipi dogrudan kullanir (native katman screen coordinates).
      - `applyEnterTransition` ve `applyExitTransition` DOM remap sonucunu kullanacak sekilde guncellendi; debug payload'a `resolvedTransition` + `domTransition` eklendi.
      - Native bridge yardimcilari eklendi: `isNativePlaybackActive()` ve `stopNativeVideoForTransition(reason)`.
-     - `video -> html` gecisinde native katmani erken kapatma yerine, html iframe ready oldugunda native stop tetiklenecek sekilde akıs kuruldu:
+     - `video -> html` gecisinde native katmani erken kapatma yerine, html iframe ready oldugunda native stop tetiklenecek sekilde ak�s kuruldu:
        - `scheduleNext()` icinde sonraki icerik `html` ise native stop ertelenir.
        - `finalizeHtmlPlayback()` icinde html enter oncesi `stopNativeVideoForTransition('html-ready')` cagrilir.
        - `playHtml()` basinda native oynatma aktifse hemen `setNativeVideoMode(false)` yapilmaz.
@@ -5015,7 +5058,7 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
          - `position: absolute`, `width: 56.25%`, `left: calc((100% - 56.25%) / 2)`, `top: 0`.
        - `@media portrait` + `.orientation-landscape .content-item:not(iframe)`:
          - `position: absolute`, `height: 56.25%`, `left: 0`, `top: calc((100% - 56.25%) / 2)`.
-     - Amaç: enter/exit aninda iki icerik ayni anda gorunurken flex reflow/relative static-position nedeniyle olusan yatay-dikey kaymalari kaldirmak.
+     - Ama�: enter/exit aninda iki icerik ayni anda gorunurken flex reflow/relative static-position nedeniyle olusan yatay-dikey kaymalari kaldirmak.
   2. **public/player/index.html**
      - CSS cache-bust guncellendi: `player.css?v=39`.
 - Checks run:
@@ -5043,7 +5086,7 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - `node --check public/player/assets/js/player.js` (OK)
 - Risks/Follow-up:
   - Derin debug loglari kapali oldugu icin yeni issue durumunda gecici olarak tekrar acilabilir.
-  - Akis davranisi degismemeli; sadece konsol gürültüsü ve snapshot hesaplari devre disi.
+  - Akis davranisi degismemeli; sadece konsol g�r�lt�s� ve snapshot hesaplari devre disi.
 - Backup/Restore safety:
   - Temp backup alindi: `public/player/assets/js/player.js.bak_disable_deep_debug_20260316_0828`.
 
@@ -5992,7 +6035,7 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Memory backup: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v85_perf_addendum_*.bak`.
 ## 2026-03-18 - html(video)->video preload-icon regression fix + v87 deploy + TV soak
 
-- Request: Fix TV-side regression where html içindeki video geçiş sonunda preload ikonuna düşüyor (özellikle `html(video) -> video`), keep temp-backup workflow, redeploy, and re-run TV performance checks.
+- Request: Fix TV-side regression where html i�indeki video ge�i� sonunda preload ikonuna d���yor (�zellikle `html(video) -> video`), keep temp-backup workflow, redeploy, and re-run TV performance checks.
 - Changes:
   - `public/player/assets/js/player.js`
     - Added `isElementVisuallyActive(element)` helper.
@@ -6302,3 +6345,295 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
     - `.codex/tmp_backups/downloads.update.json.pre_v48_legacy_display_tuning_20260318_062022.bak`
     - `.codex/tmp_backups/public.downloads.update.json.pre_v48_legacy_display_tuning_20260318_062022.bak`
     - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_v48_legacy_visibility_20260318_062356.bak`
+## 2026-03-18 - Display tuning levels made visually obvious (L1/L2/L3)
+
+- Request: Make contrast change visibly obvious for customer demos; previous range looked like no change.
+- Changes:
+  - `public/player/assets/js/player.js`
+    - Display tuning levels switched to fixed 3-step set:
+      - `L1 = 1.00`
+      - `L2 = 1.15`
+      - `L3 = 1.30`
+    - Indicator changed to level labels (`L1/L2/L3`), with numeric value in title/toast.
+    - Removed temporary non-preset carry-over level so cycle remains strictly 3 steps.
+  - `public/player/index.html`
+    - Player script cache bump: `player.js?v=90`, then `v91`, then `v92` (final).
+    - Display indicator default label updated to `L1`.
+  - `public/player/sw.js`
+    - Cache version bumps: `v1.3.28`, `v1.3.29`, `v1.3.30` (final).
+  - Local Android source updates (gitignored path):
+    - `android-player/.../MainActivity.kt`
+      - Manual display tuning clamp opened to app-wide absolute cap for explicit override path.
+      - `profileMaxContrast` report aligned with absolute cap.
+    - `android-player/.../PerformanceProfile.kt`
+      - Profile max contrast caps raised for visible tuning headroom (legacy/balanced/default).
+    - `android-player/.../app/build.gradle`
+      - `2.9.20` (`code 49`), then `2.9.21` (`code 50`) final.
+  - OTA artifacts:
+    - New final APK `2.9.21 / code 50`
+    - `downloads/omnex-player.apk`, `public/downloads/omnex-player.apk`
+    - Added versioned:
+      - `downloads/omnex-player-standalone-v2.9.20.apk`
+      - `public/downloads/omnex-player-standalone-v2.9.20.apk`
+      - `downloads/omnex-player-standalone-v2.9.21.apk`
+      - `public/downloads/omnex-player-standalone-v2.9.21.apk`
+    - `downloads/update.json`, `public/downloads/update.json` finalized to:
+      - `versionCode: 50`
+      - `versionName: 2.9.21`
+      - `sha256: 16604109b5be65c89f37749dbfeee0eea2117f0cdd348bbf4ef6e5529be81f2a`
+  - Git/deploy:
+    - Commits:
+      - `18d82bf` (v2.9.20 release + 3-level UI)
+      - `f99c80c` (v2.9.21 clamp/levels enforcement)
+      - `989a683` (strict 3-level cycle cleanup)
+    - Each commit pushed and deployed to server.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/player/sw.js` (OK)
+  - `.\gradlew.bat :app:assembleStandaloneDebug` (OK, for v2.9.20 and v2.9.21)
+  - `ConvertFrom-Json` for both OTA manifests (OK)
+  - APK SHA checks for both download paths (OK)
+  - Server runtime checks:
+    - `player.js?v=92` served
+    - `CACHE_VERSION='v1.3.30'` served
+    - `update.json` serves `2.9.21 / code 50` with final SHA
+  - Device verification (G66 `192.168.1.181:39855`):
+    - Installed `2.9.21 / code 50`
+    - Runtime confirms `Performance profile: legacy`
+    - Runtime confirms `player.js?v=92`
+    - Contrast override cycle after activity+taps:
+      - `1.15 -> 1.30 -> 1.00 -> 1.15 ...` (strict 3-level loop)
+- Risks/Follow-up:
+  - `L3=1.30` is intentionally strong and visibly impactful; some content may show clipped highlights/shadows.
+  - Recommended: if store-side feedback says too aggressive, lower only `L3` to `1.25` without touching `L1/L2`.
+- Backup/Restore safety:
+  - Temp backups created:
+    - `.codex/tmp_backups/PerformanceProfile.kt.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/MainActivity.kt.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/build.gradle.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/player.js.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/index.html.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/sw.js.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_display_levels_20260318_063410.bak`
+    - `.codex/tmp_backups/MainActivity.kt.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/build.gradle.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/player.js.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/index.html.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/sw.js.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/downloads.update.json.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/public.downloads.update.json.pre_display_levels_hotfix_20260318_064142.bak`
+    - `.codex/tmp_backups/player.js.pre_display_levels_cleanup_20260318_064719.bak`
+    - `.codex/tmp_backups/index.html.pre_display_levels_cleanup_20260318_064719.bak`
+    - `.codex/tmp_backups/sw.js.pre_display_levels_cleanup_20260318_064719.bak`
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_display_levels_final_20260318_064942.bak`
+## 2026-03-18 - Dual device 3-minute performance check after visible display levels
+
+- Request: Run 3-minute soak/performance measurement on both Google TV and G66 to verify impact of new visible contrast levels.
+- Changes:
+  - No code changes.
+  - New measurement artifacts:
+    - `tmp/perf/dual_soak3_display_levels_20260318_065403/`
+      - `google_tv/` (`192.168.1.52:44245`)
+      - `g66_legacy/` (`192.168.1.181:39855`)
+      - `summary.json`
+- Checks run:
+  - Runtime measurement workflow (both devices):
+    - `dumpsys gfxinfo reset`
+    - force-stop + relaunch app
+    - minute-based `top` + `dumpsys meminfo` samples (3 minutes)
+    - final `dumpsys gfxinfo`
+    - `logcat` capture and scan
+  - Results:
+    - Google TV:
+      - Frames `4648`
+      - Jank `%64.61`
+      - p50/p90/p95/p99 `19/30/44/73 ms`
+      - CPU samples `0, 84.2, 0` (avg `28.07`, max `84.2`)
+      - PSS delta `65666 KB`
+      - RSS delta `81584 KB`
+      - Errors: `NO_MEMORY=0`, playback errors `0`, HTTP 4xx/5xx `0`
+    - G66 legacy:
+      - Frames `4832`
+      - Jank `%22.10`
+      - p50/p90/p95/p99 `11/22/28/48 ms`
+      - CPU samples `0, 134, 0` (avg `44.67`, max `134`)
+      - PSS delta `10244 KB`
+      - RSS delta `10936 KB`
+      - Errors: `NO_MEMORY=0`, playback errors `0`, HTTP 4xx/5xx `0`
+- Risks/Follow-up:
+  - Google TV jank remains very high in this mixed-content workload window.
+  - G66 is materially better than Google TV but still above ideal long-run target.
+- Backup/Restore safety:
+  - Memory backup:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_dual_3min_soak_20260318_070119.bak`
+## 2026-03-18 - Google TV jank impact isolation (contrast override vs baseline)
+
+- Request: Investigate whether new display tuning levels alone caused Google TV jank to nearly double.
+- Changes:
+  - No code changes.
+  - Added focused Google TV check artifacts:
+    - `tmp/perf/google_tv_contrast_reset_test_20260318/`
+    - `tmp/perf/google_tv_soak3_no_override_20260318/`
+- Checks run:
+  - Runtime state check:
+    - Google TV prefs initially had `display_contrast_override=1.24`.
+  - Reset-for-test:
+    - Removed app shared prefs file on device and relaunched player to run with no manual override.
+  - 3-minute soak (Google TV, no override):
+    - Frames `4440`
+    - Jank `%64.82`
+    - p50/p90/p95/p99 `19/34/48/81 ms`
+    - CPU avg/max `82.23 / 93`
+    - Errors: `NO_MEMORY=0`, playback errors `0`, HTTP 4xx/5xx `0`
+- Risks/Follow-up:
+  - Result remained at ~same high jank level even without manual override; current regression is not explained solely by contrast override level.
+  - Primary remaining suspect stays mixed-content transition/render path on Google TV pipeline.
+- Backup/Restore safety:
+  - Memory backup:
+    - `.codex/tmp_backups/CHANGE_MEMORY.md.pre_jank_impact_check_20260318_070945.bak`
+## 2026-03-19 - Omnex-PriceView PriceView plan review
+
+- Request: Review `C:/Users/test/.claude/plans/spicy-wobbling-lighthouse.md` and identify missing/improvable points against current Omnex Player + backend structure.
+- Changes:
+  - No application code changes.
+  - Added review memory entry.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - No syntax/runtime checks executed (no `.php`, `.js`, or Android source/build file changes).
+- Risks/Follow-up:
+  - Plan should be expanded for full device-type mapping coverage (backend + frontend + locale matrix) and sync cursor/deletion edge cases.
+  - Existing `/api/player/*` auth/registration and existing print pipeline should be evaluated for reuse to avoid duplicate contracts.
+- Backup/Restore safety:
+  - Memory backup created: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_priceview_plan_review_20260319_021152.bak`
+## 2026-03-19 - Omnex-PriceView plan review (Rev.2)
+
+- Request: Re-review `C:/Users/test/.claude/plans/spicy-wobbling-lighthouse.md` and report remaining gaps after Rev.2 updates.
+- Changes:
+  - No application code changes.
+  - Added second review memory entry.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - No syntax/runtime checks executed (no `.php`, `.js`, or Android source/build file changes).
+- Risks/Follow-up:
+  - Plan still includes implementation drifts: middleware alias (`device_auth` vs `device`), route placeholder style (`:barcode` vs `{barcode}`), non-existing file path (`api/devices/approve.php`), and `styles.xml` reference while project uses `themes.xml`.
+  - Device type strategy should avoid new raw DB type (`priceview`) unless all backend/frontend filters are updated; safer pattern is existing type + model/original_type.
+  - Print endpoint auth model needs explicit dual-auth design; current `print-html.php` is `Auth::user()` based and cannot be consumed directly by device token flow.
+- Backup/Restore safety:
+  - Memory backup created: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_priceview_plan_review2_20260319_023147.bak`
+## 2026-03-19 - Omnex-PriceView plan review (Rev.3)
+
+- Request: Verify whether Rev.3 plan fully resolved previously reported issues.
+- Changes:
+  - No application code changes.
+  - Added third review memory entry.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - No syntax/runtime checks executed (no `.php`, `.js`, or Android source/build file changes).
+- Risks/Follow-up:
+  - Major prior issues are mostly fixed (middleware alias, route param format, device type strategy, path corrections, idempotent index/table draft).
+  - Remaining plan-level inconsistencies: player route methods (`register/init`) mismatch with current API, print flow wording conflicts (`new endpoint yok` vs wrapper), and sample wrapper code uses `new FabricToHtmlConverter()` without required constructor args.
+  - Verify SQL compatibility for `CREATE POLICY IF NOT EXISTS` against target PostgreSQL runtime before migration rollout.
+- Backup/Restore safety:
+  - Memory backup created: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_priceview_plan_review3_20260319_024522.bak`
+## 2026-03-19 - Omnex-PriceView plan review (Rev.3 final check)
+
+- Request: Verify whether latest plan revision is fully complete.
+- Changes:
+  - No application code changes.
+  - Added final review memory entry.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - No syntax/runtime checks executed (no `.php`, `.js`, or Android source/build file changes).
+- Risks/Follow-up:
+  - Plan is almost complete; remaining notable issue is sample code using `Request::getBasePath()` although such method does not exist in current codebase.
+  - Optional cleanup: remove stale wording around trigger mention and adjust policy support note wording for PostgreSQL compatibility clarity.
+- Backup/Restore safety:
+  - Memory backup created: `.codex/tmp_backups/CHANGE_MEMORY.md.pre_priceview_plan_review4_20260319_025633.bak`
+
+## 2026-03-19 - Omnex-PriceView plan review (Rev.3 completeness recheck)
+
+- Request: Re-check whether `C:/Users/test/.claude/plans/spicy-wobbling-lighthouse.md` is fully complete after revisions.
+- Changes:
+  - No application code changes.
+  - Added this review memory entry.
+- Files changed:
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - No syntax/runtime checks executed (no `.php`, `.js`, `.kt`, or migration code files changed in repository).
+- Risks/Follow-up:
+  - Plan is almost complete; one concrete mismatch remains: sample code uses `Request::getBasePath()` but `core/Request.php` does not provide this method.
+  - Minor optional cleanup: align wording around trigger vs delete-hook implementation to avoid ambiguity.
+- Backup/Restore safety:
+  - Memory backup created: .codex/tmp_backups/CHANGE_MEMORY.md.pre_priceview_plan_review5_20260319_025937.bak
+
+## 2026-03-19 - PriceView backend implementation (device type + API + migration + i18n)
+- Request: Implement all backend changes for PriceView feature: device type integration, product_deletions migration, API endpoints, route registration, i18n, DeviceRegistry.js
+- Changes:
+  1. TASK 1 - Device type: Added 'priceview' to validTypes/typeMap in create.php, update.php; added to model check list and realtime status in index.php; added to typeMapping in approve.php; auto-detect manufacturer 'Omnex' for priceview
+  2. TASK 2 - Migration: Created 22_priceview.sql with audit.product_deletions table (UUID PK, company_id, sku, barcode, deleted_at, deleted_by), index, RLS policy
+  3. TASK 3 - Delete hook: Added product_deletions insert BEFORE hard delete in delete.php; added 'product_deletions' to Database.php allowedTables whitelist
+  4. TASK 4 - API endpoints: Created 4 new files in api/priceview/ (sync.php, barcode.php, config.php, print.php) with device auth
+  5. TASK 5 - Routes: Registered /api/priceview/* route group with 'device' middleware in api/index.php (after player routes)
+  6. TASK 6 - i18n: Added "types.priceview" to devices.json for all 8 languages (tr/en/ru/az/de/nl/fr/ar)
+  7. TASK 7 - Frontend: Added priceview type definition to DeviceRegistry.js (badge-amber, ti-tag icon, signage category, pwa_player adapter) + isPriceView() method
+- Files:
+  - api/devices/create.php (edited)
+  - api/devices/update.php (edited)
+  - api/devices/index.php (edited)
+  - api/esl/approve.php (edited)
+  - api/products/delete.php (edited)
+  - core/Database.php (edited - whitelist)
+  - api/index.php (edited - routes)
+  - database/postgresql/v2/22_priceview.sql (new)
+  - api/priceview/sync.php (new)
+  - api/priceview/barcode.php (new)
+  - api/priceview/config.php (new)
+  - api/priceview/print.php (new)
+  - locales/{tr,en,ru,az,de,nl,fr,ar}/pages/devices.json (edited)
+  - public/assets/js/core/DeviceRegistry.js (edited)
+- Checks: php -l passed for all 9 PHP files (create.php, update.php, index.php, approve.php, delete.php, sync.php, barcode.php, config.php, print.php, api/index.php)
+- Risk/Follow-up:
+  - Migration 22_priceview.sql must be applied to PostgreSQL manually or via migrate tool
+  - print.php relies on FabricToHtmlConverter::convertToFragment() which exists (verified)
+  - product_deletions table cleanup (old records) not yet implemented - consider adding periodic purge
+
+## 2026-03-19 - Omnex PriceView APK implementation (Android + overlay + scanner + sync + print)
+- Request: Create Omnex PriceView APK from Omnex Player base - offline-first price checker + signage + print
+- Changes:
+  1. Package rename: com.omnex.player -> com.omnex.priceview (8 kt files + build.gradle + manifest + themes + strings)
+  2. Deep link: omnexplayer:// -> omnexpriceview://
+  3. OTA URLs: priceview-update.json + omnex-priceview.apk
+  4. UserAgent: OmnexPriceView/VERSION
+  5. Room database: 5 entities (Product, Category, Bundle, SyncMetadata, DeletedProductLog), 5 DAOs, LocalDatabase singleton
+  6. ProductEntity: 31 fields matching PG catalog.products schema exactly (sku NOT NULL, weight Double, extra_data)
+  7. ApiClient: HttpURLConnection based, X-DEVICE-TOKEN auth, EncryptedSharedPreferences
+  8. ProductSyncManager: Full sync (paginated 5K/page, streaming JSON) + delta sync (since timestamp + deleted_ids)
+  9. SyncWorker: WorkManager periodic (30min), exponential backoff, network constraint
+  10. BarcodeScannerManager: CameraX + ML Kit (EAN-13/8, UPC, Code128/39, QR, ITF), 500ms debounce, torch toggle, scan sound
+  11. PriceViewOverlayManager: FrameLayout overlay on signage, show/hide animation, product card, not-found, auto-timeout
+  12. PrintHelper: Backend HTML fetch -> hidden WebView -> Android PrintManager -> USB/WiFi printer
+  13. PriceViewConfig: EncryptedSharedPreferences for token, regular prefs for settings
+  14. MainActivity integration: FAB click, D-pad center/back handling, barcode key buffer, ExoPlayer mute/unmute, camera permission
+  15. activity_main.xml: 4-layer FrameLayout (ExoPlayer + WebView + PriceView overlay + FAB + ProgressBar)
+  16. 3 overlay layouts: overlay_product_info.xml, overlay_scan_prompt.xml, overlay_not_found.xml
+  17. build.gradle: KAPT + Room 2.6.1 + ML Kit 17.2.0 + CameraX 1.3.1 + WorkManager 2.9.0 + security-crypto + Material 1.11.0
+- Files (Android - 29 Kotlin + 4 XML + 4 config = 37 files total, 6582 lines):
+  - Omnex-PriceView/app/build.gradle (edited)
+  - Omnex-PriceView/app/src/main/AndroidManifest.xml (edited)
+  - Omnex-PriceView/app/src/main/res/values/{themes,strings}.xml (edited)
+  - Omnex-PriceView/app/src/main/res/layout/activity_main.xml (rewritten)
+  - Omnex-PriceView/app/src/main/res/layout/overlay_{product_info,scan_prompt,not_found}.xml (new)
+  - 8 existing .kt files (package rename + deep link + OTA + UserAgent)
+  - 21 new .kt files (data/, dao/, network/, sync/, scanner/, print/, overlay/, settings/)
+- Checks: PHP syntax passed all backend files. Package grep clean. JSON valid 8 langs.
+- Risk/Follow-up:
+  - Gradle build not yet tested (requires Android SDK on machine)
+  - Migration 22_priceview.sql must be applied to PG
+  - DeviceList.js action visibility rules for priceview not yet added (DeviceDetail.js also pending)
+  - ADB deploy to G66 (192.168.1.181:40959) for integration test pending
+

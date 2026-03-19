@@ -302,7 +302,8 @@
         "web_display": "Web Ekran",
         "pc_browser": "Web Ekran (PC)",
         "tv": "TV (Signage)",
-        "panel": "Panel"
+        "panel": "Panel",
+        "priceview": "Fiyat Görüntüleyici"
     },
     "statuses": {
         "online": "Çevrimiçi",

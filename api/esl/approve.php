@@ -265,7 +265,8 @@ try {
         'pc_browser' => 'web_display',
         'web_display' => 'web_display',
         'panel' => 'panel',
-        'pwa_player' => 'android_tv'
+        'pwa_player' => 'android_tv',
+        'priceview' => 'android_tv'
     ];
 
     // Determine actual device type

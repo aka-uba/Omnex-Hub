@@ -32,7 +32,8 @@ $typeMap = [
     'panel' => 'panel',
     'web_display' => 'web_display',
     'pwa_player' => 'web_display',  // PWA Player -> web_display
-    'stream_player' => 'android_tv'  // Stream Mode (VLC/IPTV)
+    'stream_player' => 'android_tv',  // Stream Mode (VLC/IPTV)
+    'priceview' => 'android_tv'        // PriceView price checker kiosks
 ];
 
 $existingMetadata = $device['metadata'] ? json_decode($device['metadata'], true) : [];

@@ -8,7 +8,7 @@ $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 
 // Valid device types
-$validTypes = ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl', 'android_tv', 'panel', 'web_display', 'tablet', 'mobile', 'tv', 'stream_player'];
+$validTypes = ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl', 'android_tv', 'panel', 'web_display', 'tablet', 'mobile', 'tv', 'stream_player', 'priceview'];
 
 // Map frontend type to database type (allowed: esl, android_tv, panel, web_display)
 $typeMap = [
@@ -18,7 +18,8 @@ $typeMap = [
     'hanshow_esl' => 'esl',      // Hanshow E-Paper ESL devices (RF via Gateway)
     'tablet' => 'android_tv',    // Tablets as signage
     'mobile' => 'android_tv',    // Mobile as signage
-    'stream_player' => 'android_tv'  // Stream Mode (VLC/IPTV) devices
+    'stream_player' => 'android_tv',  // Stream Mode (VLC/IPTV) devices
+    'priceview' => 'android_tv'        // PriceView price checker kiosks
 ];
 
 $frontendType = $request->input('type', 'esl');
@@ -121,7 +122,8 @@ $insertData = [
     'model' => $modelValue,
     'manufacturer' => $request->input('manufacturer') ?: (
         $originalType === 'esl_android' ? 'PavoDisplay' :
-        ($originalType === 'hanshow_esl' ? 'Hanshow' : null)
+        ($originalType === 'hanshow_esl' ? 'Hanshow' :
+        ($originalType === 'priceview' ? 'Omnex' : null))
     ),
     'status' => $request->input('status', 'offline'),
     'screen_width' => $request->input('screen_width'),

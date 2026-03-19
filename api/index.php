@@ -1275,6 +1275,24 @@ $router->group(['prefix' => '/api/player', 'middleware' => ['device']], function
 });
 
 // =====================================================
+// PriceView Routes (Device Auth)
+// =====================================================
+$router->group(['prefix' => '/api/priceview', 'middleware' => ['device']], function($router) {
+    $router->get('/products/sync', function($request) {
+        require API_PATH . '/priceview/sync.php';
+    });
+    $router->get('/products/barcode/{barcode}', function($request) {
+        require API_PATH . '/priceview/barcode.php';
+    });
+    $router->get('/config', function($request) {
+        require API_PATH . '/priceview/config.php';
+    });
+    $router->post('/print/{id}', function($request) {
+        require API_PATH . '/priceview/print.php';
+    });
+});
+
+// =====================================================
 // Stream Mode Routes (HLS Signage - VLC/IPTV)
 // =====================================================
 

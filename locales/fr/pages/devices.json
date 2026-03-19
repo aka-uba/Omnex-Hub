@@ -296,7 +296,8 @@
         "web_display": "Affichage Web",
         "pc_browser": "Affichage Web (PC)",
         "tv": "TV (Affichage)",
-        "panel": "Panneau"
+        "panel": "Panneau",
+        "priceview": "Vérificateur de prix"
     },
     "statuses": {
         "online": "En ligne",

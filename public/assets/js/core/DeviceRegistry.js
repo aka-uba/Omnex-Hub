@@ -158,6 +158,18 @@ export const DeviceRegistry = {
             requiresIp: false,
         },
 
+        priceview: {
+            id: 'priceview',
+            dbType: 'android_tv',
+            label: 'PriceView',
+            icon: 'ti-tag',
+            badge: 'badge-amber',
+            category: 'signage',
+            adapter: 'pwa_player',
+            capabilities: ['ping', 'send_image', 'send_video', 'product_sync', 'barcode_scan', 'print'],
+            requiresIp: false,
+        },
+
         // --- Panel Kategorisi ---
 
         panel: {
@@ -290,6 +302,13 @@ export const DeviceRegistry = {
      */
     isSignage(device) {
         return this.resolve(device).category === 'signage';
+    },
+
+    /**
+     * Cihaz PriceView mi?
+     */
+    isPriceView(device) {
+        return this.resolve(device).id === 'priceview';
     },
 
     /**

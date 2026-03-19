@@ -270,7 +270,7 @@ foreach ($devices as &$device) {
     if (!empty($metadata['original_type'])) {
         $device['type'] = $metadata['original_type'];
         $device['original_type'] = $metadata['original_type'];
-    } elseif (!empty($device['model']) && in_array($device['model'], ['esl_android', 'esl_rtos', 'hanshow_esl', 'pwa_player', 'stream_player'])) {
+    } elseif (!empty($device['model']) && in_array($device['model'], ['esl_android', 'esl_rtos', 'hanshow_esl', 'pwa_player', 'stream_player', 'priceview'])) {
         // model alanında orijinal tip saklanıyor
         $device['type'] = $device['model'];
         $device['original_type'] = $device['model'];
@@ -293,7 +293,7 @@ foreach ($devices as &$device) {
     $offlineThresholdSeconds = 120; // 2 minutes (heartbeat is 30s, so 4 missed beats)
     $lastActivity = $device['last_seen'] ?? $device['last_online'] ?? null;
 
-    if ($lastActivity && in_array($device['type'], ['android_tv', 'web_display', 'esl'])) {
+    if ($lastActivity && in_array($device['type'], ['android_tv', 'web_display', 'esl', 'priceview'])) {
         $lastActivityTimestamp = strtotime($lastActivity);
         $nowTimestamp = time();
         $secondsAgo = $nowTimestamp - $lastActivityTimestamp;

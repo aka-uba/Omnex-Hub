@@ -529,6 +529,7 @@ export class DeviceDetailPage {
     }
 
     getHeroIconClass(type, model) {
+        if (model === 'priceview') return 'amber';
         if (model === 'stream_player') return 'purple';
         if (type === 'esl' || type === 'esl_rtos' || type === 'esl_android') return 'blue';
         if (type === 'tv' || type === 'android_tv' || type === 'panel') return 'purple';
@@ -829,7 +830,7 @@ export class DeviceDetailPage {
 
     isSignageDevice(device) {
         const signageTypes = ['android_tv', 'web_display', 'panel', 'tv'];
-        return (signageTypes.includes(device?.type) || device?.model === 'pwa_player') && device?.model !== 'stream_player';
+        return (signageTypes.includes(device?.type) || device?.model === 'pwa_player' || device?.model === 'priceview') && device?.model !== 'stream_player';
     }
 
     isStreamDevice(device) {
@@ -1938,6 +1939,7 @@ export class DeviceDetailPage {
                             <option value="web_display" ${d.type === 'web_display' ? 'selected' : ''}>${this.__('types.web_display')}</option>
                             <option value="tv" ${d.type === 'tv' ? 'selected' : ''}>${this.__('types.tv')}</option>
                             <option value="panel" ${d.type === 'panel' ? 'selected' : ''}>${this.__('types.panel')}</option>
+                            <option value="priceview" ${d.model === 'priceview' ? 'selected' : ''}>${this.__('types.priceview')}</option>
                         </select>
                     </div>
                     <div class="form-group">

@@ -23,7 +23,7 @@ export class DeviceListPage {
     constructor(app) {
         this.app = app;
         this.dataTable = null;
-        this.stats = { online: 0, offline: 0, pending: 0, esl: 0, esl_rtos: 0, esl_android: 0, hanshow_esl: 0, android_tv: 0, tablet: 0, mobile: 0, web_display: 0 };
+        this.stats = { online: 0, offline: 0, pending: 0, esl: 0, esl_rtos: 0, esl_android: 0, hanshow_esl: 0, android_tv: 0, tablet: 0, mobile: 0, web_display: 0, priceview: 0 };
         this.currentApprovalFilter = 'all';
         this.currentFilters = {
             type: '',
@@ -631,7 +631,7 @@ export class DeviceListPage {
                     icon: 'ti-playlist',
                     label: this.__('actions.assignPlaylist'),
                     class: 'btn-ghost text-primary',
-                    visible: (row) => row.approval_status !== 'pending' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player'),
+                    visible: (row) => row.approval_status !== 'pending' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player' || row.model === 'priceview'),
                     onClick: (row) => this.bulkActions?.showAssignPlaylistModal(row)
                 },
                 {
@@ -639,7 +639,7 @@ export class DeviceListPage {
                     icon: 'ti-player-play',
                     label: this.__('actions.startBroadcast'),
                     class: 'btn-ghost text-success',
-                    visible: (row) => row.approval_status === 'approved' && row.status === 'online' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player'),
+                    visible: (row) => row.approval_status === 'approved' && row.status === 'online' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player' || row.model === 'priceview'),
                     onClick: (row) => this.bulkActions?.sendDeviceCommand(row.id, 'start', row.name)
                 },
                 {
@@ -647,7 +647,7 @@ export class DeviceListPage {
                     icon: 'ti-player-stop',
                     label: this.__('actions.stopBroadcast'),
                     class: 'btn-ghost text-danger',
-                    visible: (row) => row.approval_status === 'approved' && row.status === 'online' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player'),
+                    visible: (row) => row.approval_status === 'approved' && row.status === 'online' && (row.type === 'tv' || row.original_type === 'android_tv' || row.original_type === 'web_display' || row.model === 'pwa_player' || row.model === 'priceview'),
                     onClick: (row) => this.bulkActions?.sendDeviceCommand(row.id, 'stop', row.name)
                 },
                 {
@@ -1415,6 +1415,7 @@ export class DeviceListPage {
                             <option value="web_display" ${device?.type === 'web_display' ? 'selected' : ''}>${this.__('types.web_display')}</option>
                             <option value="tv" ${device?.type === 'tv' ? 'selected' : ''}>${this.__('types.tv')}</option>
                             <option value="stream_player" ${device?.model === 'stream_player' ? 'selected' : ''}>${this.__('stream.modeStream')}</option>
+                            <option value="priceview" ${device?.model === 'priceview' ? 'selected' : ''}>${this.__('types.priceview')}</option>
                         </select>
                     </div>
                     <div class="form-group">

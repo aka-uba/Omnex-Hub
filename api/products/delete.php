@@ -20,6 +20,23 @@ if (!$product) {
 
 try {
     $db->beginTransaction();
+
+    // Log deletion for PriceView delta sync (before hard delete)
+    $deletedProduct = $db->fetch("SELECT id, company_id, sku, barcode FROM products WHERE id = ?", [$productId]);
+    if ($deletedProduct) {
+        try {
+            $db->insert('product_deletions', [
+                'product_id' => $deletedProduct['id'],
+                'company_id' => $deletedProduct['company_id'],
+                'sku' => $deletedProduct['sku'],
+                'barcode' => $deletedProduct['barcode'],
+                'deleted_by' => $user['id']
+            ]);
+        } catch (\Exception $e) {
+            // Non-critical: don't block deletion if logging fails
+        }
+    }
+
     // Hard delete - permanently remove from database
     $db->delete('products', 'id = ?', [$productId]);
     $db->commit();

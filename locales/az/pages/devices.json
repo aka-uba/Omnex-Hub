@@ -297,7 +297,8 @@
         "web_display": "Veb Ekranı",
         "pc_browser": "Veb Ekranı (PC)",
         "tv": "TV (İşarə)",
-        "panel": "Panel"
+        "panel": "Panel",
+        "priceview": "Qiymət Yoxlayıcı"
     },
     "statuses": {
         "online": "Onlayn",

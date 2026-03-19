@@ -297,7 +297,8 @@
         "web_display": "Webweergave",
         "pc_browser": "Webweergave (pc)",
         "tv": "TV (Bewegwijzering)",
-        "panel": "Paneel"
+        "panel": "Paneel",
+        "priceview": "Prijschecker"
     },
     "statuses": {
         "online": "Online",
