@@ -1,12 +1,12 @@
 {
     "apps": {
         "com.omnex.player": {
-            "versionCode": 50,
-            "versionName": "2.9.21",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
-            "releaseNotes": "- Display tuning 3 kademe sabitlendi: L1/L2/L3 = 1.00/1.15/1.30\n- Legacy dahil tum Android APK cihazlarda manual contrast ust limiti 1.30 olarak acildi\n- Native video failed Toast kaldirildI",
+            "versionCode": 51,
+            "versionName": "2.9.22",
+            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
+            "releaseNotes": "- OTA update check fix (Handler.postDelayed)\n- Guncelleme bildirimi artik guvenilir sekilde geliyor",
             "mandatory": false,
-            "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
+            "sha256": "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
         },
         "com.omnex.priceview": {
             "versionCode": 3,
@@ -17,10 +17,10 @@
             "sha256": "8dd4fc910da620074752ad7faf9ea4eecef92c75c7ee1d163e0638d44a4e9eec"
         }
     },
-    "versionCode": 50,
-    "versionName": "2.9.21",
-    "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
-    "releaseNotes": "- Display tuning 3 kademe sabitlendi",
+    "versionCode": 51,
+    "versionName": "2.9.22",
+    "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
+    "releaseNotes": "- OTA update check fix",
     "mandatory": false,
-    "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
+    "sha256": "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
 }
