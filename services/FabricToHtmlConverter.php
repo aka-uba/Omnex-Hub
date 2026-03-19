@@ -742,13 +742,21 @@ class FabricToHtmlConverter
         $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
         $style .= "object-fit:cover;background:#000;";
 
-        // Print modunda video yerine ilk kare poster göster
+        // Print modunda video yerine poster/placeholder göster (video print'te oynatılamaz)
         if ($this->printMode) {
             $style .= "display:flex;align-items:center;justify-content:center;";
-            $posterStyle = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;";
-            return "<div style=\"{$style}\">"
-                . "<video src=\"{$this->escAttr($videoSrc)}\" style=\"{$posterStyle}\" preload=\"metadata\" muted></video>"
-                . "<div style=\"position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;\">▶ Video</div>"
+            // Video poster varsa onu göster, yoksa placeholder
+            $poster = $obj['poster'] ?? $obj['posterUrl'] ?? '';
+            if (!empty($poster)) {
+                $posterSrc = $this->resolveMediaUrl($poster);
+                return "<div style=\"{$style}\">"
+                    . "<img src=\"{$this->escAttr($posterSrc)}\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;\" />"
+                    . "</div>";
+            }
+            // Poster yoksa: koyu arka plan + video ikonu (print-friendly)
+            return "<div style=\"{$style}background:#1a1a2e;\">"
+                . "<div style=\"position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#666;font-size:40px;\">&#9654;</div>"
+                . "<div style=\"position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;\">Video</div>"
                 . "</div>";
         }
 
