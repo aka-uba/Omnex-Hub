@@ -258,7 +258,9 @@ class ApprovalFlow {
         const os = (requestData.os || '').toLowerCase();
         const browser = (requestData.browser || '').toLowerCase();
 
-        if (detailedType === 'mobile' || detailedType === 'phone' || detailedType === 'smartphone') {
+        if (detailedType === 'priceview') {
+            autoSelectedType = 'priceview';
+        } else if (detailedType === 'mobile' || detailedType === 'phone' || detailedType === 'smartphone') {
             autoSelectedType = 'mobile';
         } else if (detailedType === 'tablet') {
             autoSelectedType = 'tablet';
@@ -342,7 +344,12 @@ class ApprovalFlow {
             { value: 'mobile', label: this.__('types.mobile') },
             { value: 'pc_browser', label: this.__('types.pc_browser') },
             { value: 'tv', label: this.__('types.tv') },
-            { value: 'esl', label: this.__('types.esl') }
+            { value: 'esl', label: this.__('types.esl') },
+            { value: 'esl_android', label: this.__('types.esl_android') },
+            { value: 'esl_rtos', label: this.__('types.esl_rtos') },
+            { value: 'hanshow_esl', label: this.__('types.hanshow_esl') },
+            { value: 'web_display', label: this.__('types.web_display') },
+            { value: 'priceview', label: this.__('types.priceview') }
         ].map(opt => `<option value="${opt.value}" ${opt.value === autoSelectedType ? 'selected' : ''}>${opt.label}</option>`).join('');
 
         const formContent = `
