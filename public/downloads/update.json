@@ -9,12 +9,12 @@
             "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
         },
         "com.omnex.priceview": {
-            "versionCode": 2,
-            "versionName": "1.0.1",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=2",
-            "releaseNotes": "- Sunucu config fetch (sablon, sync interval, timeout otomatik cekilir)\n- Kamerasiz cihazlarda FAB gizlenir\n- Sync ilerleme gostergesi iyilestirildi\n- Overlay z-index tum icerik turlerinde calisiyor",
+            "versionCode": 3,
+            "versionName": "1.0.2",
+            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=3",
+            "releaseNotes": "- OTA update check fix (Handler vs webView.postDelayed)\n- Remote config fetch ile sablon/sync/timeout otomatik cekilir\n- printEnabled config destegi",
             "mandatory": false,
-            "sha256": "86356f9c476ebcf3f6c4b2456c87cc1cd4efc0d0411a85bfd7baf7247892dbb0"
+            "sha256": "8dd4fc910da620074752ad7faf9ea4eecef92c75c7ee1d163e0638d44a4e9eec"
         }
     },
     "versionCode": 50,
