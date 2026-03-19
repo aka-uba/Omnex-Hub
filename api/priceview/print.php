@@ -7,6 +7,9 @@
  * Returns: text/html - ready for Android PrintManager
  */
 
+// Debug: if this line doesn't appear, file isn't reached
+error_log('[PriceView] print.php reached, method=' . $_SERVER['REQUEST_METHOD']);
+
 try {
 
 require_once SERVICES_PATH . '/FabricToHtmlConverter.php';
