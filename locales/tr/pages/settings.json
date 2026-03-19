@@ -737,6 +737,7 @@
                 "deviceCount": "PriceView Cihaz Sayısı"
             },
             "saved": "FiyatGör ayarları kaydedildi",
+            "perDevice": "Cihaz bazlı",
             "buttons": {
                 "save": "Kaydet",
                 "syncNow": "Şimdi Senkronize Et"

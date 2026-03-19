@@ -674,6 +674,7 @@
                 "deviceCount": "PriceView Cihaz Sayı"
             },
             "saved": "FiyatGör parametrləri yadda saxlanıldı",
+            "perDevice": "Cihaz bazında",
             "buttons": {
                 "save": "Yadda Saxla",
                 "syncNow": "İndi Sinxronizasiya Et"

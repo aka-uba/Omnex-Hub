@@ -5289,8 +5289,8 @@ export class IntegrationSettingsPage {
         }
 
         try {
-            // Get PriceView device count (pwa_player type devices used as priceview)
-            const devicesRes = await this.app.api.get('/devices?type=pwa_player&per_page=1');
+            // Get PriceView device count - filter by model=priceview (type is android_tv in DB)
+            const devicesRes = await this.app.api.get('/devices?model=priceview&per_page=1');
             const devData = devicesRes.data || {};
             if (deviceCountEl) {
                 // Response uses paginated format: { data: [...], meta: { total } }
@@ -5302,9 +5302,9 @@ export class IntegrationSettingsPage {
             if (deviceCountEl) deviceCountEl.textContent = '-';
         }
 
-        // Last sync: check settings data first, or show dash
+        // Last sync: PriceView sync is per-device (WorkManager on Android), not centralized
         if (lastSyncEl) {
-            lastSyncEl.textContent = data.priceview_last_sync || '-';
+            lastSyncEl.textContent = data.priceview_last_sync || this.__('integrations.priceview.perDevice') || 'Cihaz bazlı';
         }
     }
 

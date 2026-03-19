@@ -674,6 +674,7 @@
                 "deviceCount": "Nombre d'appareils PriceView"
             },
             "saved": "Paramètres PriceView enregistrés",
+            "perDevice": "Par appareil",
             "buttons": {
                 "save": "Enregistrer",
                 "syncNow": "Synchroniser maintenant"

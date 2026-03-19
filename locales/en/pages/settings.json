@@ -737,6 +737,7 @@
                 "deviceCount": "PriceView Device Count"
             },
             "saved": "PriceView settings saved",
+            "perDevice": "Per device",
             "buttons": {
                 "save": "Save",
                 "syncNow": "Sync Now"

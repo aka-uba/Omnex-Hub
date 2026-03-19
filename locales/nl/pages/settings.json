@@ -674,6 +674,7 @@
                 "deviceCount": "Aantal PriceView-apparaten"
             },
             "saved": "PriceView-instellingen opgeslagen",
+            "perDevice": "Per apparaat",
             "buttons": {
                 "save": "Opslaan",
                 "syncNow": "Nu synchroniseren"

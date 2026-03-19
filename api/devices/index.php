@@ -19,6 +19,7 @@ $type = $request->query('type', '');
 $status = $request->query('status', '');
 $groupId = $request->query('group_id', '');
 $approvalStatus = $request->query('approval_status', '');
+$model = $request->query('model', '');
 // Branch filter: use query param first, then header
 $branchId = $request->query('branch_id', '') ?: $activeBranchId;
 
@@ -71,6 +72,11 @@ if ($groupId) {
 if ($approvalStatus) {
     $where[] = "d.approval_status = ?";
     $params[] = $approvalStatus;
+}
+
+if ($model) {
+    $where[] = "d.model = ?";
+    $params[] = $model;
 }
 
 if ($branchId) {
