@@ -1409,7 +1409,7 @@ export class DeviceListPage {
                             <option value="esl_rtos" ${device?.type === 'esl_rtos' ? 'selected' : ''}>${this.__('types.esl_rtos')}</option>
                             <option value="esl_android" ${device?.type === 'esl_android' ? 'selected' : ''}>${this.__('types.esl_android')}</option>
                             <option value="hanshow_esl" ${device?.type === 'hanshow_esl' || device?.model === 'hanshow_esl' ? 'selected' : ''}>${this.__('types.hanshow_esl')}</option>
-                            <option value="android_tv" ${device?.type === 'android_tv' ? 'selected' : ''}>${this.__('types.android_tv')}</option>
+                            <option value="android_tv" ${device?.type === 'android_tv' && device?.model !== 'priceview' && device?.model !== 'stream_player' ? 'selected' : ''}>${this.__('types.android_tv')}</option>
                             <option value="tablet" ${device?.type === 'tablet' ? 'selected' : ''}>${this.__('types.tablet')}</option>
                             <option value="mobile" ${device?.type === 'mobile' ? 'selected' : ''}>${this.__('types.mobile')}</option>
                             <option value="web_display" ${device?.type === 'web_display' ? 'selected' : ''}>${this.__('types.web_display')}</option>

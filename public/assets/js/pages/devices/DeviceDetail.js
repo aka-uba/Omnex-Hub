@@ -1933,7 +1933,7 @@ export class DeviceDetailPage {
                             <option value="esl_rtos" ${d.type === 'esl_rtos' ? 'selected' : ''}>${this.__('types.esl_rtos')}</option>
                             <option value="esl_android" ${d.type === 'esl_android' ? 'selected' : ''}>${this.__('types.esl_android')}</option>
                             <option value="hanshow_esl" ${d.type === 'hanshow_esl' || d.model === 'hanshow_esl' ? 'selected' : ''}>${this.__('types.hanshow_esl')}</option>
-                            <option value="android_tv" ${d.type === 'android_tv' || d.type === 'tv' ? 'selected' : ''}>${this.__('types.android_tv')}</option>
+                            <option value="android_tv" ${(d.type === 'android_tv' || d.type === 'tv') && d.model !== 'priceview' && d.model !== 'stream_player' ? 'selected' : ''}>${this.__('types.android_tv')}</option>
                             <option value="tablet" ${d.type === 'tablet' ? 'selected' : ''}>${this.__('types.tablet')}</option>
                             <option value="mobile" ${d.type === 'mobile' ? 'selected' : ''}>${this.__('types.mobile')}</option>
                             <option value="web_display" ${d.type === 'web_display' ? 'selected' : ''}>${this.__('types.web_display')}</option>
