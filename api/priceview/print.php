@@ -7,9 +7,6 @@
  * Returns: text/html - ready for Android PrintManager
  */
 
-// Debug: if this line doesn't appear, file isn't reached
-error_log('[PriceView] print.php reached, method=' . $_SERVER['REQUEST_METHOD']);
-
 try {
 
 require_once SERVICES_PATH . '/FabricToHtmlConverter.php';
@@ -81,9 +78,20 @@ $bg = $result['bg'] ?? '#ffffff';
 // Font imports
 $fontImports = '';
 if (!empty($fonts)) {
-    $fontFamilies = array_unique(array_values($fonts));
-    $fontParams = array_map(function($f) { return urlencode($f) . ':wght@400;700'; }, $fontFamilies);
-    $fontImports = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=' . implode('&family=', $fontParams) . '&display=swap">';
+    // Flatten fonts array (may contain nested arrays from converter)
+    $fontFamilies = [];
+    foreach ($fonts as $f) {
+        if (is_string($f) && !empty(trim($f))) {
+            $fontFamilies[] = trim($f);
+        } elseif (is_array($f) && !empty($f['family'])) {
+            $fontFamilies[] = trim($f['family']);
+        }
+    }
+    $fontFamilies = array_unique($fontFamilies);
+    if (!empty($fontFamilies)) {
+        $fontParams = array_map(function($f) { return urlencode($f) . ':wght@400;700'; }, $fontFamilies);
+        $fontImports = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=' . implode('&family=', $fontParams) . '&display=swap">';
+    }
 }
 
 $productName = htmlspecialchars($product['name'] ?? '', ENT_QUOTES, 'UTF-8');
