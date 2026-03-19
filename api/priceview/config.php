@@ -15,7 +15,7 @@ $companyId = $device['company_id'];
 
 // Company settings
 $settings = $db->fetch(
-    "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL AND key = 'general'",
+    "SELECT data FROM settings WHERE company_id = ? AND user_id IS NULL",
     [$companyId]
 );
 $settingsData = !empty($settings['data']) ? json_decode($settings['data'], true) ?: [] : [];
