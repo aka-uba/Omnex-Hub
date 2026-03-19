@@ -478,7 +478,7 @@ export class ProductListPage {
         // Multi-product send button (always visible, no selection required)
         const multiSendBtn = document.createElement('button');
         multiSendBtn.id = 'btn-multi-product-send';
-        multiSendBtn.className = 'btn btn-sm btn-outline btn-purple';
+        multiSendBtn.className = 'btn btn-sm btn-success';
         multiSendBtn.innerHTML = `<i class="ti ti-layout-grid"></i> <span>${this.__('multiProductSend.buttonLabel')}</span>`;
         multiSendBtn.addEventListener('click', () => this.showMultiProductSendModal());
         toolbarActions.appendChild(multiSendBtn);
@@ -494,7 +494,7 @@ export class ProductListPage {
         // Bulk HTML generate button
         const htmlBtn = document.createElement('button');
         htmlBtn.id = 'btn-bulk-html';
-        htmlBtn.className = 'btn btn-sm btn-cyan hidden';
+        htmlBtn.className = 'btn btn-sm btn-dark hidden';
         htmlBtn.innerHTML = `<i class="ti ti-code"></i> <span>${this.__('generateHtml.bulkButton')}</span>`;
         htmlBtn.addEventListener('click', () => this.bulkGenerateHtml());
         toolbarActions.appendChild(htmlBtn);

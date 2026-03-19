@@ -6615,9 +6615,11 @@ class OmnexPlayer {
         }
 
         try {
+            const basePath = window.PLAYER_BASE_PATH || '';
+            const iconPath = `${basePath}/player/assets/images/icon-192.png`;
             const defaultOptions = {
-                icon: '/player/assets/images/icon-192.png',
-                badge: '/player/assets/images/icon-192.png',
+                icon: iconPath,
+                badge: iconPath,
                 tag: 'omnex-player-' + Date.now(),
                 requireInteraction: false,
                 silent: false,

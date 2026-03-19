@@ -1160,8 +1160,13 @@ export class IntegrationSettingsPage {
                     service_password_set: !!data.service_password || this.halSettings.service_password_set
                 };
                 this.updateHalStatus();
-                // HAL visibility affects role-based menu entries.
-                this.app.layout?.refreshLayout?.();
+                // HAL visibility affects sidebar menu - update menu without full page reload
+                if (this.app.layout) {
+                    const nav = document.getElementById('sidebar-nav');
+                    if (nav) {
+                        nav.innerHTML = this.app.layout.renderMenu();
+                    }
+                }
             } else {
                 throw new Error(response.message || this.__('integrations.hal.toast.saveFailed'));
             }

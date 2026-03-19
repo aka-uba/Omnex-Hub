@@ -168,7 +168,7 @@ export class PwaInstallPrompt {
             <div class="pwa-install-modal-content">
                 <div class="pwa-modal-header">
                     <div class="pwa-app-info">
-                        <img src="branding/icon-192.svg" alt="Omnex Hub" class="pwa-app-icon">
+                        <img src="branding/icon-192.png" alt="Omnex Hub" class="pwa-app-icon">
                         <div>
                             <h3>Omnex Display Hub</h3>
                             <p>Uygulamayi cihaziniza yukleyin</p>

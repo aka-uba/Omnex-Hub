@@ -2564,15 +2564,7 @@
     margin-right: 0 !important;
 }
 
-/* Remove gradient pseudo-element overlay from toolbar buttons */
-[data-table-toolbar-actions] .btn::before {
-    display: none !important;
-}
-
-/* Remove shine hover effect from toolbar buttons */
-[data-table-toolbar-actions] .btn::after {
-    display: none !important;
-}
+/* Toolbar buttons keep gradient overlay and flash shine effect from base .btn */
 
 /* Override gradient backgrounds with solid colors for filled toolbar buttons */
 [data-table-toolbar-actions] .btn-primary {
@@ -2604,10 +2596,17 @@
 }
 
 [data-table-toolbar-actions] .btn-success {
-    background: #10b981 !important;
+    background: #059669 !important;
 }
 [data-table-toolbar-actions] .btn-success:hover {
-    background: #059669 !important;
+    background: #047857 !important;
+}
+
+[data-table-toolbar-actions] .btn-dark {
+    background: #374151 !important;
+}
+[data-table-toolbar-actions] .btn-dark:hover {
+    background: #1f2937 !important;
 }
 
 [data-table-toolbar-actions] .btn-warning {
@@ -2617,28 +2616,9 @@
     background: #d97706 !important;
 }
 
-/* Outline variants stay transparent bg, solid border */
-[data-table-toolbar-actions] .btn-outline {
-    background: transparent !important;
-}
-[data-table-toolbar-actions] .btn-outline:hover {
-    background: var(--bg-tertiary) !important;
-}
+/* All toolbar buttons are filled - outline overrides removed */
 
-[data-table-toolbar-actions] .btn-outline.btn-purple {
-    background: transparent !important;
-    color: #8b5cf6;
-    border-color: #8b5cf6;
-}
-[data-table-toolbar-actions] .btn-outline.btn-purple:hover {
-    background: rgba(139, 92, 246, 0.1) !important;
-    color: #7c3aed;
-}
-
-/* Disable hover transform lift on toolbar buttons for cleaner look */
-[data-table-toolbar-actions] .btn:hover {
-    transform: none;
-}
+/* Toolbar buttons inherit hover transform from base .btn */
 
 /* Products Stats Grid - Setup Wizard Style */
 .products-stats-grid {
