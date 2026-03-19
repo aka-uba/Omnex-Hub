@@ -663,6 +663,7 @@
             },
             "hints": {
                 "syncInterval": "Məhsul verilərinin serverdən çəkilmə aralığı",
+                "syncIntervalMin": "Minimum 15 dəqiqə (Android WorkManager məhdudiyyəti)",
                 "overlayTimeout": "Barkod oxudulduqdan sonra qiymət ekranının görünmə müddəti",
                 "fontSize": "1.0 = Normal, 1.5 = Böyük, 2.0 = Çox Böyük",
                 "displayTemplate": "Məhsul məlumatı göstərmə şablonu (boş = standart)"

@@ -726,6 +726,7 @@
             },
             "hints": {
                 "syncInterval": "How often product data syncs from server",
+                "syncIntervalMin": "Minimum 15 minutes (Android WorkManager limitation)",
                 "overlayTimeout": "How long the price screen shows after scanning",
                 "fontSize": "1.0 = Normal, 1.5 = Large, 2.0 = Extra Large",
                 "displayTemplate": "Product info display template (empty = default)"

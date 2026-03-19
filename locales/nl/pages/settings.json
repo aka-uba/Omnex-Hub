@@ -663,6 +663,7 @@
             },
             "hints": {
                 "syncInterval": "Hoe vaak productgegevens worden gesynchroniseerd met de server",
+                "syncIntervalMin": "Minimaal 15 minuten (Android WorkManager-beperking)",
                 "overlayTimeout": "Hoe lang het prijsscherm wordt weergegeven na het scannen",
                 "fontSize": "1.0 = Normaal, 1.5 = Groot, 2.0 = Extra groot",
                 "displayTemplate": "Sjabloon voor productinformatieweergave (leeg = standaard)"

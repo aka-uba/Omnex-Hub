@@ -726,6 +726,7 @@
             },
             "hints": {
                 "syncInterval": "Ürün verilerinin sunucudan çekilme aralığı",
+                "syncIntervalMin": "Minimum 15 dakika (Android WorkManager sınırlaması)",
                 "overlayTimeout": "Barkod okutulduktan sonra fiyat ekranının görünme süresi",
                 "fontSize": "1.0 = Normal, 1.5 = Büyük, 2.0 = Çok Büyük",
                 "displayTemplate": "Ürün bilgisi gösterim şablonu (boş = varsayılan)"

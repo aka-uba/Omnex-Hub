@@ -663,6 +663,7 @@
             },
             "hints": {
                 "syncInterval": "Wie oft Produktdaten vom Server synchronisiert werden",
+                "syncIntervalMin": "Mindestens 15 Minuten (Android WorkManager-Einschränkung)",
                 "overlayTimeout": "Wie lange der Preisbildschirm nach dem Scannen angezeigt wird",
                 "fontSize": "1.0 = Normal, 1.5 = Groß, 2.0 = Sehr groß",
                 "displayTemplate": "Vorlage für Produktinformationsanzeige (leer = Standard)"

@@ -5054,8 +5054,9 @@ export class IntegrationSettingsPage {
                                 <div class="form-group">
                                     <label class="form-label">${this.__('integrations.priceview.fields.syncInterval')}</label>
                                     <input type="number" id="pv-sync-interval" class="form-input"
-                                        min="1" max="1440" value="${s.sync_interval || 30}">
+                                        min="15" max="1440" value="${s.sync_interval || 30}">
                                     <small class="form-hint">${this.__('integrations.priceview.hints.syncInterval')}</small>
+                                    <small class="form-hint text-warning"><i class="ti ti-alert-triangle"></i> ${this.__('integrations.priceview.hints.syncIntervalMin')}</small>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">${this.__('integrations.priceview.fields.autoSync')}</label>
@@ -5185,7 +5186,7 @@ export class IntegrationSettingsPage {
 
     async loadPriceviewSettings() {
         try {
-            const response = await this.app.api.get('/settings');
+            const response = await this.app.api.get('/settings?scope=company');
             const data = response.data?.data || response.data || {};
             this.priceviewSettings = {
                 sync_interval: data.priceview_sync_interval || 30,
@@ -5269,26 +5270,55 @@ export class IntegrationSettingsPage {
         }
     }
 
-    _loadPriceviewStatus(data) {
+    async _loadPriceviewStatus(data) {
         const lastSyncEl = document.getElementById('pv-last-sync');
         const productCountEl = document.getElementById('pv-product-count');
         const deviceCountEl = document.getElementById('pv-device-count');
 
+        // Fetch real status data from actual sources
+        try {
+            // Get dashboard stats for product count
+            const statsRes = await this.app.api.get('/reports/dashboard-stats');
+            const stats = statsRes.data?.data || statsRes.data || {};
+            if (productCountEl) {
+                productCountEl.textContent = stats.products ?? stats.total_products ?? '-';
+            }
+        } catch (e) {
+            Logger.warn('Failed to load product count for PriceView status', e);
+            if (productCountEl) productCountEl.textContent = '-';
+        }
+
+        try {
+            // Get PriceView device count (pwa_player type devices used as priceview)
+            const devicesRes = await this.app.api.get('/devices?type=pwa_player&per_page=1');
+            const devData = devicesRes.data || {};
+            if (deviceCountEl) {
+                // Response uses paginated format: { data: [...], meta: { total } }
+                const total = devData.meta?.total ?? devData.total ?? (Array.isArray(devData.data) ? devData.data.length : 0);
+                deviceCountEl.textContent = total;
+            }
+        } catch (e) {
+            Logger.warn('Failed to load device count for PriceView status', e);
+            if (deviceCountEl) deviceCountEl.textContent = '-';
+        }
+
+        // Last sync: check settings data first, or show dash
         if (lastSyncEl) {
             lastSyncEl.textContent = data.priceview_last_sync || '-';
-        }
-        if (productCountEl) {
-            productCountEl.textContent = data.priceview_product_count ?? '-';
-        }
-        if (deviceCountEl) {
-            deviceCountEl.textContent = data.priceview_device_count ?? '-';
         }
     }
 
     async savePriceviewSettings() {
         try {
+            let syncInterval = parseInt(document.getElementById('pv-sync-interval')?.value) || 30;
+            if (syncInterval < 15) {
+                syncInterval = 15;
+                const input = document.getElementById('pv-sync-interval');
+                if (input) input.value = 15;
+                Toast.warning(this.__('integrations.priceview.hints.syncIntervalMin'));
+            }
             const settings = {
-                priceview_sync_interval: parseInt(document.getElementById('pv-sync-interval')?.value) || 30,
+                priceview_sync_interval: syncInterval,
                 priceview_auto_sync: document.getElementById('pv-auto-sync')?.checked ?? true,
                 priceview_overlay_timeout: parseInt(document.getElementById('pv-overlay-timeout')?.value) || 10,
                 priceview_print_enabled: document.getElementById('pv-print-enabled')?.checked ?? true,
@@ -5298,7 +5328,7 @@ export class IntegrationSettingsPage {
                 priceview_product_display_template: document.getElementById('pv-display-template')?.value || null
             };
 
-            await this.app.api.put('/settings', settings);
+            await this.app.api.put('/settings?scope=company', settings);
             Toast.success(this.__('integrations.priceview.saved'));
         } catch (error) {
             Logger.error('Failed to save PriceView settings', error);
