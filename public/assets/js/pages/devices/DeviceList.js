@@ -1831,7 +1831,7 @@ export class DeviceListPage {
         ).join('');
 
         // Detect incoming device type for pre-selection
-        const incomingType = device.device_type || device.type || '';
+        const incomingType = device.detailedDeviceType || device.device_type || device.type || '';
 
         const formContent = `
             <form id="approve-form" class="space-y-4">

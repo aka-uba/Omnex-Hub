@@ -108,10 +108,11 @@ if ($request->has('current_content')) {
 }
 
 
-// Map type - store original_type in metadata for frontend
+// Map type - store original_type in metadata and model column for frontend
 if ($request->has('type')) {
     $frontendType = $request->input('type');
     $data['type'] = $typeMap[$frontendType] ?? $frontendType;
+    $data['model'] = $frontendType; // Store original type in model column for DeviceRegistry.resolve()
 
     // Store original frontend type in metadata
     $metadataPayload = is_array($existingMetadata) ? $existingMetadata : [];
