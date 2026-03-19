@@ -56,11 +56,15 @@ if (!empty($product['kunye_data'])) {
 }
 
 // Create converter (same pattern as print-html.php)
-$basePath = defined('BASE_PATH') ? basename(BASE_PATH) : 'market-etiket-sistemi';
-$converter = new FabricToHtmlConverter($companyId, '/' . $basePath);
+try {
+    $basePath = defined('BASE_PATH') ? '/' . basename(BASE_PATH) : '';
+    $converter = new FabricToHtmlConverter($companyId, $basePath);
 
-// Convert template to HTML fragment
-$result = $converter->convertToFragment($template, [$product], ['print_mode' => true]);
+    // Convert template to HTML fragment
+    $result = $converter->convertToFragment($template, [$product], ['print_mode' => true]);
+} catch (Throwable $e) {
+    Response::error('Converter error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine(), 500);
+}
 
 // Build full HTML page
 $fragment = $result['fragment'] ?? '';
