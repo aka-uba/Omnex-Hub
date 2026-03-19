@@ -1605,26 +1605,23 @@ export class DeviceDetailPage {
      * Trigger PriceView sync
      */
     async priceviewSyncNow() {
+        // Sync runs on-device via WorkManager. This button refreshes status info.
         try {
             const btn = document.getElementById('pv-sync-now-btn');
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<i class="ti ti-loader animate-spin"></i> ${this.__('priceview.syncNow')}`;
+                btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> G\u00FCncelleniyor...';
             }
-
-            await this.app.api.post(`/devices/${this.deviceId}/control`, { action: 'sync' });
-            Toast.success(this.__('toast.commandSent'));
-
-            // Refresh settings after a short delay to reflect sync result
-            setTimeout(() => this.loadPriceViewSettings(), 3000);
+            await this.loadPriceViewSettings();
+            Toast.success('Durum g\u00FCncellendi');
         } catch (error) {
-            Logger.error('PriceView sync error:', error);
-            Toast.error(error.message || this.__('toast.commandFailed'));
+            Logger.error('PriceView status refresh error:', error);
+            Toast.error(error.message || 'G\u00FCncelleme ba\u015Far\u0131s\u0131z');
         } finally {
             const btn = document.getElementById('pv-sync-now-btn');
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = `<i class="ti ti-refresh"></i> ${this.__('priceview.syncNow')}`;
+                btn.innerHTML = '<i class="ti ti-refresh"></i> Durumu G\u00FCncelle';
             }
         }
     }
