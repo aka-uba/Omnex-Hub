@@ -1830,6 +1830,9 @@ export class DeviceListPage {
             `<option value="${g.id}">${escapeHTML(g.name)}</option>`
         ).join('');
 
+        // Detect incoming device type for pre-selection
+        const incomingType = device.device_type || device.type || '';
+
         const formContent = `
             <form id="approve-form" class="space-y-4">
                 <div class="alert alert-info">
@@ -1838,6 +1841,7 @@ export class DeviceListPage {
                         <strong>${this.__('pendingDevices.deviceInfo')}</strong>
                         <p>${this.__('pendingDevices.syncCode')}: <code>${escapeHTML(device.sync_code || '-')}</code></p>
                         <p>${this.__('columns.ipAddress')}: ${escapeHTML(this.normalizeLoopbackIp(device.ip_address || '-') || '-')}</p>
+                        <p>${this.__('form.fields.type')}: <strong>${escapeHTML(incomingType || '-')}</strong></p>
                         <p>${this.__('pendingDevices.createdAt')}: ${device.created_at ? new Date(device.created_at).toLocaleString() : '-'}</p>
                     </div>
                 </div>
@@ -1845,6 +1849,18 @@ export class DeviceListPage {
                     <label class="form-label">${this.__('form.fields.name')} *</label>
                     <input type="text" id="approve-device-name" class="form-input" required
                         value="${escapeHTML(device.name || '')}" placeholder="${this.__('form.placeholders.name')}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">${this.__('form.fields.type')} *</label>
+                    <select id="approve-device-type" class="form-select" required>
+                        <option value="esl" ${incomingType === 'esl' ? 'selected' : ''}>${this.__('types.esl')}</option>
+                        <option value="esl_rtos" ${incomingType === 'esl_rtos' ? 'selected' : ''}>${this.__('types.esl_rtos')}</option>
+                        <option value="esl_android" ${incomingType === 'esl_android' ? 'selected' : ''}>${this.__('types.esl_android')}</option>
+                        <option value="hanshow_esl" ${incomingType === 'hanshow_esl' ? 'selected' : ''}>${this.__('types.hanshow_esl')}</option>
+                        <option value="android_tv" ${incomingType === 'android_tv' || incomingType === 'tv' || incomingType === 'tablet' || incomingType === 'mobile' || incomingType === 'desktop' ? 'selected' : ''}>${this.__('types.android_tv')}</option>
+                        <option value="web_display" ${incomingType === 'web_display' ? 'selected' : ''}>${this.__('types.web_display')}</option>
+                        <option value="priceview" ${incomingType === 'priceview' ? 'selected' : ''}>${this.__('types.priceview')}</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">${this.__('form.fields.group')}</label>
@@ -1881,6 +1897,7 @@ export class DeviceListPage {
         const id = document.getElementById('approve-device-id')?.value;
         const syncCode = document.getElementById('approve-sync-code')?.value;
         const name = document.getElementById('approve-device-name')?.value?.trim();
+        const deviceType = document.getElementById('approve-device-type')?.value || '';
         const group_id = document.getElementById('approve-device-group')?.value || null;
         const location = document.getElementById('approve-device-location')?.value?.trim();
 
@@ -1894,6 +1911,7 @@ export class DeviceListPage {
                 device_id: id,
                 sync_code: syncCode,
                 name: name,
+                type: deviceType,
                 group_id: group_id,
                 location: location
             });

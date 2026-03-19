@@ -40,7 +40,7 @@ $name = trim($data['name'] ?? '');
 $groupId = $data['groupId'] ?? $data['group_id'] ?? null;
 $playlistId = $data['playlistId'] ?? $data['playlist_id'] ?? null;
 $storeId = $data['storeId'] ?? $data['store_id'] ?? null;
-$deviceType = $data['type'] ?? 'esl';
+$deviceType = $data['type'] ?? null; // Will fallback to sync_request.device_type if not provided
 $location = $data['location'] ?? null;
 $requestId = $data['request_id'] ?? null;
 $communicationMode = $data['communication_mode'] ?? null; // 'mqtt', 'http-server', 'http'
@@ -125,6 +125,11 @@ if ($targetDeviceId !== '') {
     if (!$targetDevice) {
         Response::notFound('Target device not found');
     }
+}
+
+// If type was not provided in body, use sync_request.device_type as fallback
+if (empty($deviceType)) {
+    $deviceType = $syncRequest['device_type'] ?? 'esl';
 }
 
 // Determine if this is a PWA player or ESL registration
@@ -330,6 +335,7 @@ try {
             'group_id' => $groupId,
             'store_id' => $storeId,
             'type' => $actualDeviceType,
+            'model' => $originalType,
             'mac_address' => $syncRequest['mac_address'] ?? ($targetDevice['mac_address'] ?? null),
             'ip_address' => $syncRequest['ip_address'] ?? ($targetDevice['ip_address'] ?? null),
             'device_id' => $deviceIdentifier,
@@ -352,8 +358,8 @@ try {
         $db->update('devices', $updatePayload, 'id = ? AND company_id = ?', [$deviceId, $companyId]);
     } else {
         $db->query(
-            "INSERT INTO devices (id, company_id, group_id, store_id, name, type, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+            "INSERT INTO devices (id, company_id, group_id, store_id, name, type, model, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
             [
                 $deviceId,
                 $companyId,
@@ -361,6 +367,7 @@ try {
                 $storeId,
                 $name,
                 $actualDeviceType,
+                $originalType,
                 $syncRequest['mac_address'] ?? null,
                 $syncRequest['ip_address'] ?? null,
                 $deviceIdentifier,
