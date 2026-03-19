@@ -57,10 +57,9 @@ if (!empty($product['kunye_data'])) {
     }
 }
 
-// Create converter (same pattern as print-html.php)
+// Create converter - let detectBasePath() auto-detect the correct web path
 try {
-    $basePath = defined('BASE_PATH') ? '/' . basename(BASE_PATH) : '';
-    $converter = new FabricToHtmlConverter($companyId, $basePath);
+    $converter = new FabricToHtmlConverter($companyId);
 
     // Convert template to HTML fragment
     $result = $converter->convertToFragment($template, [$product], ['print_mode' => true]);
