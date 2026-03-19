@@ -2249,10 +2249,13 @@ class OmnexPlayer {
         }
 
         // Detect Device Type
+        const isPriceViewUa = /OmnexPriceView/i.test(ua);
         const isTvUa = /Android/i.test(ua) && /TV|BRAVIA|AFT|AFTM|Fire TV|SmartTV/i.test(ua);
         const isSmartTvUa = /Smart-?TV|Tizen|webOS|NetCast|VIDAA/i.test(ua);
 
-        if (isTvUa || isSmartTvUa) {
+        if (isPriceViewUa) {
+            result.deviceType = 'priceview';
+        } else if (isTvUa || isSmartTvUa) {
             result.deviceType = 'tv';
         } else if (/iPad/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua))) {
             result.deviceType = 'tablet';
