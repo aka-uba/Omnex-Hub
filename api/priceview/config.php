@@ -4,6 +4,8 @@
  * GET /api/priceview/config
  */
 
+try {
+
 $db = Database::getInstance();
 $device = DeviceAuthMiddleware::device();
 
@@ -51,3 +53,7 @@ Response::success([
     'product_count' => intval($productCount['cnt'] ?? 0),
     'server_time' => date('c')
 ]);
+
+} catch (Throwable $e) {
+    Response::error('Config error: ' . $e->getMessage(), 500);
+}
