@@ -24,7 +24,7 @@ $settingsData = !empty($settings['data']) ? json_decode($settings['data'], true)
 
 // Available print templates (active templates for this company or system)
 $templates = $db->fetchAll(
-    "SELECT id, name, type, width, height, thumbnail, preview_image, grid_layout
+    "SELECT id, name, type, width, height, preview_image, render_image, grid_layout
      FROM templates
      WHERE (company_id = ? OR scope = 'system')
        AND status = 'active'
