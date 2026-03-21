@@ -9,12 +9,12 @@
             "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
         },
         "com.omnex.priceview": {
-            "versionCode": 1,
-            "versionName": "1.0.0",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=1",
-            "releaseNotes": "- Omnex PriceView ilk surum\n- Offline-first urun sorgulama (SQLite + delta sync)\n- Harici barkod okuyucu + kamera destegi\n- Galeri'den barkod okuma\n- Android Print Framework ile yazici ciktisi\n- Signage yayini arka planda devam eder",
+            "versionCode": 4,
+            "versionName": "1.0.3",
+            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=4",
+            "releaseNotes": "- Branch bazli fiyat sync (ProductPriceResolver)\n- Bundle/paket sync endpoint + cihaz sync manager eklendi\n- Barkod akisinda bundle fallback eklendi\n- Media URL normalize edildi (resim/video)",
             "mandatory": false,
-            "sha256": "12e08d3d93486625986721041c7ee223414d0902641564832f50d95647102c14"
+            "sha256": "b86371bf78162c4bedf917da1b34391a9f666c9c0595475b0ceb6b5ea621ad08"
         }
     },
     "versionCode": 50,

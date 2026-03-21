@@ -76,7 +76,7 @@ class DeviceAuthMiddleware
 
         // Fallback to plain token validation (legacy)
         $deviceToken = $db->fetch(
-            "SELECT dt.*, d.id as device_id, d.company_id, d.name as device_name,
+            "SELECT dt.*, d.id as device_id, d.company_id, d.branch_id, d.name as device_name,
                     d.type as device_type, d.status as device_status,
                     c.name as company_name, g.name as group_name
              FROM device_tokens dt
@@ -91,7 +91,7 @@ class DeviceAuthMiddleware
             // Try by token_hash as well
             $tokenHash = hash('sha256', $token);
             $deviceToken = $db->fetch(
-                "SELECT dt.*, d.id as device_id, d.company_id, d.name as device_name,
+                "SELECT dt.*, d.id as device_id, d.company_id, d.branch_id, d.name as device_name,
                         d.type as device_type, d.status as device_status,
                         c.name as company_name, g.name as group_name
                  FROM device_tokens dt

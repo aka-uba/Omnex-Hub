@@ -6906,3 +6906,106 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - If backend later paginates folders separately with different semantics, frontend slot-adjustment logic should be revalidated.
 - Backup/restore safety steps:
   - Not required (focused JS edits, no encoding conversion performed).
+
+## 2026-03-21 - PriceView end-to-end analysis (APK/backend/frontend + branch/bundle/sqlite scope)
+- Request: Analyze Omnex-PriceView system end-to-end: APK sync flow, backend/frontend communication, company/branch behavior, whether branch pricing is fetched, whether bundle data is fetched, and exact SQLite table/id names.
+- Changes:
+  - Analysis-only code reading across APK (`Omnex-PriceView`), backend (`api/priceview/*`, middleware), frontend settings pages, and DB schemas.
+  - No runtime logic changed.
+- Files changed:
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - Not applicable (no code edits).
+- Risk/Follow-up:
+  - Confirmed architecture gaps: PriceView sync currently product-only and company-wide; branch override and bundle/category sync not implemented in active flow.
+  - Device detail page writes PriceView settings to user scope while device config endpoint reads company scope.
+- Backup/restore safety steps:
+  - Not required (analysis-only, no risky encoding edits).
+## 2026-03-22 - PriceView branch-aware product sync + bundle sync + barcode bundle fallback
+- Request: Make PriceView sync branch-aware with `ProductPriceResolver`; add bundle sync endpoint + APK bundle sync manager; add bundle fallback in barcode flow; ensure products + bundles are synced to local SQLite with media URLs; apply backup-safe edits.
+- Changes:
+  1. Backend branch/device context and sync APIs
+     - `middleware/DeviceAuthMiddleware.php`: plain-token auth queries now include `d.branch_id`.
+     - `api/priceview/sync.php`: branch-aware product value resolution (`ProductPriceResolver`), branch override-aware delta detection, and media URL normalization (`image_url`, `images`, `videos`).
+     - `api/priceview/barcode.php`: branch-aware single-product resolution + media URL normalization.
+  2. Backend bundle APIs/routes/deletion audit
+     - `api/priceview/bundles-sync.php` (new): full+delta bundle sync with branch override awareness (`BundlePriceResolver`), deletion list support via `bundle_deletions`, `products_json` assembly from `bundle_items`, media URL normalization.
+     - `api/priceview/bundles-barcode.php` (new): bundle barcode/SKU lookup with branch price resolution and normalized media URLs.
+     - `api/index.php`: registered `/api/priceview/bundles/sync` and `/api/priceview/bundles/barcode/{barcode}` routes.
+     - `api/bundles/delete.php`: delete flow now writes best-effort `bundle_deletions` audit record inside transaction.
+     - `database/postgresql/v2/23_priceview_bundles.sql` (new): `audit.bundle_deletions` table + index + RLS policy.
+     - `core/Database.php`: migration list includes `22_priceview.sql` + `23_priceview_bundles.sql`; `bundle_deletions` added to `validateTable` allowlist.
+  3. APK sync/barcode integration
+     - `Omnex-PriceView/.../data/dao/BundleDao.kt`: added `findBySku`, `getCount`, `deleteByIds`.
+     - `Omnex-PriceView/.../sync/BundleSyncManager.kt` (new): full+delta bundle sync, metadata tracking, deletion handling; media safety improvement: if `images` is empty but `image_url` exists, maps `image_url` into `images` JSON array for local persistence.
+     - `Omnex-PriceView/.../sync/SyncWorker.kt`: runs product and bundle sync together; aggregated success/failure payload.
+     - `Omnex-PriceView/.../MainActivity.kt`: barcode flow now includes local/online bundle fallback (`findByBarcode`, `findBySku`, `/api/priceview/bundles/barcode/{barcode}`) and mapping helpers.
+- Files changed:
+  - middleware/DeviceAuthMiddleware.php
+  - api/priceview/sync.php
+  - api/priceview/barcode.php
+  - api/priceview/bundles-sync.php (new)
+  - api/priceview/bundles-barcode.php (new)
+  - api/index.php
+  - api/bundles/delete.php
+  - core/Database.php
+  - database/postgresql/v2/23_priceview_bundles.sql (new)
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/data/dao/BundleDao.kt
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/sync/BundleSyncManager.kt (new)
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/sync/SyncWorker.kt
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l middleware/DeviceAuthMiddleware.php` (OK)
+  - `php -l api/priceview/sync.php` (OK)
+  - `php -l api/priceview/barcode.php` (OK)
+  - `php -l api/priceview/bundles-sync.php` (OK)
+  - `php -l api/priceview/bundles-barcode.php` (OK)
+  - `php -l api/index.php` (OK)
+  - `php -l api/bundles/delete.php` (OK)
+  - `php -l core/Database.php` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:compilePlaystoreDebugKotlin` (OK, warnings only)
+- Risk/Follow-up:
+  - `Omnex-PriceView/` is not a tracked git repo in current workspace root; APK changes will not appear in root git history unless this directory is versioned separately.
+  - Kotlin build emits pre-existing deprecation/type warnings; compile succeeds.
+- Backup/restore safety steps:
+  - Created timestamped backups before risky edits (`*.bak.20260321_234024` set for backend/Kotlin files and `BundleSyncManager.kt.bak.20260322_000002` for latest edit).
+## 2026-03-22 - PriceView APK v1.0.3 release + update.json version bump + deploy prep
+- Request: Commit/push/pull; build latest PriceView APK, copy to `downloads`, and update only PriceView section in `update.json` so devices can auto-update.
+- Changes:
+  - Built standalone debug APK from `Omnex-PriceView` with `versionCode=4`, `versionName=1.0.3`.
+  - Copied APK to:
+    - `downloads/omnex-priceview.apk`
+    - `public/downloads/omnex-priceview.apk`
+  - Updated only `apps.com.omnex.priceview` fields in:
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    (versionCode/versionName/downloadUrl/releaseNotes/sha256)
+  - Included pending backend PriceView branch+bundle sync changes in release commit set.
+- Files changed:
+  - downloads/omnex-priceview.apk
+  - public/downloads/omnex-priceview.apk
+  - downloads/update.json
+  - public/downloads/update.json
+  - api/priceview/sync.php
+  - api/priceview/barcode.php
+  - api/priceview/bundles-sync.php
+  - api/priceview/bundles-barcode.php
+  - api/index.php
+  - api/bundles/delete.php
+  - middleware/DeviceAuthMiddleware.php
+  - core/Database.php
+  - database/postgresql/v2/23_priceview_bundles.sql
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - APK metadata check: `aapt dump badging downloads/omnex-priceview.apk` => `versionCode='4'`, `versionName='1.0.3'`.
+  - SHA256 verification: APK hash matches both `update.json` files.
+  - `php -l` on changed backend files (all OK).
+  - Gradle build: `./gradlew.bat :app:publishDebugApk` (successful, warnings only).
+- Risk/Follow-up:
+  - `Omnex-PriceView/` source directory is currently untracked in root git; APK artifact is committed for distribution, but app source history is not in this repo.
+- Backup/restore safety steps:
+  - Backup files created before edits:
+    - `Omnex-PriceView/app/build.gradle.bak.20260322_001415`
+    - `downloads/update.json.bak_priceview_release_20260322_001415`
+    - `public/downloads/update.json.bak_priceview_release_20260322_001415`

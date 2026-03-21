@@ -1281,8 +1281,14 @@ $router->group(['prefix' => '/api/priceview', 'middleware' => ['device']], funct
     $router->get('/products/sync', function($request) {
         require API_PATH . '/priceview/sync.php';
     });
+    $router->get('/bundles/sync', function($request) {
+        require API_PATH . '/priceview/bundles-sync.php';
+    });
     $router->get('/products/barcode/{barcode}', function($request) {
         require API_PATH . '/priceview/barcode.php';
+    });
+    $router->get('/bundles/barcode/{barcode}', function($request) {
+        require API_PATH . '/priceview/bundles-barcode.php';
     });
     $router->get('/config', function($request) {
         require API_PATH . '/priceview/config.php';

@@ -42,6 +42,8 @@ class Database
         '18_integration.sql',
         '19_audit.sql',
         '20_legacy.sql',
+        '22_priceview.sql',
+        '23_priceview_bundles.sql',
         '30_constraints.sql',
         '40_indexes.sql',
         '41_perf_indexes.sql',
@@ -611,7 +613,7 @@ class Database
             'license_device_pricing',
             'erp_import_files',
             'tenant_backups',
-            'product_deletions'
+            'product_deletions', 'bundle_deletions'
         ];
 
         if (!in_array($table, $allowedTables, true)) {
