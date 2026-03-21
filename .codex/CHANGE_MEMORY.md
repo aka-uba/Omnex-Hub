@@ -6881,3 +6881,28 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - `node --check public/assets/js/pages/media/MediaLibrary.js` (OK)
 - Risk/Follow-up:
   - Video grid cards now prioritize fill (`cover`), so edge cropping can occur for extreme aspect-ratio videos (expected tradeoff for full-fit preview).
+
+## 2026-03-21 - Media/MediaPicker pagination slot parity fix (folder-aware)
+- Request: In media grid and MediaPicker modals, each page should be fully filled (no 3-card row where 4 should fit); suspected fixed per-page count and folder counting mismatch.
+- Changes:
+  1. `public/assets/js/pages/media/MediaLibrary.js`
+     - Page slot size standardized to `28` (`pageSlotCount`).
+     - `/media` pagination made folder-aware: fetch page once, subtract returned folder card count from file `per_page`, and refetch so `folders + files` fill the same grid slot budget.
+     - Grid/table pagination UI now uses fixed slot count while stats use API `meta.per_page` for file-range calculations.
+  2. `public/assets/js/pages/products/form/MediaPicker.js`
+     - Picker states standardized to `pageSlotCount: 28`.
+     - Scope-based folder-aware per-page fetching added in `_loadMediaWithScopes()`.
+     - Multi-image mode rule added: company scope folders are hidden, so they are not subtracted from visible slot budget; public scope folders are subtracted.
+     - Active library pagination state now syncs `perPage` from selected scope meta.
+- Files changed:
+  - public/assets/js/pages/media/MediaLibrary.js
+  - public/assets/js/pages/products/form/MediaPicker.js
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `node --check public/assets/js/pages/media/MediaLibrary.js` (OK)
+  - `node --check public/assets/js/pages/products/form/MediaPicker.js` (OK)
+- Risk/Follow-up:
+  - Folder-aware logic performs an extra API call per scope/page when folders exist; acceptable tradeoff for full-page visual parity.
+  - If backend later paginates folders separately with different semantics, frontend slot-adjustment logic should be revalidated.
+- Backup/restore safety steps:
+  - Not required (focused JS edits, no encoding conversion performed).

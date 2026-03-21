@@ -38,7 +38,8 @@ export class MediaLibraryPage {
 
         // Pagination state
         this.currentPage = 1;
-        this.perPage = 27;
+        this.pageSlotCount = 28;
+        this.perPage = 28;
         this.totalPages = 1;
         this.totalItems = 0;
     }
@@ -708,8 +709,8 @@ export class MediaLibraryPage {
                 }
             },
             pagination: true,
-            pageSize: this.perPage,
-            pageSizes: [this.perPage],
+            pageSize: this.pageSlotCount,
+            pageSizes: [this.pageSlotCount],
             showPageSizeSelector: false,
             emptyText: this.__('empty.title')
         });
@@ -1020,39 +1021,57 @@ export class MediaLibraryPage {
                 this.files = response.data?.files || [];
                 this.totalItems = this.files.length;
                 this.totalPages = 1;
+                this.perPage = this.pageSlotCount;
             } else {
-                let url = '/media';
-                const params = new URLSearchParams();
+                const pageSlotCount = this.pageSlotCount || 28;
 
-                if (folderId) params.append('folder_id', folderId);
-                if (this.filterType) params.append('type', this.filterType);
-                if (this.searchQuery) params.append('search', this.searchQuery);
+                const fetchMediaPage = async (requestedPerPage) => {
+                    let url = '/media';
+                    const params = new URLSearchParams();
 
-                // Pagination params
-                params.append('page', page);
-                params.append('per_page', this.perPage);
-                params.append('skip_validation', '1');
+                    if (folderId) params.append('folder_id', folderId);
+                    if (this.filterType) params.append('type', this.filterType);
+                    if (this.searchQuery) params.append('search', this.searchQuery);
 
-                if (params.toString()) url += '?' + params.toString();
+                    params.append('page', page);
+                    params.append('per_page', requestedPerPage);
+                    params.append('skip_validation', '1');
 
-                const response = await this.app.api.get(url);
-                this.folders = response.data?.folders || [];
-                this.files = response.data?.files || [];
+                    if (params.toString()) url += '?' + params.toString();
+                    const response = await this.app.api.get(url);
+                    return response.data || {};
+                };
+
+                let requestedPerPage = pageSlotCount;
+                let responseData = await fetchMediaPage(requestedPerPage);
+                const initialFolderCount = Array.isArray(responseData?.folders) ? responseData.folders.length : 0;
+                const adjustedPerPage = Math.max(1, pageSlotCount - initialFolderCount);
+
+                // Folders are rendered as cards too, so reserve file slots accordingly.
+                if (adjustedPerPage !== requestedPerPage) {
+                    requestedPerPage = adjustedPerPage;
+                    responseData = await fetchMediaPage(requestedPerPage);
+                }
+
+                this.folders = responseData?.folders || [];
+                this.files = responseData?.files || [];
 
                 // Update pagination state from API response
-                if (response.data?.meta) {
-                    this.currentPage = response.data.meta.current_page || page;
-                    this.totalPages = response.data.meta.total_pages || 1;
-                    this.totalItems = response.data.meta.total || this.files.length;
+                if (responseData?.meta) {
+                    this.currentPage = responseData.meta.current_page || page;
+                    this.totalPages = responseData.meta.total_pages || 1;
+                    this.totalItems = responseData.meta.total || this.files.length;
+                    this.perPage = Number(responseData.meta.per_page || requestedPerPage);
                 } else {
                     this.currentPage = page;
                     this.totalItems = this.files.length;
                     this.totalPages = 1;
+                    this.perPage = requestedPerPage;
                 }
 
                 // Update current folder info from API
-                if (response.data?.current_folder) {
-                    const folder = response.data.current_folder;
+                if (responseData?.current_folder) {
+                    const folder = responseData.current_folder;
                     this.currentFolderId = folder.id;
                     this.currentFolderName = this.getFolderDisplayName(folder);
 

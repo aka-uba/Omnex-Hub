@@ -115,6 +115,19 @@ class MediaPicker {
         return 'image';
     }
 
+    _getPageSlotCount() {
+        return Number(this.state?.pageSlotCount || 28);
+    }
+
+    _shouldCountFoldersInPage(scope = 'company') {
+        // Multi-image picker'da company tarafinda klasorler gizli oldugu icin
+        // dosya slot hesabinda sadece public klasorleri say.
+        if (this.state?.mode === 'multi-image') {
+            return scope === 'public';
+        }
+        return true;
+    }
+
     // ========================================
     // SINGLE IMAGE PICKER
     // ========================================
@@ -137,7 +150,8 @@ class MediaPicker {
             publicMedia: [],
             // Sayfalama
             currentPage: 1,
-            perPage: 27,
+            pageSlotCount: 28,
+            perPage: 28,
             totalPages: 1,
             totalItems: 0,
             companyMeta: null,
@@ -745,7 +759,8 @@ class MediaPicker {
             publicMedia: [],
             // Sayfalama
             currentPage: 1,
-            perPage: 27,
+            pageSlotCount: 28,
+            perPage: 28,
             totalPages: 1,
             totalItems: 0,
             companyMeta: null,
@@ -1360,7 +1375,8 @@ class MediaPicker {
             publicMedia: [],
             // Sayfalama
             currentPage: 1,
-            perPage: 27,
+            pageSlotCount: 28,
+            perPage: 28,
             totalPages: 1,
             totalItems: 0,
             companyMeta: null,
@@ -2067,18 +2083,45 @@ class MediaPicker {
                 }));
             };
 
-            const perPage = this.state.perPage || 27;
+            const pageSlotCount = this._getPageSlotCount();
             const folderParam = folderId ? `&folder_id=${folderId}` : '';
             const typeParam = type === 'all' ? '' : `type=${type}&`;
 
             // Firma kütüphanesi
-            const query = `${typeParam}page=${page}&per_page=${perPage}&skip_validation=1${folderParam}`;
-            const [companyResponse, publicResponse] = await Promise.all([
-                this.app.api.get(`/media?${query}&scope=company`),
-                this.app.api.get(`/media?${query}&scope=public`)
+            const fetchScopeData = async (scope) => {
+                const fetchOnce = async (requestedPerPage) => {
+                    const query = `${typeParam}page=${page}&per_page=${requestedPerPage}&skip_validation=1${folderParam}&scope=${scope}`;
+                    const response = await this.app.api.get(`/media?${query}`);
+                    return response.data || {};
+                };
+
+                let requestedPerPage = pageSlotCount;
+                let data = await fetchOnce(requestedPerPage);
+
+                const folderCount = this._shouldCountFoldersInPage(scope)
+                    ? (Array.isArray(data?.folders) ? data.folders.length : 0)
+                    : 0;
+                const adjustedPerPage = Math.max(1, pageSlotCount - folderCount);
+
+                if (adjustedPerPage !== requestedPerPage) {
+                    requestedPerPage = adjustedPerPage;
+                    data = await fetchOnce(requestedPerPage);
+                }
+
+                if (!Array.isArray(data) && typeof data === 'object') {
+                    data.meta = {
+                        ...(data.meta || {}),
+                        per_page: Number(data?.meta?.per_page || requestedPerPage)
+                    };
+                }
+
+                return data;
+            };
+
+            const [companyData, publicData] = await Promise.all([
+                fetchScopeData('company'),
+                fetchScopeData('public')
             ]);
-            const companyData = companyResponse.data;
-            const publicData = publicResponse.data;
             let companyFiles = [];
             if (Array.isArray(companyData)) {
                 companyFiles = companyData;
@@ -2132,6 +2175,7 @@ class MediaPicker {
      */
     _setActiveLibraryMedia() {
         const { activeLibrary, companyMedia, publicMedia, companyMeta, publicMeta, companyFolders, publicFolders } = this.state;
+        const pageSlotCount = this._getPageSlotCount();
         if (activeLibrary === 'company') {
             this.state.allMedia = companyMedia || [];
             this.state.folders = companyFolders || [];
@@ -2139,9 +2183,11 @@ class MediaPicker {
             if (companyMeta) {
                 this.state.totalPages = companyMeta.total_pages || 1;
                 this.state.totalItems = companyMeta.total || this.state.allMedia.length;
+                this.state.perPage = Number(companyMeta.per_page || pageSlotCount);
             } else {
                 this.state.totalPages = 1;
                 this.state.totalItems = this.state.allMedia.length;
+                this.state.perPage = pageSlotCount;
             }
         } else {
             this.state.allMedia = publicMedia || [];
@@ -2150,9 +2196,11 @@ class MediaPicker {
             if (publicMeta) {
                 this.state.totalPages = publicMeta.total_pages || 1;
                 this.state.totalItems = publicMeta.total || this.state.allMedia.length;
+                this.state.perPage = Number(publicMeta.per_page || pageSlotCount);
             } else {
                 this.state.totalPages = 1;
                 this.state.totalItems = this.state.allMedia.length;
+                this.state.perPage = pageSlotCount;
             }
         }
         this.state.filteredMedia = [...this.state.allMedia];
