@@ -520,6 +520,12 @@ export class DeviceDetailPage {
                                     <label class="form-label">${this.__('priceview.fontSize')}</label>
                                     <input type="number" class="form-input" id="pv-font-size" min="0.5" max="3" step="0.1" value="1">
                                 </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('priceview.displayTemplate')}</label>
+                                    <select class="form-select" id="pv-display-template-override">
+                                        <option value="">${this.__('priceview.deviceTemplateDefault')}</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1541,14 +1547,17 @@ export class DeviceDetailPage {
      */
     async loadPriceViewSettings() {
         try {
-            const response = await this.app.api.get('/settings');
+            const response = await this.app.api.get('/settings?scope=company');
             const data = response.data?.data || response.data || {};
+            const deviceSettingsResponse = await this.app.api.get(`/devices/${this.deviceId}/priceview-settings`);
+            const deviceSettings = deviceSettingsResponse.data?.data || deviceSettingsResponse.data || {};
 
             const pvOverlayTimeout = document.getElementById('pv-overlay-timeout');
             const pvFontSize = document.getElementById('pv-font-size');
             const pvPrintEnabled = document.getElementById('pv-print-enabled');
             const pvSignageEnabled = document.getElementById('pv-signage-enabled');
             const pvDefaultTemplate = document.getElementById('pv-default-template');
+            const pvDisplayTemplateOverride = document.getElementById('pv-display-template-override');
             const pvLastSync = document.getElementById('pv-last-sync');
             const pvProductCount = document.getElementById('pv-product-count');
 
@@ -1562,8 +1571,9 @@ export class DeviceDetailPage {
             // Load templates for template selector
             try {
                 const tplResponse = await this.app.api.get('/templates?device_types=priceview');
-                const templates = tplResponse.data || [];
-                if (pvDefaultTemplate && templates.length) {
+                const templates = tplResponse.data?.data || tplResponse.data || [];
+                if (pvDefaultTemplate && Array.isArray(templates) && templates.length) {
+                    pvDefaultTemplate.innerHTML = `<option value="">${this.__('priceview.selectTemplate')}</option>`;
                     templates.forEach(t => {
                         const opt = document.createElement('option');
                         opt.value = t.id;
@@ -1574,6 +1584,29 @@ export class DeviceDetailPage {
                 }
             } catch (e) {
                 Logger.warn('Could not load priceview templates:', e);
+            }
+
+            // Load display template override presets
+            if (pvDisplayTemplateOverride) {
+                const presets = Array.isArray(deviceSettings.display_template_presets)
+                    ? deviceSettings.display_template_presets
+                    : [];
+                pvDisplayTemplateOverride.innerHTML = '';
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = this.__('priceview.deviceTemplateDefault');
+                pvDisplayTemplateOverride.appendChild(defaultOption);
+
+                presets.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = p.label || p.name;
+                    if ((deviceSettings.device_display_template_override || '') === p.name) {
+                        opt.selected = true;
+                    }
+                    pvDisplayTemplateOverride.appendChild(opt);
+                });
             }
         } catch (error) {
             Logger.error('PriceView settings load error:', error);
@@ -1593,7 +1626,12 @@ export class DeviceDetailPage {
                 priceview_default_template: document.getElementById('pv-default-template')?.value || null
             };
 
-            await this.app.api.put('/settings', settingsPayload);
+            const currentSettingsRes = await this.app.api.get('/settings?scope=company');
+            const currentSettings = currentSettingsRes.data?.data || currentSettingsRes.data || {};
+            await this.app.api.put('/settings?scope=company', { ...currentSettings, ...settingsPayload });
+            await this.app.api.put(`/devices/${this.deviceId}/priceview-settings`, {
+                display_template_override: document.getElementById('pv-display-template-override')?.value || null
+            });
             Toast.success(this.__('priceview.saved'));
         } catch (error) {
             Logger.error('PriceView settings save error:', error);

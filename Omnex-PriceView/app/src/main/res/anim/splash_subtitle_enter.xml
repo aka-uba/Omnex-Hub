@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subtitle "Digital Labels & Signage Platform" fade-in after title -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic">
+    <alpha
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0"
+        android:startOffset="1200"
+        android:duration="450" />
+    <translate
+        android:fromYDelta="15%"
+        android:toYDelta="0%"
+        android:startOffset="1200"
+        android:duration="450" />
+</set>

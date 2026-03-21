@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- OmneX Hub logo icon: C-arc + 3 horizontal bars -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- C-shaped arc (thick stroke ring with opening on right) -->
+    <path
+        android:name="c_arc"
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M256,56
+            C145.5,56 56,145.5 56,256
+            C56,366.5 145.5,456 256,456
+            C322.7,456 380.6,421.2 416,368
+            L356,368
+            C326.4,404 294,424 256,424
+            C163.6,424 88,348.4 88,256
+            C88,163.6 163.6,88 256,88
+            C294,88 326.4,107.8 356,144
+            L416,144
+            C380.6,90.8 322.7,56 256,56
+            Z" />
+
+    <!-- Top horizontal bar -->
+    <path
+        android:name="bar_top"
+        android:fillColor="#FFFFFF"
+        android:pathData="M340,164 L456,164 L456,204 L340,204 Z" />
+
+    <!-- Middle horizontal bar -->
+    <path
+        android:name="bar_mid"
+        android:fillColor="#FFFFFF"
+        android:pathData="M340,236 L456,236 L456,276 L340,276 Z" />
+
+    <!-- Bottom horizontal bar -->
+    <path
+        android:name="bar_bot"
+        android:fillColor="#FFFFFF"
+        android:pathData="M340,308 L456,308 L456,348 L340,348 Z" />
+
+</vector>

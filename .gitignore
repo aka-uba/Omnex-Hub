@@ -29,6 +29,15 @@ android-player/
 android-player-build/
 android-player.zip
 
+# ---- Omnex PriceView Android project ----
+Omnex-PriceView/.gradle/
+Omnex-PriceView/app/build/
+Omnex-PriceView/local.properties
+Omnex-PriceView/*.bak
+Omnex-PriceView/*.bak*
+Omnex-PriceView/**/*.bak
+Omnex-PriceView/**/*.bak*
+
 # ---- ESL Research Files ----
 esl-research/
 
@@ -157,6 +166,7 @@ tests/
 *.apk
 *.jar
 *.tar.gz
+!Omnex-PriceView/gradle/wrapper/gradle-wrapper.jar
 
 # Keep release artifacts in tracked downloads directories
 !downloads/

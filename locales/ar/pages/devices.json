@@ -1077,6 +1077,8 @@
         "displaySettings": "إعدادات العرض",
         "overlayTimeout": "مدة عرض السعر (ثانية)",
         "fontSize": "حجم الخط",
+        "displayTemplate": "قالب العرض",
+        "deviceTemplateDefault": "استخدام الإعداد الافتراضي للتكامل",
         "printSettings": "إعدادات الطباعة",
         "printEnabled": "الطباعة مفعلة",
         "defaultTemplate": "قالب الطباعة الافتراضي",

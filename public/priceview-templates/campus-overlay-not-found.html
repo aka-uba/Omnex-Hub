@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PriceView - Kampus - Urun Bulunamadi</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important; min-height:100vh; }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(42px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes imgSlideUp {
+    from { opacity:0; transform:translateY(36px) scale(.94); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+  }
+  /* Mobile responsive */
+  @media (max-width:768px) {
+    .pv-card { padding:10px !important; }
+    .pv-card-inner { padding:14px !important; gap:14px !important; }
+    .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
+    .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
+    .pv-price { font-size:48px !important; }
+    .pv-title { font-size:28px !important; }
+    .pv-grid-bottom { grid-template-columns:1fr !important; }
+  }
+  @media (max-width:480px) {
+    .pv-price { font-size:38px !important; }
+    .pv-title { font-size:24px !important; }
+  }
+</style>
+</head>
+<body>
+<div class="pv-card" style="border-radius:28px;padding:16px;background:linear-gradient(145deg,#312e81 0%,#111827 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:22px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:14px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:16px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
+        <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;transition:all .2s ease;flex-shrink:0;" onmouseenter="this.style.background='rgba(239,68,68,.85)';this.style.color='#fff';this.style.transform='scale(1.1)'" onmouseleave="this.style.background='rgba(255,255,255,.12)';this.style.color='rgba(255,255,255,.65)';this.style.transform='scale(1)'" onmousedown="this.style.transform='scale(.92)'" onmouseup="this.style.transform='scale(1.1)'">&#10005;</button>
+      </div>
+      <div class="pv-card-inner" class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;min-height:260px;border-radius:28px;padding:28px;background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 50%,#ffffff 100%);align-items:center;">
+        <div class="pv-img-area" style="flex:0.8 1 240px;display:flex;justify-content:center;">
+          <div style="width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#c7d2fe 0%,#e0e7ff 48%,rgba(224,231,255,.2) 70%);display:flex;align-items:center;justify-content:center;font-size:108px;">❔</div>
+        </div>
+        <div class="pv-text-area" style="flex:1.2 1 500px;">
+          <div style="display:inline-block;padding:10px 14px;border-radius:999px;background:#eef2ff;border:1px solid #a5b4fc;color:#4338ca;font-size:13px;font-weight:900;">Arama Sonucu</div>
+          <div style="margin-top:16px;font-size:42px;line-height:1.05;font-weight:900;color:#312e81;">Bilgi bulunamadı</div>
+          <div style="margin-top:12px;font-size:20px;line-height:1.6;color:#475569;font-weight:600;">Aranan etkinlik veya bilgi sisteme kayıtlı değildir.</div>
+          <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
+            <div style="padding:12px 16px;border-radius:16px;background:#4338ca;color:#fff;font-size:17px;font-weight:900;">Kod: <span data-bind="barcode">—</span></div>
+            <div style="padding:12px 16px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;color:#334155;font-size:17px;font-weight:800;">Saat: <span data-bind="timestamp">--:--</span></div>
+          </div>
+        </div>
+      </div></div>
+<script>
+// PriceView data binding helper
+// APK calls: window.PriceView.setProduct(jsonString)
+// APK calls: window.PriceView.setCompany(name, branch)
+// APK calls: window.PriceView.close()
+window.PriceView = {
+  setProduct: function(jsonStr) {
+    try {
+      var p = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      document.querySelectorAll('[data-bind]').forEach(function(el) {
+        var key = el.getAttribute('data-bind');
+        var val = p[key];
+        if (val === undefined || val === null) return;
+        if (el.tagName === 'IMG') {
+          el.src = val;
+          el.style.display = val ? 'block' : 'none';
+        } else {
+          el.textContent = val;
+        }
+      });
+    } catch(e) { console.error('PriceView.setProduct error:', e); }
+  },
+  setCompany: function(companyName, branchName) {
+    var cn = document.querySelector('[data-bind="company_name"]');
+    var bn = document.querySelector('[data-bind="branch_name"]');
+    var dot = cn ? cn.nextElementSibling : null;
+    if (cn) cn.textContent = companyName || '';
+    if (bn) {
+      bn.textContent = branchName || '';
+      if (!branchName && dot) dot.style.display = 'none';
+      if (!branchName) bn.style.display = 'none';
+    }
+  },
+  close: function() {
+    var btn = document.querySelector('[title="Kapat"]');
+    if (btn) btn.click();
+  },
+  setTimestamp: function() {
+    var ts = document.querySelector('[data-bind="timestamp"]');
+    if (ts) {
+      var now = new Date();
+      ts.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    }
+  }
+};
+// Auto-set timestamp on load
+document.addEventListener('DOMContentLoaded', function() { window.PriceView.setTimestamp(); });
+</script>
+</body>
+</html>

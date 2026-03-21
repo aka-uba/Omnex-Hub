@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focused state (TV D-pad navigation) -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:endColor="#67A7FF"
+                android:startColor="#2CBFEF" />
+            <stroke
+                android:width="3dp"
+                android:color="#E4F8FF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Hovered state (mouse/touchpad) -->
+    <item android:state_hovered="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:endColor="#5595FF"
+                android:startColor="#25B1E9" />
+            <stroke
+                android:width="2dp"
+                android:color="#BFE6FF" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Pressed state -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:endColor="#2B5FD8"
+                android:startColor="#1F95CA" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:endColor="#4D8EFF"
+                android:startColor="#22B9E6" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</selector>

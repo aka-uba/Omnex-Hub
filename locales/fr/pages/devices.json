@@ -993,6 +993,8 @@
         "displaySettings": "Paramètres d'affichage",
         "overlayTimeout": "Durée d'affichage du prix (sec)",
         "fontSize": "Taille de police",
+        "displayTemplate": "Modèle d'affichage",
+        "deviceTemplateDefault": "Utiliser le défaut d'intégration",
         "printSettings": "Paramètres d'impression",
         "printEnabled": "Impression activée",
         "defaultTemplate": "Modèle d'impression par défaut",

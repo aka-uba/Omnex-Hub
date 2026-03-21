@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ProgressBar fade-in after all splash animations complete -->
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromAlpha="0.0"
+    android:toAlpha="1.0"
+    android:startOffset="1700"
+    android:duration="400"
+    android:interpolator="@android:interpolator/linear" />

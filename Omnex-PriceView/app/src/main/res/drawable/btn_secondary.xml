@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focused state (TV D-pad navigation) -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="3dp"
+                android:color="#9AE9FF" />
+            <solid android:color="#1B2D4B" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Hovered state (mouse/touchpad) -->
+    <item android:state_hovered="true">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="2dp"
+                android:color="#84DBFF" />
+            <solid android:color="#182945" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Pressed state -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="2dp"
+                android:color="#61C8F5" />
+            <solid android:color="#213756" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="2dp"
+                android:color="#3F6796" />
+            <solid android:color="#12233E" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+</selector>

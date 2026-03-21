@@ -993,6 +993,8 @@
         "displaySettings": "Anzeigeeinstellungen",
         "overlayTimeout": "Preisanzeigedauer (Sek.)",
         "fontSize": "Schriftgröße",
+        "displayTemplate": "Anzeigevorlage",
+        "deviceTemplateDefault": "Integration-Standard verwenden",
         "printSettings": "Druckeinstellungen",
         "printEnabled": "Drucken aktiviert",
         "defaultTemplate": "Standard-Druckvorlage",

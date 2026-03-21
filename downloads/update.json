@@ -9,10 +9,10 @@
             "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
         },
         "com.omnex.priceview": {
-            "versionCode": 4,
-            "versionName": "1.0.3",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=4",
-            "releaseNotes": "- Branch bazli fiyat sync (ProductPriceResolver)\n- Bundle/paket sync endpoint + cihaz sync manager eklendi\n- Barkod akisinda bundle fallback eklendi\n- Media URL normalize edildi (resim/video)",
+            "versionCode": 5,
+            "versionName": "1.0.4",
+            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=5",
+            "releaseNotes": "- HTML gosterim modu eklendi (product/not_found sablonlari)\n- Entegrasyon + cihaz bazli gosterim sablonu secimi eklendi\n- Display template sync signature ile degismedikce indirme yapmiyor",
             "mandatory": false,
             "sha256": "b86371bf78162c4bedf917da1b34391a9f666c9c0595475b0ceb6b5ea621ad08"
         }

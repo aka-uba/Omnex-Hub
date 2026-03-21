@@ -993,6 +993,8 @@
         "displaySettings": "Настройки отображения",
         "overlayTimeout": "Время показа цены (сек)",
         "fontSize": "Размер шрифта",
+        "displayTemplate": "Шаблон отображения",
+        "deviceTemplateDefault": "Использовать настройку интеграции",
         "printSettings": "Настройки печати",
         "printEnabled": "Печать включена",
         "defaultTemplate": "Шаблон печати по умолчанию",

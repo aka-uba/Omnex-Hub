@@ -1077,6 +1077,8 @@
         "displaySettings": "Ekran Parametrləri",
         "overlayTimeout": "Qiymət Göstərmə Müddəti (san)",
         "fontSize": "Şrift Ölçüsü",
+        "displayTemplate": "Görüntüləmə Şablonu",
+        "deviceTemplateDefault": "İnteqrasiya standartını istifadə et",
         "printSettings": "Çap Parametrləri",
         "printEnabled": "Çap Aktiv",
         "defaultTemplate": "Standart Çap Şablonu",

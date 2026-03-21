@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Omnex PriceView</string>
+    <string name="loading">Y&#252;kleniyor...</string>
+    <string name="connection_error">Ba&#287;lant&#305; hatas&#305;</string>
+    <string name="retry">Tekrar Dene</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_loading">Uygulama ba&#351;lat&#305;l&#305;yor...</string>
+    <string name="splash_version_placeholder">v-</string>
+    <string name="splash_version_format">v%s</string>
+
+    <!-- Wizard -->
+    <string name="wizard_welcome_title">Ho&#351; Geldiniz</string>
+    <string name="wizard_welcome_desc">Dijital signage i&#231;eriklerinizi kolayca y&#246;netmek i&#231;in kurulumu tamamlay&#305;n.\n\nS&#252;r&#252;m: %s</string>
+
+    <string name="wizard_server_title">Sunucu Ba&#287;lant&#305;s&#305;</string>
+    <string name="wizard_server_desc">Player URL adresini girin. Bu alan bo&#351; b&#305;rak&#305;lamaz.</string>
+    <string name="wizard_server_hint">https://sunucu-adresi.com/player/</string>
+    <string name="wizard_server_example">&#214;rnek: https://example.com/market-etiket-sistemi/player/</string>
+    <string name="wizard_server_required">Sunucu adresi gerekli</string>
+    <string name="wizard_use_default_server">Varsay&#305;lan sunucuyu kullan</string>
+    <string name="wizard_default_server_applied">Varsay&#305;lan sunucu adresi uyguland&#305;</string>
+
+    <string name="wizard_ready_title">Haz&#305;rs&#305;n&#305;z!</string>
+    <string name="wizard_ready_desc">Kurulum tamamland&#305;. &#350;imdi cihaz&#305; oynat&#305;c&#305; ekran&#305;na ge&#231;iriyoruz.</string>
+
+    <!-- Wizard Buttons -->
+    <string name="wizard_next">&#304;leri</string>
+    <string name="wizard_back">Geri</string>
+    <string name="wizard_finish">Ba&#351;la</string>
+
+    <!-- Player Runtime -->
+    <string name="back_press_exit_hint">&#199;&#305;kmak i&#231;in geri tu&#351;una tekrar bas&#305;n</string>
+    <string name="ssl_error_blocked">G&#252;venli ba&#287;lant&#305; hatas&#305;. Sunucu sertifikas&#305; do&#287;rulanamad&#305;.\n\nYerel a&#287; sunucular&#305; i&#231;in Ayarlar men&#252;s&#252;nden SSL esnek modunu etkinle&#351;tirebilirsiniz.</string>
+    <string name="startup_error_message">Player ba&#351;lat&#305;lamad&#305;.\n%s</string>
+    <string name="unknown_error">Bilinmeyen hata</string>
+    <string name="player_url_updated">Player URL g&#252;ncellendi</string>
+    <string name="playback_fallback_to_image">Video oynat&#305;lam&#305;yor, g&#246;rsel moda ge&#231;iliyor</string>
+    <string name="orientation_portrait_selected">Dikey g&#246;r&#252;n&#252;m se&#231;ildi</string>
+    <string name="orientation_landscape_selected">Yatay g&#246;r&#252;n&#252;m se&#231;ildi</string>
+
+    <!-- Update -->
+    <string name="update_hash_mismatch">G&#252;ncelleme dosyas&#305; do&#287;rulanamad&#305;. &#304;ndirme iptal edildi.</string>
+    <string name="update_permission_title">G&#252;ncelleme izni gerekli</string>
+    <string name="update_permission_message">APK g&#252;ncellemeleri i&#231;in bilinmeyen kaynaklardan y&#252;klemeye izin vermeniz gerekiyor.</string>
+    <string name="update_available_title">G&#252;ncelleme Mevcut</string>
+    <string name="update_available_body">Yeni s&#252;r&#252;m %1$s mevcut.\nMevcut s&#252;r&#252;m: %2$s</string>
+    <string name="update_what_is_new">Yenilikler:</string>
+    <string name="update_now">&#350;imdi G&#252;ncelle</string>
+    <string name="open_settings">Ayarlar&#305; A&#231;</string>
+    <string name="later">Daha Sonra</string>
+
+    <!-- Notifications -->
+    <string name="notification_permission_denied">Bildirim izni verilmedi. Bildirimler g&#246;sterilemeyebilir.</string>
+    <string name="storage_permission_denied">Depolama izni verilmedi. G&#252;ncelleme indirme ba&#351;ar&#305;s&#305;z olabilir.</string>
+
+    <!-- About Dialog -->
+    <string name="about_message">S&#252;r&#252;m: %1$s (%2$d)\n\nAndroid S&#252;r&#252;m&#252;: %3$s\nCihaz: %4$s %5$s\n\n&#169; 2024 Omnex Digital Signage</string>
+    <string name="check_updates">G&#252;ncelleme Kontrol Et</string>
+    <string name="ok">Tamam</string>
+</resources>

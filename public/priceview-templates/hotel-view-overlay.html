@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PriceView - Otel - Urun Goruntuleme</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important; min-height:100vh; }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(42px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes imgSlideUp {
+    from { opacity:0; transform:translateY(36px) scale(.94); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+  }
+  /* Mobile responsive */
+  @media (max-width:768px) {
+    .pv-card { padding:10px !important; }
+    .pv-card-inner { padding:14px !important; gap:14px !important; }
+    .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
+    .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
+    .pv-price { font-size:48px !important; }
+    .pv-title { font-size:28px !important; }
+    .pv-grid-bottom { grid-template-columns:1fr !important; }
+  }
+  @media (max-width:480px) {
+    .pv-price { font-size:38px !important; }
+    .pv-title { font-size:24px !important; }
+  }
+</style>
+</head>
+<body>
+<div class="pv-card" style="position:relative;display:block;border-radius:28px;padding:16px;background:linear-gradient(145deg,#1e293b 0%,#111827 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:26px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:18px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:20px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
+                <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;transition:all .2s ease;flex-shrink:0;" onmouseenter="this.style.background='rgba(239,68,68,.85)';this.style.color='#fff';this.style.transform='scale(1.1)';this.style.boxShadow='0 4px 16px rgba(239,68,68,.35)'" onmouseleave="this.style.background='rgba(255,255,255,.12)';this.style.color='rgba(255,255,255,.65)';this.style.transform='scale(1)';this.style.boxShadow='none'" onmousedown="this.style.transform='scale(.92)'" onmouseup="this.style.transform='scale(1.1)'">&#10005;</button>
+              </div>
+              <div class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;min-height:340px;border-radius:28px;padding:24px;background:linear-gradient(135deg,#f8fafc 0%,#ffffff 100%);">
+                <div class="pv-img-area" style="flex:1 1 300px;min-width:260px;position:relative;display:flex;justify-content:center;align-items:center;">
+                  <div style="width:240px;height:260px;border-radius:28px;background:linear-gradient(180deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;font-size:110px;">🏨</div>
+                </div>
+                <div class="pv-text-area" class="pv-text-area" style="flex:1.25 1 480px;min-width:300px;display:flex;flex-direction:column;justify-content:space-between;gap:18px">
+                  <div>
+                    <div style="display:inline-block;padding:10px 14px;border-radius:999px;background:#334155;color:#fff;font-size:13px;font-weight:900;">Guest Service</div>
+                    <div data-bind="brand" style="margin-top:16px;font-size:16px;font-weight:800;letter-spacing:1.4px;color:#64748b;text-transform:uppercase;"></div>
+                    <div class="pv-title" data-bind="name" style="margin-top:8px;font-size:42px;line-height:1.05;font-weight:900;color:#0f172a;"></div>
+                    <div data-bind="description" style="margin-top:12px;font-size:20px;font-weight:700;color:#475569;"></div>
+                    <div style="margin-top:18px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+                      <div data-bind="current_price" style="font-size:72px;" class="pv-priceline-height:.92;font-weight:900;color:#0f172a;"></div>
+                      <div style="font-size:26px;font-weight:800;color:#64748b;padding-bottom:8px;">₺</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:12px;font-weight:800;letter-spacing:1.4px;color:#64748b;text-transform:uppercase;">Kod</div>
+                    <div data-bind="barcode" style="margin-top:8px;font-size:22px;font-weight:900;letter-spacing:2px;color:#0f172a;"></div>
+                  </div>
+                </div>
+              </div>
+            
+              <div style="display:flex;justify-content:center;margin-top:12px;"><button onclick="printSection('card-hotel')" style="border:none;cursor:pointer;padding:12px 16px;border-radius:14px;background:#fff;color:#334155;font-size:14px;font-weight:900;min-width:180px;text-align:center;transition:all .2s ease;" onmouseenter="this.style.background='#334155';this.style.color='#fff';this.style.transform='scale(1.04)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.25)'" onmouseleave="this.style.background='#fff';this.style.color='#334155';this.style.transform='scale(1)';this.style.boxShadow='none'" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform='scale(1.04)'">Yazdır</button></div>
+            </div>
+<script>
+// PriceView data binding helper
+// APK calls: window.PriceView.setProduct(jsonString)
+// APK calls: window.PriceView.setCompany(name, branch)
+// APK calls: window.PriceView.close()
+window.PriceView = {
+  setProduct: function(jsonStr) {
+    try {
+      var p = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      document.querySelectorAll('[data-bind]').forEach(function(el) {
+        var key = el.getAttribute('data-bind');
+        var val = p[key];
+        if (val === undefined || val === null) return;
+        if (el.tagName === 'IMG') {
+          el.src = val;
+          el.style.display = val ? 'block' : 'none';
+        } else {
+          el.textContent = val;
+        }
+      });
+    } catch(e) { console.error('PriceView.setProduct error:', e); }
+  },
+  setCompany: function(companyName, branchName) {
+    var cn = document.querySelector('[data-bind="company_name"]');
+    var bn = document.querySelector('[data-bind="branch_name"]');
+    var dot = cn ? cn.nextElementSibling : null;
+    if (cn) cn.textContent = companyName || '';
+    if (bn) {
+      bn.textContent = branchName || '';
+      if (!branchName && dot) dot.style.display = 'none';
+      if (!branchName) bn.style.display = 'none';
+    }
+  },
+  close: function() {
+    var btn = document.querySelector('[title="Kapat"]');
+    if (btn) btn.click();
+  },
+  setTimestamp: function() {
+    var ts = document.querySelector('[data-bind="timestamp"]');
+    if (ts) {
+      var now = new Date();
+      ts.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    }
+  }
+};
+// Auto-set timestamp on load
+document.addEventListener('DOMContentLoaded', function() { window.PriceView.setTimestamp(); });
+</script>
+</body>
+</html>

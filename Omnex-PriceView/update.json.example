@@ -1,0 +1,8 @@
+{
+  "versionCode": 17,
+  "versionName": "2.6.0",
+  "downloadUrl": "https://akagunduzweb.com/signage/downloads/omnex-player.apk",
+  "releaseNotes": "- SSL güvenlik iyileştirmeleri\n- APK bütünlük doğrulaması (SHA-256)\n- HTTP sadece yerel ağda izinli",
+  "mandatory": false,
+  "sha256": "buraya_apk_dosyasinin_sha256_hash_degeri_yazilacak"
+}

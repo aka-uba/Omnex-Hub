@@ -27,6 +27,7 @@ export class IntegrationSettingsPage {
         this.mqttSettings = {};
         this.priceviewSettings = {};
         this.priceviewTemplates = [];
+        this.priceviewDisplayTemplates = [];
         this.importSettings = {};
         this.importHistory = [];
         this.importFiles = [];
@@ -5030,8 +5031,8 @@ export class IntegrationSettingsPage {
 
     renderPriceviewTab() {
         const s = this.priceviewSettings;
-        const templateOptions = this.priceviewTemplates.map(t =>
-            `<option value="${t.id}" ${s.product_display_template === t.id ? 'selected' : ''}>${this._escapeHtml(t.name)}</option>`
+        const templateOptions = this.priceviewDisplayTemplates.map(t =>
+            `<option value="${this._escapeHtml(t.name)}" ${s.product_display_template === t.name ? 'selected' : ''}>${this._escapeHtml(t.label || t.name)}</option>`
         ).join('');
         const printTemplateOptions = this.priceviewTemplates.map(t =>
             `<option value="${t.id}" ${s.default_template === t.id ? 'selected' : ''}>${this._escapeHtml(t.name)}</option>`
@@ -5196,10 +5197,11 @@ export class IntegrationSettingsPage {
                 signage_enabled: data.priceview_signage_enabled !== false,
                 default_template: data.priceview_default_template || '',
                 font_size_multiplier: data.priceview_font_size_multiplier || 1.0,
-                product_display_template: data.priceview_product_display_template || ''
+                product_display_template: data.priceview_product_display_template || '',
+                product_display_mode: data.priceview_product_display_mode || 'native'
             };
 
-            // Load templates for dropdowns
+            // Print templates (database templates)
             try {
                 const templatesRes = await this.app.api.get('/templates');
                 const templates = templatesRes.data?.data || templatesRes.data || [];
@@ -5207,6 +5209,17 @@ export class IntegrationSettingsPage {
             } catch (e) {
                 Logger.warn('Failed to load templates for PriceView', e);
                 this.priceviewTemplates = [];
+            }
+
+            // Display templates (file-based presets in public/priceview-templates)
+            try {
+                const displayRes = await this.app.api.get('/priceview/template-presets');
+                const payload = displayRes.data?.data || displayRes.data || {};
+                const presets = payload.presets || [];
+                this.priceviewDisplayTemplates = Array.isArray(presets) ? presets : [];
+            } catch (e) {
+                Logger.warn('Failed to load PriceView display template presets', e);
+                this.priceviewDisplayTemplates = [];
             }
 
             // Populate form fields
@@ -5243,15 +5256,15 @@ export class IntegrationSettingsPage {
         const displaySelect = document.getElementById('pv-display-template');
         const printSelect = document.getElementById('pv-default-template');
 
-        if (displaySelect && this.priceviewTemplates.length) {
+        if (displaySelect && this.priceviewDisplayTemplates.length) {
             const defaultOpt = displaySelect.querySelector('option[value=""]');
             displaySelect.innerHTML = '';
             if (defaultOpt) displaySelect.appendChild(defaultOpt);
-            this.priceviewTemplates.forEach(t => {
+            this.priceviewDisplayTemplates.forEach(t => {
                 const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = t.name;
-                if (s.product_display_template === t.id) opt.selected = true;
+                opt.value = t.name;
+                opt.textContent = t.label || t.name;
+                if (s.product_display_template === t.name) opt.selected = true;
                 displaySelect.appendChild(opt);
             });
         }
@@ -5325,10 +5338,13 @@ export class IntegrationSettingsPage {
                 priceview_signage_enabled: document.getElementById('pv-signage-enabled')?.checked ?? true,
                 priceview_default_template: document.getElementById('pv-default-template')?.value || null,
                 priceview_font_size_multiplier: parseFloat(document.getElementById('pv-font-size')?.value) || 1.0,
+                priceview_product_display_mode: this.priceviewSettings.product_display_mode || 'native',
                 priceview_product_display_template: document.getElementById('pv-display-template')?.value || null
             };
 
-            await this.app.api.put('/settings?scope=company', settings);
+            const currentSettingsRes = await this.app.api.get('/settings?scope=company');
+            const currentSettings = currentSettingsRes.data?.data || currentSettingsRes.data || {};
+            await this.app.api.put('/settings?scope=company', { ...currentSettings, ...settings });
             Toast.success(this.__('integrations.priceview.saved'));
         } catch (error) {
             Logger.error('Failed to save PriceView settings', error);

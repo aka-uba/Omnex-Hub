@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mobile Splash Screen - Brand logo (PNG) + version + loading -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/wizard_mobile_background"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/wizard_card_bg"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="32dp">
+
+        <!-- Brand logo PNG (icon + text as designed) -->
+        <ImageView
+            android:id="@+id/splashLogoIcon"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:alpha="0"
+            android:scaleType="fitCenter"
+            android:src="@drawable/launcher_foreground_brand" />
+
+        <!-- Loading indicator -->
+        <ProgressBar
+            android:id="@+id/splashProgress"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="36dp"
+            android:alpha="0"
+            android:indeterminateTint="#63B7FF" />
+
+        <!-- Version text -->
+        <TextView
+            android:id="@+id/splashVersionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:alpha="0"
+            android:text="@string/splash_version_placeholder"
+            android:textColor="#9FB2D2"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</FrameLayout>

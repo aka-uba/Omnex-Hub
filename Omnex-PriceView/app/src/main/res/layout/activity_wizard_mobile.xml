@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/wizard_mobile_background"
+    android:fitsSystemWindows="true">
+
+    <!-- Logo with breathing animation -->
+    <ImageView
+        android:id="@+id/wizardBrand"
+        android:layout_width="180dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:adjustViewBounds="true"
+        android:animation="@anim/logo_breath"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/brand_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Keyboard dim overlay -->
+    <View
+        android:id="@+id/keyboardDimOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0"
+        android:background="#7A020810"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Bottom action buttons -->
+    <LinearLayout
+        android:id="@+id/wizardActions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_secondary"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/wizard_back"
+            android:textAllCaps="false"
+            android:textColor="#8A9DB8"
+            android:textSize="15sp"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_primary"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/wizard_next"
+            android:textAllCaps="false"
+            android:textColor="#F0F6FF"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/wizardScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="ifContentScrolls"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/wizardActions"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/wizardBrand">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- Step indicators -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/step1"
+                    android:layout_width="22dp"
+                    android:layout_height="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/step_indicator_mobile" />
+
+                <View
+                    android:id="@+id/step2"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/step_indicator_mobile" />
+
+                <View
+                    android:id="@+id/step3"
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/step_indicator_mobile" />
+            </LinearLayout>
+
+            <!-- Content card -->
+            <LinearLayout
+                android:id="@+id/wizardContentCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/wizard_mobile_card_bg"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="24dp">
+
+                <!-- Wizard step icon -->
+                <ImageView
+                    android:id="@+id/wizardImage"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@null"
+                    android:src="@drawable/wizard_welcome" />
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/wizardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:letterSpacing="-0.01"
+                    android:textColor="#F0F6FF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <!-- Description -->
+                <TextView
+                    android:id="@+id/wizardDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:lineSpacingMultiplier="1.25"
+                    android:textColor="#6A7E98"
+                    android:textSize="14sp" />
+
+                <!-- Server URL section -->
+                <LinearLayout
+                    android:id="@+id/serverUrlLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Player URL"
+                        android:textColor="#8A9DB8"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/serverUrlInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:background="@drawable/input_background"
+                        android:fontFamily="sans-serif"
+                        android:hint="@string/wizard_server_hint"
+                        android:imeOptions="actionDone"
+                        android:inputType="textUri"
+                        android:maxLines="1"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textColor="#D0DFFF"
+                        android:textColorHint="#3A5070"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btnUseDefaultServer"
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/btn_secondary"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/wizard_use_default_server"
+                        android:textAllCaps="false"
+                        android:textColor="#6A8EA0"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/wizard_server_example"
+                        android:textColor="#3A5070"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

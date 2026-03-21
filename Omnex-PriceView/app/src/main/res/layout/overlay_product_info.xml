@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Product info card shown after successful barcode scan -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/productCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_margin="16dp"
+    android:visibility="gone"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="#F0F4FF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Close button (top-right) -->
+        <ImageButton
+            android:id="@+id/btnCloseOverlay"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:contentDescription="Kapat"
+            android:focusable="true"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Product Image (optional) -->
+        <ImageView
+            android:id="@+id/productImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="centerInside"
+            android:visibility="gone"
+            android:contentDescription="Product image" />
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Product Name"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1a1a2e"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <!-- Price Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/productPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.00 TL"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                android:textColor="#228be6" />
+        </LinearLayout>
+
+        <!-- Previous Price (strikethrough) -->
+        <TextView
+            android:id="@+id/productPreviousPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="18sp"
+            android:textColor="#999999"
+            android:visibility="gone" />
+
+        <!-- Barcode -->
+        <TextView
+            android:id="@+id/productBarcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Barcode"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:gravity="center"
+            android:layout_marginTop="8dp" />
+
+        <!-- Print Button -->
+        <Button
+            android:id="@+id/btnPrint"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:text="Yazd&#305;r"
+            android:textSize="18sp"
+            android:textAllCaps="false"
+            android:focusable="true"
+            android:nextFocusUp="@id/productCard"
+            android:backgroundTint="#228be6"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

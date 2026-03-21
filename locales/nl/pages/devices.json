@@ -1077,6 +1077,8 @@
         "displaySettings": "Weergave-instellingen",
         "overlayTimeout": "Prijsweergaveduur (sec)",
         "fontSize": "Lettergrootte",
+        "displayTemplate": "Weergavesjabloon",
+        "deviceTemplateDefault": "Gebruik integratiestandaard",
         "printSettings": "Afdrukinstellingen",
         "printEnabled": "Afdrukken ingeschakeld",
         "defaultTemplate": "Standaard afdruksjabloon",

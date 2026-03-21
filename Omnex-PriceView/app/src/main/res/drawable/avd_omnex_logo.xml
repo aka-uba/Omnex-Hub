@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Animated OmneX logo: C-arc rotates in, bars slide from right sequentially -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/ic_omnex_logo_anim_base">
+
+    <!-- C-arc: rotate 360 + fade in -->
+    <target android:name="c_arc_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="rotation"
+                    android:valueFrom="-180"
+                    android:valueTo="0"
+                    android:duration="800"
+                    android:interpolator="@android:interpolator/decelerate_cubic" />
+                <objectAnimator
+                    android:propertyName="alpha"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:duration="600"
+                    android:interpolator="@android:interpolator/accelerate_decelerate" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Bar top: slide in from right -->
+    <target android:name="bar_top_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="translateX"
+                    android:valueFrom="200"
+                    android:valueTo="0"
+                    android:startOffset="400"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/decelerate_cubic" />
+                <objectAnimator
+                    android:propertyName="alpha"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:startOffset="400"
+                    android:duration="300"
+                    android:interpolator="@android:interpolator/linear" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Bar middle: slide in from right (staggered) -->
+    <target android:name="bar_mid_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="translateX"
+                    android:valueFrom="200"
+                    android:valueTo="0"
+                    android:startOffset="530"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/decelerate_cubic" />
+                <objectAnimator
+                    android:propertyName="alpha"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:startOffset="530"
+                    android:duration="300"
+                    android:interpolator="@android:interpolator/linear" />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <!-- Bar bottom: slide in from right (staggered) -->
+    <target android:name="bar_bot_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="together">
+                <objectAnimator
+                    android:propertyName="translateX"
+                    android:valueFrom="200"
+                    android:valueTo="0"
+                    android:startOffset="660"
+                    android:duration="450"
+                    android:interpolator="@android:interpolator/decelerate_cubic" />
+                <objectAnimator
+                    android:propertyName="alpha"
+                    android:valueFrom="0"
+                    android:valueTo="1"
+                    android:startOffset="660"
+                    android:duration="300"
+                    android:interpolator="@android:interpolator/linear" />
+            </set>
+        </aapt:attr>
+    </target>
+
+</animated-vector>

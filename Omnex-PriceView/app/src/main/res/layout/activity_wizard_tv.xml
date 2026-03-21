@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/wizard_mobile_background">
+
+    <View
+        android:id="@+id/keyboardDimOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="#7A020810"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingStart="48dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="48dp"
+        android:paddingBottom="40dp">
+
+        <!-- Left panel: Icon with subtle card -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="20dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/wizard_card_bg"
+                android:padding="24dp">
+
+                <ImageView
+                    android:id="@+id/wizardImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    android:padding="20dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/wizard_welcome" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <!-- Right panel: Content -->
+        <ScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:overScrollMode="ifContentScrolls">
+
+            <LinearLayout
+                android:id="@+id/wizardContentCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/wizard_card_bg"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:paddingStart="32dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="28dp">
+
+                <!-- Step indicators (top) -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/step1"
+                        android:layout_width="28dp"
+                        android:layout_height="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/step_indicator" />
+
+                    <View
+                        android:id="@+id/step2"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/step_indicator" />
+
+                    <View
+                        android:id="@+id/step3"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/step_indicator" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/wizardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="-0.01"
+                    android:textColor="#F0F6FF"
+                    android:textSize="32sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/wizardDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="sans-serif"
+                    android:lineSpacingMultiplier="1.3"
+                    android:textColor="#8A9DB8"
+                    android:textSize="17sp" />
+
+                <!-- Server URL section -->
+                <LinearLayout
+                    android:id="@+id/serverUrlLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/wizard_server_title"
+                        android:textColor="#B0C4DE"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/serverUrlInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/input_background"
+                        android:fontFamily="sans-serif"
+                        android:hint="@string/wizard_server_hint"
+                        android:imeOptions="actionDone"
+                        android:inputType="textUri"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#E0EAFF"
+                        android:textColorHint="#4A6080"
+                        android:textSize="16sp" />
+
+                    <Button
+                        android:id="@+id/btnUseDefaultServer"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_secondary"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="@string/wizard_use_default_server"
+                        android:textAllCaps="false"
+                        android:textColor="#8ABCC8"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/wizard_server_example"
+                        android:textColor="#4A6080"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Action buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPrev"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_secondary"
+                        android:fontFamily="sans-serif-medium"
+                        android:focusable="true"
+                        android:text="@string/wizard_back"
+                        android:textAllCaps="false"
+                        android:textColor="#8A9DB8"
+                        android:textSize="15sp"
+                        android:visibility="invisible" />
+
+                    <Button
+                        android:id="@+id/btnNext"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/btn_primary"
+                        android:fontFamily="sans-serif-medium"
+                        android:focusable="true"
+                        android:text="@string/wizard_next"
+                        android:textAllCaps="false"
+                        android:textColor="#F0F6FF"
+                        android:textSize="15sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</FrameLayout>

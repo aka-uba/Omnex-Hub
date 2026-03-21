@@ -1060,6 +1060,8 @@
         "displaySettings": "Görüntüleme Ayarları",
         "overlayTimeout": "Fiyat Gösterim Süresi (sn)",
         "fontSize": "Yazı Boyutu",
+        "displayTemplate": "Görüntüleme Şablonu",
+        "deviceTemplateDefault": "Entegrasyon varsayılanı",
         "printSettings": "Yazdırma Ayarları",
         "printEnabled": "Yazdırma Aktif",
         "defaultTemplate": "Varsayılan Yazdırma Şablonu",

@@ -1060,6 +1060,8 @@
         "displaySettings": "Display Settings",
         "overlayTimeout": "Price Display Timeout (sec)",
         "fontSize": "Font Size",
+        "displayTemplate": "Display Template",
+        "deviceTemplateDefault": "Use integration default",
         "printSettings": "Print Settings",
         "printEnabled": "Printing Enabled",
         "defaultTemplate": "Default Print Template",

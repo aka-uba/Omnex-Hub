@@ -1,0 +1,199 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def hasReleaseKeystore = false
+
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { stream ->
+        keystoreProperties.load(stream)
+    }
+    hasReleaseKeystore = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+        .every { key -> keystoreProperties[key] }
+}
+
+android {
+    namespace 'com.omnex.priceview'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.omnex.priceview"
+        minSdk 21  // Android 5.0+
+        targetSdk 34
+        versionCode 5
+        versionName "1.0.4"
+
+        // Varsayilan sunucu URL'si (production)
+        buildConfigField "String", "SERVER_URL", '"https://hub.omnexcore.com/player/"'
+        }
+
+    flavorDimensions "distribution"
+    productFlavors {
+        // Standalone: kendi gÃƒÂ¼ncelleme sistemi, doÃ„Å¸rudan APK daÃ„Å¸Ã„Â±tÃ„Â±mÃ„Â±
+        standalone {
+            dimension "distribution"
+            buildConfigField "boolean", "SELF_UPDATE_ENABLED", "true"
+        }
+        // Google Play Store: Play Store gÃƒÂ¼ncelleme, REQUEST_INSTALL_PACKAGES yok
+        playstore {
+            dimension "distribution"
+            buildConfigField "boolean", "SELF_UPDATE_ENABLED", "false"
+        }
+    }
+
+    signingConfigs {
+        debug {
+            // Keep debug APK signature stable to avoid package conflict on update.
+            storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+
+        if (hasReleaseKeystore) {
+            release {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseKeystore) {
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            // Debug icin localhost
+            buildConfigField "String", "SERVER_URL", '"https://hub.omnexcore.com/player/"'
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
+
+    // Android TV desteÃ„Å¸i
+    lintOptions {
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // Android TV iÃƒÂ§in Leanback
+    implementation 'androidx.leanback:leanback:1.0.0'
+
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+
+    // ExoPlayer - Native video playback
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.19.1'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.19.1'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.19.1'
+
+    // === PriceView Dependencies ===
+
+    // Room Database (offline-first product catalog)
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+
+    // ML Kit Barcode Scanning (camera-based)
+    implementation 'com.google.mlkit:barcode-scanning:17.2.0'
+
+    // CameraX (barcode scanner camera preview)
+    implementation 'androidx.camera:camera-core:1.3.1'
+    implementation 'androidx.camera:camera-camera2:1.3.1'
+    implementation 'androidx.camera:camera-lifecycle:1.3.1'
+    implementation 'androidx.camera:camera-view:1.3.1'
+
+    // WorkManager (background product sync)
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+
+    // Encrypted SharedPreferences (secure token storage)
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
+    // Material Components (FAB, BottomSheet)
+    implementation 'com.google.android.material:material:1.11.0'
+}
+
+tasks.register('publishDebugApk') {
+    dependsOn('assembleDebug')
+    doLast {
+        def standaloneApk = file("$buildDir/outputs/apk/standalone/debug/app-standalone-debug.apk")
+        if (!standaloneApk.exists()) {
+            throw new GradleException("Standalone debug APK bulunamadi: ${standaloneApk}")
+        }
+
+        copy {
+            from(standaloneApk)
+            into(new File(rootProject.projectDir, '../../public/downloads'))
+            rename { _ -> 'omnex-priceview.apk' }
+        }
+
+        copy {
+            from(standaloneApk)
+            into(new File(rootProject.projectDir, '../../downloads'))
+            rename { _ -> 'omnex-priceview.apk' }
+        }
+    }
+}
+
+tasks.register('publishReleaseArtifacts') {
+    dependsOn('bundleRelease', 'assembleRelease')
+    doLast {
+        def outputDir = new File(rootProject.projectDir, '../../public/downloads')
+        outputDir.mkdirs()
+
+        def releaseApkFiles = fileTree("$buildDir/outputs/apk/release") {
+            include '*.apk'
+            exclude '*unaligned*.apk'
+        }
+
+        def releaseBundleFiles = fileTree("$buildDir/outputs/bundle/release") {
+            include '*.aab'
+        }
+
+        if (!releaseApkFiles.isEmpty()) {
+            copy {
+                from(releaseApkFiles)
+                into(outputDir)
+                rename { _ -> 'omnex-priceview-release.apk' }
+            }
+        }
+
+        if (!releaseBundleFiles.isEmpty()) {
+            copy {
+                from(releaseBundleFiles)
+                into(outputDir)
+                rename { _ -> 'omnex-priceview-release.aab' }
+            }
+        }
+    }
+}
+

@@ -532,6 +532,14 @@ $router->group(['prefix' => '/api/devices', 'middleware' => ['auth']], function(
         require API_PATH . '/devices/delete.php';
     });
 
+    // Device-specific PriceView settings override
+    $router->get('/{id}/priceview-settings', function($request) {
+        require API_PATH . '/devices/priceview-settings.php';
+    });
+    $router->put('/{id}/priceview-settings', function($request) {
+        require API_PATH . '/devices/priceview-settings.php';
+    });
+
     // Assign playlist to device
     $router->post('/{id}/assign-playlist', function($request) {
         require API_PATH . '/devices/assign-playlist.php';
@@ -1271,6 +1279,15 @@ $router->group(['prefix' => '/api/player', 'middleware' => ['device']], function
     // Command acknowledge - mark command as completed
     $router->post('/command-ack', function($request) {
         require API_PATH . '/player/command-ack.php';
+    });
+});
+
+// =====================================================
+// PriceView Routes (Web Admin)
+// =====================================================
+$router->group(['prefix' => '/api/priceview', 'middleware' => ['auth']], function($router) {
+    $router->get('/template-presets', function($request) {
+        require API_PATH . '/priceview/template-presets.php';
     });
 });
 
