@@ -6821,3 +6821,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/restore safety steps:
   - Additional backup created before follow-up patch:
     - `services/FabricToHtmlConverter.php.bak.20260321_170127`
+
+## 2026-03-21 - Commit/Push + Server Pull/Deploy execution
+- Request: Execute commit + push + server-side pull/deploy for recent converter/print fixes.
+- Changes:
+  - Created commit on `main`: `f2a5d2f` (converter barcode render alignment + print media base-path fix + memory updates).
+  - Pushed to `origin/main` successfully.
+  - Remote deploy executed on `185.124.84.34` (`/opt/omnex-hub`): `git pull origin main`, `docker compose build app`, `docker compose up -d app`.
+  - Verified container status: `omnex-app-1` is `healthy`.
+- Files changed:
+  - None newly edited in this step (operational execution only).
+- Checks run:
+  - Remote service health check via `docker compose ps app` (healthy).
+- Risk/Follow-up:
+  - Compose output reported orphan containers (`omnex-nginx-1`, `omnex-certbot-1`) warning; non-blocking, but stack hygiene can be reviewed later.
+- Backup/restore safety steps:
+  - Not applicable for this operational step.
