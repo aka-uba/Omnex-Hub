@@ -14,7 +14,7 @@
             "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=5",
             "releaseNotes": "- HTML gosterim modu eklendi (product/not_found sablonlari)\n- Entegrasyon + cihaz bazli gosterim sablonu secimi eklendi\n- Display template sync signature ile degismedikce indirme yapmiyor",
             "mandatory": false,
-            "sha256": "b86371bf78162c4bedf917da1b34391a9f666c9c0595475b0ceb6b5ea621ad08"
+            "sha256": "55cfebe23ab50134a058ff3b2199a092d60ff65f25fb5c2b65d0bc265e327985"
         }
     },
     "versionCode": 51,

@@ -7126,3 +7126,35 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Existing unrelated untracked temp/backup files in workspace were intentionally not staged.
 - Backup/restore safety steps:
   - Release file backups: `.temp-backups/release_20260322_012050/`.
+
+## 2026-03-22 - Hotfix: PriceView APK copy path bug (version remained 1.0.3)
+- Request: Device update gorunse de surum 1.0.3 kaliyor; ADB ile dogrula ve duzelt.
+- Root cause:
+  - `Omnex-PriceView/app/build.gradle` icindeki `publishDebugApk` kopya yolu yanlisti (`../../downloads`), APK `C:/xampp/htdocs/downloads` altina gidiyordu.
+  - Repo dagitim dosyalari (`market-etiket-sistemi/downloads`) eski APK (v4/1.0.3) ile kalmis.
+- Changes:
+  1. `Omnex-PriceView/app/build.gradle`
+     - `publishDebugApk` copy targets fixed:
+       - `../public/downloads`
+       - `../downloads`
+     - `publishReleaseArtifacts` output dir fixed to `../public/downloads`.
+  2. Rebuilt/published APK to correct repo paths.
+  3. Updated PriceView `sha256` in both update manifests to new APK hash.
+- Verification:
+  - ADB device check (`192.168.1.77:42059`) showed installed app was `versionCode=4`, `versionName=1.0.3` (before fix).
+  - `aapt dump badging downloads/omnex-priceview.apk` after fix: `versionCode=5`, `versionName=1.0.4`.
+  - New SHA256: `55cfebe23ab50134a058ff3b2199a092d60ff65f25fb5c2b65d0bc265e327985`.
+- Files changed:
+  - Omnex-PriceView/app/build.gradle
+  - downloads/update.json
+  - public/downloads/update.json
+  - downloads/omnex-priceview.apk
+  - public/downloads/omnex-priceview.apk
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `./gradlew.bat assembleStandaloneDebug publishDebugApk` (OK)
+  - `aapt dump badging downloads/omnex-priceview.apk` (v5/1.0.4)
+  - `aapt dump badging public/downloads/omnex-priceview.apk` (v5/1.0.4)
+  - `JSON.parse` checks for `downloads/update.json` and `public/downloads/update.json` (OK)
+- Backup/restore safety:
+  - `.temp-backups/release_fix_20260322_014241/`

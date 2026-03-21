@@ -152,13 +152,13 @@ tasks.register('publishDebugApk') {
 
         copy {
             from(standaloneApk)
-            into(new File(rootProject.projectDir, '../../public/downloads'))
+            into(new File(rootProject.projectDir, '../public/downloads'))
             rename { _ -> 'omnex-priceview.apk' }
         }
 
         copy {
             from(standaloneApk)
-            into(new File(rootProject.projectDir, '../../downloads'))
+            into(new File(rootProject.projectDir, '../downloads'))
             rename { _ -> 'omnex-priceview.apk' }
         }
     }
@@ -167,7 +167,7 @@ tasks.register('publishDebugApk') {
 tasks.register('publishReleaseArtifacts') {
     dependsOn('bundleRelease', 'assembleRelease')
     doLast {
-        def outputDir = new File(rootProject.projectDir, '../../public/downloads')
+        def outputDir = new File(rootProject.projectDir, '../public/downloads')
         outputDir.mkdirs()
 
         def releaseApkFiles = fileTree("$buildDir/outputs/apk/release") {
