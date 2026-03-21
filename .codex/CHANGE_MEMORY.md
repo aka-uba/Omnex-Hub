@@ -11,6 +11,20 @@ Format:
 
 ---
 
+## 2026-03-20 - Print HTML image fix, PriceView device count fix, zombie cleanup
+- Request: Fix 3 issues - broken product images in PriceView print HTML on server, wrong device count in IntegrationSettings PriceView status card, zombie ffmpeg processes on server
+- Changes:
+  1. `api/priceview/print.php`: Build absolute URL basePath (protocol+host+webBasePath) and pass to FabricToHtmlConverter so all media URLs resolve to full absolute URLs. No longer depends on detectBasePath() guessing correctly on Docker.
+  2. `api/devices/index.php`: Added `model` query parameter filter support (line ~75). PriceView devices have type=android_tv but model=priceview in DB.
+  3. `public/assets/js/pages/settings/IntegrationSettings.js`: Changed device count API call from `?type=pwa_player` to `?model=priceview`. Changed "Son Senkronizasyon" to show i18n "perDevice" text instead of empty dash.
+  4. `locales/{tr,en,ru,az,de,nl,fr,ar}/pages/settings.json`: Added `integrations.priceview.perDevice` key in all 8 languages.
+  5. Server: Restarted `omnex-channel-worker-1` Docker container to clear 2 zombie ffmpeg processes (from Mar 17).
+- Files: api/priceview/print.php, api/devices/index.php, public/assets/js/pages/settings/IntegrationSettings.js, locales/*/pages/settings.json (8 files)
+- Checks: PHP syntax OK (print.php, index.php), JSON validation OK (all 8 locale files), zombie count 0 after restart
+- Risk: print.php change relies on HTTP_HOST being correct (should be fine since requests come from PriceView APK with correct host). FabricToHtmlConverter.php NOT modified per user request.
+
+---
+
 ## 2026-03-19 - FiyatGor (PriceView) tab in Integration Settings page
 - Request: Add PriceView tab to IntegrationSettings page with sync, display, print, and status cards
 - Changes:
@@ -6706,3 +6720,104 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - SyncMetadata DAO get("products") must exist (assumed from sync module)
   - PriceViewConfig.cameraTorchDefault property assumed to exist
 
+## 2026-03-20 - Fix priceview settings save scope + sync interval min 15
+
+- Request: Two fixes: (1) savePriceviewSettings() saves to user-level row instead of company-level, so /api/priceview/config never finds the settings. (2) Add min 15 minute validation for sync interval (Android WorkManager limitation).
+- Changes:
+  1. IntegrationSettings.js savePriceviewSettings(): changed PUT /settings to PUT /settings?scope=company so priceview settings go to company row (user_id IS NULL)
+  2. IntegrationSettings.js loadPriceviewSettings(): changed GET /settings to GET /settings?scope=company so it reads from the same company row
+  3. Sync interval input: changed min="1" to min="15", added warning note below input using i18n key
+  4. savePriceviewSettings(): added validation - if syncInterval < 15, clamp to 15 and show Toast.warning
+  5. Added i18n key "syncIntervalMin" to priceview.hints in all 8 locales (tr, en, az, de, nl, fr, ru, ar)
+- Files:
+  - public/assets/js/pages/settings/IntegrationSettings.js (3 edits: save scope, load scope, min validation + UI note)
+  - locales/tr/pages/settings.json (added syncIntervalMin)
+  - locales/en/pages/settings.json (added syncIntervalMin)
+  - locales/az/pages/settings.json (added syncIntervalMin)
+  - locales/de/pages/settings.json (added syncIntervalMin)
+  - locales/nl/pages/settings.json (added syncIntervalMin)
+  - locales/fr/pages/settings.json (added syncIntervalMin)
+  - locales/ru/pages/settings.json (added syncIntervalMin)
+  - locales/ar/pages/settings.json (added syncIntervalMin)
+- Checks: All 8 locale JSON files validated with PHP json_decode (all OK)
+- Risk/Follow-up:
+  - Backend api/settings/index.php already supports ?scope=company via query param - no backend change needed
+  - The /api/priceview/config endpoint queries WHERE company_id=? AND user_id IS NULL which now matches the save target
+  - Existing user-level priceview settings (saved before this fix) will be orphaned; they won't cause harm but won't be read either
+
+## 2026-03-20 - Fix 3 PriceView issues (overlay timeout, print button, status card)
+
+- Request: Fix three issues: (1) Overlay timeout not applied from remote config, (2) Print button "Baski sablonu secilmedi" text and async config issue, (3) IntegrationSettings status card shows "-" for all values.
+- Changes:
+  1. **Issue 1 - Overlay timeout**: `triggerInitialSyncIfNeeded()` changed from fire-and-forget async config fetch to synchronous blocking (CountDownLatch with 5s timeout). Config fetch now completes BEFORE SyncWorker.schedule() and first barcode scan, ensuring overlayTimeoutSeconds is set from remote config.
+  2. **Issue 2 - Print button**: `printProduct()` now retries config fetch from `/api/priceview/config` if `defaultTemplateId` is null before giving up. Turkish text fixed from ASCII "Baski sablonu secilmedi" to proper Unicode escapes "\u0042ask\u0131 \u015fablonu se\u00e7ilmedi". Also fixed "Baski hatasi" to "Bask\u0131 hatas\u0131".
+  3. **Issue 3 - Status card**: `_loadPriceviewStatus()` in IntegrationSettings.js now fetches real data: product count from `/reports/dashboard-stats` (stats.products), device count from `/devices?type=pwa_player&per_page=1` (meta.total). Previously read non-existent keys from settings JSON.
+- Files:
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt (triggerInitialSyncIfNeeded + printProduct)
+  - public/assets/js/pages/settings/IntegrationSettings.js (_loadPriceviewStatus)
+- Checks: IntegrationSettings.js passed node -c syntax check. Kotlin changes reviewed for brace matching and import availability (CountDownLatch, TimeUnit already imported at line 45-46).
+- Risk/Follow-up:
+  - CountDownLatch.await() on main thread blocks UI for up to 5s during startup; acceptable since it's during init phase
+  - The latch uses priceViewScope with Dispatchers.IO, which runs on IO thread pool, so no deadlock risk
+  - Device count query uses type=pwa_player; if PriceView devices are registered with a different type, count may be 0
+  - Last sync time still reads from settings data (priceview_last_sync) which is not yet populated by any backend code
+
+
+## 2026-03-21 - Commit history + docs review (PriceView/FiyatGor readiness)
+- Request: Review recent commit history and project docs, with focus on PriceView/FiyatGor changes; confirm readiness for next development step.
+- Changes:
+  - Analysis-only review completed for main repo commit timeline and PriceView-related code/docs.
+  - Confirmed `Omnex-PriceView/` exists locally but is not tracked in this repo's git history.
+- Files changed:
+  - .codex/CHANGE_MEMORY.md (this log entry)
+- Checks run:
+  - None (no source code edit; documentation/log update only).
+- Risk/Follow-up:
+  - Main repo and local `Omnex-PriceView/` app state are not fully aligned in traceability because APK app source folder is untracked.
+  - Some local docs in `docs/` and `Omnex-PriceView/` show encoding degradation and mixed historical naming (PriceTag/FiyatGor/PriceView), which can cause confusion during implementation.
+- Backup/restore safety steps:
+  - Not needed (append-only log update).
+
+## 2026-03-21 - FabricToHtmlConverter: barcode detection + print image path fix (server/local parity)
+- Request: Investigate converter behavior for product page flows. Issues: (1) Barcode area not rendering in web-template generation flow for some designs, (2) print output image URLs broken on server while local works; work with backups and encoding safety.
+- Changes:
+  1. `services/FabricToHtmlConverter.php`
+     - Barcode routing in `convertObject()` changed to use new robust detector `isBarcodeObject()` (customType/type/dynamicField/fieldBinding/text placeholder/alias aware).
+     - `convertBarcode()` fallback logic hardened to avoid leaving literal "barcode/barkod" label and prefer real field value (`barcode` then `sku`).
+     - Added `normalizeFieldKey()` and updated `resolveDynamicFieldValue()` to support alias mapping and spaced placeholders (`{{ product.barcode }}` style).
+  2. `api/templates/print-html.php`
+     - Removed manual `basename(BASE_PATH)` based basePath injection to converter (causing wrong `/html/...` prefix on some server deployments).
+     - Switched to `new FabricToHtmlConverter($companyId)` (converter auto-detects web base path).
+- Files changed:
+  - services/FabricToHtmlConverter.php
+  - api/templates/print-html.php
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l services/FabricToHtmlConverter.php` (OK)
+  - `php -l api/templates/print-html.php` (OK)
+- Risk/Follow-up:
+  - Barcode rendering still depends on client-side JsBarcode CDN availability at runtime.
+  - Line-ending warning observed in git diff (LF/CRLF normalization warning only; no syntax impact).
+- Backup/restore safety steps:
+  - Created backups before edit:
+    - `services/FabricToHtmlConverter.php.bak.20260321_142104`
+    - `api/templates/print-html.php.bak.20260321_142104`
+
+## 2026-03-21 - Follow-up fix: /web-templates/:id/serve barcode render parity
+- Request: Barcode in web-template serve output still looked incorrect locally despite SVG being generated; verify and fix render behavior.
+- Changes:
+  - `services/FabricToHtmlConverter.php` buildFullHtml() inline JsBarcode script updated to match print behavior:
+    - auto format detection (EAN13/EAN8/UPC/CODE128)
+    - adaptive bar height/font/line width from object box (`data-width` / `data-height`)
+    - avoids clipping/shape mismatch from fixed CODE128+fixed sizing.
+- Files changed:
+  - services/FabricToHtmlConverter.php
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l services/FabricToHtmlConverter.php` (OK)
+- Risk/Follow-up:
+  - CDN availability for JsBarcode still required at runtime.
+  - Browser cache can make old served HTML appear until hard refresh/open in new tab.
+- Backup/restore safety steps:
+  - Additional backup created before follow-up patch:
+    - `services/FabricToHtmlConverter.php.bak.20260321_170127`

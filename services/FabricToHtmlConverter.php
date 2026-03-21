@@ -433,7 +433,8 @@ class FabricToHtmlConverter
         }
 
         // Barkod objesi → SVG placeholder (JsBarcode ile render edilecek)
-        if ($customType === 'barcode' || ($customType === 'dynamic-text' && ($obj['dynamicField'] ?? '') === 'barcode')) {
+        // Not: Bazı şablonlarda barcode nesnesi dynamic-text/alias alanlarıyla gelebilir.
+        if ($this->isBarcodeObject($obj)) {
             return $this->convertBarcode($obj, $fieldValues, $left, $top, $width, $height, $angle, $opacity);
         }
 
@@ -593,14 +594,92 @@ class FabricToHtmlConverter
     private function convertBarcode(array $obj, array $fieldValues, float $left, float $top, float $width, float $height, float $angle, float $opacity): string
     {
         $value = $this->resolveDynamicFieldValue($obj, $fieldValues);
-        if (empty($value)) {
-            $value = $obj['text'] ?? $fieldValues['barcode'] ?? '';
+        $valueLower = mb_strtolower(trim((string)$value), 'UTF-8');
+        if (empty($value) || in_array($valueLower, ['barkod', 'barcode'], true)) {
+            $fallbackText = trim((string)($obj['text'] ?? ''));
+            $fallbackTextLower = mb_strtolower($fallbackText, 'UTF-8');
+
+            // Etiket metni barkod/barcode ise gerçek alan değeriyle değiştir.
+            if (in_array($fallbackTextLower, ['barkod', 'barcode'], true) || strpos($fallbackText, '{{') !== false) {
+                $value = $fieldValues['barcode'] ?? $fieldValues['sku'] ?? $fallbackText;
+            } else {
+                $value = $fallbackText ?: ($fieldValues['barcode'] ?? $fieldValues['sku'] ?? '');
+            }
         }
         $escapedVal = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         $style = $this->buildBaseStyle($left, $top, $width, $height, $angle, $opacity);
         $style .= "display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;";
         $uid = 'bc_' . substr(md5(uniqid()), 0, 8);
         return "<div style=\"{$style}\"><svg id=\"{$uid}\" class=\"print-barcode\" data-barcode=\"{$escapedVal}\" data-width=\"{$width}\" data-height=\"{$height}\" style=\"max-width:100%;max-height:100%;\"></svg></div>";
+    }
+
+    /**
+     * Barkod nesnesini customType/type/dynamicField/fieldBinding/text üzerinden tespit et.
+     */
+    private function isBarcodeObject(array $obj): bool
+    {
+        $customType = mb_strtolower((string)($obj['customType'] ?? ''), 'UTF-8');
+        $type = mb_strtolower((string)($obj['type'] ?? ''), 'UTF-8');
+
+        if (in_array($customType, ['barcode', 'barkod', 'dynamic-barcode', 'dynamic_barcode'], true)) {
+            return true;
+        }
+        if ($type === 'barcode') {
+            return true;
+        }
+
+        $dynamicField = $this->normalizeFieldKey((string)($obj['dynamicField'] ?? $obj['dynamic_field'] ?? ''));
+        if ($dynamicField === 'barcode') {
+            return true;
+        }
+
+        $fieldBinding = $obj['fieldBinding'] ?? null;
+        if (is_array($fieldBinding)) {
+            $source = $this->normalizeFieldKey((string)($fieldBinding['source'] ?? ''));
+            if ($source === 'barcode') {
+                return true;
+            }
+        }
+
+        $text = trim((string)($obj['text'] ?? ''));
+        if ($text !== '') {
+            if (preg_match('/\{\{\s*([^}]+)\s*\}\}/u', $text, $m)) {
+                $placeholderKey = $this->normalizeFieldKey($m[1] ?? '');
+                if ($placeholderKey === 'barcode') {
+                    return true;
+                }
+            }
+            $textKey = $this->normalizeFieldKey($text);
+            if ($textKey === 'barcode') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Dinamik alan adını normalize et ve alias map ile gerçek alana çevir.
+     */
+    private function normalizeFieldKey(string $raw): string
+    {
+        $key = trim((string)$raw);
+        if ($key === '') return '';
+
+        $key = str_replace(['{{', '}}', 'product.'], '', $key);
+        $key = preg_replace('/\s+/u', ' ', $key);
+        $lower = mb_strtolower(trim($key), 'UTF-8');
+
+        if (isset(self::$labelToFieldMap[$lower])) {
+            return self::$labelToFieldMap[$lower];
+        }
+
+        $underscore = str_replace(' ', '_', $lower);
+        if (isset(self::$labelToFieldMap[$underscore])) {
+            return self::$labelToFieldMap[$underscore];
+        }
+
+        return $underscore;
     }
 
     /**
@@ -627,21 +706,24 @@ class FabricToHtmlConverter
         // 1. dynamicField prop
         $dynamicField = $obj['dynamicField'] ?? $obj['dynamic_field'] ?? null;
         if ($dynamicField) {
-            $key = trim(str_replace(['{{', '}}'], '', $dynamicField));
+            $key = $this->normalizeFieldKey((string)$dynamicField);
             if (isset($fieldValues[$key])) return (string)$fieldValues[$key];
         }
 
         // 2. fieldBinding
         $fieldBinding = $obj['fieldBinding'] ?? null;
         if ($fieldBinding && is_array($fieldBinding)) {
-            $source = str_replace('product.', '', $fieldBinding['source'] ?? '');
+            $source = $this->normalizeFieldKey((string)($fieldBinding['source'] ?? ''));
             if ($source && isset($fieldValues[$source])) return (string)$fieldValues[$source];
         }
 
         // 3. {{placeholder}} in text
         $text = $obj['text'] ?? '';
-        if (preg_match('/\{\{(\w+)\}\}/', $text, $m)) {
-            if (isset($fieldValues[$m[1]])) return (string)$fieldValues[$m[1]];
+        if (preg_match('/\{\{\s*([^}]+?)\s*\}\}/u', (string)$text, $m)) {
+            $placeholderKey = $this->normalizeFieldKey((string)($m[1] ?? ''));
+            if ($placeholderKey !== '' && isset($fieldValues[$placeholderKey])) {
+                return (string)$fieldValues[$placeholderKey];
+            }
         }
 
         return '';
@@ -1069,23 +1151,36 @@ class FabricToHtmlConverter
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script>
-        // Barkod render (JsBarcode)
+        // Barcode render (align with print-html behavior)
         document.querySelectorAll('.print-barcode').forEach(function(svg) {
-            var val = svg.getAttribute('data-barcode');
-            if (val) {
-                try {
-                    JsBarcode(svg, val, {
-                        format: 'CODE128',
-                        displayValue: true,
-                        fontSize: 14,
-                        width: 2,
-                        height: parseInt(svg.getAttribute('data-height')) || 60,
-                        margin: 0,
-                        textMargin: 2
-                    });
-                } catch(e) {
-                    try { JsBarcode(svg, val, { format: 'CODE128', displayValue: true }); } catch(e2) {}
-                }
+            var val = (svg.getAttribute('data-barcode') || '').trim();
+            if (!val) return;
+
+            var w = parseInt(svg.getAttribute('data-width')) || 100;
+            var h = parseInt(svg.getAttribute('data-height')) || 60;
+            var cleaned = val.replace(/[^0-9]/g, '');
+            var format = 'CODE128';
+            if (/^\d{13}$/.test(cleaned)) format = 'EAN13';
+            else if (/^\d{8}$/.test(cleaned)) format = 'EAN8';
+            else if (/^\d{12}$/.test(cleaned)) format = 'UPC';
+
+            // Keep value text inside the allocated object height.
+            var barsHeight = Math.max(20, Math.round(h * 0.7));
+            var fontSize = Math.max(8, Math.min(14, Math.round(h * 0.15)));
+            var lineWidth = Math.max(1, w / 80);
+
+            try {
+                JsBarcode(svg, val, {
+                    format: format,
+                    displayValue: true,
+                    fontSize: fontSize,
+                    width: lineWidth,
+                    height: barsHeight,
+                    margin: 0,
+                    textMargin: 2
+                });
+            } catch(e) {
+                try { JsBarcode(svg, val, { format: 'CODE128', displayValue: true }); } catch(e2) {}
             }
         });
         // Ekrana sığdırma (contain)

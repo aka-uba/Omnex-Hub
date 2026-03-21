@@ -125,8 +125,9 @@ if (empty($items)) {
 }
 
 // ── Converter oluştur ───────────────────────────────────
-$basePath = defined('BASE_PATH') ? basename(BASE_PATH) : 'market-etiket-sistemi';
-$converter = new FabricToHtmlConverter($companyId, '/' . $basePath);
+// Not: BASE_PATH basename'i sunucu ortamında hatalı web prefix üretebildiği için
+// (örn. /var/www/html -> /html) converter'ın otomatik basePath tespiti kullanılıyor.
+$converter = new FabricToHtmlConverter($companyId);
 
 // ── Her ürün için fragment oluştur ──────────────────────
 $fragments = [];
