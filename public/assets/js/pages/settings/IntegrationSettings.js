@@ -5095,6 +5095,14 @@ export class IntegrationSettingsPage {
                                     <small class="form-hint">${this.__('integrations.priceview.hints.fontSize')}</small>
                                 </div>
                                 <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.displayMode')}</label>
+                                    <select id="pv-display-mode" class="form-select">
+                                        <option value="native">${this.__('integrations.priceview.displayModes.native')}</option>
+                                        <option value="html">${this.__('integrations.priceview.displayModes.html')}</option>
+                                    </select>
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.displayMode')}</small>
+                                </div>
+                                <div class="form-group">
                                     <label class="form-label">${this.__('integrations.priceview.fields.displayTemplate')}</label>
                                     <select id="pv-display-template" class="form-select">
                                         <option value="">${this.__('integrations.priceview.hints.displayTemplate')}</option>
@@ -5248,6 +5256,7 @@ export class IntegrationSettingsPage {
         setVal('pv-sync-interval', s.sync_interval);
         setVal('pv-overlay-timeout', s.overlay_timeout);
         setVal('pv-font-size', s.font_size_multiplier);
+        setVal('pv-display-mode', s.product_display_mode || 'native');
         setChecked('pv-auto-sync', s.auto_sync);
         setChecked('pv-print-enabled', s.print_enabled);
         setChecked('pv-signage-enabled', s.signage_enabled);
@@ -5338,7 +5347,7 @@ export class IntegrationSettingsPage {
                 priceview_signage_enabled: document.getElementById('pv-signage-enabled')?.checked ?? true,
                 priceview_default_template: document.getElementById('pv-default-template')?.value || null,
                 priceview_font_size_multiplier: parseFloat(document.getElementById('pv-font-size')?.value) || 1.0,
-                priceview_product_display_mode: this.priceviewSettings.product_display_mode || 'native',
+                priceview_product_display_mode: document.getElementById('pv-display-mode')?.value || 'native',
                 priceview_product_display_template: document.getElementById('pv-display-template')?.value || null
             };
 

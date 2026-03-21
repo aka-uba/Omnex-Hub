@@ -656,6 +656,7 @@
                 "autoSync": "مزامنة تلقائية",
                 "overlayTimeout": "مدة عرض السعر (ثوانٍ)",
                 "fontSize": "مضاعف حجم الخط",
+                "displayMode": "وضع العرض",
                 "displayTemplate": "قالب العرض",
                 "printEnabled": "الطباعة مفعّلة",
                 "defaultPrintTemplate": "قالب الطباعة الافتراضي",
@@ -666,7 +667,12 @@
                 "syncIntervalMin": "الحد الأدنى 15 دقيقة (قيود Android WorkManager)",
                 "overlayTimeout": "مدة ظهور شاشة السعر بعد المسح الضوئي",
                 "fontSize": "1.0 = عادي، 1.5 = كبير، 2.0 = كبير جداً",
+                "displayMode": "Native = تصميم APK، HTML = قالب ويب",
                 "displayTemplate": "قالب عرض معلومات المنتج (فارغ = افتراضي)"
+            },
+            "displayModes": {
+                "native": "Native (APK)",
+                "html": "HTML (WebView)"
             },
             "status": {
                 "lastSync": "آخر مزامنة",

@@ -656,6 +656,7 @@
                 "autoSync": "Автосинхронизация",
                 "overlayTimeout": "Длительность отображения цены (секунды)",
                 "fontSize": "Множитель размера шрифта",
+                "displayMode": "Режим отображения",
                 "displayTemplate": "Шаблон отображения",
                 "printEnabled": "Печать включена",
                 "defaultPrintTemplate": "Шаблон печати по умолчанию",
@@ -666,7 +667,12 @@
                 "syncIntervalMin": "Минимум 15 минут (ограничение Android WorkManager)",
                 "overlayTimeout": "Длительность отображения экрана цены после сканирования",
                 "fontSize": "1.0 = Обычный, 1.5 = Крупный, 2.0 = Очень крупный",
+                "displayMode": "Native = макет APK, HTML = веб-шаблон",
                 "displayTemplate": "Шаблон отображения информации о товаре (пусто = по умолчанию)"
+            },
+            "displayModes": {
+                "native": "Native (APK)",
+                "html": "HTML (WebView)"
             },
             "status": {
                 "lastSync": "Последняя синхронизация",

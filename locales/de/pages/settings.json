@@ -656,6 +656,7 @@
                 "autoSync": "Automatische Synchronisierung",
                 "overlayTimeout": "Preisanzeigedauer (Sekunden)",
                 "fontSize": "Schriftgrößenmultiplikator",
+                "displayMode": "Anzeigemodus",
                 "displayTemplate": "Anzeigevorlage",
                 "printEnabled": "Drucken aktiviert",
                 "defaultPrintTemplate": "Standard-Druckvorlage",
@@ -666,7 +667,12 @@
                 "syncIntervalMin": "Mindestens 15 Minuten (Android WorkManager-Einschränkung)",
                 "overlayTimeout": "Wie lange der Preisbildschirm nach dem Scannen angezeigt wird",
                 "fontSize": "1.0 = Normal, 1.5 = Groß, 2.0 = Sehr groß",
+                "displayMode": "Native = APK-Layout, HTML = Webvorlage",
                 "displayTemplate": "Vorlage für Produktinformationsanzeige (leer = Standard)"
+            },
+            "displayModes": {
+                "native": "Native (APK)",
+                "html": "HTML (WebView)"
             },
             "status": {
                 "lastSync": "Letzte Synchronisierung",

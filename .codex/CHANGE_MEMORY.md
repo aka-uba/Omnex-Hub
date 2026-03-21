@@ -7158,3 +7158,39 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - `JSON.parse` checks for `downloads/update.json` and `public/downloads/update.json` (OK)
 - Backup/restore safety:
   - `.temp-backups/release_fix_20260322_014241/`
+
+## 2026-03-22 - Fix: PriceView display mode cannot be changed from Integration UI
+- Request: Cihazlarda yeni HTML tasarim devreye girmiyor; 15 dk bekleme gerekli mi kontrol et.
+- Root cause:
+  - Integration UI'da PriceView icin `product_display_mode` form alani render edilmiyordu.
+  - Kayit tarafi `this.priceviewSettings.product_display_mode` kullandigi icin mevcut deger (genelde `native`) tekrar yaziliyordu.
+  - Sonuc: Display template secimi kaydoluyor ama mod `native` kaldigi icin HTML overlay hic aktif olmuyordu.
+- Changes:
+  1. `public/assets/js/pages/settings/IntegrationSettings.js`
+     - PriceView Display Settings bolumune `pv-display-mode` select eklendi (`native` / `html`).
+     - Form populate akisina `pv-display-mode` degeri eklendi.
+     - Save akisinda `priceview_product_display_mode` artik dogrudan formdan okunuyor.
+  2. Locale keys (8 dil)
+     - Added: `integrations.priceview.fields.displayMode`
+     - Added: `integrations.priceview.hints.displayMode`
+     - Added: `integrations.priceview.displayModes.native/html`
+     - Files: `locales/{tr,en,ru,az,de,nl,fr,ar}/pages/settings.json`
+- Files changed:
+  - public/assets/js/pages/settings/IntegrationSettings.js
+  - locales/tr/pages/settings.json
+  - locales/en/pages/settings.json
+  - locales/ru/pages/settings.json
+  - locales/az/pages/settings.json
+  - locales/de/pages/settings.json
+  - locales/nl/pages/settings.json
+  - locales/fr/pages/settings.json
+  - locales/ar/pages/settings.json
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `node --check public/assets/js/pages/settings/IntegrationSettings.js` (OK)
+  - JSON parse checks for 8 locale files (OK)
+  - Live diagnosis check: `/api/priceview/config` was returning `product_display_mode: native` while template changed, confirming bug path.
+- Risk/Follow-up:
+  - Existing tenants must save PriceView mode once as `HTML` after this UI fix is deployed.
+- Backup/restore safety steps:
+  - Created backup set: `.temp-backups/locale_mode_fix_20260322_020130/`

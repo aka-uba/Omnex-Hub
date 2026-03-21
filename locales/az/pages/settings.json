@@ -656,6 +656,7 @@
                 "autoSync": "Avtomatik Sinxronizasiya",
                 "overlayTimeout": "Qiymət Göstərmə Müddəti (saniyə)",
                 "fontSize": "Şrift Ölçüsü Çarpanı",
+                "displayMode": "Göstərmə Rejimi",
                 "displayTemplate": "Göstərmə Şablonu",
                 "printEnabled": "Çap Aktiv",
                 "defaultPrintTemplate": "Standart Çap Şablonu",
@@ -666,7 +667,12 @@
                 "syncIntervalMin": "Minimum 15 dəqiqə (Android WorkManager məhdudiyyəti)",
                 "overlayTimeout": "Barkod oxudulduqdan sonra qiymət ekranının görünmə müddəti",
                 "fontSize": "1.0 = Normal, 1.5 = Böyük, 2.0 = Çox Böyük",
+                "displayMode": "Native = APK dizaynı, HTML = web şablonu",
                 "displayTemplate": "Məhsul məlumatı göstərmə şablonu (boş = standart)"
+            },
+            "displayModes": {
+                "native": "Native (APK)",
+                "html": "HTML (WebView)"
             },
             "status": {
                 "lastSync": "Son Sinxronizasiya",

@@ -656,6 +656,7 @@
                 "autoSync": "Automatische synchronisatie",
                 "overlayTimeout": "Prijsweergaveduur (seconden)",
                 "fontSize": "Lettertypegroottemultiplicator",
+                "displayMode": "Weergavemodus",
                 "displayTemplate": "Weergavesjabloon",
                 "printEnabled": "Afdrukken ingeschakeld",
                 "defaultPrintTemplate": "Standaard afdruksjabloon",
@@ -666,7 +667,12 @@
                 "syncIntervalMin": "Minimaal 15 minuten (Android WorkManager-beperking)",
                 "overlayTimeout": "Hoe lang het prijsscherm wordt weergegeven na het scannen",
                 "fontSize": "1.0 = Normaal, 1.5 = Groot, 2.0 = Extra groot",
+                "displayMode": "Native = APK-layout, HTML = websjabloon",
                 "displayTemplate": "Sjabloon voor productinformatieweergave (leeg = standaard)"
+            },
+            "displayModes": {
+                "native": "Native (APK)",
+                "html": "HTML (WebView)"
             },
             "status": {
                 "lastSync": "Laatste synchronisatie",
