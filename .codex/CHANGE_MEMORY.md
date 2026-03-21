@@ -6837,3 +6837,47 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Compose output reported orphan containers (`omnex-nginx-1`, `omnex-certbot-1`) warning; non-blocking, but stack hygiene can be reviewed later.
 - Backup/restore safety steps:
   - Not applicable for this operational step.
+
+## 2026-03-21 - Media/MediaPicker video thumbnail: instant first-frame fallback + hybrid preview
+- Request: In media page and MediaPicker modals, video thumbnails should appear immediately (first frame style) and not wait long on static thumbnail generation.
+- Changes:
+  1. `public/assets/js/pages/products/form/MediaPicker.js`
+     - Video card markup changed to hybrid preview: always render lazy `<video>` first-frame fallback; when `thumbnail_url` exists, load it as overlay image (`data-thumb-src`) and switch when loaded.
+     - `_initLazyVideoThumbnails()` updated to handle both image+video states (ready image suppresses video fallback flicker; video still shown instantly if image is slow).
+     - Video error placeholder override guarded so existing image thumbnail is not replaced by video error UI.
+  2. `public/assets/js/pages/media/MediaLibrary.js`
+     - Grid card and table row video previews switched to shared hybrid renderer (`renderHybridVideoPreview`).
+     - `initLazyVideoThumbnails()` updated with same hybrid load logic (thumbnail image + video first-frame fallback coordination).
+     - Video card wrapper now includes `media-video-preview` class for layered styling.
+  3. `public/assets/css/pages/products.css`
+     - MediaPicker video thumbnail layers positioned absolutely with z-index ordering (placeholder < video frame < thumbnail image < play icon).
+  4. `public/assets/css/pages/media.css`
+     - Added `.media-video-preview` layered styles for hybrid video preview in both card and table modes.
+     - `media-table-preview` set to `position: relative` for overlay layering.
+- Files changed:
+  - public/assets/js/pages/products/form/MediaPicker.js
+  - public/assets/js/pages/media/MediaLibrary.js
+  - public/assets/css/pages/products.css
+  - public/assets/css/pages/media.css
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `node --check public/assets/js/pages/products/form/MediaPicker.js` (OK)
+  - `node --check public/assets/js/pages/media/MediaLibrary.js` (OK)
+- Risk/Follow-up:
+  - Hybrid mode still requests both video metadata and thumbnail image when thumbnail URL exists; this improves perceived speed but can increase network usage on very large pages.
+  - FFmpeg-backed thumbnail generation timing remains server-dependent; this patch improves UI fallback behavior rather than backend generation latency itself.
+
+## 2026-03-21 - Media grid video preview full-fit adjustment
+- Request: In media page (`#/media`) grid card view, video thumbnails were still appearing small inside preview boxes; thumbnails should fill the preview area.
+- Changes:
+  - `public/assets/css/pages/media.css`
+    - `media-card-preview.media-video-preview` updated to full-bleed rendering (`padding: 0`) with dark background.
+    - Hybrid video thumb/frame (`.media-hybrid-video-thumb`, `.media-hybrid-video-frame`) forced to true cover mode with `max-width/max-height` reset and radius/shadow removed to prevent inset-small rendering.
+- Files changed:
+  - public/assets/css/pages/media.css
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `node --check public/assets/js/pages/products/form/MediaPicker.js` (OK)
+  - `node --check public/assets/js/pages/media/MediaLibrary.js` (OK)
+- Risk/Follow-up:
+  - Video grid cards now prioritize fill (`cover`), so edge cropping can occur for extreme aspect-ratio videos (expected tradeoff for full-fit preview).

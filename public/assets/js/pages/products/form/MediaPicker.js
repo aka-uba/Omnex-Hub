@@ -1541,11 +1541,12 @@ class MediaPicker {
 
     _renderVideoThumbnailMarkup({ videoUrl, thumbnailUrl, filename, duration = null }) {
         const safeVideoUrl = videoUrl || '';
-        const mediaMarkup = thumbnailUrl
-            ? `<img src="${thumbnailUrl}" alt="${filename}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-               <div class="video-placeholder" style="display:none;"><i class="ti ti-video"></i></div>`
-            : `<video data-src="${safeVideoUrl}" class="media-picker-lazy-video" preload="none" muted playsinline style="opacity:0;"></video>
-               <div class="video-placeholder" style="display:flex;"><i class="ti ti-video"></i></div>`;
+        const safeThumbUrl = thumbnailUrl || '';
+        const mediaMarkup = `
+            ${safeThumbUrl ? `<img class="media-picker-thumb-image media-thumb-image" data-thumb-src="${safeThumbUrl}" alt="${filename}" loading="lazy" style="opacity:0;">` : ''}
+            <video data-src="${safeVideoUrl}" class="media-picker-lazy-video" preload="none" muted playsinline style="opacity:0;"></video>
+            <div class="video-placeholder media-hybrid-placeholder" style="display:flex;"><i class="ti ti-video"></i></div>
+        `;
 
         return `
             <div class="video-thumbnail">
@@ -1557,8 +1558,40 @@ class MediaPicker {
     }
 
     _initLazyVideoThumbnails(modalContainer = this._getModalContainer()) {
-        const videos = Array.from(modalContainer.querySelectorAll('video.media-picker-lazy-video[data-src]:not([data-thumb-bound="1"])'));
-        if (!videos.length) return;
+        const wrappers = Array.from(modalContainer.querySelectorAll('.video-thumbnail'));
+        if (!wrappers.length) return;
+
+        const getContainer = (node) => node?.closest('.video-thumbnail') || null;
+        const hasReadyImage = (container) => {
+            const image = container?.querySelector('img.media-thumb-image');
+            return !!image && image.dataset.thumbReady === '1';
+        };
+
+        const bindThumbImage = (image) => {
+            if (image.dataset.thumbBound === '1') return;
+            image.dataset.thumbBound = '1';
+
+            const src = image.dataset.thumbSrc;
+            if (!src) return;
+
+            const container = getContainer(image);
+            const placeholder = container?.querySelector('.video-placeholder');
+            const video = container?.querySelector('video.media-picker-lazy-video');
+
+            image.addEventListener('load', () => {
+                image.dataset.thumbReady = '1';
+                image.style.opacity = '1';
+                if (video) video.style.opacity = '0';
+                if (placeholder) placeholder.style.display = 'none';
+            }, { once: true });
+
+            image.addEventListener('error', () => {
+                image.dataset.thumbReady = '0';
+                image.style.opacity = '0';
+            }, { once: true });
+
+            image.src = src;
+        };
 
         const activateVideo = (video) => {
             if (video.dataset.thumbBound === '1') return;
@@ -1567,12 +1600,15 @@ class MediaPicker {
             const src = video.dataset.src;
             if (!src) return;
 
-            const placeholder = video.nextElementSibling;
+            const container = getContainer(video);
+            const placeholder = container?.querySelector('.video-placeholder');
             const showFallback = () => {
+                if (hasReadyImage(container)) return;
                 video.style.opacity = '0';
                 if (placeholder) placeholder.style.display = 'flex';
             };
             const showVideo = () => {
+                if (hasReadyImage(container)) return;
                 video.style.opacity = '1';
                 if (placeholder) placeholder.style.display = 'none';
             };
@@ -1594,6 +1630,16 @@ class MediaPicker {
             video.preload = 'metadata';
             video.load();
         };
+
+        wrappers.forEach((wrapper) => {
+            const image = wrapper.querySelector('img.media-thumb-image[data-thumb-src]:not([data-thumb-bound="1"])');
+            if (image) bindThumbImage(image);
+        });
+
+        const videos = wrappers
+            .map((wrapper) => wrapper.querySelector('video.media-picker-lazy-video[data-src]:not([data-thumb-bound="1"])'))
+            .filter(Boolean);
+        if (!videos.length) return;
 
         if (typeof IntersectionObserver === 'undefined') {
             videos.forEach(activateVideo);
@@ -1818,6 +1864,9 @@ class MediaPicker {
 
                 // Hata durumunda placeholder göster
                 video.addEventListener('error', () => {
+                    if (item.querySelector('img.media-thumb-image')) {
+                        return;
+                    }
                     const thumbnail = item.querySelector('.video-thumbnail');
                     if (thumbnail && !thumbnail.querySelector('.video-error-placeholder')) {
                         thumbnail.innerHTML = `

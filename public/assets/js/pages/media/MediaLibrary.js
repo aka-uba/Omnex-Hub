@@ -454,7 +454,7 @@ export class MediaLibraryPage {
                     <button class="media-preview-btn" onclick="event.stopPropagation(); window.mediaPage?.previewFile('${fileId}')" title="${this.__('actions.preview')}">
                         <i class="ti ti-eye"></i>
                     </button>
-                    <div class="media-card-preview" onclick="window.mediaPage?.previewFile('${fileId}')">
+                    <div class="media-card-preview ${fileType === 'video' ? 'media-video-preview' : ''}" onclick="window.mediaPage?.previewFile('${fileId}')">
                         ${this.renderThumbnail(f)}
                     </div>
                     <div class="media-card-body">
@@ -604,17 +604,16 @@ export class MediaLibraryPage {
                             </div>`;
                         }
                         if (fileType === 'video') {
-                            // Use lazy video first-frame preview to keep UI responsive
                             const thumbnailUrl = row.thumbnail_url || row.thumbnail;
                             const url = row.url || this.getFileUrl(filePath);
-                            return `<div class="media-table-preview" style="cursor: pointer;" onclick="event.stopPropagation(); window.mediaPage?.previewFile('${fileId}');">
-                                ${thumbnailUrl
-                                    ? `<img src="${escapeHTML(thumbnailUrl)}" alt="${escapeHTML(row.name || 'Video')}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-                                    : `<video data-src="${escapeHTML(url)}" class="media-video-thumbnail media-lazy-video" preload="none" muted playsinline style="opacity:0;"></video>`
-                                }
-                                <div class="media-table-preview-placeholder" style="${thumbnailUrl ? 'display:none;' : 'display:flex;'}">
-                                    <i class="ti ti-video text-blue-500"></i>
-                                </div>
+                            return `<div class="media-table-preview media-video-preview" style="cursor: pointer;" onclick="event.stopPropagation(); window.mediaPage?.previewFile('${fileId}');">
+                                ${this.renderHybridVideoPreview({
+                                    videoUrl: url,
+                                    thumbnailUrl,
+                                    altText: row.name || 'Video',
+                                    placeholderClass: 'media-table-preview-placeholder',
+                                    iconClass: 'text-blue-500'
+                                })}
                             </div>`;
                         }
                         return `<div class="media-table-preview" style="cursor: pointer;" onclick="event.stopPropagation(); window.mediaPage?.previewFile('${fileId}');"><i class="ti ti-file text-gray-400"></i></div>`;
@@ -746,8 +745,40 @@ export class MediaLibraryPage {
 
     initLazyVideoThumbnails(root = document) {
         const scope = root && typeof root.querySelectorAll === 'function' ? root : document;
-        const videos = Array.from(scope.querySelectorAll('video.media-lazy-video[data-src]:not([data-thumb-bound=\"1\"])'));
-        if (!videos.length) return;
+        const wrappers = Array.from(scope.querySelectorAll('.video-thumbnail, .media-card-preview, .media-table-preview'));
+        if (!wrappers.length) return;
+
+        const getContainer = (node) => node?.closest('.video-thumbnail, .media-card-preview, .media-table-preview') || null;
+        const hasReadyImage = (container) => {
+            const image = container?.querySelector('img.media-thumb-image');
+            return !!image && image.dataset.thumbReady === '1';
+        };
+
+        const bindThumbImage = (image) => {
+            if (image.dataset.thumbBound === '1') return;
+            image.dataset.thumbBound = '1';
+
+            const src = image.dataset.thumbSrc;
+            if (!src) return;
+
+            const container = getContainer(image);
+            const placeholder = container?.querySelector('.media-hybrid-placeholder, .video-placeholder, .media-card-placeholder, .media-table-preview-placeholder');
+            const video = container?.querySelector('video.media-lazy-video');
+
+            image.addEventListener('load', () => {
+                image.dataset.thumbReady = '1';
+                image.style.opacity = '1';
+                if (video) video.style.opacity = '0';
+                if (placeholder) placeholder.style.display = 'none';
+            }, { once: true });
+
+            image.addEventListener('error', () => {
+                image.dataset.thumbReady = '0';
+                image.style.opacity = '0';
+            }, { once: true });
+
+            image.src = src;
+        };
 
         const activateVideo = (video) => {
             if (video.dataset.thumbBound === '1') return;
@@ -756,13 +787,16 @@ export class MediaLibraryPage {
             const src = video.dataset.src;
             if (!src) return;
 
-            const fallback = video.nextElementSibling;
+            const container = getContainer(video);
+            const fallback = container?.querySelector('.media-hybrid-placeholder, .video-placeholder, .media-card-placeholder, .media-table-preview-placeholder');
             const showFallback = () => {
+                if (hasReadyImage(container)) return;
                 video.style.opacity = '0';
                 if (fallback) fallback.style.display = 'flex';
             };
 
             const showVideo = () => {
+                if (hasReadyImage(container)) return;
                 video.style.opacity = '1';
                 if (fallback) fallback.style.display = 'none';
             };
@@ -784,6 +818,16 @@ export class MediaLibraryPage {
             video.preload = 'metadata';
             video.load();
         };
+
+        wrappers.forEach((wrapper) => {
+            const image = wrapper.querySelector('img.media-thumb-image[data-thumb-src]:not([data-thumb-bound=\"1\"])');
+            if (image) bindThumbImage(image);
+        });
+
+        const videos = wrappers
+            .map((wrapper) => wrapper.querySelector('video.media-lazy-video[data-src]:not([data-thumb-bound=\"1\"])'))
+            .filter(Boolean);
+        if (!videos.length) return;
 
         if (typeof IntersectionObserver === 'undefined') {
             videos.forEach(activateVideo);
@@ -885,6 +929,22 @@ export class MediaLibraryPage {
         popup.style.top = y + 'px';
     }
 
+    renderHybridVideoPreview({ videoUrl, thumbnailUrl, altText = 'Video', placeholderClass, iconClass = '' }) {
+        const safeVideoUrl = escapeHTML(videoUrl || '');
+        const safeAltText = escapeHTML(altText || 'Video');
+        const safeThumbnailUrl = thumbnailUrl ? escapeHTML(thumbnailUrl) : '';
+        const placeholder = placeholderClass || 'media-card-placeholder';
+        const icon = iconClass ? ` ${iconClass}` : '';
+
+        return `
+            ${safeThumbnailUrl ? `<img class="media-hybrid-video-thumb media-thumb-image" data-thumb-src="${safeThumbnailUrl}" alt="${safeAltText}" loading="lazy" style="opacity:0;">` : ''}
+            <video data-src="${safeVideoUrl}" class="media-hybrid-video-frame media-video-thumbnail media-lazy-video" preload="none" muted playsinline style="opacity:0;"></video>
+            <div class="${placeholder} media-hybrid-placeholder" style="display:flex;">
+                <i class="ti ti-video${icon}"></i>
+            </div>
+        `;
+    }
+
     renderThumbnail(file, small = false) {
         const fileType = file.type || file.file_type;
         const filePath = file.path || file.file_path;
@@ -905,17 +965,12 @@ export class MediaLibraryPage {
         if (fileType === 'video') {
             const url = file.url || this.getFileUrl(filePath);
             const thumbnailUrl = file.thumbnail_url || file.thumbnail;
-            if (thumbnailUrl) {
-                return `<img src="${escapeHTML(thumbnailUrl)}" alt="${escapeHTML(file.name || 'Video')}" loading="lazy"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="media-card-placeholder" style="display:none;">
-                        <i class="ti ti-video"></i>
-                    </div>`;
-            }
-            return `<video data-src="${escapeHTML(url)}" class="media-video-thumbnail media-lazy-video" preload="none" muted playsinline style="opacity:0;"></video>
-                <div class="media-card-placeholder" style="display:flex;">
-                    <i class="ti ti-video"></i>
-                </div>`;
+            return this.renderHybridVideoPreview({
+                videoUrl: url,
+                thumbnailUrl,
+                altText: file.name || 'Video',
+                placeholderClass: 'media-card-placeholder'
+            });
         }
         return `<div class="media-card-placeholder">
             <i class="ti ti-file"></i>
