@@ -9,6 +9,77 @@
 // Load configuration
 require_once __DIR__ . '/config.php';
 
+/**
+ * Build version used for frontend cache busting.
+ * Priority:
+ * 1) Git HEAD hash (when .git metadata exists)
+ * 2) Latest mtime across critical frontend resources (JS + locales)
+ */
+function omnexResolveBuildVersion(): string
+{
+    $headFile = __DIR__ . '/.git/HEAD';
+    if (is_file($headFile)) {
+        $head = trim((string)file_get_contents($headFile));
+        $hash = '';
+
+        if (strpos($head, 'ref: ') === 0) {
+            $refPath = __DIR__ . '/.git/' . trim(substr($head, 5));
+            if (is_file($refPath)) {
+                $hash = trim((string)file_get_contents($refPath));
+            }
+        } else {
+            $hash = $head;
+        }
+
+        if ($hash !== '') {
+            return substr($hash, 0, 12);
+        }
+    }
+
+    $latest = 0;
+    $criticalFiles = [
+        __DIR__ . '/public/assets/js/app.js',
+        __DIR__ . '/public/assets/js/core/i18n.js',
+        __DIR__ . '/public/assets/js/pages/settings/IntegrationSettings.js',
+        __DIR__ . '/public/assets/js/pages/devices/DeviceDetail.js',
+    ];
+
+    foreach ($criticalFiles as $file) {
+        if (is_file($file)) {
+            $mtime = (int)@filemtime($file);
+            if ($mtime > $latest) {
+                $latest = $mtime;
+            }
+        }
+    }
+
+    $localesDir = __DIR__ . '/locales';
+    if (is_dir($localesDir)) {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($localesDir, FilesystemIterator::SKIP_DOTS)
+        );
+        foreach ($iterator as $fileInfo) {
+            /** @var SplFileInfo $fileInfo */
+            if (!$fileInfo->isFile()) {
+                continue;
+            }
+            if (strtolower($fileInfo->getExtension()) !== 'json') {
+                continue;
+            }
+            $mtime = (int)$fileInfo->getMTime();
+            if ($mtime > $latest) {
+                $latest = $mtime;
+            }
+        }
+    }
+
+    if ($latest <= 0) {
+        $latest = time();
+    }
+
+    return gmdate('YmdHis', $latest);
+}
+
 // Error handling
 set_error_handler(function ($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
@@ -139,6 +210,12 @@ if (is_file($publicFile)) {
 
     $mimeType = $mimeTypes[$extension] ?? 'application/octet-stream';
     header('Content-Type: ' . $mimeType);
+    if ($extension === 'json') {
+        // Locale/settings JSON should always be refreshed on deploy.
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+    }
     header('Content-Length: ' . filesize($publicFile));
     readfile($publicFile);
     exit;
@@ -162,6 +239,7 @@ $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
 $host = $_SERVER['HTTP_HOST'];
 $origin = $protocol . '://' . $host;
 $apiUrl = $origin . $basePath . '/api';
+$buildVersion = omnexResolveBuildVersion();
 
 // Create PHP-injected config script
 $injectedConfig = <<<SCRIPT
@@ -170,11 +248,11 @@ $injectedConfig = <<<SCRIPT
     window.OmnexConfig = {
         _phpInjected: true,
         appName: 'Omnex Display Hub',
-        appVersion: '1.0.0',
+        appVersion: '{$buildVersion}',
         apiUrl: '{$apiUrl}',
         basePath: '{$basePath}',
         defaultLanguage: 'tr',
-        supportedLanguages: ['tr', 'en', 'ar'],
+        supportedLanguages: ['tr', 'en', 'ru', 'az', 'de', 'nl', 'fr', 'ar'],
         rtlLanguages: ['ar'],
         storageKeys: {
             token: 'omnex_token',
@@ -198,6 +276,16 @@ if (preg_match($pattern, $html)) {
     $html = str_replace('</head>', $injectedConfig . "\n</head>", $html);
 }
 
+// Ensure app entry/modulepreload query version follows current build version.
+$html = preg_replace(
+    '/assets\/js\/app\.js\?v=[^"\']+/',
+    'assets/js/app.js?v=' . $buildVersion,
+    $html
+);
+
 // Output the modified HTML
 header('Content-Type: text/html; charset=UTF-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 echo $html;

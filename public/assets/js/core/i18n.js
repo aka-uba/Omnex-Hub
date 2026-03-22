@@ -106,6 +106,8 @@ export class i18n {
         const isDev = window.location.hostname === 'localhost' ||
                       window.location.hostname === '127.0.0.1' ||
                       window.location.hostname.startsWith('192.168.');
+        const version = window.OmnexConfig?.appVersion || window.app?.version || '';
+        const cacheBuster = isDev ? `?t=${Date.now()}` : (version ? `?v=${version}` : '');
 
         // Skip if already loaded (only in production)
         if (!isDev && this.pageTranslations[this.locale][pageName]) {
@@ -115,8 +117,10 @@ export class i18n {
 
         try {
             const basePath = window.OmnexConfig?.basePath || '';
-            const cacheBuster = isDev ? `?t=${Date.now()}` : '';
-            const response = await fetch(`${basePath}/locales/${this.locale}/pages/${pageName}.json${cacheBuster}`);
+            const response = await fetch(
+                `${basePath}/locales/${this.locale}/pages/${pageName}.json${cacheBuster}`,
+                { cache: 'no-store' }
+            );
 
             if (response.ok) {
                 this.pageTranslations[this.locale][pageName] = await response.json();
@@ -139,7 +143,10 @@ export class i18n {
             if (!this.pageTranslations[this.fallback][pageName]) {
                 try {
                     const basePath = window.OmnexConfig?.basePath || '';
-                    const response = await fetch(`${basePath}/locales/${this.fallback}/pages/${pageName}.json`);
+                    const response = await fetch(
+                        `${basePath}/locales/${this.fallback}/pages/${pageName}.json${cacheBuster}`,
+                        { cache: 'no-store' }
+                    );
 
                     if (response.ok) {
                         this.pageTranslations[this.fallback][pageName] = await response.json();

@@ -17,8 +17,8 @@ import { Toast } from './components/Toast.js';
 import { Modal } from './components/Modal.js';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt.js';
 
-// Cache buster version - update when deploying
-const APP_VERSION = '1.0.59';
+// Cache buster version: prefer server-injected build hash, fallback to static value.
+const APP_VERSION = window.OmnexConfig?.appVersion || '1.0.59';
 
 // Development mode detection
 const isDevelopment = () => {

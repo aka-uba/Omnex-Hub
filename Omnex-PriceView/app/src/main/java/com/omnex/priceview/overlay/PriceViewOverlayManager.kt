@@ -199,6 +199,7 @@ class PriceViewOverlayManager(
      * Show "product not found" message.
      */
     fun showNotFound(barcode: String) {
+        currentProduct = null
         cameraPreview.visibility = View.GONE
         scanPrompt.visibility = View.GONE
         productCard.visibility = View.GONE
@@ -213,11 +214,10 @@ class PriceViewOverlayManager(
             notFoundView.findViewWithTag<TextView>("not_found_barcode")?.text = barcode
         }
 
-        handler.postDelayed({
-            if (_isVisible) showScanMode()
-        }, 3000)
+        // Not-found overlays should respect integration/device timeout settings exactly like product overlays.
+        startTimeout()
 
-        Log.d(TAG, "Product not found: $barcode")
+        Log.d(TAG, "Product not found: $barcode (timeout=${config.overlayTimeoutSeconds}s)")
     }
 
     /**
@@ -705,7 +705,7 @@ class PriceViewOverlayManager(
               display:flex !important;
               align-items:flex-end !important;
               justify-content:center !important;
-              padding:12px !important;
+              padding:6px 8px 18px !important;
             }
             *{
               animation:none !important;

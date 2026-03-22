@@ -7529,3 +7529,30 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Browser/device cache may require refresh/sync for immediate template text visibility.
 - Backup/restore safety:
   - Locale backup created: `.temp-backups/locale_settings_20260322_045141/`.
+## 2026-03-22 - PriceView not-found timeout/player resume + i18n cache-bust hardening
+- Request: Fix not-found overlay duration mismatch, ensure not-found close resumes signage like found-product flow, reduce APK injected horizontal padding and add bottom padding, and resolve server-side i18n key leaks (integration/device PriceView labels and template names showing keys).
+- Changes:
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`
+    - `showNotFound(...)` now uses configured timeout (`config.overlayTimeoutSeconds`) via `startTimeout()` instead of fixed 3s scan-mode reset.
+    - Not-found flow now closes through overlay hide path, so `onHideListener` resumes signage/player consistently.
+    - Runtime injected HTML body padding adjusted from uniform `12px` to `6px 8px 18px` (reduced left/right, added bottom space).
+  - `public/assets/js/core/i18n.js`
+    - Added production cache-buster (`appVersion`) for page translation JSON fetches.
+    - Added `{ cache: 'no-store' }` for page and fallback page translation fetches to prevent stale-key artifacts.
+  - `public/assets/js/app.js`
+    - `APP_VERSION` now prefers server-injected `window.OmnexConfig.appVersion` (fallback kept), so dynamic imports align with server build version.
+  - `index.php`
+    - Added `omnexResolveBuildVersion()` to compute build version from Git HEAD when available, otherwise latest critical frontend/locale mtimes.
+    - Injected dynamic `appVersion` and expanded `supportedLanguages` to all 8 supported locales.
+    - Added no-cache headers for static JSON responses and SPA HTML shell.
+    - Rewrites `assets/js/app.js?v=...` references in served HTML to current build version.
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `node --check public/assets/js/core/i18n.js` (OK)
+  - `node --check public/assets/js/app.js` (OK)
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - HTML shell/JSON no-cache policy increases request frequency (intentional to avoid stale translation keys after deploy).
+  - If existing browser tabs keep old in-memory translations, one full refresh is still required once.
+- Backup/restore safety:
+  - Backups created at `.temp-backups/notfound_i18n_fix_20260322_052637/` before edits.
