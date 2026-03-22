@@ -464,15 +464,19 @@ class PriceViewOverlayManager(
                 function __pvCreateImageFallback(img) {
                   if (!img) return null;
                   var host = img.parentElement || img;
-                  var existing = host.querySelector('[data-pv-img-fallback="1"]');
+                  var existing = host.querySelector('[data-pv-img-fallback="1"], .pv-missing-image-wrap');
                   if (existing) return existing;
+
+                  if (window.getComputedStyle && window.getComputedStyle(host).position === 'static') {
+                    host.style.position = 'relative';
+                  }
 
                   var outer = document.createElement('div');
                   outer.setAttribute('data-pv-img-fallback', '1');
-                  outer.style.cssText = 'flex: 0.8 1 240px; display: none; align-items:center; justify-content:center; opacity: 1; margin:0 auto;';
+                  outer.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30;';
 
                   var bubble = document.createElement('div');
-                  bubble.style.cssText = 'width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fed7aa 0%,#ffedd5 60%);display:flex;align-items:center;justify-content:center;font-size:90px;';
+                  bubble.style.cssText = 'width:180px;height:180px;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;font-size:90px;';
                   bubble.innerHTML = '&#128269;';
 
                   outer.appendChild(bubble);
@@ -483,16 +487,26 @@ class PriceViewOverlayManager(
                 function __pvToggleImageFallback(img, hasValidImage) {
                   if (!img) return;
                   var fallback = __pvCreateImageFallback(img);
+                  var isTemplateFallback = !!(fallback && fallback.classList && fallback.classList.contains('pv-missing-image-wrap'));
                   if (hasValidImage) {
                     img.style.display = 'block';
-                    if (fallback) fallback.style.display = 'none';
+                    if (fallback) {
+                      if (isTemplateFallback && fallback.classList) fallback.classList.remove('active');
+                      fallback.style.display = 'none';
+                    }
                   } else {
                     img.style.display = 'none';
-                    if (fallback) fallback.style.display = 'flex';
+                    if (fallback) {
+                      if (isTemplateFallback && fallback.classList) fallback.classList.add('active');
+                      fallback.style.display = 'flex';
+                    }
                   }
                 }
 
                 function __pvApplyImageFallback() {
+                  if (window.__pvTemplateMotionFixV4 === true) {
+                    return;
+                  }
                   var imgs = document.querySelectorAll('img[data-bind="image_url"], [data-bind="image_url"]');
                   for (var i = 0; i < imgs.length; i++) {
                     var img = imgs[i];

@@ -8288,3 +8288,46 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - `php -l index.php` (OK; quick-check minimum syntax validation)
 - Risk/Follow-up:
   - None.
+## 2026-03-23 - Root cause fix for double fallback icon in PriceView HTML overlay
+- Request: Investigate why fallback appears as duplicate icon and fixed orange bubble instead of theme-based template fallback.
+- Root cause found:
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt` runtime JS (`bindJsData`) was injecting an additional generic fallback bubble (`#fed7aa/#ffedd5`) on top of template fallback.
+- Changes:
+  - `PriceViewOverlayManager.kt` (runtime JS block):
+    - Detect existing template fallback (`.pv-missing-image-wrap`) and reuse it instead of creating new fallback.
+    - If creating generic fallback, use transparent background (no fixed orange bubble).
+    - Toggle template fallback via `.active` class when applicable.
+    - Skip runtime fallback injection entirely when template manager is present (`window.__pvTemplateMotionFixV4 === true`).
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - Device needs template/app refresh (overlay WebView reload) to use updated runtime script.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/overlay_fallback_dedupe_20260323_021451/PriceViewOverlayManager.kt.bak`
+## 2026-03-23 - Restored themes from earlier backup on request
+- Request: "1 saat kadar önceki tema backuplarýný geri al".
+- Action taken:
+  - Restored template files from backup:
+    - `.temp-backups/priceview_template_fallback_fix_20260323_020541/*.html`
+    -> `public/priceview-templates/*.html`
+- Safety:
+  - Current state backup created before restore:
+    - `.temp-backups/priceview_templates_before_restore_20260323_021802/`
+- Checks run:
+  - `php -l index.php` (OK)
+- Notes:
+  - This restore affects theme/template HTML files only.
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt` still has local (uncommitted) runtime fallback dedupe changes from previous step.
+## 2026-03-23 - Commit preparation for current PriceView template + overlay state
+- Request: "commtit süreci".
+- Changed files prepared for commit:
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`
+  - `public/priceview-templates/*-view-overlay.html` (28 found templates)
+  - `.codex/CHANGE_MEMORY.md`
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - Working tree has many unrelated untracked backup/tmp files; excluded from commit.
+  - Server deploy/APK publish steps are not included in this commit-only phase.
+- Backup/restore safety:
+  - No new backup needed in this phase; previously created backups remain available.
