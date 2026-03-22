@@ -110,6 +110,20 @@ window.PriceView = {
     var v = (src || '').trim().toLowerCase();
     return !v || v === 'null' || v === 'undefined' || v === 'about:blank';
   }
+  function ensureFallback(img){
+    var parent = img && img.parentElement;
+    if(!parent){ return null; }
+    var existing = parent.querySelector(':scope > .pv-missing-image-wrap');
+    if(existing){ return existing; }
+    var wrap = document.createElement('div');
+    wrap.className = 'pv-missing-image-wrap';
+    var dot = document.createElement('div');
+    dot.className = 'pv-missing-image-dot';
+    dot.textContent = '🔎';
+    wrap.appendChild(dot);
+    parent.appendChild(wrap);
+    return wrap;
+  }
   function showFallback(img){
     var wrap = ensureFallback(img);
     if(!wrap){ return; }
