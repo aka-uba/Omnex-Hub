@@ -62,16 +62,7 @@ window.PriceView = {
             el.style.display = 'block';
             el.onerror = function() {
               this.style.display = 'none';
-              var fb = document.querySelector('.pv-img-fallback');
-              if (fb) fb.style.display = 'flex';
-            };
-            var fb = document.querySelector('.pv-img-fallback');
-            if (fb) fb.style.display = 'none';
-          } else {
-            el.style.display = 'none';
-            var fb = document.querySelector('.pv-img-fallback');
-            if (fb) fb.style.display = 'flex';
-          }
+              var fb = document.querySelector('
         } else {
           el.textContent = val;
         }
