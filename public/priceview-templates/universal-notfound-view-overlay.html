@@ -165,16 +165,31 @@ window.PriceView = {
     }
   }
 };
-/* pv_template_motion_fix_v3 */
+/* pv_template_motion_fix_v4 */
 (function(){
-  if(window.__pvTemplateMotionFixV3){ return; }
-  window.__pvTemplateMotionFixV3 = true;
+  if(window.__pvTemplateMotionFixV4){ return; }
+  window.__pvTemplateMotionFixV4 = true;
+
+  var __pvState = new WeakMap();
 
   function normalizeSrc(src){
     var raw = (src || '').trim();
     var v = raw.toLowerCase();
     if(!v || v === 'null' || v === 'undefined' || v === 'about:blank'){ return ''; }
     return raw;
+  }
+  function getState(img){
+    if(!img){ return { hasMediaUrl:null }; }
+    var s = __pvState.get(img);
+    if(!s){
+      s = { hasMediaUrl:null };
+      __pvState.set(img, s);
+    }
+    return s;
+  }
+  function setMediaFlag(img, hasMedia){
+    var s = getState(img);
+    s.hasMediaUrl = !!hasMedia;
   }
   function ensureFallback(img){
     var parent = img && img.parentElement;
@@ -224,7 +239,7 @@ window.PriceView = {
     img.style.visibility = 'hidden';
   }
   function showImage(img){
-    var parent = img.parentElement;
+    var parent = img && img.parentElement;
     if(parent){
       var wrap = parent.querySelector(':scope > .pv-missing-image-wrap');
       if(wrap){
@@ -233,38 +248,83 @@ window.PriceView = {
       }
       hideDecorations(parent, false);
     }
-    img.style.display = 'block';
-    img.style.visibility = 'visible';
+    if(img){
+      img.style.display = 'block';
+      img.style.visibility = 'visible';
+    }
   }
   function refreshImage(img){
     if(!img){ return; }
-    var src = normalizeSrc(img.getAttribute('src') || '');
-    if(!src){ showFallback(img); return; }
-    // URL exists: do not show fallback while image is loading or delayed.
+    var state = getState(img);
+
+    // Critical: before first setProduct payload arrives, never show fallback to avoid first-scan flash.
+    if(state.hasMediaUrl === null){
+      showImage(img);
+      return;
+    }
+
+    if(!state.hasMediaUrl){
+      showFallback(img);
+      return;
+    }
+
+    // URL exists: keep fallback hidden even if loading is slow or temporary error occurs.
     showImage(img);
   }
   function bindImage(img){
     if(!img || img.dataset.pvMissingBound === '1'){ return; }
     img.dataset.pvMissingBound = '1';
-    img.addEventListener('load', function(){ showImage(img); }, { passive:true });
-    img.addEventListener('error', function(){ showImage(img); }, { passive:true });
+    getState(img);
+
+    img.addEventListener('load', function(){
+      var s = getState(img);
+      if(s.hasMediaUrl === false){ showFallback(img); }
+      else { showImage(img); }
+    }, { passive:true });
+
+    img.addEventListener('error', function(){
+      var s = getState(img);
+      if(s.hasMediaUrl === false){ showFallback(img); }
+      else { showImage(img); }
+    }, { passive:true });
+
     var obs = new MutationObserver(function(){ refreshImage(img); });
     obs.observe(img, { attributes:true, attributeFilter:['src'] });
     refreshImage(img);
   }
-  function applyAll(){
-    document.querySelectorAll('img[data-bind="image_url"], img[data-image-bind="image_url"]').forEach(bindImage);
+  function imageNodes(){
+    return document.querySelectorAll('img[data-bind="image_url"], img[data-image-bind="image_url"]');
   }
+  function applyAll(){
+    imageNodes().forEach(bindImage);
+  }
+  function parsePayload(jsonStr){
+    try {
+      return (typeof jsonStr === 'string') ? JSON.parse(jsonStr) : (jsonStr || {});
+    } catch(ignorePayloadError){
+      return {};
+    }
+  }
+  function applyPayloadMediaFlags(payload){
+    var hasMedia = !!normalizeSrc(payload && payload.image_url);
+    imageNodes().forEach(function(img){
+      setMediaFlag(img, hasMedia);
+      refreshImage(img);
+    });
+  }
+
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', applyAll, { once:true });
   } else {
     applyAll();
   }
+
   var originalSetProduct = window.PriceView && window.PriceView.setProduct;
   if(typeof originalSetProduct === 'function'){
     window.PriceView.setProduct = function(jsonStr){
       originalSetProduct.call(window.PriceView, jsonStr);
       applyAll();
+      applyPayloadMediaFlags(parsePayload(jsonStr));
     };
   }
 })();

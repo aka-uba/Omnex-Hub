@@ -7676,3 +7676,17 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Devices must refresh/sync display template config to fetch updated HTML.
 - Backup/restore safety:
   - Template backup: `.temp-backups/priceview_template_fallback_fix_20260322_161318/`
+## 2026-03-22 - Template v4 fix for first-scan fallback flash
+- Request: In product-found case with valid image URL, first scan still showed magnifier briefly (right side) then disappeared.
+- Changes:
+  - Updated 29 template files in `public/priceview-templates/*` from `pv_template_motion_fix_v3` to `pv_template_motion_fix_v4`.
+  - New rule in template script:
+    - Before first `setProduct` payload arrives, fallback is never shown.
+    - Fallback is driven by payload `image_url` presence (not transient initial `img src` state).
+    - If `image_url` exists, fallback remains hidden even during delayed load/error.
+    - If `image_url` is missing, centered fallback is shown and decorative duplicates hidden.
+- Checks run:
+  - Coverage check: `v3_count=0`, `v4_files=29`.
+  - JS syntax check on extracted script block: `node --check tmp/perf/template_fallback_check_v4.js` (OK)
+- Risk/Follow-up:
+  - Requires template sync/refresh on devices to fetch updated HTML.
