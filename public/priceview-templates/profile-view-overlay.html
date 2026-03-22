@@ -10,8 +10,8 @@
   /* Mobile responsive */
   /* Mobile responsive - comprehensive */
   @media (max-width:768px) {
-    .pv-card { padding:10px !important; }
-    .pv-card-inner { padding:14px !important; gap:12px !important; }
+    .pv-card { padding:14px !important; }
+    .pv-card-inner { padding:20px !important; gap:12px !important; }
     .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
     .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
     .pv-price { font-size:42px !important; }
@@ -47,8 +47,8 @@
     .pv-grid-bottom [style*="font-size:22px"] { font-size:17px !important; }
   }
   @media (max-width:480px) {
-    .pv-card { padding:10px !important; }
-    .pv-card-inner { padding:10px !important; gap:10px !important; }
+    .pv-card { padding:14px !important; }
+    .pv-card-inner { padding:16px !important; gap:10px !important; }
     .pv-price { font-size:32px !important; }
     .pv-title { font-size:22px !important; }
     [data-bind="description"] { font-size:13px !important; }
@@ -86,12 +86,12 @@
 </style>
 </head>
 <body>
-<div class="pv-card" style="position:relative;display:block;border-radius:28px;padding:16px;background:linear-gradient(145deg,#172554 0%,#111827 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
+<div class="pv-card" style="position:relative;display:block;border-radius:28px;padding:22px;background:linear-gradient(145deg,#172554 0%,#111827 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
                 <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:26px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:18px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:20px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
                 <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;flex-shrink:0;">&#10005;</button>
               </div>
-              <div class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;border-radius:28px;padding:24px;background:linear-gradient(135deg,#eff6ff 0%,#ffffff 100%);">
+              <div class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;border-radius:28px;padding:30px;background:linear-gradient(135deg,#eff6ff 0%,#ffffff 100%);">
                 <div style="flex:0.95 1 280px;min-width:240px;display:flex;align-items:center;justify-content:center;">
                   <div style="width:220px;height:280px;border-radius:28px;background:linear-gradient(180deg,#dbeafe,#eff6ff);display:flex;align-items:center;justify-content:center;position:relative;">
                     <img data-bind="image_url" src="" alt="Profil" style="max-width:82%;max-height:82%;object-fit:cover;border-radius:22px;filter:drop-shadow(0 12px 20px rgba(0,0,0,.18))">
@@ -139,6 +139,19 @@ window.PriceView = {
           el.textContent = val;
         }
       });
+      // Handle branch_name visibility
+      var bnEl = document.querySelector('[data-bind="branch_name"]');
+      var dotEl = bnEl ? bnEl.previousElementSibling : null;
+      if (bnEl) {
+        var bVal = bnEl.textContent.trim();
+        if (!bVal || bVal === '' || bVal === 'Şube Adı') {
+          bnEl.style.display = 'none';
+          if (dotEl && dotEl.textContent.trim() === '•') dotEl.style.display = 'none';
+        } else {
+          bnEl.style.display = '';
+          if (dotEl && dotEl.textContent.trim() === '•') dotEl.style.display = '';
+        }
+      }
     } catch(e) { console.error('PriceView.setProduct error:', e); }
   },
   setCompany: function(companyName, branchName) {

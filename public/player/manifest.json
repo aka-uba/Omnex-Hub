@@ -7,7 +7,6 @@
     "display": "standalone",
     "orientation": "any",
     "background_color": "#000000",
-    "theme_color": "#000000",
     "categories": ["business", "utilities"],
     "lang": "tr-TR",
     "dir": "ltr",
