@@ -8018,3 +8018,18 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Files changed: `public/assets/js/pages/devices/DeviceDetail.js`
 - Checks: File reads OK
 - Risk: None. i18n t() already searches ALL loaded page translations, so loading settings alongside devices works.
+## 2026-03-23 - Commit/Push/Pull flow (no APK build)
+- Request: Run commit/push/pull flow and include other-session changes in commit; skip APK build for now.
+- Changes:
+  - Committed staged multi-session PriceView/backend/player/UI/localization updates and related assets/docs.
+  - Pushed to `origin/main` at commit `85f4a37`.
+  - Pulled and redeployed on server (`/opt/omnex-hub`) with app image rebuild.
+- Checks run:
+  - `git push origin main` (OK)
+  - Server: `git pull origin main` (OK)
+  - Server: `docker compose -f deploy/docker-compose.yml up -d --build app` (OK)
+  - Server: `docker compose -f deploy/docker-compose.yml ps` (app healthy)
+- Risk/Follow-up:
+  - Local workspace still contains many untracked backup/tmp artifacts; not included in commit.
+- Backup/restore safety:
+  - Existing temp backup directories preserved; no cleanup performed.
