@@ -9,12 +9,12 @@
                                           "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
                                       },
                  "com.omnex.priceview":  {
-                                             "versionCode":  7,
-                                             "versionName":  "1.0.6",
-                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=7",
-                                             "releaseNotes":  "- Not-found HTML overlay bottom alignment now matches native behavior`n- PriceView HTML theme set refreshed (reduced motion + missing-image fallback)`n- Overlay interaction and transition stability improvements",
+                                             "versionCode":  8,
+                                             "versionName":  "1.0.7",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=8",
+                                             "releaseNotes":  "- Not-found overlay timeout now follows configured integration/device timeout\n- Not-found overlay close resumes signage/player flow consistently\n- HTML runtime padding tuned: narrower left/right and added bottom spacing\n- Frontend i18n cache refresh hardened for integration/device PriceView translations and template labels",
                                              "mandatory":  false,
-                                             "sha256":  "0d4c56f1e0170c8f8ef4dfa1019824034bb2d2d09853f29c896c1c5c42d85ba3"
+                                             "sha256":  "8f2e3ea1ef33ab519acfad63d99e208bf9b049ca77f63711de4dc39e3ca1fb9a"
                                          }
              },
     "versionCode":  51,

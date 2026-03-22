@@ -7556,3 +7556,20 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - If existing browser tabs keep old in-memory translations, one full refresh is still required once.
 - Backup/restore safety:
   - Backups created at `.temp-backups/notfound_i18n_fix_20260322_052637/` before edits.
+## 2026-03-22 - PriceView v1.0.7 APK release after timeout/i18n fixes
+- Request: After commit/push/pull+deploy, run APK build/update release flow.
+- Changes:
+  - `Omnex-PriceView/app/build.gradle`: bumped PriceView to `versionCode 8`, `versionName 1.0.7`.
+  - Built and published APK via `./gradlew.bat publishDebugApk` to:
+    - `downloads/omnex-priceview.apk`
+    - `public/downloads/omnex-priceview.apk`
+  - Updated OTA metadata:
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    - `com.omnex.priceview` => `1.0.7 / 8`, URL `...omnex-priceview.apk?v=8`, SHA256 `8f2e3ea1ef33ab519acfad63d99e208bf9b049ca77f63711de4dc39e3ca1fb9a`.
+- Checks run:
+  - `./gradlew.bat publishDebugApk` (OK)
+- Risk/Follow-up:
+  - Pre-existing Kotlin/ExoPlayer warnings remain; build is successful.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/priceview_release_20260322_053343/`.

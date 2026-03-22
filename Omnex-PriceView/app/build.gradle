@@ -24,8 +24,8 @@ android {
         applicationId "com.omnex.priceview"
         minSdk 21  // Android 5.0+
         targetSdk 34
-        versionCode 7
-        versionName "1.0.6"
+        versionCode 8
+        versionName "1.0.7"
 
         // Varsayilan sunucu URL'si (production)
         buildConfigField "String", "SERVER_URL", '"https://hub.omnexcore.com/player/"'
@@ -33,12 +33,12 @@ android {
 
     flavorDimensions "distribution"
     productFlavors {
-        // Standalone: kendi gÃƒÆ’Ã‚Â¼ncelleme sistemi, doÃƒâ€Ã…Â¸rudan APK daÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±tÃƒâ€Ã‚Â±mÃƒâ€Ã‚Â±
+        // Standalone: kendi gÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ncelleme sistemi, doÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸rudan APK daÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸ÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±tÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±mÃƒÆ’Ã¢â‚¬ÂÃƒâ€šÃ‚Â±
         standalone {
             dimension "distribution"
             buildConfigField "boolean", "SELF_UPDATE_ENABLED", "true"
         }
-        // Google Play Store: Play Store gÃƒÆ’Ã‚Â¼ncelleme, REQUEST_INSTALL_PACKAGES yok
+        // Google Play Store: Play Store gÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¼ncelleme, REQUEST_INSTALL_PACKAGES yok
         playstore {
             dimension "distribution"
             buildConfigField "boolean", "SELF_UPDATE_ENABLED", "false"
@@ -93,7 +93,7 @@ android {
         buildConfig true
     }
 
-    // Android TV desteÃƒâ€Ã…Â¸i
+    // Android TV desteÃƒÆ’Ã¢â‚¬ÂÃƒâ€¦Ã‚Â¸i
     lintOptions {
         checkReleaseBuilds false
     }
@@ -105,7 +105,7 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // Android TV iÃƒÆ’Ã‚Â§in Leanback
+    // Android TV iÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§in Leanback
     implementation 'androidx.leanback:leanback:1.0.0'
 
     // Lifecycle
