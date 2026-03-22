@@ -131,6 +131,45 @@ if (!function_exists('priceviewReadDeviceTemplateOverride')) {
     }
 }
 
+if (!function_exists('priceviewResolveDeviceUuid')) {
+    function priceviewResolveDeviceUuid(Database $db, string $companyId, array $device): ?string
+    {
+        $candidates = [];
+        foreach (['device_id', 'id'] as $key) {
+            $value = $device[$key] ?? null;
+            if (!is_string($value)) {
+                continue;
+            }
+            $value = trim($value);
+            if ($value !== '') {
+                $candidates[] = $value;
+            }
+        }
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        $candidates = array_values(array_unique($candidates));
+
+        foreach ($candidates as $candidateId) {
+            $row = $db->fetch(
+                "SELECT id
+                 FROM devices
+                 WHERE id = ? AND company_id = ?
+                 LIMIT 1",
+                [$candidateId, $companyId]
+            );
+
+            if (!empty($row['id'])) {
+                return (string)$row['id'];
+            }
+        }
+
+        return null;
+    }
+}
+
 if (!function_exists('priceviewWriteDeviceTemplateOverride')) {
     function priceviewWriteDeviceTemplateOverride(array $metadata, ?string $override): array
     {

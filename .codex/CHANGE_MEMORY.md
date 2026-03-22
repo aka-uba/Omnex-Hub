@@ -7730,3 +7730,25 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - If pre-save API fails, sync is intentionally blocked to avoid stale template sync.
 - Backup/restore safety:
   - Backup used: .temp-backups/device_sync_order_fix_20260322_173007/DeviceDetail.js.bak.
+## 2026-03-22 - PriceView device override precedence fix (JWT token device id mismatch)
+- Request: Investigate why Device Detail PriceView template selection did not apply while Integration selection worked.
+- Root cause:
+  - `GET /api/priceview/config` resolved device override from fallback metadata, but
+  - `GET /api/priceview/display-template` used `device_id` from auth payload directly.
+  - On JWT tokens, `device_id` carries serial (not devices.id UUID), so metadata query failed and template fell back to company template.
+- Changes:
+  - `api/priceview/template-utils.php`
+    - Added `priceviewResolveDeviceUuid()` to resolve actual `devices.id` by checking auth payload candidates (`device_id`, `id`) against DB.
+  - `api/priceview/config.php`
+    - Switched device row lookup to `priceviewResolveDeviceUuid()`.
+  - `api/priceview/display-template.php`
+    - Switched metadata lookup to `priceviewResolveDeviceUuid()`.
+    - Added fallback to auth payload metadata when DB row is unavailable.
+- Checks run:
+  - `php -l api/priceview/template-utils.php` (OK)
+  - `php -l api/priceview/config.php` (OK)
+  - `php -l api/priceview/display-template.php` (OK)
+- Risk/Follow-up:
+  - Devices should trigger PriceView sync once to fetch corrected template resolution path.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/priceview_device_override_fix_20260322_175017/`.

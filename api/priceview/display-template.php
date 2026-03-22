@@ -18,15 +18,14 @@ try {
 
     $companyId = $device['company_id'];
     $settingsData = priceviewFetchCompanySettings($db, $companyId);
-    $deviceId = $device['device_id'] ?? $device['id'] ?? null;
+    $resolvedDeviceId = priceviewResolveDeviceUuid($db, (string)$companyId, $device);
 
-    $deviceMetadata = [];
-    if (is_string($deviceId) && $deviceId !== '') {
+    if (is_string($resolvedDeviceId) && $resolvedDeviceId !== '') {
         $deviceRow = $db->fetch(
             "SELECT metadata FROM devices WHERE id = ? AND company_id = ? LIMIT 1",
-            [$deviceId, $companyId]
+            [$resolvedDeviceId, $companyId]
         );
-        $deviceMetadata = priceviewParseMetadata($deviceRow['metadata'] ?? null);
+        $deviceMetadata = priceviewParseMetadata($deviceRow['metadata'] ?? ($device['metadata'] ?? $device['device_metadata'] ?? null));
     } else {
         $deviceMetadata = priceviewParseMetadata($device['metadata'] ?? $device['device_metadata'] ?? null);
     }

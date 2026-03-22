@@ -19,15 +19,16 @@ require_once __DIR__ . '/template-utils.php';
 // Company + device settings
 $settingsData = priceviewFetchCompanySettings($db, $companyId);
 $deviceId = $device['device_id'] ?? $device['id'] ?? null;
+$resolvedDeviceId = priceviewResolveDeviceUuid($db, (string)$companyId, $device);
 $deviceRow = null;
-if (is_string($deviceId) && $deviceId !== '') {
+if (is_string($resolvedDeviceId) && $resolvedDeviceId !== '') {
     $deviceRow = $db->fetch(
         "SELECT d.id, d.company_id, d.branch_id, d.metadata, b.name AS branch_name
          FROM devices d
          LEFT JOIN branches b ON b.id = d.branch_id
          WHERE d.id = ? AND d.company_id = ?
          LIMIT 1",
-        [$deviceId, $companyId]
+        [$resolvedDeviceId, $companyId]
     );
 }
 $deviceMetadata = priceviewParseMetadata($deviceRow['metadata'] ?? ($device['metadata'] ?? $device['device_metadata'] ?? null));
