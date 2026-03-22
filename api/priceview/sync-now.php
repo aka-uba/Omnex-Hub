@@ -69,6 +69,8 @@ $requestSource = is_string($body['source'] ?? null) ? trim((string)$body['source
 if ($requestSource === '') {
     $requestSource = !empty($requestedDeviceIds) ? 'device_detail' : 'integration';
 }
+$forceQueue = !empty($body['force']);
+$isDeviceScopedRequest = !empty($requestedDeviceIds);
 
 foreach ($devices as $device) {
     $deviceId = (string)($device['id'] ?? '');
@@ -76,20 +78,24 @@ foreach ($devices as $device) {
         continue;
     }
 
-    $existing = $db->fetch(
-        "SELECT id
-         FROM device_commands
-         WHERE device_id = ?
-           AND command = 'refresh'
-           AND status IN ('pending', 'sent')
-           AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '2 minutes')
-         LIMIT 1",
-        [$deviceId]
-    );
+    // Allow explicit device-detail requests to force queue a fresh refresh command.
+    // Integration-wide sync keeps short dedup to avoid flooding.
+    if (!$forceQueue && !$isDeviceScopedRequest) {
+        $existing = $db->fetch(
+            "SELECT id
+             FROM device_commands
+             WHERE device_id = ?
+               AND command = 'refresh'
+               AND status IN ('pending', 'sent')
+               AND created_at >= (CURRENT_TIMESTAMP - INTERVAL '2 minutes')
+             LIMIT 1",
+            [$deviceId]
+        );
 
-    if ($existing) {
-        $skipped++;
-        continue;
+        if ($existing) {
+            $skipped++;
+            continue;
+        }
     }
 
     $commandId = $db->generateUuid();
@@ -116,6 +122,7 @@ Logger::info('PriceView instant sync queued', [
     'queued_count' => $queued,
     'skipped_count' => $skipped,
     'source' => $requestSource,
+    'forced' => $forceQueue || $isDeviceScopedRequest,
     'user_id' => $user['id'] ?? null,
 ]);
 
@@ -125,4 +132,3 @@ Response::success([
     'targets' => count($devices),
     'device_ids' => $queuedDeviceIds,
 ], 'PriceView sync command queued');
-

@@ -7690,3 +7690,31 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - JS syntax check on extracted script block: `node --check tmp/perf/template_fallback_check_v4.js` (OK)
 - Risk/Follow-up:
   - Requires template sync/refresh on devices to fetch updated HTML.
+## 2026-03-22 - PriceView device-detail sync reliability + template sync decision fixes
+- Request: Integration sync worked but Device Detail > PriceView > Sync did not reliably apply theme changes on device; investigate and harden flow.
+- Investigation:
+  - Live device log (192.168.1.181:43303) showed config fetch success and `Display templates unchanged` decisions.
+  - Added diagnostics confirmed remote/cached match at runtime when no effective config diff exists.
+- Changes:
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/sync/DisplayTemplateSyncManager.kt`
+    - Fixed template-change decision ordering bug by comparing remote template/signature against pre-update cached values.
+    - Added detailed unchanged log with remote/cached template+signature.
+  - `public/player/assets/js/player.js`
+    - On heartbeat `shouldSync`, now also triggers native PriceView instant sync before content sync.
+  - `public/assets/js/pages/devices/DeviceDetail.js`
+    - Device detail PriceView sync-now call now sends `force: true`.
+  - `api/priceview/sync-now.php`
+    - Added force/device-scoped queue behavior: explicit device requests can bypass short dedup window to guarantee immediate command queue.
+- Checks run:
+  - `node --check public/player/assets/js/player.js` (OK)
+  - `node --check public/assets/js/pages/devices/DeviceDetail.js` (OK)
+  - `php -l api/priceview/sync-now.php` (OK)
+  - `./gradlew.bat :app:compileDebugKotlin` (expected ambiguous task in flavor setup)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - `adb install -r .../app-standalone-debug.apk` on `192.168.1.181:43303` (OK)
+- Risk/Follow-up:
+  - `public/player/assets/js/player.js` change requires server deploy to be effective on production WebView content.
+  - If device-specific override is not saved or is same as effective template, sync command will not change visual theme by design.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/theme_sync_fix_20260322_170014/`.

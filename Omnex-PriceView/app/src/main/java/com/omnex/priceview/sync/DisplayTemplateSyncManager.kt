@@ -25,6 +25,10 @@ class DisplayTemplateSyncManager(
         val templateName = configJson.optString("display_template_name", "")
         val templateSignature = configJson.optString("display_template_signature", "")
         val templateUrl = configJson.optString("display_template_url", "/api/priceview/display-template")
+        val previousTemplateName = config.displayTemplateName.orEmpty()
+        val previousSignature = config.displayTemplateSignature.orEmpty()
+        val hasCachedProduct = !config.displayTemplateProductHtml.isNullOrBlank()
+        val hasCachedNotFound = !config.displayTemplateNotFoundHtml.isNullOrBlank()
 
         config.productDisplayMode = if (mode == "html") "html" else "native"
         if (templateName.isNotBlank()) {
@@ -44,19 +48,20 @@ class DisplayTemplateSyncManager(
             return
         }
 
-        val hasCachedProduct = !config.displayTemplateProductHtml.isNullOrBlank()
-        val hasCachedNotFound = !config.displayTemplateNotFoundHtml.isNullOrBlank()
-        val cachedSignature = config.displayTemplateSignature.orEmpty()
-        val cachedTemplateName = config.displayTemplateName.orEmpty()
+        val templateNameChanged = templateName.isNotBlank() && templateName != previousTemplateName
+        val signatureChanged = templateSignature.isNotBlank() && templateSignature != previousSignature
 
         val shouldFetch = !hasCachedProduct ||
             !hasCachedNotFound ||
             templateSignature.isBlank() ||
-            templateSignature != cachedSignature ||
-            (templateName.isNotBlank() && templateName != cachedTemplateName)
+            templateNameChanged ||
+            signatureChanged
 
         if (!shouldFetch) {
-            Log.d(TAG, "Display templates unchanged, using cached HTML")
+            Log.d(
+                TAG,
+                "Display templates unchanged, using cached HTML (tpl=$templateName sig=$templateSignature cachedTpl=$previousTemplateName cachedSig=$previousSignature)"
+            )
             return
         }
 

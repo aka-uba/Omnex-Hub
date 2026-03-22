@@ -6386,6 +6386,7 @@ class OmnexPlayer {
             }
 
             if (data.shouldSync) {
+                await this.triggerNativePriceViewSyncNow();
                 this.syncContent();
             }
         } catch (error) {

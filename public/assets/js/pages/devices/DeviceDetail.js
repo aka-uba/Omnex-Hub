@@ -1651,7 +1651,8 @@ export class DeviceDetailPage {
             }
             await this.app.api.post('/priceview/sync-now', {
                 device_id: this.deviceId,
-                source: 'device_detail'
+                source: 'device_detail',
+                force: true
             });
             await this.loadPriceViewSettings();
             Toast.success('Durum g\u00FCncellendi');
