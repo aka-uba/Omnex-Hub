@@ -8233,3 +8233,27 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/restore safety:
   - Temp backup created before theme edit:
     - `.temp-backups/wizard_theme_sync_20260323_014605/themes.xml.bak`
+## 2026-03-23 - Hotfix: update.json UTF-8 BOM removal
+- Request context: release flow completed; JSON response showed BOM marker in live output.
+- Changes:
+  - `downloads/update.json` rewritten as UTF-8 without BOM.
+  - `public/downloads/update.json` rewritten as UTF-8 without BOM.
+- Checks run:
+  - First bytes verified (`123,13,10`) on both files.
+  - JSON parse checks passed for both files.
+- Risk/Follow-up:
+  - None.
+- Backup/restore safety:
+  - Existing `.bak_priceview_release_*` copies remain available.
+## 2026-03-23 - Include user-updated PriceView templates in release/deploy
+- Request: User confirmed including local `public/priceview-templates/*.html` changes in the same release flow.
+- Changes:
+  - `public/priceview-templates/*.html` (all modified overlay/notfound templates included as provided by user)
+  - `downloads/update.json` and `public/downloads/update.json` kept BOM-free UTF-8
+- Checks run:
+  - JSON parse checks for both `update.json` files (OK)
+  - Live endpoint check after deploy planned: `/downloads/update.json` and `omnex-priceview.apk?v=11`
+- Risk/Follow-up:
+  - Template behavioral differences reflect user-provided edits and were not normalized in this step.
+- Backup/restore safety:
+  - Existing `.bak_priceview_release_*` JSON backups preserved.
