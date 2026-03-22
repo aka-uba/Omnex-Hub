@@ -1,26 +1,26 @@
-{
-    "apps": {
-        "com.omnex.player": {
-            "versionCode": 50,
-            "versionName": "2.9.21",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
-            "releaseNotes": "- Display tuning 3 kademe sabitlendi: L1/L2/L3 = 1.00/1.15/1.30\n- Legacy dahil tum Android APK cihazlarda manual contrast ust limiti 1.30 olarak acildi\n- Native video failed Toast kaldirildI",
-            "mandatory": false,
-            "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
-        },
-        "com.omnex.priceview": {
-            "versionCode": 5,
-            "versionName": "1.0.4",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=5",
-            "releaseNotes": "- HTML gosterim modu eklendi (product/not_found sablonlari)\n- Entegrasyon + cihaz bazli gosterim sablonu secimi eklendi\n- Display template sync signature ile degismedikce indirme yapmiyor",
-            "mandatory": false,
-            "sha256": "55cfebe23ab50134a058ff3b2199a092d60ff65f25fb5c2b65d0bc265e327985"
-        }
-    },
-    "versionCode": 50,
-    "versionName": "2.9.21",
-    "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
-    "releaseNotes": "- Display tuning 3 kademe sabitlendi",
-    "mandatory": false,
-    "sha256": "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
+﻿{
+    "apps":  {
+                 "com.omnex.player":  {
+                                          "versionCode":  50,
+                                          "versionName":  "2.9.21",
+                                          "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
+                                          "releaseNotes":  "- Display tuning 3 kademe sabitlendi: L1/L2/L3 = 1.00/1.15/1.30\n- Legacy dahil tum Android APK cihazlarda manual contrast ust limiti 1.30 olarak acildi\n- Native video failed Toast kaldirildI",
+                                          "mandatory":  false,
+                                          "sha256":  "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
+                                      },
+                 "com.omnex.priceview":  {
+                                             "versionCode":  6,
+                                             "versionName":  "1.0.5",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=6",
+                                             "releaseNotes":  "- HTML overlay gecis/animasyon stabilizasyonu (flash etkisi giderildi)\n- Entegrasyon ve cihaz detayindan anlik PriceView sync tetigi\n- Cihaz olusturma/onayda branch_id kaliciligi duzeltildi\n- Playlist cihaz atama modalinda aktif sube filtreleme iyilestirildi",
+                                             "mandatory":  false,
+                                             "sha256":  "baca2f00cdfbb87f3d27fd2b34b3ae9a7caee9da4a8fbb1d9e0a39e3f9bd459f"
+                                         }
+             },
+    "versionCode":  50,
+    "versionName":  "2.9.21",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=50",
+    "releaseNotes":  "- Display tuning 3 kademe sabitlendi",
+    "mandatory":  false,
+    "sha256":  "7dd156a4731d86e17cc3c76a206273bfaec59852fb60a0e69e963667f9434322"
 }

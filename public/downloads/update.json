@@ -1,26 +1,26 @@
-{
-    "apps": {
-        "com.omnex.player": {
-            "versionCode": 51,
-            "versionName": "2.9.22",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
-            "releaseNotes": "- OTA update check fix (Handler.postDelayed)\n- Guncelleme bildirimi artik guvenilir sekilde geliyor",
-            "mandatory": false,
-            "sha256": "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
-        },
-        "com.omnex.priceview": {
-            "versionCode": 5,
-            "versionName": "1.0.4",
-            "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=5",
-            "releaseNotes": "- HTML gosterim modu eklendi (product/not_found sablonlari)\n- Entegrasyon + cihaz bazli gosterim sablonu secimi eklendi\n- Display template sync signature ile degismedikce indirme yapmiyor",
-            "mandatory": false,
-            "sha256": "55cfebe23ab50134a058ff3b2199a092d60ff65f25fb5c2b65d0bc265e327985"
-        }
-    },
-    "versionCode": 51,
-    "versionName": "2.9.22",
-    "downloadUrl": "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
-    "releaseNotes": "- OTA update check fix",
-    "mandatory": false,
-    "sha256": "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
+﻿{
+    "apps":  {
+                 "com.omnex.player":  {
+                                          "versionCode":  51,
+                                          "versionName":  "2.9.22",
+                                          "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
+                                          "releaseNotes":  "- OTA update check fix (Handler.postDelayed)\n- Guncelleme bildirimi artik guvenilir sekilde geliyor",
+                                          "mandatory":  false,
+                                          "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
+                                      },
+                 "com.omnex.priceview":  {
+                                             "versionCode":  6,
+                                             "versionName":  "1.0.5",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=6",
+                                             "releaseNotes":  "- HTML overlay gecis/animasyon stabilizasyonu (flash etkisi giderildi)\n- Entegrasyon ve cihaz detayindan anlik PriceView sync tetigi\n- Cihaz olusturma/onayda branch_id kaliciligi duzeltildi\n- Playlist cihaz atama modalinda aktif sube filtreleme iyilestirildi",
+                                             "mandatory":  false,
+                                             "sha256":  "baca2f00cdfbb87f3d27fd2b34b3ae9a7caee9da4a8fbb1d9e0a39e3f9bd459f"
+                                         }
+             },
+    "versionCode":  51,
+    "versionName":  "2.9.22",
+    "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-player.apk?v=51",
+    "releaseNotes":  "- OTA update check fix",
+    "mandatory":  false,
+    "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
 }

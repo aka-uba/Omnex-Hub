@@ -26,9 +26,10 @@
   .pv-missing-image-wrap.active{display:flex}
   .pv-missing-image-dot{
     width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle,#fecaca 0%,#fee2e2 48%,rgba(254,226,226,.2) !important;
     display:flex;align-items:center;justify-content:center;
-    font-size:90px;line-height:1;color:#1f2937;
-    box-shadow:0 10px 28px rgba(15,23,42,.18) inset,0 6px 14px rgba(15,23,42,.10)
+    font-size:80px;line-height:1;color:#64748b;
+    box-shadow:0 10px 28px rgba(15,23,42,.10) inset
   }
 </style>
 </head>
@@ -42,11 +43,10 @@
                 <div class="pv-img-area" style="flex:1 1 300px;min-width:260px;position:relative;display:flex;justify-content:center;align-items:flex-end;">
                   <div style="position:absolute;left:20px;right:20px;bottom:18px;height:60%;background:linear-gradient(180deg,#fecaca,#fda4af);border-radius:28px;"></div>
                   <img data-bind="image_url" src="" alt="Ürün" style="position:relative;z-index:2;max-width:90%;max-height:280px;object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,.18))">
-<div class="pv-img-fallback" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;z-index:3;"><div style="width:140px;height:140px;border-radius:50%;background:rgba(148,163,184,.12);display:flex;align-items:center;justify-content:center;font-size:72px;">🔎</div></div>
                 </div>
                 <div class="pv-text-area" class="pv-text-area" style="flex:1.25 1 480px;min-width:300px;display:flex;flex-direction:column;justify-content:space-between;gap:18px">
                   <div>
-                    <div style="display:inline-block;padding:10px 14px;border-radius:999px;background:#991b1b;color:#fff;font-size:13px;font-weight:900;">Kasap Reyonu</div>
+                    <div style="display:inline-block;padding:10px 14px;border-radius:999px;background:#991b1b;color:#fff;font-size:13px;font-weight:900;" data-i18n="badge_search">Arama Sonucu</div>
                     <div data-bind="brand" style="margin-top:16px;font-size:16px;font-weight:800;letter-spacing:1.4px;color:#b91c1c;text-transform:uppercase;"></div>
                     <div class="pv-title" data-bind="name" style="margin-top:8px;font-size:42px;line-height:1.05;font-weight:900;color:#450a0a;"></div>
                     <div data-bind="description" style="margin-top:12px;font-size:20px;font-weight:700;color:#64748b;"></div>
@@ -83,21 +83,8 @@ window.PriceView = {
         var val = p[key];
         if (val === undefined || val === null) return;
         if (el.tagName === 'IMG') {
-          if (val && val.trim()) {
-            el.src = val;
-            el.style.display = 'block';
-            el.onerror = function() {
-              this.style.display = 'none';
-              var fb = document.querySelector('.pv-img-fallback');
-              if (fb) fb.style.display = 'flex';
-            };
-            var fb = document.querySelector('.pv-img-fallback');
-            if (fb) fb.style.display = 'none';
-          } else {
-            el.style.display = 'none';
-            var fb = document.querySelector('.pv-img-fallback');
-            if (fb) fb.style.display = 'flex';
-          }
+          el.src = val;
+          el.style.display = val ? 'block' : 'none';
         } else {
           el.textContent = val;
         }
@@ -132,52 +119,7 @@ window.PriceView = {
   if(window.__pvTemplateMotionFixV2){ return; }
   window.__pvTemplateMotionFixV2 = true;
 
-  function parseRgb(raw){
-    if(!raw){ return null; }
-    var m = String(raw).match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
-    if(!m){ return null; }
-    return { r:parseInt(m[1],10), g:parseInt(m[2],10), b:parseInt(m[3],10) };
-  }
-  function toRgb(c){ return 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')'; }
-  function mix(base, target, ratio){
-    return {
-      r: Math.round(base.r + (target.r - base.r) * ratio),
-      g: Math.round(base.g + (target.g - base.g) * ratio),
-      b: Math.round(base.b + (target.b - base.b) * ratio)
-    };
-  }
-  function resolveThemeColor(node){
-    var cur = node;
-    while(cur && cur !== document.body){
-      var bg = parseRgb(window.getComputedStyle(cur).backgroundColor);
-      if(bg){ return bg; }
-      cur = cur.parentElement;
-    }
-    return parseRgb(window.getComputedStyle(document.body).backgroundColor) || {r:254,g:215,b:170};
-  }
-  function ensureFallback(img){
-    var parent = img && img.parentElement;
-    if(!parent){ return null; }
-    var existing = parent.querySelector(':scope > .pv-missing-image-wrap');
-    if(existing){ return existing; }
-    var wrap = document.createElement('div');
-    wrap.className = 'pv-missing-image-wrap';
-    var dot = document.createElement('div');
-    dot.className = 'pv-missing-image-dot';
-    dot.innerHTML = '&#128269;';
-    wrap.appendChild(dot);
-    parent.appendChild(wrap);
-    return wrap;
-  }
-  function updateFallbackColor(img, wrap){
-    if(!wrap){ return; }
-    var dot = wrap.querySelector('.pv-missing-image-dot');
-    if(!dot){ return; }
-    var theme = resolveThemeColor(img);
-    var c1 = mix(theme, {r:255,g:255,b:255}, 0.30);
-    var c2 = mix(theme, {r:255,g:255,b:255}, 0.62);
-    dot.style.background = 'radial-gradient(circle,' + toRgb(c1) + ' 0%,' + toRgb(c2) + ' 60%)';
-  }
+
   function isBadSrc(src){
     var v = (src || '').trim().toLowerCase();
     return !v || v === 'null' || v === 'undefined' || v === 'about:blank';
@@ -185,7 +127,7 @@ window.PriceView = {
   function showFallback(img){
     var wrap = ensureFallback(img);
     if(!wrap){ return; }
-    updateFallbackColor(img, wrap);
+    /* themed via CSS */
     wrap.classList.add('active');
     img.style.display = 'none';
     img.style.visibility = 'hidden';
