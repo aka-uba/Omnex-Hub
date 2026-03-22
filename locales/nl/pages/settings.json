@@ -721,6 +721,12 @@
                 "warehouse": "Magazijn / Logistiek",
                 "reception": "Receptie / Lobby",
                 "campus": "Campus / Onderwijs"
+            },
+            "templatePreview": {
+                "title": "Sjabloonvoorbeeld",
+                "description": "Bekijk alle PriceView-weergavesjablonen in een nieuw tabblad.",
+                "productTemplates": "Productsjablonen",
+                "notFoundTemplates": "Niet-gevonden sjablonen"
             }
         },
         "payment": {

@@ -721,6 +721,12 @@
                 "warehouse": "مستودع / لوجستيات",
                 "reception": "استقبال / ردهة",
                 "campus": "حرم جامعي / تعليم"
+            },
+            "templatePreview": {
+                "title": "معاينة القوالب",
+                "description": "عرض جميع قوالب عرض PriceView في علامة تبويب جديدة.",
+                "productTemplates": "قوالب المنتجات",
+                "notFoundTemplates": "قوالب غير موجود"
             }
         },
         "payment": {

@@ -10,7 +10,7 @@ $db = Database::getInstance();
 $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 $productId = $request->getRouteParam('id');
-$branchId = $request->query('branch_id');
+$branchId = $request->query('branch_id') ?: $request->header('X-Active-Branch');
 
 // Get product
 $product = $db->fetch(

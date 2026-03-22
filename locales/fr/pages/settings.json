@@ -721,6 +721,12 @@
                 "warehouse": "Entrepôt / Logistique",
                 "reception": "Réception / Hall",
                 "campus": "Campus / Éducation"
+            },
+            "templatePreview": {
+                "title": "Aperçu des modèles",
+                "description": "Prévisualisez tous les modèles d'affichage PriceView dans un nouvel onglet.",
+                "productTemplates": "Modèles de produits",
+                "notFoundTemplates": "Modèles introuvables"
             }
         },
         "payment": {

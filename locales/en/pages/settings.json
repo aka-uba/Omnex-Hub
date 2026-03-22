@@ -776,6 +776,12 @@
                 "warehouse": "Warehouse / Logistics",
                 "reception": "Reception / Lobby",
                 "campus": "Campus / Education"
+            },
+            "templatePreview": {
+                "title": "Template Preview",
+                "description": "Preview all PriceView display templates in a new tab.",
+                "productTemplates": "Product Templates",
+                "notFoundTemplates": "Not Found Templates"
             }
         },
         "payment": {

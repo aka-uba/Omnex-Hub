@@ -776,6 +776,12 @@
                 "warehouse": "Depo / Lojistik",
                 "reception": "Resepsiyon / Lobi",
                 "campus": "Kampüs / Eğitim"
+            },
+            "templatePreview": {
+                "title": "Şablon Önizleme",
+                "description": "Tüm FiyatGör görüntüleme şablonlarını yeni sekmede önizleyin.",
+                "productTemplates": "Ürün Şablonları",
+                "notFoundTemplates": "Bulunamadı Şablonları"
             }
         },
         "payment": {

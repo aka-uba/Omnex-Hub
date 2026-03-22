@@ -51,7 +51,7 @@ foreach ($items as &$item) {
 $bundle['items'] = $items;
 
 // Check for branch-specific data
-$branchId = $request->input('branch_id') ?? ($_GET['branch_id'] ?? null);
+$branchId = $request->input('branch_id') ?? ($_GET['branch_id'] ?? null) ?: $request->header('X-Active-Branch');
 
 if (!empty($branchId)) {
     // Branch-specific: resolve override values and fetch branch price history

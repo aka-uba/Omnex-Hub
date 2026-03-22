@@ -7,6 +7,9 @@ $db = Database::getInstance();
 $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 
+// Branch override support
+$activeBranchId = $request->header('X-Active-Branch');
+
 // Pagination
 $page = (int)$request->query('page', 1);
 $limit = (int)$request->query('limit', 25);
@@ -140,6 +143,51 @@ $products = $db->fetchAll(
     array_merge($params, $orderByParams, [$limit, $offset])
 );
 
+// ── Branch price override ──────────────────────────────────────
+// Şube seçiliyse ProductPriceResolver ile fiyatları override et
+if ($activeBranchId && !empty($products)) {
+    require_once __DIR__ . '/../../services/ProductPriceResolver.php';
+
+    $pids = array_column($products, 'id');
+    $resolved = ProductPriceResolver::resolveMultiple($pids, $activeBranchId, ['price', 'campaign', 'stock']);
+
+    foreach ($products as &$prod) {
+        $r = $resolved[$prod['id']] ?? null;
+        if (!$r || !$r['has_override']) continue;
+
+        $vals = $r['values'];
+
+        // Fiyat alanları
+        if (isset($vals['current_price']) && $vals['current_price']['source'] !== 'master') {
+            $prod['current_price'] = $vals['current_price']['value'];
+        }
+        if (isset($vals['previous_price']) && $vals['previous_price']['source'] !== 'master') {
+            $prod['previous_price'] = $vals['previous_price']['value'];
+        }
+
+        // Kampanya alanları
+        if (isset($vals['discount_percent']) && $vals['discount_percent']['source'] !== 'master') {
+            $prod['discount_percent'] = $vals['discount_percent']['value'];
+        }
+        if (isset($vals['campaign_text']) && $vals['campaign_text']['source'] !== 'master') {
+            $prod['campaign_text'] = $vals['campaign_text']['value'];
+        }
+
+        // Stok alanları
+        if (isset($vals['stock_quantity']) && $vals['stock_quantity']['source'] !== 'master') {
+            $prod['stock'] = $vals['stock_quantity']['value'];
+        }
+
+        // Override meta bilgisi (frontend'in göstermesi için)
+        $prod['_branch_override'] = [
+            'source' => $r['source'],
+            'scope' => $r['override_scope'] ?? null
+        ];
+    }
+    unset($prod);
+}
+// ───────────────────────────────────────────────────────────────
+
 // Check if with_labels parameter is set for auto-send wizard
 $withLabels = $request->query('with_labels');
 
@@ -245,7 +293,7 @@ $categories = $db->fetchAll(
     [$companyId]
 );
 
-Response::success([
+$responseData = [
     'products' => $products,
     'pagination' => [
         'page' => $page,
@@ -256,4 +304,17 @@ Response::success([
     'filters' => [
         'categories' => array_column($categories, 'category')
     ]
-]);
+];
+
+// Aktif şube bilgisini response'a ekle
+if ($activeBranchId) {
+    $activeBranch = $db->fetch(
+        "SELECT id, name, type FROM branches WHERE id = ? AND company_id = ?",
+        [$activeBranchId, $companyId]
+    );
+    if ($activeBranch) {
+        $responseData['active_branch'] = $activeBranch;
+    }
+}
+
+Response::success($responseData);

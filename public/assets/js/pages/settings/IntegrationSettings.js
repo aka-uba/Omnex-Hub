@@ -5031,6 +5031,7 @@ export class IntegrationSettingsPage {
 
     renderPriceviewTab() {
         const s = this.priceviewSettings;
+        const basePath = window.OmnexConfig?.basePath || '';
         const templateOptions = this.priceviewDisplayTemplates.map(t =>
             `<option value="${this._escapeHtml(t.name)}" ${s.product_display_template === t.name ? 'selected' : ''}>${this._escapeHtml(t.label || t.name)}</option>`
         ).join('');
@@ -5178,6 +5179,29 @@ export class IntegrationSettingsPage {
                         </div>
                     </div>
                 </div>
+
+                    <!-- Template Preview Card -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h2 class="chart-card-title">
+                                <i class="ti ti-eye"></i>
+                                ${this.__('integrations.priceview.templatePreview.title')}
+                            </h2>
+                        </div>
+                        <div class="chart-card-body">
+                            <p class="text-muted mb-3">${this.__('integrations.priceview.templatePreview.description')}</p>
+                            <div class="flex gap-3 flex-wrap">
+                                <button onclick="window.open('${basePath}/public/priceview-templates/demo-preview.html','_blank')" class="btn btn-outline" style="flex:1;min-width:200px;">
+                                    <i class="ti ti-layout-grid"></i>
+                                    ${this.__('integrations.priceview.templatePreview.productTemplates')}
+                                </button>
+                                <button onclick="window.open('${basePath}/public/priceview-templates/demo-notfound-preview.html','_blank')" class="btn btn-outline" style="flex:1;min-width:200px;">
+                                    <i class="ti ti-search-off"></i>
+                                    ${this.__('integrations.priceview.templatePreview.notFoundTemplates')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                 <div class="flex gap-2 mt-4">
                     <button id="sync-priceview-btn" class="btn btn-outline">

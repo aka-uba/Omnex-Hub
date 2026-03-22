@@ -721,6 +721,12 @@
                 "warehouse": "Склад / Логистика",
                 "reception": "Ресепшен / Лобби",
                 "campus": "Кампус / Образование"
+            },
+            "templatePreview": {
+                "title": "Предпросмотр шаблонов",
+                "description": "Просмотрите все шаблоны отображения PriceView в новой вкладке.",
+                "productTemplates": "Шаблоны товаров",
+                "notFoundTemplates": "Шаблоны «не найдено»"
             }
         },
         "payment": {

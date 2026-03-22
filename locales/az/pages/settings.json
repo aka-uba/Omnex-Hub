@@ -721,6 +721,12 @@
                 "warehouse": "Anbar / Logistika",
                 "reception": "Resepşn / Lobbi",
                 "campus": "Kampus / Təhsil"
+            },
+            "templatePreview": {
+                "title": "Şablon önizləməsi",
+                "description": "Bütün PriceView ekran şablonlarını yeni tabda önizləyin.",
+                "productTemplates": "Məhsul şablonları",
+                "notFoundTemplates": "Tapılmadı şablonları"
             }
         },
         "payment": {

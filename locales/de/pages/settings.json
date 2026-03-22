@@ -721,6 +721,12 @@
                 "warehouse": "Lager / Logistik",
                 "reception": "Rezeption / Empfang",
                 "campus": "Campus / Bildung"
+            },
+            "templatePreview": {
+                "title": "Vorlagenvorschau",
+                "description": "Alle PriceView-Anzeigevorlagen in einem neuen Tab anzeigen.",
+                "productTemplates": "Produktvorlagen",
+                "notFoundTemplates": "Nicht-gefunden-Vorlagen"
             }
         },
         "payment": {

@@ -7,6 +7,9 @@ $db = Database::getInstance();
 $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
 
+// Branch override support
+$activeBranchId = $request->header('X-Active-Branch');
+
 // Pagination
 $page = (int)$request->query('page', 1);
 $limit = (int)$request->query('limit', 25);
@@ -71,6 +74,72 @@ foreach ($bundles as &$bundle) {
     $bundle['videos'] = !empty($bundle['videos']) ? json_decode($bundle['videos'], true) ?: [] : [];
     $bundle['tags'] = !empty($bundle['tags']) ? json_decode($bundle['tags'], true) ?: [] : [];
 }
+unset($bundle);
+
+// ── Branch price override ──────────────────────────────────────
+if ($activeBranchId && !empty($bundles)) {
+    $bundleIds = array_column($bundles, 'id');
+    $placeholders = implode(',', array_fill(0, count($bundleIds), '?'));
+
+    // Şube override'larını al
+    $overrides = $db->fetchAll(
+        "SELECT * FROM bundle_branch_overrides
+         WHERE bundle_id IN ($placeholders) AND branch_id = ? AND deleted_at IS NULL",
+        array_merge($bundleIds, [$activeBranchId])
+    );
+
+    // Bölge override'larını al (parent branch varsa)
+    $branch = $db->fetch("SELECT id, parent_id FROM branches WHERE id = ?", [$activeBranchId]);
+    $regionOverrides = [];
+    if ($branch && $branch['parent_id']) {
+        $regionOverrides = $db->fetchAll(
+            "SELECT * FROM bundle_branch_overrides
+             WHERE bundle_id IN ($placeholders) AND branch_id = ? AND deleted_at IS NULL",
+            array_merge($bundleIds, [$branch['parent_id']])
+        );
+    }
+
+    // Map'e dönüştür
+    $overrideMap = [];
+    foreach ($overrides as $o) {
+        $overrideMap[$o['bundle_id']] = $o;
+    }
+    $regionMap = [];
+    foreach ($regionOverrides as $ro) {
+        $regionMap[$ro['bundle_id']] = $ro;
+    }
+
+    // Override uygula (fallback: şube → bölge → master)
+    foreach ($bundles as &$bundle) {
+        $bo = $overrideMap[$bundle['id']] ?? null;
+        $ro = $regionMap[$bundle['id']] ?? null;
+        $override = $bo ?: $ro;
+
+        if (!$override) continue;
+
+        $source = $bo ? 'branch' : 'region';
+
+        if ($override['final_price'] !== null) {
+            $bundle['final_price'] = $override['final_price'];
+        }
+        if ($override['total_price'] !== null) {
+            $bundle['total_price'] = $override['total_price'];
+        }
+        if ($override['previous_final_price'] !== null) {
+            $bundle['previous_final_price'] = $override['previous_final_price'];
+        }
+        if ($override['discount_percent'] !== null) {
+            $bundle['discount_percent'] = $override['discount_percent'];
+        }
+
+        $bundle['_branch_override'] = [
+            'source' => $source,
+            'price_override' => (bool)($override['price_override'] ?? false)
+        ];
+    }
+    unset($bundle);
+}
+// ───────────────────────────────────────────────────────────────
 
 // Stats
 $stats = $db->fetch(
@@ -83,7 +152,7 @@ $stats = $db->fetch(
     [$companyId]
 );
 
-Response::success([
+$responseData = [
     'bundles' => $bundles,
     'pagination' => [
         'total' => (int)$total,
@@ -97,4 +166,16 @@ Response::success([
         'draft' => (int)($stats['draft'] ?? 0),
         'total_items' => (int)($stats['total_items'] ?? 0)
     ]
-]);
+];
+
+if ($activeBranchId) {
+    $activeBranch = $db->fetch(
+        "SELECT id, name, type FROM branches WHERE id = ? AND company_id = ?",
+        [$activeBranchId, $companyId]
+    );
+    if ($activeBranch) {
+        $responseData['active_branch'] = $activeBranch;
+    }
+}
+
+Response::success($responseData);
