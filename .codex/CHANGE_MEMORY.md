@@ -8350,4 +8350,14 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Release is prepared in git; server-side pull/deploy is required for live availability.
 - Backup/restore safety:
-  - Backup created before JSON write: `.temp-backups/priceview_release_20260323_023539/`
+  - Backup created before JSON write: `.temp-backups/priceview_release_20260323_023539/`## 2026-03-23 - Re-upload today-updated PriceView themes to server
+- Request: "tüm temalarý tekrar sunucuya geri at" after user-side theme adjustments.
+- Changes:
+  - Updated and committed 29 files under `public/priceview-templates/` (view + universal notfound templates)
+  - Most changes are fallback icon behavior (`dot.innerHTML` updates) aligned with user's latest theme edits.
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Many untracked backup/tmp files remain in working tree and are intentionally excluded.
+- Backup/restore safety:
+  - No destructive operation; existing `.temp-backups/` snapshots preserved.
