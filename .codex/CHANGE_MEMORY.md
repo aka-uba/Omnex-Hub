@@ -8330,4 +8330,24 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Working tree has many unrelated untracked backup/tmp files; excluded from commit.
   - Server deploy/APK publish steps are not included in this commit-only phase.
 - Backup/restore safety:
-  - No new backup needed in this phase; previously created backups remain available.
+  - No new backup needed in this phase; previously created backups remain available.## 2026-03-23 - PriceView 1.0.11 APK publish + update.json refresh
+- Request: "apkyý downloads ve upload js ile atmamýþsýn".
+- Changes:
+  - `Omnex-PriceView/app/build.gradle` -> `versionCode 12`, `versionName "1.0.11"`
+  - Rebuilt and published APK to:
+    - `downloads/omnex-priceview.apk`
+    - `public/downloads/omnex-priceview.apk`
+  - Updated PriceView app block in:
+    - `downloads/update.json`
+    - `public/downloads/update.json`
+    (`versionCode=12`, `versionName=1.0.11`, `downloadUrl ...?v=12`, new `sha256`)
+- Checks run:
+  - `./gradlew.bat publishDebugApk` (OK)
+  - `output-metadata.json` verified (`versionCode=12`, `versionName=1.0.11`)
+  - SHA256 verified for published APK: `36fbcae8c9c51c1780fb6d0f6d379f2319e6a5333bc1144d36992393fcf8946f`
+  - JSON parse checks passed for both `update.json` files
+  - BOM check passed for both `update.json` files (first bytes `123,13,10`)
+- Risk/Follow-up:
+  - Release is prepared in git; server-side pull/deploy is required for live availability.
+- Backup/restore safety:
+  - Backup created before JSON write: `.temp-backups/priceview_release_20260323_023539/`
