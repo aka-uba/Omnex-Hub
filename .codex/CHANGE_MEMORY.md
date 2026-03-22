@@ -7503,3 +7503,13 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Existing Gradle/Kotlin warnings remain non-blocking and pre-existing.
 - Backup/restore safety:
   - Backup created: `.temp-backups/release_20260322_042345/`.
+## 2026-03-22 - PriceView templates republish after user-side padding cleanup
+- Request: Re-commit and re-publish updated PriceView theme templates after user removed template paddings.
+- Changes:
+  - `public/priceview-templates/*.html` updated (product + not-found variants) from user-side adjustments.
+- Checks run:
+  - `php -l api\priceview\display-template.php` (OK)
+- Risk/Follow-up:
+  - Browser/device cache may keep old template content briefly; manual sync/refresh may be needed.
+- Backup/restore safety:
+  - No additional file rewrite automation used; user-edited template files committed as-is.
