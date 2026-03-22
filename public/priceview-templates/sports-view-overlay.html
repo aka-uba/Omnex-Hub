@@ -8,18 +8,76 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important;  }
   /* Mobile responsive */
+  /* Mobile responsive - comprehensive */
   @media (max-width:768px) {
     .pv-card { padding:10px !important; }
-    .pv-card-inner { padding:14px !important; gap:14px !important; }
+    .pv-card-inner { padding:14px !important; gap:12px !important; }
     .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
     .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
-    .pv-price { font-size:48px !important; }
-    .pv-title { font-size:28px !important; }
+    .pv-price { font-size:42px !important; }
+    .pv-title { font-size:26px !important; }
     .pv-grid-bottom { grid-template-columns:1fr !important; }
+    /* Description */
+    [data-bind="description"] { font-size:15px !important; }
+    /* Brand */
+    [data-bind="brand"] { font-size:13px !important; }
+    /* Barcode */
+    [data-bind="barcode"] { font-size:17px !important; letter-spacing:1px !important; }
+    /* Badge pills */
+    [style*="border-radius:999px"] { font-size:11px !important; padding:7px 10px !important; }
+    /* KDV, Vadeli pills */
+    [style*="border-radius:14px"] { font-size:13px !important; padding:7px 10px !important; }
+    /* Old price */
+    [data-bind="previous_price"] { font-size:17px !important; }
+    /* Currency symbol */
+    [style*="font-size:26px"][style*="font-weight:800"] { font-size:20px !important; }
+    /* Header company/branch */
+    [data-bind="company_name"] { font-size:20px !important; }
+    [data-bind="branch_name"] { font-size:15px !important; }
+    /* Barcode label */
+    [style*="letter-spacing:1.4px"][style*="text-transform:uppercase"] { font-size:10px !important; }
+    /* Close button */
+    [title="Kapat"] { width:30px !important; height:30px !important; font-size:14px !important; }
+    /* Fallback icon */
+    .pv-missing-image-dot { width:160px !important; height:160px !important; font-size:80px !important; }
+    /* Print button */
+    [onclick*="printSection"] { font-size:12px !important; padding:10px 14px !important; min-width:140px !important; }
+    /* Grid info boxes */
+    .pv-grid-bottom > div { padding:10px !important; }
+    .pv-grid-bottom [style*="font-size:22px"] { font-size:17px !important; }
   }
   @media (max-width:480px) {
-    .pv-price { font-size:38px !important; }
-    .pv-title { font-size:24px !important; }
+    .pv-card { padding:8px !important; }
+    .pv-card-inner { padding:10px !important; gap:10px !important; }
+    .pv-price { font-size:32px !important; }
+    .pv-title { font-size:22px !important; }
+    [data-bind="description"] { font-size:13px !important; }
+    [data-bind="brand"] { font-size:11px !important; }
+    [data-bind="barcode"] { font-size:15px !important; }
+    [data-bind="previous_price"] { font-size:14px !important; }
+    [data-bind="company_name"] { font-size:16px !important; }
+    [data-bind="branch_name"] { font-size:12px !important; }
+    [style*="border-radius:14px"] { font-size:11px !important; padding:6px 8px !important; }
+    [style*="font-size:26px"][style*="font-weight:800"] { font-size:16px !important; }
+    .pv-missing-image-dot { width:120px !important; height:120px !important; font-size:60px !important; }
+    /* Not-found heading */
+    [style*="font-size:42px"] { font-size:26px !important; }
+    [style*="font-size:44px"] { font-size:26px !important; }
+    /* Not-found description */
+    [style*="font-size:20px"][style*="font-weight:600"] { font-size:14px !important; }
+    /* Info card emoji */
+    [style*="font-size:110px"] { font-size:70px !important; }
+    [style*="font-size:100px"] { font-size:60px !important; }
+    [style*="font-size:108px"] { font-size:70px !important; }
+    /* Prevent text overflow */
+    .pv-card-inner { overflow:hidden !important; word-break:break-word !important; }
+  }
+  @media (max-width:360px) {
+    .pv-price { font-size:28px !important; }
+    .pv-title { font-size:18px !important; }
+    [data-bind="company_name"] { font-size:14px !important; }
+    [data-bind="branch_name"] { font-size:11px !important; }
+    [data-bind="description"] { font-size:12px !important; }
   }
   /* pv-missing-image-fallback */
   .pv-missing-image-wrap{display:none;align-items:center;justify-content:center;flex:0.8 1 240px;width:100%;min-height:220px;position:relative;z-index:5}
@@ -33,8 +91,8 @@
                 <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:26px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:18px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:20px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
                 <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;flex-shrink:0;">&#10005;</button>
               </div>
-              <div class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;min-height:340px;border-radius:28px;padding:24px;background:linear-gradient(135deg,#ecfeff 0%,#f0fdf4 48%,#ffffff 100%);">
-                <div class="pv-img-area" style="flex:1 1 300px;min-width:260px;position:relative;display:flex;justify-content:center;align-items:flex-end;">
+              <div class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;border-radius:28px;padding:24px;background:linear-gradient(135deg,#ecfeff 0%,#f0fdf4 48%,#ffffff 100%);">
+                <div class="pv-img-area" style="flex:1 1 300px;min-width:260px;position:relative;display:flex;justify-content:center;align-items:center;">
                   <div style="position:absolute;left:20px;right:20px;bottom:18px;height:60%;background:linear-gradient(180deg,#bae6fd,#86efac);border-radius:28px;"></div>
                   <img data-bind="image_url" src="" alt="Ürün" style="position:relative;z-index:2;max-width:86%;max-height:280px;object-fit:contain;filter:drop-shadow(0 12px 20px rgba(0,0,0,.18))">
                 </div>
@@ -44,7 +102,7 @@
                     <div data-bind="brand" style="margin-top:16px;font-size:16px;font-weight:800;letter-spacing:1.4px;color:#0284c7;text-transform:uppercase;"></div>
                     <div class="pv-title" data-bind="name" style="margin-top:8px;font-size:42px;line-height:1.05;font-weight:900;color:#082f49;"></div>
                     <div data-bind="description" style="margin-top:12px;font-size:20px;font-weight:700;color:#475569;"></div>
-                    <div style="margin-top:18px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+                    <div style="margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                       <div data-bind="current_price" style="font-size:72px;" class="pv-priceline-height:.92;font-weight:900;color:#082f49;"></div>
                       <div style="font-size:26px;font-weight:800;color:#0284c7;padding-bottom:8px;">₺</div>
                     </div>
@@ -132,24 +190,18 @@ window.PriceView = {
     parent.appendChild(wrap);
     return wrap;
   }
-  function showFallback(img, hideGradient){
+  function showFallback(img){
     var wrap = ensureFallback(img);
     if(!wrap){ return; }
     wrap.classList.add('active');
     img.style.display = 'none';
     img.style.visibility = 'hidden';
-    if(hideGradient){
-      var bg = img.parentElement && img.parentElement.querySelector('div[style*="position:absolute"]');
-      if(bg){ bg.style.display = 'none'; }
-    }
   }
   function showImage(img){
     var parent = img.parentElement;
     if(parent){
       var wrap = parent.querySelector(':scope > .pv-missing-image-wrap');
       if(wrap){ wrap.classList.remove('active'); }
-      var bg = parent.querySelector('div[style*="position:absolute"]');
-      if(bg){ bg.style.display = ''; }
     }
     img.style.display = 'block';
     img.style.visibility = 'visible';
@@ -160,16 +212,16 @@ window.PriceView = {
     if(isBadSrc(src)){ showFallback(img); return; }
     if(img.complete){
       if((img.naturalWidth || 0) > 0){ showImage(img); }
-      else { showFallback(img, true); }
+      else { showFallback(img); }
     }
   }
   function bindImage(img){
     if(!img || img.dataset.pvMissingBound === '1'){ return; }
     img.dataset.pvMissingBound = '1';
-    img.addEventListener('error', function(){ showFallback(img, true); }, { passive:true });
+    img.addEventListener('error', function(){ showFallback(img); }, { passive:true });
     img.addEventListener('load', function(){
       if((img.naturalWidth || 0) > 0){ showImage(img); }
-      else { showFallback(img, true); }
+      else { showFallback(img); }
     }, { passive:true });
     var obs = new MutationObserver(function(){ refreshImage(img); });
     obs.observe(img, { attributes:true, attributeFilter:['src','style'] });

@@ -24,8 +24,8 @@ android {
         applicationId "com.omnex.priceview"
         minSdk 21  // Android 5.0+
         targetSdk 34
-        versionCode 6
-        versionName "1.0.5"
+        versionCode 7
+        versionName "1.0.6"
 
         // Varsayilan sunucu URL'si (production)
         buildConfigField "String", "SERVER_URL", '"https://hub.omnexcore.com/player/"'
@@ -33,12 +33,12 @@ android {
 
     flavorDimensions "distribution"
     productFlavors {
-        // Standalone: kendi gÃƒÂ¼ncelleme sistemi, doÃ„Å¸rudan APK daÃ„Å¸Ã„Â±tÃ„Â±mÃ„Â±
+        // Standalone: kendi gÃƒÆ’Ã‚Â¼ncelleme sistemi, doÃƒâ€Ã…Â¸rudan APK daÃƒâ€Ã…Â¸Ãƒâ€Ã‚Â±tÃƒâ€Ã‚Â±mÃƒâ€Ã‚Â±
         standalone {
             dimension "distribution"
             buildConfigField "boolean", "SELF_UPDATE_ENABLED", "true"
         }
-        // Google Play Store: Play Store gÃƒÂ¼ncelleme, REQUEST_INSTALL_PACKAGES yok
+        // Google Play Store: Play Store gÃƒÆ’Ã‚Â¼ncelleme, REQUEST_INSTALL_PACKAGES yok
         playstore {
             dimension "distribution"
             buildConfigField "boolean", "SELF_UPDATE_ENABLED", "false"
@@ -93,7 +93,7 @@ android {
         buildConfig true
     }
 
-    // Android TV desteÃ„Å¸i
+    // Android TV desteÃƒâ€Ã…Â¸i
     lintOptions {
         checkReleaseBuilds false
     }
@@ -105,7 +105,7 @@ dependencies {
     implementation 'androidx.webkit:webkit:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // Android TV iÃƒÂ§in Leanback
+    // Android TV iÃƒÆ’Ã‚Â§in Leanback
     implementation 'androidx.leanback:leanback:1.0.0'
 
     // Lifecycle

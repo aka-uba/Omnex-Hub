@@ -7194,3 +7194,312 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Existing tenants must save PriceView mode once as `HTML` after this UI fix is deployed.
 - Backup/restore safety steps:
   - Created backup set: `.temp-backups/locale_mode_fix_20260322_020130/`
+## 2026-03-22 - Runtime fix: PriceView HTML mode not applying (container stale + company mode native)
+- Request: User triggered sync but HTML overlay did not activate; asked whether 15-minute wait is required.
+- Root cause:
+  1) Production `omnex-app-1` container still served old `IntegrationSettings.js` (host repo had fix, container image stale).
+  2) Company setting `priceview_product_display_mode` remained `native` for company `deda94ce-f971-4562-804b-7d86e93043fd`.
+- Actions performed (runtime/deploy):
+  1) Rebuilt and restarted production app stack from `/opt/omnex-hub/deploy`:
+     - `docker compose -f docker-compose.yml -f docker-compose.standalone.yml build app`
+     - `docker compose -f docker-compose.yml -f docker-compose.standalone.yml up -d app nginx`
+  2) Updated company setting in production DB to HTML mode (`UPDATE settings ... jsonb_set(... 'priceview_product_display_mode' = 'html')`).
+  3) Forced device sync job on `192.168.1.181:38155` with `cmd jobscheduler run -f com.omnex.priceview 111`.
+- Verification:
+  - Live JS now includes `pv-display-mode` and save reads `document.getElementById('pv-display-mode')`.
+  - `https://hub.omnexcore.com/api/priceview/config` for device token returns `product_display_mode=html`, `display_template_name=accessory`.
+  - Device local prefs (`omnex_priceview_config.xml`) now show `product_display_mode=html` and cached HTML templates.
+- Files changed:
+  - Local repo code files: none.
+  - Runtime only (remote container + DB setting).
+- Checks run:
+  - ADB package/version/prefs checks.
+  - Remote container file content check.
+  - Remote API config check.
+  - Device local prefs post-forced-sync check.
+- Risk/Follow-up:
+  - If integration page was open before rebuild, browser hard refresh may still be needed.
+  - Existing `sync now` button in Integration page is informational and does not push real-time to device; device/app startup or worker run is needed.
+- Backup/restore safety:
+  - No repo file edit performed in this step.
+## 2026-03-22 - PriceView HTML overlay UX fix (slide-up, flash reduction, close/print actions)
+- Request: In device scan flow, HTML result cards should enter from bottom like native; repeated flash/re-render should stop; close and print icons/buttons in HTML templates should work.
+- Changes:
+  1. `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`
+     - Added HTML WebView JS bridge (`HtmlUiBridge`) with `closeOverlay()` and `printCurrentProduct()`.
+     - Registered bridge on HTML WebViews (`PriceViewNative`, `AndroidBridge`, `Android`).
+     - Added generic JS-side click binding for close/print controls by selector and button text.
+     - Added `window.printSection` fallback to native print action (fixes templates calling undefined `printSection(...)`).
+     - Added slide-up + fade animation for HTML overlays (product/not-found), matching native feel.
+     - Added duplicate render suppression window (`900ms`) to prevent repeated visual flashing.
+  2. `Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt`
+     - Added barcode debounce (`900ms`) and single in-flight lookup guard to prevent duplicated scan handling from hardware broadcast bursts.
+- Runtime verification actions:
+  - Built and installed updated APK to device `192.168.1.181:38155`.
+  - Restarted app and confirmed sync worker/config flow still active in logcat.
+- Files changed:
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+  - `adb install -r app-standalone-debug.apk` on `192.168.1.181:38155` (OK)
+- Risk/Follow-up:
+  - HTML templates with highly custom button markup may still require explicit `data-action="close"|"print"` for guaranteed binding.
+  - Final UX confirmation requires live barcode scan + button tap on device screen.
+- Backup/restore safety:
+  - Backups created at `.temp-backups/html_overlay_fix_20260322_022627/` before edits.
+## 2026-03-22 - PriceView HTML overlay tuning v2 (bottom anchor, hover removal, motion cleanup)
+- Request: Overlay works, but product card should stay at bottom (not top with large empty area); close/print hover effects should be removed; image delayed animation should be removed or flow should be smoother to avoid flash feeling.
+- Changes:
+  1. `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`
+     - Increased overlay animation duration from `300ms` to `380ms` for smoother flow.
+     - Added template-kind aware runtime behavior (`product` vs `not_found`) in HTML loader/binder.
+     - For product templates, injected runtime CSS to anchor body/card to bottom (`align-items:flex-end`) and remove large bottom whitespace.
+     - Disabled runtime hover/transition animations for close/print controls and generic buttons.
+     - Removed inline hover handlers (`onmouseenter/onmouseleave/onmouseover/onmouseout/onmousedown/onmouseup`) at runtime from actionable elements.
+     - Disabled image/template-level animation/transition for product visuals to reduce flash-like effect.
+  2. Rebuilt and reinstalled APK on test device `192.168.1.181:38155`.
+- Files changed:
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin :app:assembleStandaloneDebug` (OK)
+  - `adb install -r app-standalone-debug.apk` on `192.168.1.181:38155` (OK)
+- Risk/Follow-up:
+  - Some custom templates may require explicit `data-action="close"|"print"` markers for deterministic control binding if button text is non-standard.
+- Backup/restore safety:
+  - Existing backup folder reused: `.temp-backups/html_overlay_fix_20260322_022627/`
+## 2026-03-22 - PriceView HTML templates central hardening (global motion off + themed missing-image fallback)
+- Request: Broken image icon still appears when product image is missing; user requested handling from HTML side and removing transition/hover motion across all templates.
+- Changes:
+  1. `api/priceview/template-utils.php`
+     - Added template runtime versioning (`priceviewTemplateRenderVersion`) and included it in signature generation to force template cache invalidation on device.
+     - Added `priceviewInjectRuntimeTemplateEnhancements($html, $isProductTemplate)`:
+       - strips inline hover/mouse animation handlers from incoming template HTML.
+       - injects global CSS guard to disable animation/transition effects across template DOM.
+       - injects product-template JS fallback for missing/broken `image_url` images.
+       - fallback icon/shape now uses template-adaptive radial background derived from surrounding theme colors (instead of fixed color).
+  2. `api/priceview/display-template.php`
+     - Applied runtime enhancement injector to both `product_html` and `not_found_html` response payloads before returning JSON.
+     - Signature fallback now includes renderer version to keep cache coherence.
+- Files changed:
+  - api/priceview/template-utils.php
+  - api/priceview/display-template.php
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l api\priceview\template-utils.php` (OK)
+  - `php -l api\priceview\display-template.php` (OK)
+  - `php -r` runtime smoke check on injector (OK, `guards_ok`, `hover_removed`)
+- Risk/Follow-up:
+  - Device must fetch refreshed config/template signature (manual sync/restart may be required) to apply new injected HTML payload.
+  - If a custom template does not use `img[data-bind="image_url"]`, fallback logic will not attach to that image node.
+- Backup/restore safety:
+  - Backups created at `.temp-backups/priceview_template_runtimefix_20260322_024958/`.
+## 2026-03-22 - PriceView template files normalized (all product + not-found variants)
+- Request: Apply fixes directly in template files (not runtime injection), including not-found templates; remove motion/hover effects globally and keep missing-image fallback with theme-compatible background.
+- Changes:
+  1. `public/priceview-templates/*.html` (56 files)
+     - Removed inline hover/mouse handlers (`onmouseenter`, `onmouseleave`, `onmouseover`, `onmouseout`, `onmousedown`, `onmouseup`).
+     - Removed all `animation:` / `transition:` declarations and `@keyframes` blocks from templates (product and not-found templates both).
+  2. `public/priceview-templates/*-view-overlay.html` (29 files)
+     - Added built-in missing-image fallback CSS/JS (`pv-missing-image-fallback`, `pv_template_motion_fix_v2`).
+     - Fallback icon is now generated with template-adaptive radial background (derived from current theme/container colors).
+  3. `api/priceview/display-template.php`
+     - Removed runtime HTML enhancement injection usage; templates are now served as authored.
+  4. `api/priceview/template-utils.php`
+     - Reverted signature seed to template-file based calculation and removed unused runtime helper blocks.
+- Files changed:
+  - public/priceview-templates/*.html
+  - api/priceview/display-template.php
+  - api/priceview/template-utils.php
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l api\priceview\template-utils.php` (OK)
+  - `php -l api\priceview\display-template.php` (OK)
+  - Pattern scan across all templates: `mouse=0 animation=0 transition=0 keyframes=0` (OK)
+  - Marker scan on all `*-view-overlay.html`: `css_marker=29 js_marker=29` (OK)
+- Risk/Follow-up:
+  - Device/template cache refresh required (sync/restart) to pull updated HTML.
+  - If any custom future template does not include `img[data-bind="image_url"]`, fallback won’t attach automatically.
+- Backup/restore safety:
+  - Full backup before bulk edit: `.temp-backups/priceview_templates_bulk_clean_20260322_025958/`.
+## 2026-03-22 - PriceView instant sync trigger (Integration + Device Detail + command bridge)
+- Request: Add true instant sync trigger from Integration page and Device Detail page (no 15-minute wait), using same behavior on both.
+- Changes:
+  1. `api/priceview/sync-now.php` (new)
+     - Added authenticated endpoint `POST /api/priceview/sync-now`.
+     - Queues high-priority `refresh` command into `device_commands` for `model='priceview'` devices.
+     - Supports bulk (company-wide) and single-device trigger (`device_id` / `device_ids`).
+     - Added short dedupe window (skip recent pending/sent refresh commands within 2 minutes).
+  2. `api/index.php`
+     - Registered new auth route: `/api/priceview/sync-now`.
+  3. `public/assets/js/pages/settings/IntegrationSettings.js`
+     - `syncPriceviewNow()` now calls `/priceview/sync-now` (source=`integration`) before refreshing status.
+  4. `public/assets/js/pages/devices/DeviceDetail.js`
+     - `priceviewSyncNow()` now calls `/priceview/sync-now` with selected `device_id` (source=`device_detail`) before refreshing status.
+  5. `public/player/assets/js/player.js`
+     - Added `triggerNativePriceViewSyncNow()` helper.
+     - On command `refresh|refresh_content|sync`, player now also calls Android bridge method `triggerPriceViewSyncNow()` when available.
+  6. `Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt`
+     - Added Android JS bridge method `triggerPriceViewSyncNow()`.
+     - Added native handler `triggerPriceViewInstantSync(source)` to enqueue `SyncWorker.syncNow(...)` immediately.
+- Files changed:
+  - api/priceview/sync-now.php
+  - api/index.php
+  - public/assets/js/pages/settings/IntegrationSettings.js
+  - public/assets/js/pages/devices/DeviceDetail.js
+  - public/player/assets/js/player.js
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/MainActivity.kt
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l api\priceview\sync-now.php` (OK)
+  - `php -l api\index.php` (OK)
+  - `node --check public\assets\js\pages\settings\IntegrationSettings.js` (OK)
+  - `node --check public\assets\js\pages\devices\DeviceDetail.js` (OK)
+  - `node --check public\player\assets\js\player.js` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - Instant trigger depends on player heartbeat/command loop reaching device; offline devices execute when they reconnect.
+  - If multiple triggers are sent rapidly, dedupe window intentionally skips duplicate queue rows.
+- Backup/restore safety:
+  - Backups created at `.temp-backups/priceview_instant_sync_20260322_031713/`.
+## 2026-03-22 - Migration 23 verification + device branch persistence fix
+- Request: Verify whether `23_priceview_bundles.sql` was safely applied on server; investigate branch-related device visibility issue in Devices/Playlist flows; then prepare deploy flow.
+- Investigation:
+  - Server DB check: `core.migrations` contains `pg:23_priceview_bundles.sql` (executed at `2026-03-21 21:21:34+00`).
+  - Verified objects exist: `audit.bundle_deletions`, `audit.idx_bundle_deletions_company_deleted_at`, RLS policy `bundle_deletions_isolation`.
+  - Root cause found unrelated to migration: device create/approve flows were not persisting `branch_id` reliably.
+- Changes:
+  1. `api/devices/create.php`
+     - Added `branch_id` handling with active-branch fallback (`Auth::getActiveBranchId()`).
+     - Added company-scoped branch validation before insert.
+     - Persisted `branch_id` in new device insert payload.
+  2. `api/esl/approve.php`
+     - Added `branch_id` intake (`branchId` / `branch_id`) with active-branch fallback.
+     - Added company-scoped branch validation.
+     - Persisted `branch_id` for both relink/update and new insert flows.
+     - Included `branchId` in approval response payload.
+  3. `public/assets/js/pages/devices/DeviceList.js`
+     - New-device modal now preselects current active branch.
+     - Approve modal now includes branch selector and sends `branch_id`.
+  4. `public/assets/js/pages/signage/PlaylistList.js`
+     - Assign-device modal now requests `/devices` with `per_page=500` and explicit active-branch param to align with selected branch context.
+- Files changed:
+  - api/devices/create.php
+  - api/esl/approve.php
+  - public/assets/js/pages/devices/DeviceList.js
+  - public/assets/js/pages/signage/PlaylistList.js
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `php -l api/devices/create.php` (OK)
+  - `php -l api/esl/approve.php` (OK)
+  - `node --check public/assets/js/pages/devices/DeviceList.js` (OK)
+  - `node --check public/assets/js/pages/signage/PlaylistList.js` (OK)
+  - repo-wide changed-file syntax spot checks (OK for changed PHP/JS set)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` in `Omnex-PriceView` (OK)
+- Risk/Follow-up:
+  - Existing branchless historical devices remain branchless; this fix prevents new wrong inserts. Historical records may need one-time manual branch assignment.
+- Backup/restore safety:
+  - Backups created at `.temp-backups/branch_playlist_fix_20260322_033516/` before edits.
+## 2026-03-22 - PriceView release/deploy flow (v1.0.5) + server migration verification
+- Request: Before running commit/push/pull+APK release flow, verify server-side migration safety (`23_priceview_bundles.sql`), inspect branch-related device/playlist visibility issues, fix, then complete deploy/build/update-json steps.
+- Server verification:
+  - Remote DB check confirmed `core.migrations` row exists for `pg:23_priceview_bundles.sql` (`2026-03-21 21:21:34+00`).
+  - Confirmed migration artifacts exist: `audit.bundle_deletions`, index `idx_bundle_deletions_company_deleted_at`, RLS policy `bundle_deletions_isolation`.
+  - Conclusion: reported branch/device issue was not caused by migration 23.
+- Implemented fixes (code):
+  - `api/devices/create.php`: persist `branch_id`, validate branch-company match, fallback to active branch context.
+  - `api/esl/approve.php`: accept/persist `branch_id`, validate branch-company match, fallback to active branch context.
+  - `public/assets/js/pages/devices/DeviceList.js`: active branch preselection on create modal; branch selector added to approve modal.
+  - `public/assets/js/pages/signage/PlaylistList.js`: assign-device modal fetch now branch-context aware and higher `per_page`.
+- Release/build/update:
+  - `Omnex-PriceView/app/build.gradle`: bumped to `versionCode 6`, `versionName 1.0.5`.
+  - Built APK via `./gradlew.bat publishDebugApk`.
+  - Published `omnex-priceview.apk` to both `downloads/` and `public/downloads/`.
+  - Computed SHA256: `baca2f00cdfbb87f3d27fd2b34b3ae9a7caee9da4a8fbb1d9e0a39e3f9bd459f`.
+  - Updated both `downloads/update.json` and `public/downloads/update.json` only for `com.omnex.priceview` release fields; retained player release at `2.9.22/51`.
+- Git/deploy actions:
+  - Commit `fb46b50`: PriceView sync/template/branch fixes.
+  - Commit `4655bbd`: PriceView v1.0.5 APK + OTA metadata.
+  - Commit `f06e6c0`: OTA metadata consistency + template missing-image fallback hooks.
+  - Pushed all commits to `origin/main` and pulled on server (`/opt/omnex-hub`, HEAD `f06e6c0`).
+  - Rebuilt containers on server (`docker compose up -d --build app`, plus earlier worker rebuild during first deploy pass).
+  - Verified live endpoint: `https://hub.omnexcore.com/downloads/update.json` shows `com.omnex.priceview` as `1.0.5 / 6`; APK URL `.../omnex-priceview.apk?v=6` returns expected headers.
+- Checks run:
+  - PHP lint: `api/devices/create.php`, `api/esl/approve.php`, `api/index.php`, `api/priceview/sync-now.php`, `api/priceview/display-template.php`, `api/priceview/template-utils.php` (OK)
+  - JS syntax: `DeviceDetail.js`, `DeviceList.js`, `IntegrationSettings.js`, `PlaylistList.js`, `player.js` (OK)
+  - Kotlin compile: `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - APK build: `./gradlew.bat publishDebugApk` (OK)
+  - JSON validity: `downloads/update.json`, `public/downloads/update.json` parsed successfully.
+- Risk/Follow-up:
+  - Historical branchless devices remain branchless; manual one-time branch assignment may still be required for old records.
+- Backup/restore safety:
+  - Backups created: `.temp-backups/branch_playlist_fix_20260322_033516/`, `.temp-backups/priceview_release_20260322_034241/`.
+## 2026-03-22 - Finalization notes after release commits
+- Additional commits pushed:
+  - `7ca72f7` Tune PriceView template missing-image fallback sizing
+  - `f164050` Ensure template fallback layer stays above media region
+- Server pull/deploy repeated after these commits; server HEAD now `f164050`.
+- Live verification repeated:
+  - `https://hub.omnexcore.com/downloads/update.json` shows `com.omnex.priceview` = `1.0.5` (`versionCode 6`), player remains `2.9.22` (`versionCode 51`).
+  - `https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=6` returns APK content headers.
+- Residual local observation:
+  - A recurring local working-tree churn continues on `public/priceview-templates/*-view-overlay.html` even after commit/push; server state is deployed from pushed commits.
+## 2026-03-22 - User-confirmed final template pass
+- User note: "ben degistirdim, simdi atabilirsin".
+- Actions:
+  - Committed final template pass: `e8395b0` (`Apply final PriceView template adjustments`).
+  - Pushed to `origin/main`.
+  - Pulled on server and rebuilt `app` container.
+- Verification:
+  - Server HEAD: `e8395b0`
+  - `omnex-app-1` healthy after rebuild.
+  - Live `update.json` still serves PriceView `1.0.5 / 6` and Player `2.9.22 / 51`.
+## 2026-03-22 - Re-deploy requested PriceView templates
+- Request: Re-send updated template themes to server after user-side adjustments and working validation.
+- Changes:
+  - Committed latest `public/priceview-templates/*.html` updates (product + not-found overlays).
+  - Commit: `07cb49f` (`Sync latest PriceView template updates`).
+- Git/Deploy:
+  - Pushed `main` to GitHub.
+  - Server pull on `/opt/omnex-hub` completed, HEAD=`07cb49f`.
+  - Rebuilt/restarted app container via `cd /opt/omnex-hub/deploy && docker compose up -d --build app`.
+  - Verified `omnex-app-1` is healthy.
+- Checks run:
+  - No PHP/JS/Kotlin source changed in this step (HTML template-only update); applicable QUICK_CHECKS entries not triggered.
+- Risk/Follow-up:
+  - Browser/device cache may need refresh to reflect updated HTML templates immediately.
+## 2026-03-22 - PriceView not-found overlay bottom alignment (APK-side)
+- Request: In APK, "urun bulunamadi" overlays should open from bottom like product-found overlay; currently appears from top.
+- Changes:
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`
+    - Updated `prepareHtmlForRender(...)` to inject bottom-alignment preload CSS for both product and not-found HTML templates (instead of product-only).
+    - Kept image-animation suppression under product-only CSS block.
+- Files changed:
+  - Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt
+  - .codex/CHANGE_MEMORY.md
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - This is APK runtime behavior; effect appears on devices after APK release/update.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/notfound_overlay_pos_20260322_041558/`.
+  - Temporary template mass-edit attempt was rolled back from `.temp-backups/notfound_templates_bottom_20260322_041826/` to avoid affecting user-side theme edits.
+## 2026-03-22 - PriceView v1.0.6 release + template publish
+- Request: Commit/push/pull with APK assemble, update.json version bump, and publish latest PriceView themes to server.
+- Changes:
+  - `Omnex-PriceView/app/build.gradle`: bumped PriceView to `versionCode 7`, `versionName 1.0.6`.
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/overlay/PriceViewOverlayManager.kt`: not-found HTML overlay bottom alignment behavior stabilized.
+  - `public/priceview-templates/*.html`: latest user-updated product/not-found theme set included for publish.
+  - `downloads/omnex-priceview.apk`, `public/downloads/omnex-priceview.apk`: rebuilt via `./gradlew.bat publishDebugApk`.
+  - `downloads/update.json`, `public/downloads/update.json`: updated only `com.omnex.priceview` block to `1.0.6 / 7`, URL `...omnex-priceview.apk?v=7`, SHA256 `0d4c56f1e0170c8f8ef4dfa1019824034bb2d2d09853f29c896c1c5c42d85ba3`.
+- Checks run:
+  - `./gradlew.bat publishDebugApk` (OK)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - Device-side template cache may require forced sync/reopen to pick up newest theme HTML.
+  - Existing Gradle/Kotlin warnings remain non-blocking and pre-existing.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/release_20260322_042345/`.

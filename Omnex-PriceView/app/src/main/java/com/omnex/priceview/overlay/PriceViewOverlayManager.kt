@@ -683,8 +683,15 @@ class PriceViewOverlayManager(
     }
 
     private fun prepareHtmlForRender(html: String, isProductTemplate: Boolean): String {
-        if (!isProductTemplate) {
-            return html
+        val productOnlyCss = if (isProductTemplate) {
+            """
+            [data-bind="image_url"],.pv-img-area img,img{
+              animation:none !important;
+              transition:none !important;
+            }
+            """.trimIndent()
+        } else {
+            ""
         }
 
         val preloadStyle = """
@@ -708,6 +715,7 @@ class PriceViewOverlayManager(
               width:min(100%,1280px) !important;
               margin:0 auto !important;
             }
+            $productOnlyCss
             </style>
         """.trimIndent()
 

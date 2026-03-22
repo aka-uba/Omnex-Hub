@@ -6,20 +6,79 @@
 <title>PriceView - Resepsiyon - Urun Bulunamadi</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
+  .pv-barcode-truncate{max-width:15ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
   html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important;  }
   /* Mobile responsive */
+  /* Mobile responsive - comprehensive */
   @media (max-width:768px) {
     .pv-card { padding:10px !important; }
-    .pv-card-inner { padding:14px !important; gap:14px !important; }
+    .pv-card-inner { padding:14px !important; gap:12px !important; }
     .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
     .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
-    .pv-price { font-size:48px !important; }
-    .pv-title { font-size:28px !important; }
+    .pv-price { font-size:42px !important; }
+    .pv-title { font-size:26px !important; }
     .pv-grid-bottom { grid-template-columns:1fr !important; }
+    /* Description */
+    [data-bind="description"] { font-size:15px !important; }
+    /* Brand */
+    [data-bind="brand"] { font-size:13px !important; }
+    /* Barcode */
+    [data-bind="barcode"] { font-size:17px !important; letter-spacing:1px !important; }
+    /* Badge pills */
+    [style*="border-radius:999px"] { font-size:11px !important; padding:7px 10px !important; }
+    /* KDV, Vadeli pills */
+    [style*="border-radius:14px"] { font-size:13px !important; padding:7px 10px !important; }
+    /* Old price */
+    [data-bind="previous_price"] { font-size:17px !important; }
+    /* Currency symbol */
+    [style*="font-size:26px"][style*="font-weight:800"] { font-size:20px !important; }
+    /* Header company/branch */
+    [data-bind="company_name"] { font-size:20px !important; }
+    [data-bind="branch_name"] { font-size:15px !important; }
+    /* Barcode label */
+    [style*="letter-spacing:1.4px"][style*="text-transform:uppercase"] { font-size:10px !important; }
+    /* Close button */
+    [title="Kapat"] { width:30px !important; height:30px !important; font-size:14px !important; }
+    /* Fallback icon */
+    .pv-missing-image-dot { width:160px !important; height:160px !important; font-size:80px !important; }
+    /* Print button */
+    [onclick*="printSection"] { font-size:12px !important; padding:10px 14px !important; min-width:140px !important; }
+    /* Grid info boxes */
+    .pv-grid-bottom > div { padding:10px !important; }
+    .pv-grid-bottom [style*="font-size:22px"] { font-size:17px !important; }
   }
   @media (max-width:480px) {
-    .pv-price { font-size:38px !important; }
-    .pv-title { font-size:24px !important; }
+    .pv-card { padding:8px !important; }
+    .pv-card-inner { padding:10px !important; gap:10px !important; }
+    .pv-price { font-size:32px !important; }
+    .pv-title { font-size:22px !important; }
+    [data-bind="description"] { font-size:13px !important; }
+    [data-bind="brand"] { font-size:11px !important; }
+    [data-bind="barcode"] { font-size:15px !important; }
+    [data-bind="previous_price"] { font-size:14px !important; }
+    [data-bind="company_name"] { font-size:16px !important; }
+    [data-bind="branch_name"] { font-size:12px !important; }
+    [style*="border-radius:14px"] { font-size:11px !important; padding:6px 8px !important; }
+    [style*="font-size:26px"][style*="font-weight:800"] { font-size:16px !important; }
+    .pv-missing-image-dot { width:120px !important; height:120px !important; font-size:60px !important; }
+    /* Not-found heading */
+    [style*="font-size:42px"] { font-size:26px !important; }
+    [style*="font-size:44px"] { font-size:26px !important; }
+    /* Not-found description */
+    [style*="font-size:20px"][style*="font-weight:600"] { font-size:14px !important; }
+    /* Info card emoji */
+    [style*="font-size:110px"] { font-size:70px !important; }
+    [style*="font-size:100px"] { font-size:60px !important; }
+    [style*="font-size:108px"] { font-size:70px !important; }
+    /* Prevent text overflow */
+    .pv-card-inner { overflow:hidden !important; word-break:break-word !important; }
+  }
+  @media (max-width:360px) {
+    .pv-price { font-size:28px !important; }
+    .pv-title { font-size:18px !important; }
+    [data-bind="company_name"] { font-size:14px !important; }
+    [data-bind="branch_name"] { font-size:11px !important; }
+    [data-bind="description"] { font-size:12px !important; }
   }
 </style>
 </head>
@@ -38,7 +97,7 @@
           <div style="margin-top:16px;font-size:42px;line-height:1.05;font-weight:900;color:#78350f;">Bilgi bulunamadı</div>
           <div style="margin-top:12px;font-size:20px;line-height:1.6;color:#475569;font-weight:600;">Aranan hizmet veya bilgi sisteme kayıtlı değildir.</div>
           <div style="margin-top:18px;display:flex;gap:12px;flex-wrap:wrap;">
-            <div style="padding:12px 16px;border-radius:16px;background:#b45309;color:#fff;font-size:17px;font-weight:900;">Kod: <span data-bind="barcode">—</span></div>
+            <div style="padding:12px 16px;border-radius:16px;background:#b45309;color:#fff;font-size:17px;font-weight:900;">Kod: <span data-bind="barcode" class="pv-barcode-truncate">—</span></div>
             <div style="padding:12px 16px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;color:#334155;font-size:17px;font-weight:800;">Saat: <span data-bind="timestamp">--:--</span></div>
           </div>
         </div>
