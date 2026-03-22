@@ -8360,4 +8360,16 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Many untracked backup/tmp files remain in working tree and are intentionally excluded.
 - Backup/restore safety:
-  - No destructive operation; existing `.temp-backups/` snapshots preserved.
+  - No destructive operation; existing `.temp-backups/` snapshots preserved.## 2026-03-23 - Mobile fallback overlap fix without changing per-theme icon design
+- Request: Keep each template's own icon style, but fix mobile overlap root causes only.
+- Changes:
+  - Updated 29 templates under `public/priceview-templates/`.
+  - Removed `hideDecorations(...)` calls from fallback show/hide flow so image background card/decor remains visible when product image is missing.
+  - Added `.pv-img-area{min-height:220px}` to prevent fallback icon from overflowing into text area on mobile.
+  - Did **not** alter `dot.innerHTML` icon assignments (theme-specific icon design preserved).
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Changes are local now; commit/push/deploy not run in this step.
+- Backup/restore safety:
+  - Backup created before bulk edit: `.temp-backups/priceview_mobile_fallback_layout_fix_20260323_025417/`

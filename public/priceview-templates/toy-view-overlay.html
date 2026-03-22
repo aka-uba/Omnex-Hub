@@ -83,6 +83,7 @@
   .pv-missing-image-wrap{display:none;align-items:center;justify-content:center;flex:0.8 1 240px;width:100%;min-height:220px;position:relative;z-index:5}
   .pv-missing-image-wrap.active{display:flex}
   .pv-missing-image-dot{width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#bfdbfe 0%,#e0e7ff 48%,rgba(224,231,255,.2) 70%);display:flex;align-items:center;justify-content:center;font-size:108px;line-height:1}
+  .pv-img-area{min-height:220px}
 </style>
 </head>
 <body>
@@ -248,7 +249,6 @@ window.PriceView = {
     if(!wrap){ return; }
     wrap.classList.add('active');
     wrap.style.display = 'flex';
-    hideDecorations(img.parentElement, true);
     img.style.display = 'none';
     img.style.visibility = 'hidden';
   }
@@ -260,7 +260,6 @@ window.PriceView = {
         wrap.classList.remove('active');
         wrap.style.display = 'none';
       }
-      hideDecorations(parent, false);
     }
     if(img){
       img.style.display = 'block';
