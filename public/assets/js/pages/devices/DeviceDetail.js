@@ -1649,6 +1649,10 @@ export class DeviceDetailPage {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> G\u00FCncelleniyor...';
             }
+            // Always persist current device template override first, so sync uses latest selection.
+            await this.app.api.put(`/devices/${this.deviceId}/priceview-settings`, {
+                display_template_override: document.getElementById('pv-display-template-override')?.value || null
+            });
             await this.app.api.post('/priceview/sync-now', {
                 device_id: this.deviceId,
                 source: 'device_detail',

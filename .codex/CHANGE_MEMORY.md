@@ -7718,3 +7718,15 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - If device-specific override is not saved or is same as effective template, sync command will not change visual theme by design.
 - Backup/restore safety:
   - Backup created: `.temp-backups/theme_sync_fix_20260322_170014/`.
+## 2026-03-22 - Device detail sync order fix (save override before sync-now)
+- Request: Ensure Device Detail theme sync applies the latest selected template, not stale value.
+- Changes:
+  - public/assets/js/pages/devices/DeviceDetail.js
+    - In priceviewSyncNow(), call PUT /devices/{id}/priceview-settings first to persist display_template_override.
+    - Then call POST /priceview/sync-now with force=true.
+- Checks run:
+  - node --check public/assets/js/pages/devices/DeviceDetail.js (OK)
+- Risk/Follow-up:
+  - If pre-save API fails, sync is intentionally blocked to avoid stale template sync.
+- Backup/restore safety:
+  - Backup used: .temp-backups/device_sync_order_fix_20260322_173007/DeviceDetail.js.bak.
