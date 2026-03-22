@@ -8273,3 +8273,18 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Backup/restore safety:
   - Backup created: `.temp-backups/priceview_template_fallback_fix_20260323_020541/`
   - During first attempt, encoding risk observed; files were restored from backup and reapplied using byte-preserving (Latin-1 roundtrip) edits.
+## 2026-03-23 - Commit/Push/Pull + deploy for fallback template fix
+- Request: "commit push pull yap" after found-template fallback correction.
+- Git:
+  - Commit: `e183432` - `Fix PriceView found-template fallback icon and remove colored fallback circle`
+  - Pushed to `origin/main` successfully.
+- Server deploy:
+  - Pulled on `/opt/omnex-hub` (fast-forward to `e183432`).
+  - Rebuilt/restarted app container: `docker compose -f deploy/docker-compose.yml up -d --build app`.
+- Live validation:
+  - `restaurant-view-overlay.html` now serves `background:transparent` for `.pv-missing-image-dot` and `dot.innerHTML = '&#128269;'`.
+  - `universal-notfound-view-overlay.html` intentionally unchanged (still has notfound-specific fallback markup).
+- Checks run:
+  - `php -l index.php` (OK; quick-check minimum syntax validation)
+- Risk/Follow-up:
+  - None.
