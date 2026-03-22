@@ -136,16 +136,19 @@ window.PriceView = {
   function showFallback(img){
     var wrap = ensureFallback(img);
     if(!wrap){ return; }
-    /* themed via CSS */
     wrap.classList.add('active');
     img.style.display = 'none';
     img.style.visibility = 'hidden';
+    var bg = img.parentElement && img.parentElement.querySelector('div[style*="position:absolute"]');
+    if(bg){ bg.style.display = 'none'; }
   }
   function showImage(img){
     var parent = img.parentElement;
     if(parent){
       var wrap = parent.querySelector(':scope > .pv-missing-image-wrap');
       if(wrap){ wrap.classList.remove('active'); }
+      var bg = parent.querySelector('div[style*="position:absolute"]');
+      if(bg){ bg.style.display = ''; }
     }
     img.style.display = 'block';
     img.style.visibility = 'visible';
