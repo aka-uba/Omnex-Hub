@@ -26,6 +26,7 @@ if (!$user) {
 
 // Get active company ID
 $companyId = Auth::getActiveCompanyId();
+$activeBranchId = Auth::getActiveBranchId();
 
 if (empty($companyId)) {
     Response::badRequest('Active company context is required for device approval');
@@ -40,6 +41,7 @@ $name = trim($data['name'] ?? '');
 $groupId = $data['groupId'] ?? $data['group_id'] ?? null;
 $playlistId = $data['playlistId'] ?? $data['playlist_id'] ?? null;
 $storeId = $data['storeId'] ?? $data['store_id'] ?? null;
+$branchId = $data['branchId'] ?? $data['branch_id'] ?? null;
 $deviceType = $data['type'] ?? null; // Will fallback to sync_request.device_type if not provided
 $location = $data['location'] ?? null;
 $requestId = $data['request_id'] ?? null;
@@ -184,6 +186,22 @@ if ($groupId) {
 
     if (!$group) {
         Response::badRequest('Invalid device group');
+    }
+}
+
+if ($branchId === '') {
+    $branchId = $activeBranchId ?: null;
+}
+if (empty($branchId) && !empty($activeBranchId)) {
+    $branchId = $activeBranchId;
+}
+if ($branchId) {
+    $branch = $db->fetch(
+        "SELECT id FROM branches WHERE id = ? AND company_id = ?",
+        [$branchId, $companyId]
+    );
+    if (!$branch) {
+        Response::badRequest('Invalid branch');
     }
 }
 
@@ -333,6 +351,7 @@ try {
         $updatePayload = [
             'name' => $name,
             'group_id' => $groupId,
+            'branch_id' => $branchId ?? ($targetDevice['branch_id'] ?? null),
             'store_id' => $storeId,
             'type' => $actualDeviceType,
             'model' => $originalType,
@@ -358,12 +377,13 @@ try {
         $db->update('devices', $updatePayload, 'id = ? AND company_id = ?', [$deviceId, $companyId]);
     } else {
         $db->query(
-            "INSERT INTO devices (id, company_id, group_id, store_id, name, type, model, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+            "INSERT INTO devices (id, company_id, group_id, branch_id, store_id, name, type, model, mac_address, ip_address, device_id, fingerprint, manufacturer, firmware_version, screen_width, screen_height, status, location, metadata, communication_mode, mqtt_client_id, mqtt_topic, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'offline', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
             [
                 $deviceId,
                 $companyId,
                 $groupId,
+                $branchId,
                 $storeId,
                 $name,
                 $actualDeviceType,
@@ -477,6 +497,7 @@ try {
             'type' => $device['type'],
             'status' => $device['status'],
             'groupId' => $device['group_id'],
+            'branchId' => $device['branch_id'] ?? null,
             'groupName' => $device['group_name'],
             'screenWidth' => $device['screen_width'],
             'screenHeight' => $device['screen_height'],

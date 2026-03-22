@@ -6,15 +6,7 @@
 <title>PriceView - Beyaz Esya - Urun Bulunamadi</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important; min-height:100vh; }
-  @keyframes slideUp {
-    from { opacity:0; transform:translateY(42px); }
-    to { opacity:1; transform:translateY(0); }
-  }
-  @keyframes imgSlideUp {
-    from { opacity:0; transform:translateY(36px) scale(.94); }
-    to { opacity:1; transform:translateY(0) scale(1); }
-  }
+  html, body { font-family:Arial,Helvetica,sans-serif; background:transparent !important; background-color:transparent !important; padding:12px !important;  }
   /* Mobile responsive */
   @media (max-width:768px) {
     .pv-card { padding:10px !important; }
@@ -35,7 +27,7 @@
 <div class="pv-card" style="border-radius:28px;padding:16px;background:linear-gradient(145deg,#1e3a5f 0%,#0f172a 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:22px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:14px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:16px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
-        <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;transition:all .2s ease;flex-shrink:0;" onmouseenter="this.style.background='rgba(239,68,68,.85)';this.style.color='#fff';this.style.transform='scale(1.1)'" onmouseleave="this.style.background='rgba(255,255,255,.12)';this.style.color='rgba(255,255,255,.65)';this.style.transform='scale(1)'" onmousedown="this.style.transform='scale(.92)'" onmouseup="this.style.transform='scale(1.1)'">&#10005;</button>
+        <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;flex-shrink:0;">&#10005;</button>
       </div>
       <div class="pv-card-inner" class="pv-card-inner" style="display:flex;gap:20px;flex-wrap:wrap;min-height:260px;border-radius:28px;padding:28px;background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 52%,#ffffff 100%);align-items:center;">
         <div class="pv-img-area" style="flex:0.8 1 240px;display:flex;justify-content:center;">
@@ -66,8 +58,21 @@ window.PriceView = {
         var val = p[key];
         if (val === undefined || val === null) return;
         if (el.tagName === 'IMG') {
-          el.src = val;
-          el.style.display = val ? 'block' : 'none';
+          if (val && val.trim()) {
+            el.src = val;
+            el.style.display = 'block';
+            el.onerror = function() {
+              this.style.display = 'none';
+              var fb = document.querySelector('.pv-img-fallback');
+              if (fb) fb.style.display = 'flex';
+            };
+            var fb = document.querySelector('.pv-img-fallback');
+            if (fb) fb.style.display = 'none';
+          } else {
+            el.style.display = 'none';
+            var fb = document.querySelector('.pv-img-fallback');
+            if (fb) fb.style.display = 'flex';
+          }
         } else {
           el.textContent = val;
         }

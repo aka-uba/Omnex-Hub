@@ -533,7 +533,11 @@ export class PlaylistListPage {
         // Load all devices then filter for signage types
         let devices = [];
         try {
-            const response = await this.app.api.get('/devices');
+            const activeBranchId = this.app?.state?.get('activeBranch')?.id || null;
+            const response = await this.app.api.get('/devices', {
+                per_page: 500,
+                ...(activeBranchId ? { branch_id: activeBranchId } : {})
+            });
             const allDevices = response.data || [];
 
             // Filter for signage-compatible devices (tv is mapped from android_tv/web_display in API)

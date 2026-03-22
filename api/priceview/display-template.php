@@ -69,4 +69,3 @@ try {
 } catch (Throwable $e) {
     Response::error('Display template error: ' . $e->getMessage(), 500);
 }
-

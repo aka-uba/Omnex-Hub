@@ -1643,13 +1643,16 @@ export class DeviceDetailPage {
      * Trigger PriceView sync
      */
     async priceviewSyncNow() {
-        // Sync runs on-device via WorkManager. This button refreshes status info.
         try {
             const btn = document.getElementById('pv-sync-now-btn');
             if (btn) {
                 btn.disabled = true;
                 btn.innerHTML = '<i class="ti ti-loader animate-spin"></i> G\u00FCncelleniyor...';
             }
+            await this.app.api.post('/priceview/sync-now', {
+                device_id: this.deviceId,
+                source: 'device_detail'
+            });
             await this.loadPriceViewSettings();
             Toast.success('Durum g\u00FCncellendi');
         } catch (error) {

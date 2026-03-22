@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
@@ -89,6 +90,7 @@ open class MainActivity : AppCompatActivity() {
         private const val REQUEST_NOTIFICATIONS_PERMISSION = 4002
         private const val REQUEST_CAMERA_PERMISSION = 4003
         private const val NOTIFICATION_CHANNEL_ID = "omnex_player_commands"
+        private const val BARCODE_SCAN_DEBOUNCE_MS = 900L
         private var notificationIdCounter = 1000
     }
 
@@ -123,6 +125,9 @@ open class MainActivity : AppCompatActivity() {
     private val barcodeBufferHandler = android.os.Handler(Looper.getMainLooper())
     private var barcodeBufferRunnable: Runnable? = null
     private var hardwareScannerReceiver: android.content.BroadcastReceiver? = null
+    private val barcodeLookupInFlight = AtomicBoolean(false)
+    private var lastHandledBarcode: String = ""
+    private var lastHandledBarcodeAtMs: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -1568,6 +1573,23 @@ open class MainActivity : AppCompatActivity() {
             }
         }
 
+        /**
+         * Called from player command flow to trigger immediate PriceView sync.
+         * Returns true when request is accepted.
+         */
+        @JavascriptInterface
+        fun triggerPriceViewSyncNow(): Boolean {
+            return try {
+                activity.runOnUiThread {
+                    activity.triggerPriceViewInstantSync("remote_command")
+                }
+                true
+            } catch (e: Exception) {
+                android.util.Log.w("PriceView", "triggerPriceViewSyncNow failed: ${e.message}")
+                false
+            }
+        }
+
         @JavascriptInterface
         fun getDeviceInfo(): String {
             return """
@@ -2094,6 +2116,15 @@ open class MainActivity : AppCompatActivity() {
         applyOverlayDisplayConfig()
     }
 
+    private fun triggerPriceViewInstantSync(source: String) {
+        try {
+            SyncWorker.syncNow(this)
+            android.util.Log.i("PriceView", "Instant sync enqueued (source=$source)")
+        } catch (e: Exception) {
+            android.util.Log.w("PriceView", "Instant sync enqueue failed (source=$source): ${e.message}")
+        }
+    }
+
     private fun applyOverlayDisplayConfig() {
         val config = priceViewConfig ?: return
         priceViewOverlayManager?.applyDisplayTemplates(
@@ -2510,8 +2541,27 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun handleBarcodeScanned(barcode: String) {
-        if (barcode.isBlank()) return
+    fun handleBarcodeScanned(scannedBarcode: String) {
+        val normalizedBarcode = scannedBarcode.trim()
+        if (normalizedBarcode.isBlank()) return
+
+        val nowMs = SystemClock.elapsedRealtime()
+        if (normalizedBarcode == lastHandledBarcode &&
+            (nowMs - lastHandledBarcodeAtMs) <= BARCODE_SCAN_DEBOUNCE_MS
+        ) {
+            android.util.Log.d("PriceView", "Duplicate barcode ignored in debounce window: $normalizedBarcode")
+            return
+        }
+
+        if (!barcodeLookupInFlight.compareAndSet(false, true)) {
+            android.util.Log.d("PriceView", "Barcode lookup already in progress, ignored: $normalizedBarcode")
+            return
+        }
+
+        lastHandledBarcode = normalizedBarcode
+        lastHandledBarcodeAtMs = nowMs
+
+        val barcode = normalizedBarcode
         applyOverlayDisplayConfig()
 
         // Mute + pause ALL signage media when barcode scanned
@@ -2601,6 +2651,8 @@ open class MainActivity : AppCompatActivity() {
                 android.util.Log.e("PriceView", "Barcode lookup error: $barcode", e)
                 priceViewOverlayManager?.show()
                 priceViewOverlayManager?.showNotFound(barcode)
+            } finally {
+                barcodeLookupInFlight.set(false)
             }
         }
     }

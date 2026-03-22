@@ -6,6 +6,7 @@
 $db = Database::getInstance();
 $user = Auth::user();
 $companyId = Auth::getActiveCompanyId();
+$activeBranchId = Auth::getActiveBranchId();
 
 // Valid device types
 $validTypes = ['esl', 'esl_rtos', 'esl_android', 'hanshow_esl', 'android_tv', 'panel', 'web_display', 'tablet', 'mobile', 'tv', 'stream_player', 'priceview'];
@@ -39,6 +40,23 @@ $validator = Validator::make($request->all(), [
 
 if ($validator->fails()) {
     Response::validationError($validator->getErrors());
+}
+
+$branchId = $request->input('branch_id');
+if ($branchId === '') {
+    $branchId = $activeBranchId ?: null;
+}
+if (empty($branchId) && !empty($activeBranchId)) {
+    $branchId = $activeBranchId;
+}
+if (!empty($branchId)) {
+    $branchExists = $db->fetch(
+        "SELECT id FROM branches WHERE id = ? AND company_id = ?",
+        [$branchId, $companyId]
+    );
+    if (!$branchExists) {
+        Response::error('Gecersiz sube secimi', 422);
+    }
 }
 
 // Check duplicate device_id (serial number) if provided
@@ -113,6 +131,7 @@ if ($deviceProfile && is_string($deviceProfile)) {
 $insertData = [
     'company_id' => $companyId,
     'group_id' => $request->input('group_id'),
+    'branch_id' => $branchId,
     'name' => $request->input('name'),
     'type' => $dbType,
     'device_id' => $deviceId,

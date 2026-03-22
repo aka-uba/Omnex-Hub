@@ -1338,6 +1338,7 @@ export class DeviceListPage {
     showDeviceModal(device = null) {
         const isEdit = !!device;
         const basePath = window.OmnexConfig?.basePath || '';
+        const activeBranchId = this.app?.state?.get('activeBranch')?.id || '';
 
         const groupOptions = this.deviceGroups.map(g =>
             `<option value="${g.id}" ${device?.group_id === g.id ? 'selected' : ''}>${escapeHTML(g.name)}</option>`
@@ -1438,7 +1439,7 @@ export class DeviceListPage {
                     <select id="device-branch" class="form-select">
                         <option value="">${this.__('form.placeholders.selectBranch')}</option>
                         ${this.branches.map(b => `
-                            <option value="${b.id}" ${device?.branch_id === b.id ? 'selected' : ''}>
+                            <option value="${b.id}" ${(device?.branch_id === b.id || (!device && activeBranchId === b.id)) ? 'selected' : ''}>
                                 ${escapeHTML(b.name)} (${b.type === 'region' ? this.__('branches.region') : this.__('branches.branch')})
                             </option>
                         `).join('')}
@@ -1826,8 +1827,12 @@ export class DeviceListPage {
     }
 
     showApproveModal(device) {
+        const activeBranchId = this.app?.state?.get('activeBranch')?.id || '';
         const groupOptions = this.deviceGroups.map(g =>
             `<option value="${g.id}">${escapeHTML(g.name)}</option>`
+        ).join('');
+        const branchOptions = this.branches.map(b =>
+            `<option value="${b.id}" ${activeBranchId === b.id ? 'selected' : ''}>${escapeHTML(b.name)}</option>`
         ).join('');
 
         // Detect incoming device type for pre-selection
@@ -1870,6 +1875,13 @@ export class DeviceListPage {
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">${this.__('form.fields.branch')}</label>
+                    <select id="approve-device-branch" class="form-select">
+                        <option value="">${this.__('form.placeholders.selectBranch')}</option>
+                        ${branchOptions}
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">${this.__('form.fields.location')}</label>
                     <input type="text" id="approve-device-location" class="form-input"
                         value="${escapeHTML(device.location || '')}" placeholder="${this.__('form.placeholders.location')}">
@@ -1899,6 +1911,7 @@ export class DeviceListPage {
         const name = document.getElementById('approve-device-name')?.value?.trim();
         const deviceType = document.getElementById('approve-device-type')?.value || '';
         const group_id = document.getElementById('approve-device-group')?.value || null;
+        const branch_id = document.getElementById('approve-device-branch')?.value || null;
         const location = document.getElementById('approve-device-location')?.value?.trim();
 
         if (!name) {
@@ -1913,6 +1926,7 @@ export class DeviceListPage {
                 name: name,
                 type: deviceType,
                 group_id: group_id,
+                branch_id: branch_id,
                 location: location
             });
             Toast.success(this.__('toast.approved'));

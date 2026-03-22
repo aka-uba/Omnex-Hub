@@ -3,9 +3,11 @@ package com.omnex.priceview.overlay
 import android.animation.ObjectAnimator
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -44,7 +46,8 @@ class PriceViewOverlayManager(
 ) {
     companion object {
         private const val TAG = "PriceViewOverlay"
-        private const val ANIMATION_DURATION = 300L
+        private const val ANIMATION_DURATION = 380L
+        private const val DUPLICATE_RENDER_WINDOW_MS = 900L
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -57,6 +60,9 @@ class PriceViewOverlayManager(
     private var notFoundTemplateHtml: String? = null
     private var companyName: String? = null
     private var branchName: String? = null
+    private var lastRenderedProductKey: String = ""
+    private var lastRenderedProductAtMs: Long = 0L
+    private val htmlUiBridge = HtmlUiBridge()
 
     val isVisible: Boolean get() = _isVisible
 
@@ -157,6 +163,12 @@ class PriceViewOverlayManager(
      * Show product info after successful barcode scan.
      */
     fun showProduct(product: ProductEntity) {
+        if (isDuplicateProductRender(product)) {
+            resetTimeout()
+            Log.d(TAG, "Skipping duplicate product render: ${product.barcode ?: product.sku}")
+            return
+        }
+
         currentProduct = product
         cameraPreview.visibility = View.GONE
         scanPrompt.visibility = View.GONE
@@ -177,12 +189,7 @@ class PriceViewOverlayManager(
         productHtmlWebView?.visibility = View.GONE
         printButton.visibility = if (config.printEnabled) View.VISIBLE else View.GONE
 
-        productCard.translationY = 100f
-        ObjectAnimator.ofFloat(productCard, "translationY", 100f, 0f).apply {
-            duration = ANIMATION_DURATION
-            interpolator = DecelerateInterpolator()
-            start()
-        }
+        animateSlideUp(productCard)
 
         startTimeout()
         Log.d(TAG, "Showing product (native): ${product.name} (${product.barcode})")
@@ -285,7 +292,13 @@ class PriceViewOverlayManager(
         productHtmlWebView?.visibility = View.VISIBLE
         printButton.visibility = if (config.printEnabled) View.VISIBLE else View.GONE
 
-        loadHtml(productHtmlWebView, html, payload)
+        loadHtml(
+            productHtmlWebView,
+            html,
+            payload,
+            animateOnLoad = true,
+            isProductTemplate = true
+        )
         startTimeout()
         Log.d(TAG, "Showing product (html): ${product.name} (${product.barcode})")
     }
@@ -312,7 +325,13 @@ class PriceViewOverlayManager(
         notFoundView.visibility = View.GONE
         productCard.visibility = View.GONE
         notFoundHtmlWebView?.visibility = View.VISIBLE
-        loadHtml(notFoundHtmlWebView, html, payload)
+        loadHtml(
+            notFoundHtmlWebView,
+            html,
+            payload,
+            animateOnLoad = true,
+            isProductTemplate = false
+        )
     }
 
     private fun setupHtmlWebView(webView: WebView?) {
@@ -328,31 +347,69 @@ class PriceViewOverlayManager(
             displayZoomControls = false
             setSupportZoom(false)
         }
+        webView.addJavascriptInterface(htmlUiBridge, "PriceViewNative")
+        webView.addJavascriptInterface(htmlUiBridge, "AndroidBridge")
+        webView.addJavascriptInterface(htmlUiBridge, "Android")
         webView.visibility = View.GONE
     }
 
-    private fun loadHtml(webView: WebView?, html: String, payload: JSONObject) {
+    private fun loadHtml(
+        webView: WebView?,
+        html: String,
+        payload: JSONObject,
+        animateOnLoad: Boolean,
+        isProductTemplate: Boolean
+    ) {
         if (webView == null) return
+
+        webView.alpha = 0f
+        webView.translationY = 120f
+        webView.stopLoading()
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 val target = view ?: return
-                bindJsData(target, payload)
+                bindJsData(target, payload, isProductTemplate)
+                if (animateOnLoad) {
+                    animateSlideUp(target)
+                } else {
+                    target.alpha = 1f
+                    target.translationY = 0f
+                }
             }
         }
-        webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+        val preparedHtml = prepareHtmlForRender(html, isProductTemplate)
+        webView.loadDataWithBaseURL(null, preparedHtml, "text/html", "UTF-8", null)
     }
 
-    private fun bindJsData(webView: WebView, payload: JSONObject) {
+    private fun bindJsData(webView: WebView, payload: JSONObject, isProductTemplate: Boolean) {
         val companyEscaped = jsEscape(companyName ?: "")
         val branchEscaped = jsEscape(branchName ?: "")
         val payloadJson = payload.toString()
+        val templateKind = if (isProductTemplate) "product" else "not_found"
 
         val script = """
             (function(){
               try {
                 var data = $payloadJson;
+                var __pvTemplateKind = '$templateKind';
+
+                var __pvStyle = document.getElementById('__pv-runtime-style');
+                if (!__pvStyle) {
+                  __pvStyle = document.createElement('style');
+                  __pvStyle.id = '__pv-runtime-style';
+                  document.head.appendChild(__pvStyle);
+                }
+                var __pvCss = '';
+                __pvCss += '[data-action="close"],[data-action="print"],[title="Kapat"],[title="Close"],.pv-close,.pv-close-btn,.pv-print,.pv-print-btn{transition:none!important;animation:none!important;}';
+                __pvCss += 'button{transition:none!important;animation:none!important;}';
+                if (__pvTemplateKind === 'product') {
+                  __pvCss += '.pv-card{width:min(100%,1280px)!important;margin:0 auto!important;}';
+                  __pvCss += '[data-bind="image_url"],.pv-img-area img,img{animation:none!important;transition:none!important;}';
+                }
+                __pvStyle.textContent = __pvCss;
+
                 if (window.PriceView && typeof window.PriceView.setProduct === 'function') {
                   window.PriceView.setProduct(data);
                 }
@@ -362,6 +419,150 @@ class PriceViewOverlayManager(
                 if (window.PriceView && typeof window.PriceView.setTimestamp === 'function') {
                   window.PriceView.setTimestamp();
                 }
+
+                function __pvCreateImageFallback(img) {
+                  if (!img) return null;
+                  var host = img.parentElement || img;
+                  var existing = host.querySelector('[data-pv-img-fallback="1"]');
+                  if (existing) return existing;
+
+                  var outer = document.createElement('div');
+                  outer.setAttribute('data-pv-img-fallback', '1');
+                  outer.style.cssText = 'flex: 0.8 1 240px; display: none; justify-content: center; opacity: 1;';
+
+                  var bubble = document.createElement('div');
+                  bubble.style.cssText = 'width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fed7aa 0%,#ffedd5 60%);display:flex;align-items:center;justify-content:center;font-size:90px;';
+                  bubble.innerHTML = '&#128269;';
+
+                  outer.appendChild(bubble);
+                  host.appendChild(outer);
+                  return outer;
+                }
+
+                function __pvToggleImageFallback(img, hasValidImage) {
+                  if (!img) return;
+                  var fallback = __pvCreateImageFallback(img);
+                  if (hasValidImage) {
+                    img.style.display = 'block';
+                    if (fallback) fallback.style.display = 'none';
+                  } else {
+                    img.style.display = 'none';
+                    if (fallback) fallback.style.display = 'flex';
+                  }
+                }
+
+                function __pvApplyImageFallback() {
+                  var imgs = document.querySelectorAll('img[data-bind="image_url"], [data-bind="image_url"]');
+                  for (var i = 0; i < imgs.length; i++) {
+                    var img = imgs[i];
+                    if (!img || String(img.tagName || '').toLowerCase() !== 'img') continue;
+
+                    if (!(img.dataset && img.dataset.pvImgFallbackBound === '1')) {
+                      if (img.dataset) img.dataset.pvImgFallbackBound = '1';
+                      img.addEventListener('load', function(ev) {
+                        var target = ev && ev.target;
+                        var ok = !!(target && target.naturalWidth > 0);
+                        __pvToggleImageFallback(target, ok);
+                      });
+                      img.addEventListener('error', function(ev) {
+                        var target = ev && ev.target;
+                        __pvToggleImageFallback(target, false);
+                      });
+                    }
+
+                    var src = (img.getAttribute('src') || '').trim();
+                    var validSrc = !!src && src !== 'null' && src !== 'undefined';
+                    if (!validSrc) {
+                      __pvToggleImageFallback(img, false);
+                      continue;
+                    }
+
+                    if (img.complete) {
+                      __pvToggleImageFallback(img, img.naturalWidth > 0);
+                    } else {
+                      __pvToggleImageFallback(img, true);
+                    }
+                  }
+                }
+
+                __pvApplyImageFallback();
+
+                function __pvCall(methodName) {
+                  var bridges = [window.PriceViewNative, window.AndroidBridge, window.Android];
+                  for (var i = 0; i < bridges.length; i++) {
+                    var b = bridges[i];
+                    if (b && typeof b[methodName] === 'function') {
+                      try { b[methodName](); return true; } catch (ignoreBridgeError) {}
+                    }
+                  }
+                  return false;
+                }
+
+                function __pvBindClick(el, methodName, flagName) {
+                  if (!el) return;
+                  if (el.dataset && el.dataset[flagName] === '1') return;
+                  if (el.dataset) el.dataset[flagName] = '1';
+                  __pvStripHover(el);
+                  el.addEventListener('click', function(ev) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    __pvCall(methodName);
+                  }, true);
+                }
+
+                function __pvStripHover(el) {
+                  if (!el) return;
+                  var attrs = ['onmouseenter','onmouseleave','onmouseover','onmouseout','onmousedown','onmouseup'];
+                  for (var ai = 0; ai < attrs.length; ai++) {
+                    if (el.hasAttribute && el.hasAttribute(attrs[ai])) {
+                      el.removeAttribute(attrs[ai]);
+                    }
+                  }
+                  if (el.style) {
+                    el.style.transition = 'none';
+                    el.style.animation = 'none';
+                  }
+                }
+
+                var closeTargets = document.querySelectorAll('[data-action="close"],[title="Kapat"],[title="Close"],.pv-close,.pv-close-btn');
+                for (var ci = 0; ci < closeTargets.length; ci++) {
+                  __pvBindClick(closeTargets[ci], 'closeOverlay', 'pvCloseBound');
+                }
+
+                var printTargets = document.querySelectorAll('[data-action="print"],.pv-print,.pv-print-btn');
+                for (var pi = 0; pi < printTargets.length; pi++) {
+                  __pvBindClick(printTargets[pi], 'printCurrentProduct', 'pvPrintBound');
+                }
+
+                var buttons = document.querySelectorAll('button,a,[role="button"]');
+                for (var bi = 0; bi < buttons.length; bi++) {
+                  var btn = buttons[bi];
+                  __pvStripHover(btn);
+                  var text = (btn.textContent || '').toLowerCase();
+                  if (text.indexOf('kapat') >= 0 || text.indexOf('close') >= 0) {
+                    __pvBindClick(btn, 'closeOverlay', 'pvCloseBound');
+                    continue;
+                  }
+                  if (text.indexOf('yazd') >= 0 || text.indexOf('print') >= 0) {
+                    __pvBindClick(btn, 'printCurrentProduct', 'pvPrintBound');
+                  }
+                }
+
+                if (window.PriceView && typeof window.PriceView === 'object') {
+                  window.PriceView.close = function() {
+                    if (!__pvCall('closeOverlay')) { return false; }
+                    return true;
+                  };
+                  window.PriceView.print = function() {
+                    if (!__pvCall('printCurrentProduct')) { return false; }
+                    return true;
+                  };
+                }
+
+                window.printSection = function() {
+                  if (!__pvCall('printCurrentProduct')) { return false; }
+                  return true;
+                };
               } catch (e) {}
             })();
         """.trimIndent()
@@ -481,10 +682,96 @@ class PriceViewOverlayManager(
             .replace("\r", "")
     }
 
+    private fun prepareHtmlForRender(html: String, isProductTemplate: Boolean): String {
+        if (!isProductTemplate) {
+            return html
+        }
+
+        val preloadStyle = """
+            <style id="__pv-preload-style">
+            html,body{
+              height:100% !important;
+              min-height:100% !important;
+              overflow:hidden !important;
+            }
+            body{
+              display:flex !important;
+              align-items:flex-end !important;
+              justify-content:center !important;
+              padding:12px !important;
+            }
+            *{
+              animation:none !important;
+              transition:none !important;
+            }
+            .pv-card{
+              width:min(100%,1280px) !important;
+              margin:0 auto !important;
+            }
+            </style>
+        """.trimIndent()
+
+        return if (html.contains("</head>", ignoreCase = true)) {
+            html.replace("</head>", "$preloadStyle</head>", ignoreCase = true)
+        } else {
+            "$preloadStyle$html"
+        }
+    }
+
+    private fun animateSlideUp(view: View) {
+        view.animate().cancel()
+        view.translationY = 120f
+        view.alpha = 0f
+        view.animate()
+            .translationY(0f)
+            .alpha(1f)
+            .setDuration(ANIMATION_DURATION)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+    }
+
+    private fun isDuplicateProductRender(product: ProductEntity): Boolean {
+        val key = when {
+            product.id.isNotBlank() -> product.id
+            !product.barcode.isNullOrBlank() -> product.barcode
+            !product.sku.isNullOrBlank() -> product.sku
+            else -> ""
+        }
+        if (key.isBlank()) {
+            return false
+        }
+
+        val now = SystemClock.elapsedRealtime()
+        val duplicate = key == lastRenderedProductKey && (now - lastRenderedProductAtMs) <= DUPLICATE_RENDER_WINDOW_MS
+        lastRenderedProductKey = key
+        lastRenderedProductAtMs = now
+        return duplicate
+    }
+
+    private inner class HtmlUiBridge {
+        @JavascriptInterface
+        fun closeOverlay() {
+            handler.post {
+                Log.d(TAG, "HTML bridge close requested")
+                hide()
+            }
+        }
+
+        @JavascriptInterface
+        fun printCurrentProduct() {
+            handler.post {
+                Log.d(TAG, "HTML bridge print requested")
+                currentProduct?.let { product ->
+                    onPrintRequested?.invoke(product)
+                }
+                resetTimeout()
+            }
+        }
+    }
+
     fun destroy() {
         cancelTimeout()
         handler.removeCallbacksAndMessages(null)
         currentProduct = null
     }
 }
-

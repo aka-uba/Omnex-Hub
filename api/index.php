@@ -1289,6 +1289,9 @@ $router->group(['prefix' => '/api/priceview', 'middleware' => ['auth']], functio
     $router->get('/template-presets', function($request) {
         require API_PATH . '/priceview/template-presets.php';
     });
+    $router->post('/sync-now', function($request) {
+        require API_PATH . '/priceview/sync-now.php';
+    });
 });
 
 // =====================================================

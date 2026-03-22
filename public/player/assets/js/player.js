@@ -6380,6 +6380,27 @@ class OmnexPlayer {
 
     // ==================== Command Processing ====================
 
+    async triggerNativePriceViewSyncNow() {
+        if (!this.isAndroidApp || !this.androidBridge) {
+            return false;
+        }
+
+        const syncFn = this.androidBridge.triggerPriceViewSyncNow;
+        if (typeof syncFn !== 'function') {
+            return false;
+        }
+
+        try {
+            const result = syncFn.call(this.androidBridge);
+            return result !== false;
+        } catch (error) {
+            if (this.debug) {
+                console.warn('[Player] triggerPriceViewSyncNow failed', error);
+            }
+            return false;
+        }
+    }
+
     /**
      * Process commands from server
      */
@@ -6482,6 +6503,7 @@ class OmnexPlayer {
                     case 'refresh':
                     case 'refresh_content':
                     case 'sync':
+                        await this.triggerNativePriceViewSyncNow();
                         this.showToast('İçerik yenileniyor...', 'info');
                         await this.syncContent({ forceRestart: true });
                         this.showNotification('İçerik Güncellendi', {

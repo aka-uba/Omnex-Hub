@@ -5369,7 +5369,10 @@ export class IntegrationSettingsPage {
                 btn.innerHTML = `<i class="ti ti-loader animate-spin"></i> ${this.__('integrations.priceview.buttons.syncNow')}`;
             }
 
-            // Sync is triggered on-device (WorkManager). This button refreshes status info.
+            await this.app.api.post('/priceview/sync-now', {
+                source: 'integration'
+            });
+
             await this.loadPriceviewSettings();
             Toast.success('Durum g\u00FCncellendi');
 
