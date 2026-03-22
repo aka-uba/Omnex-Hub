@@ -2113,7 +2113,7 @@ open class MainActivity : AppCompatActivity() {
         config.signageEnabled = data.optBoolean("signage_enabled", true)
 
         DisplayTemplateSyncManager(apiClient, config).applyConfigAndSyncTemplates(data)
-        applyOverlayDisplayConfig()
+        runOnUiThread { applyOverlayDisplayConfig() }
     }
 
     private fun triggerPriceViewInstantSync(source: String) {
@@ -2457,42 +2457,50 @@ open class MainActivity : AppCompatActivity() {
 
     fun triggerInitialSyncIfNeeded() {
         if (priceViewConfig?.isDeviceRegistered == true) {
-            // Fetch remote config SYNCHRONOUSLY at startup (block up to 5s)
-            // so overlay timeout, template ID, and other settings are ready before first use
-            try {
-                val config = priceViewConfig
-                val apiClient = priceViewApiClient
-                if (config != null && apiClient != null) {
-                    val latch = CountDownLatch(1)
-                    priceViewScope.launch(Dispatchers.IO) {
-                        try {
-                            val response = apiClient.get("/api/priceview/config")
-                            if (response.success) {
-                                val data = response.toJson()
-                                if (data != null) {
-                                    applyRemotePriceViewConfig(data)
-                                    android.util.Log.i(
-                                        "PriceView",
-                                        "Startup config: sync=${config.syncIntervalMinutes}min, timeout=${config.overlayTimeoutSeconds}s, " +
-                                            "template=${config.defaultTemplateId}, displayMode=${config.productDisplayMode}, displayTpl=${config.displayTemplateName}"
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.w("PriceView", "Startup config fetch failed (non-fatal)", e)
-                        } finally {
-                            latch.countDown()
-                        }
-                    }
-                    // Wait up to 5 seconds for config to be applied before proceeding
-                    latch.await(5, TimeUnit.SECONDS)
+            val config = priceViewConfig ?: return
+            val apiClient = priceViewApiClient
+
+            // Schedule periodic sync immediately with local config without blocking UI thread.
+            val initialInterval = config.syncIntervalMinutes.takeIf { it > 0 } ?: 30
+            priceViewScope.launch(Dispatchers.IO) {
+                try {
+                    SyncWorker.schedule(this@MainActivity, initialInterval)
+                } catch (e: Exception) {
+                    android.util.Log.w("PriceView", "Initial periodic sync schedule failed", e)
                 }
-            } catch (e: Exception) {
-                android.util.Log.w("PriceView", "Startup config wait interrupted (non-fatal)", e)
             }
 
-            val interval = priceViewConfig?.syncIntervalMinutes ?: 30
-            SyncWorker.schedule(this, interval)
+            // Fetch remote config asynchronously; if interval changes, reschedule background sync.
+            if (apiClient != null) {
+                priceViewScope.launch(Dispatchers.IO) {
+                    try {
+                        val previousInterval = config.syncIntervalMinutes.takeIf { it > 0 } ?: 30
+                        val response = apiClient.get("/api/priceview/config")
+                        if (response.success) {
+                            val data = response.toJson()
+                            if (data != null) {
+                                applyRemotePriceViewConfig(data)
+                                val updatedInterval = config.syncIntervalMinutes.takeIf { it > 0 } ?: 30
+                                if (updatedInterval != previousInterval) {
+                                    SyncWorker.schedule(this@MainActivity, updatedInterval)
+                                    android.util.Log.i(
+                                        "PriceView",
+                                        "Startup sync interval updated: ${previousInterval}min -> ${updatedInterval}min"
+                                    )
+                                }
+                                android.util.Log.i(
+                                    "PriceView",
+                                    "Startup config (async): sync=${config.syncIntervalMinutes}min, timeout=${config.overlayTimeoutSeconds}s, " +
+                                        "template=${config.defaultTemplateId}, displayMode=${config.productDisplayMode}, displayTpl=${config.displayTemplateName}"
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.w("PriceView", "Startup config fetch failed (non-fatal)", e)
+                    }
+                }
+            }
+
             priceViewScope.launch {
                 try {
                     val syncMeta = kotlinx.coroutines.withContext(Dispatchers.IO) {

@@ -9,12 +9,12 @@
                                           "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
                                       },
                  "com.omnex.priceview":  {
-                                             "versionCode":  9,
-                                             "versionName":  "1.0.8",
-                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=9",
-                                             "releaseNotes":  "- PriceView overlay acildiginda signage akisi artik tam pause olur (playlist + medya)\n- Overlay kapaninca kalan sure/mute durumu korunarak guvenli resume edilir\n- HTML/same-origin iframe video-audio arka planda calisma sorunu giderildi",
+                                             "versionCode":  10,
+                                             "versionName":  "1.0.9",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=10",
+                                             "releaseNotes":  "- Merkezi PriceView HTML şablonlarında resim fallback düzeltildi (URL varsa ikon görünmez, yalnızca URL yoksa gösterilir)\n- Fallback ikon konumu merkezlendi, duplicate/dekoratif arka katmanlar temizlendi\n- TV açılışında bloklayan senkron config beklemesi kaldırıldı (ANR riski azaltıldı)",
                                              "mandatory":  false,
-                                             "sha256":  "2a79e4a79ca155dc508bc3a4f3f5d05b4cd34b1fb7f2728c2426a1ae5124c992"
+                                             "sha256":  "40d59baae99c27c6e7cc991de8d5ea02ebbb26506cfb9bec6636acf8397f8f7f"
                                          }
              },
     "versionCode":  51,

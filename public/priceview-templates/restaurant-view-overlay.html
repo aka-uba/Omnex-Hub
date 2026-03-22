@@ -174,34 +174,61 @@ window.PriceView = {
     }
   }
 };
-/* pv_template_motion_fix_v2 */
+/* pv_template_motion_fix_v3 */
 (function(){
-  if(window.__pvTemplateMotionFixV2){ return; }
-  window.__pvTemplateMotionFixV2 = true;
+  if(window.__pvTemplateMotionFixV3){ return; }
+  window.__pvTemplateMotionFixV3 = true;
 
-
-  function isBadSrc(src){
-    var v = (src || '').trim().toLowerCase();
-    return !v || v === 'null' || v === 'undefined' || v === 'about:blank';
+  function normalizeSrc(src){
+    var raw = (src || '').trim();
+    var v = raw.toLowerCase();
+    if(!v || v === 'null' || v === 'undefined' || v === 'about:blank'){ return ''; }
+    return raw;
   }
   function ensureFallback(img){
     var parent = img && img.parentElement;
     if(!parent){ return null; }
+    try {
+      if(window.getComputedStyle && window.getComputedStyle(parent).position === 'static'){
+        parent.style.position = 'relative';
+      }
+    } catch(ignorePositionError){}
     var existing = parent.querySelector(':scope > .pv-missing-image-wrap');
     if(existing){ return existing; }
     var wrap = document.createElement('div');
     wrap.className = 'pv-missing-image-wrap';
+    wrap.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30;';
     var dot = document.createElement('div');
     dot.className = 'pv-missing-image-dot';
-    dot.textContent = '🔎';
+    dot.style.margin = '0 auto';
+    dot.innerHTML = '&#128269;';
     wrap.appendChild(dot);
     parent.appendChild(wrap);
     return wrap;
+  }
+  function hideDecorations(parent, hide){
+    if(!parent){ return; }
+    Array.prototype.forEach.call(parent.children || [], function(child){
+      if(!child){ return; }
+      if(child.classList && child.classList.contains('pv-missing-image-wrap')){ return; }
+      if(child.tagName && child.tagName.toLowerCase() === 'img'){ return; }
+      if(hide){
+        if(child.dataset && child.dataset.pvPrevDisplay === undefined){
+          child.dataset.pvPrevDisplay = child.style.display || '';
+        }
+        child.style.display = 'none';
+      } else if(child.dataset && child.dataset.pvPrevDisplay !== undefined){
+        child.style.display = child.dataset.pvPrevDisplay;
+        delete child.dataset.pvPrevDisplay;
+      }
+    });
   }
   function showFallback(img){
     var wrap = ensureFallback(img);
     if(!wrap){ return; }
     wrap.classList.add('active');
+    wrap.style.display = 'flex';
+    hideDecorations(img.parentElement, true);
     img.style.display = 'none';
     img.style.visibility = 'hidden';
   }
@@ -209,30 +236,29 @@ window.PriceView = {
     var parent = img.parentElement;
     if(parent){
       var wrap = parent.querySelector(':scope > .pv-missing-image-wrap');
-      if(wrap){ wrap.classList.remove('active'); }
+      if(wrap){
+        wrap.classList.remove('active');
+        wrap.style.display = 'none';
+      }
+      hideDecorations(parent, false);
     }
     img.style.display = 'block';
     img.style.visibility = 'visible';
   }
   function refreshImage(img){
     if(!img){ return; }
-    var src = img.getAttribute('src') || '';
-    if(isBadSrc(src)){ showFallback(img); return; }
-    if(img.complete){
-      if((img.naturalWidth || 0) > 0){ showImage(img); }
-      else { showFallback(img); }
-    }
+    var src = normalizeSrc(img.getAttribute('src') || '');
+    if(!src){ showFallback(img); return; }
+    // URL exists: do not show fallback while image is loading or delayed.
+    showImage(img);
   }
   function bindImage(img){
     if(!img || img.dataset.pvMissingBound === '1'){ return; }
     img.dataset.pvMissingBound = '1';
-    img.addEventListener('error', function(){ showFallback(img); }, { passive:true });
-    img.addEventListener('load', function(){
-      if((img.naturalWidth || 0) > 0){ showImage(img); }
-      else { showFallback(img); }
-    }, { passive:true });
+    img.addEventListener('load', function(){ showImage(img); }, { passive:true });
+    img.addEventListener('error', function(){ showImage(img); }, { passive:true });
     var obs = new MutationObserver(function(){ refreshImage(img); });
-    obs.observe(img, { attributes:true, attributeFilter:['src','style'] });
+    obs.observe(img, { attributes:true, attributeFilter:['src'] });
     refreshImage(img);
   }
   function applyAll(){
