@@ -193,6 +193,8 @@ class OmnexPlayer {
             expectedTickAt: 0,
             lastReason: ''
         };
+        this._nextContentSwitchAtMs = 0;
+        this._priceViewPauseState = null;
     }
 
     isLegacyProfile() {
@@ -3153,6 +3155,222 @@ class OmnexPlayer {
 
     // ==================== Playback Control ====================
 
+    getCurrentPlaylistItem() {
+        const items = Array.isArray(this.playlist?.items) ? this.playlist.items : [];
+        if (!items.length) return null;
+        if (this.currentIndex < 0 || this.currentIndex >= items.length) return null;
+        return items[this.currentIndex] || null;
+    }
+
+    applyCurrentItemMutedState() {
+        const currentItem = this.getCurrentPlaylistItem();
+        if (!currentItem) {
+            return true;
+        }
+
+        const shouldMute = currentItem.muted !== undefined
+            ? (currentItem.muted === 1 || currentItem.muted === true)
+            : true;
+
+        if (
+            window.AndroidBridge &&
+            typeof window.AndroidBridge.isPlayingNatively === 'function' &&
+            typeof window.AndroidBridge.setVideoVolume === 'function'
+        ) {
+            try {
+                const isNative = window.AndroidBridge.isPlayingNatively();
+                if (isNative) {
+                    window.AndroidBridge.setVideoVolume(shouldMute ? 0.0 : 1.0);
+                }
+            } catch (error) {
+                if (this.debug) {
+                    console.warn('[Player] applyCurrentItemMutedState native failed', error);
+                }
+            }
+        }
+
+        const webViewVideos = [this.elements.videoContent, this.elements.videoContentAlt];
+        webViewVideos.forEach((video) => {
+            if (!video) return;
+            try {
+                video.muted = shouldMute;
+            } catch (error) {}
+        });
+
+        return shouldMute;
+    }
+
+    _collectSameOriginIframeMediaNodes(iframe) {
+        if (!iframe) return [];
+        let doc = null;
+        try {
+            doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document) || null;
+        } catch (error) {
+            return [];
+        }
+        if (!doc) return [];
+        try {
+            return Array.from(doc.querySelectorAll('video, audio'));
+        } catch (error) {
+            return [];
+        }
+    }
+
+    _collectPlaybackMediaNodes() {
+        const nodes = [];
+        const seen = new Set();
+        const addNode = (node) => {
+            if (!node || seen.has(node)) return;
+            seen.add(node);
+            nodes.push(node);
+        };
+
+        addNode(this.elements.videoContent);
+        addNode(this.elements.videoContentAlt);
+
+        try {
+            document.querySelectorAll('video, audio').forEach((node) => addNode(node));
+        } catch (error) {}
+
+        [this.elements.htmlContent, this.elements.htmlContentAlt].forEach((iframe) => {
+            this._collectSameOriginIframeMediaNodes(iframe).forEach((node) => addNode(node));
+        });
+
+        return nodes;
+    }
+
+    pauseForPriceView() {
+        if (this._priceViewPauseState && this._priceViewPauseState.active) {
+            return true;
+        }
+
+        const now = Date.now();
+        const timerWasActive = !!this.contentTimer;
+        const remainingMs = timerWasActive && this._nextContentSwitchAtMs > now
+            ? (this._nextContentSwitchAtMs - now)
+            : 0;
+        const wasPlaying = this.isPlaying;
+        this.isPlaying = false;
+
+        const mediaStates = this._collectPlaybackMediaNodes().map((media) => {
+            let wasPaused = true;
+            let wasEnded = false;
+            let muted = null;
+            let volume = null;
+
+            try { wasPaused = !!media.paused; } catch (error) {}
+            try { wasEnded = !!media.ended; } catch (error) {}
+            try { muted = !!media.muted; } catch (error) {}
+            try { volume = Number(media.volume); } catch (error) {}
+            try { media.pause(); } catch (error) {}
+
+            return {
+                media,
+                wasPaused,
+                wasEnded,
+                muted,
+                volume
+            };
+        });
+
+        if (this.contentTimer) {
+            clearTimeout(this.contentTimer);
+            this.contentTimer = null;
+        }
+        this._nextContentSwitchAtMs = 0;
+
+        if (this.hasNativeVideoSupport() && window.AndroidBridge && typeof window.AndroidBridge.pauseVideoNative === 'function') {
+            try {
+                window.AndroidBridge.pauseVideoNative();
+            } catch (error) {
+                if (this.debug) {
+                    console.warn('[Player] pauseVideoNative failed', error);
+                }
+            }
+        }
+
+        this._priceViewPauseState = {
+            active: true,
+            wasPlaying,
+            timerWasActive,
+            remainingMs,
+            mediaStates
+        };
+
+        return true;
+    }
+
+    resumeFromPriceView() {
+        const state = this._priceViewPauseState;
+        if (!state || !state.active) {
+            return true;
+        }
+
+        this._priceViewPauseState = null;
+
+        if (!state.wasPlaying) {
+            return true;
+        }
+
+        this.isPlaying = true;
+
+        if (this.hasNativeVideoSupport() && window.AndroidBridge && typeof window.AndroidBridge.resumeVideoNative === 'function') {
+            try {
+                if (this.isNativePlaybackActive()) {
+                    window.AndroidBridge.resumeVideoNative();
+                }
+            } catch (error) {
+                if (this.debug) {
+                    console.warn('[Player] resumeVideoNative failed', error);
+                }
+            }
+        }
+
+        if (Array.isArray(state.mediaStates)) {
+            state.mediaStates.forEach((entry) => {
+                const media = entry && entry.media;
+                if (!media) return;
+
+                try {
+                    if (typeof entry.muted === 'boolean') {
+                        media.muted = entry.muted;
+                    }
+                } catch (error) {}
+
+                try {
+                    if (Number.isFinite(entry.volume)) {
+                        media.volume = Math.max(0, Math.min(1, entry.volume));
+                    }
+                } catch (error) {}
+
+                if (entry.wasPaused || entry.wasEnded) {
+                    try { media.pause(); } catch (error) {}
+                    return;
+                }
+
+                try {
+                    const playPromise = media.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {});
+                    }
+                } catch (error) {}
+            });
+        }
+
+        this.applyCurrentItemMutedState();
+
+        if (state.timerWasActive) {
+            const resumeInMs = Number.isFinite(state.remainingMs) ? state.remainingMs : 0;
+            if (resumeInMs > 250) {
+                this.scheduleNext(Math.max(1, resumeInMs / 1000));
+            } else {
+                this.playNext();
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Start playback
      */
@@ -5947,7 +6165,9 @@ class OmnexPlayer {
     scheduleNext(seconds) {
         if (this.contentTimer) {
             clearTimeout(this.contentTimer);
+            this.contentTimer = null;
         }
+        this._nextContentSwitchAtMs = 0;
 
         // Ensure minimum duration of 1 second to prevent instant skipping
         const duration = Math.max(1, seconds || this.config.defaultDuration);
@@ -5958,8 +6178,10 @@ class OmnexPlayer {
 
         const scheduledAt = performance.now();
         const scheduledDelayMs = duration * 1000;
+        this._nextContentSwitchAtMs = Date.now() + scheduledDelayMs;
         this.contentTimer = setTimeout(() => {
             this.contentTimer = null; // Clear timer reference before calling playNext
+            this._nextContentSwitchAtMs = 0;
             this.recordPlaybackTimerLag(performance.now() - (scheduledAt + scheduledDelayMs));
 
             // Don't immediately stop video here - let crossfade handle it.
@@ -6068,6 +6290,8 @@ class OmnexPlayer {
             clearTimeout(this.contentTimer);
             this.contentTimer = null;
         }
+        this._nextContentSwitchAtMs = 0;
+        this._priceViewPauseState = null;
 
         // âœ… PHASE 2: Stop native video playback
         if (this.hasNativeVideoSupport() && window.AndroidBridge.isPlayingNatively && window.AndroidBridge.isPlayingNatively()) {
@@ -6423,7 +6647,9 @@ class OmnexPlayer {
                     case 'resume':
                         // âœ… FIX: Playlist sync yaparak muted değişikliklerini al
                         await this.syncContent();
-                        if (!this.isPlaying) {
+                        if (this._priceViewPauseState && this._priceViewPauseState.active) {
+                            this.resumeFromPriceView();
+                        } else if (!this.isPlaying) {
                             this.startPlayback();
                         }
                         this.showNotification('Yayın Başlatıldı', {
@@ -6456,19 +6682,7 @@ class OmnexPlayer {
                         break;
 
                     case 'pause':
-                        if (this.isPlaying) {
-                            this.isPlaying = false;
-                            if (this.contentTimer) {
-                                clearTimeout(this.contentTimer);
-                            }
-                            // Pause both video elements
-                            if (this.elements.videoContent && !this.elements.videoContent.paused) {
-                                this.elements.videoContent.pause();
-                            }
-                            if (this.elements.videoContentAlt && !this.elements.videoContentAlt.paused) {
-                                this.elements.videoContentAlt.pause();
-                            }
-                        }
+                        this.pauseForPriceView();
                         this.showToast('Yayın duraklatıldı', 'info');
                         result = { success: true, status: 'paused' };
                         break;

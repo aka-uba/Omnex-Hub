@@ -2061,13 +2061,13 @@ open class MainActivity : AppCompatActivity() {
                     findViewById<FrameLayout>(R.id.priceViewOverlay)?.bringToFront()
                 }
                 priceViewOverlayManager?.onHideListener = {
-                    // Resume ALL signage media: unmute + resume playback + restart timer
-                    exoPlayerManager?.setVolume(1f)
+                    // Resume signage media; JS will restore per-item mute state.
                     exoPlayerManager?.resume()
                     webView?.evaluateJavascript(
                         "(function(){" +
-                        "document.querySelectorAll('video,audio').forEach(function(m){try{m.play();}catch(e){}});" +
                         "var p=window.OmnexPlayer;" +
+                        "if(p&&typeof p.resumeFromPriceView==='function'){try{p.resumeFromPriceView();return;}catch(e){}}" +
+                        "document.querySelectorAll('video,audio').forEach(function(m){try{m.play();}catch(e){}});" +
                         "if(p&&p._pvPaused){p._pvPaused=false;p.scheduleNext(2);}" +
                         "})()", null
                     )
@@ -2567,11 +2567,12 @@ open class MainActivity : AppCompatActivity() {
         // Mute + pause ALL signage media when barcode scanned
         exoPlayerManager?.setVolume(0f)
         exoPlayerManager?.pause()
-        // Pause all HTML5 video/audio + freeze playlist timer
+        // Pause signage runtime (full playlist + media freeze) while PriceView overlay is active.
         webView?.evaluateJavascript(
             "(function(){" +
-            "document.querySelectorAll('video,audio').forEach(function(m){try{m.pause();}catch(e){}});" +
             "var p=window.OmnexPlayer;" +
+            "if(p&&typeof p.pauseForPriceView==='function'){try{p.pauseForPriceView();return;}catch(e){}}" +
+            "document.querySelectorAll('video,audio').forEach(function(m){try{m.pause();}catch(e){}});" +
             "if(p&&p.contentTimer){clearTimeout(p.contentTimer);p._pvPaused=true;}" +
             "})()", null
         )

@@ -1,4 +1,4 @@
-{
+﻿{
     "apps":  {
                  "com.omnex.player":  {
                                           "versionCode":  51,
@@ -9,12 +9,12 @@
                                           "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
                                       },
                  "com.omnex.priceview":  {
-                                             "versionCode":  8,
-                                             "versionName":  "1.0.7",
-                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=8",
-                                             "releaseNotes":  "- Not-found overlay timeout now follows configured integration/device timeout\n- Not-found overlay close resumes signage/player flow consistently\n- HTML runtime padding tuned: narrower left/right and added bottom spacing\n- Frontend i18n cache refresh hardened for integration/device PriceView translations and template labels",
+                                             "versionCode":  9,
+                                             "versionName":  "1.0.8",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=9",
+                                             "releaseNotes":  "- PriceView overlay acildiginda signage akisi artik tam pause olur (playlist + medya)\n- Overlay kapaninca kalan sure/mute durumu korunarak guvenli resume edilir\n- HTML/same-origin iframe video-audio arka planda calisma sorunu giderildi",
                                              "mandatory":  false,
-                                             "sha256":  "8f2e3ea1ef33ab519acfad63d99e208bf9b049ca77f63711de4dc39e3ca1fb9a"
+                                             "sha256":  "2a79e4a79ca155dc508bc3a4f3f5d05b4cd34b1fb7f2728c2426a1ae5124c992"
                                          }
              },
     "versionCode":  51,
