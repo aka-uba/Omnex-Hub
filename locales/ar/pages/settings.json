@@ -45,7 +45,15 @@
             "avatarUpdated": "تم تحديث صورة الملف الشخصي",
             "avatarRemoved": "تمت إزالة صورة الملف الشخصي",
             "passwordChanged": "تم تغيير كلمة المرور بنجاح"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "المشرف الفائق",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "حفظ",
                 "syncNow": "مزامنة الآن"
+            },
+            "templates": {
+                "market": "سوبر ماركت",
+                "fashion": "أزياء / ملابس",
+                "tech": "تكنولوجيا",
+                "book": "كتب / قرطاسية",
+                "pharmacy": "صيدلية",
+                "cosmetic": "مستحضرات تجميل",
+                "restaurant": "مطعم / مقهى",
+                "sports": "رياضة",
+                "gift": "هدايا / زهور",
+                "homeware": "منسوجات منزلية",
+                "furniture": "أثاث / ديكور",
+                "toy": "ألعاب / أطفال",
+                "pet": "متجر حيوانات",
+                "produce": "خضار وفواكه",
+                "butcher": "جزار / لحوم",
+                "deli": "أطعمة فاخرة",
+                "accessory": "إكسسوارات / إلكترونيات",
+                "showroom": "صالة عرض / معرض",
+                "jewelry": "مجوهرات",
+                "optic": "بصريات / نظارات",
+                "phone": "هاتف محمول / لوحي",
+                "whitegoods": "أجهزة منزلية",
+                "hotel": "فندق / إقامة",
+                "hospital": "مستشفى / رعاية صحية",
+                "warehouse": "مستودع / لوجستيات",
+                "reception": "استقبال / ردهة",
+                "campus": "حرم جامعي / تعليم"
             }
         },
         "payment": {

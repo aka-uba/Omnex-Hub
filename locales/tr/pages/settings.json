@@ -747,6 +747,35 @@
             "buttons": {
                 "save": "Kaydet",
                 "syncNow": "Şimdi Senkronize Et"
+            },
+            "templates": {
+                "market": "Market",
+                "fashion": "Giyim / Moda",
+                "tech": "Teknoloji",
+                "book": "Kitap / Kırtasiye",
+                "pharmacy": "Eczane",
+                "cosmetic": "Kozmetik",
+                "restaurant": "Restoran / Kafe",
+                "sports": "Spor",
+                "gift": "Hediyelik / Çiçek",
+                "homeware": "Ev Tekstili",
+                "furniture": "Mobilya / Dekorasyon",
+                "toy": "Oyuncak / Çocuk",
+                "pet": "Pet Shop",
+                "produce": "Manav / Meyve-Sebze",
+                "butcher": "Kasap / Et",
+                "deli": "Şarküteri / Gurme",
+                "accessory": "Aksesuar / Elektronik",
+                "showroom": "Showroom / Galeri",
+                "jewelry": "Kuyumcu / Mücevher",
+                "optic": "Optik / Gözlük",
+                "phone": "Cep Telefonu / Tablet",
+                "whitegoods": "Beyaz Eşya",
+                "hotel": "Otel / Konaklama",
+                "hospital": "Hastane / Sağlık",
+                "warehouse": "Depo / Lojistik",
+                "reception": "Resepsiyon / Lobi",
+                "campus": "Kampüs / Eğitim"
             }
         },
         "payment": {
@@ -1240,7 +1269,6 @@
             "noGateways": "Önce bir gateway eklemelisiniz",
             "selectGateway": "Gateway seçin...",
             "gatewayHint": "Bu görsel seçilen gateway'in cihazlarında gösterilecek",
-            "noGateways": "Önce bir gateway eklemelisiniz",
             "imageType": "Görsel Tipi",
             "typeHint": "Hangi ekran boyutu/yönelim için kullanılacağını seçin",
             "file": "Görsel Dosyası",

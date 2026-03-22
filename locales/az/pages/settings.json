@@ -45,7 +45,15 @@
             "avatarUpdated": "Profil şəkli yeniləndi",
             "avatarRemoved": "Profil şəkli silindi",
             "passwordChanged": "Parol uğurla dəyişdirildi"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Super Admin",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "Yadda Saxla",
                 "syncNow": "İndi Sinxronizasiya Et"
+            },
+            "templates": {
+                "market": "Market",
+                "fashion": "Moda / Geyim",
+                "tech": "Texnologiya",
+                "book": "Kitab / Dəftərxana",
+                "pharmacy": "Aptek",
+                "cosmetic": "Kosmetika / Gözəllik",
+                "restaurant": "Restoran / Kafe",
+                "sports": "İdman",
+                "gift": "Hədiyyə / Çiçək",
+                "homeware": "Ev Tekstili",
+                "furniture": "Mebel / Dekorasiya",
+                "toy": "Oyuncaq / Uşaq",
+                "pet": "Heyvan Mağazası",
+                "produce": "Meyvə-Tərəvəz",
+                "butcher": "Qəssab / Ət",
+                "deli": "Şarküteri / Gurme",
+                "accessory": "Aksesuar / Elektronika",
+                "showroom": "Şourum / Qalereya",
+                "jewelry": "Zərgər / Zinət",
+                "optic": "Optika / Eynək",
+                "phone": "Mobil telefon / Planşet",
+                "whitegoods": "Məişət texnikası",
+                "hotel": "Otel / Qonaqlama",
+                "hospital": "Xəstəxana / Səhiyyə",
+                "warehouse": "Anbar / Logistika",
+                "reception": "Resepşn / Lobbi",
+                "campus": "Kampus / Təhsil"
             }
         },
         "payment": {

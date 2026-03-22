@@ -45,7 +45,15 @@
             "avatarUpdated": "Profielfoto bijgewerkt",
             "avatarRemoved": "Profielfoto verwijderd",
             "passwordChanged": "Wachtwoord succesvol gewijzigd"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Super beheerder",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "Opslaan",
                 "syncNow": "Nu synchroniseren"
+            },
+            "templates": {
+                "market": "Supermarkt",
+                "fashion": "Mode / Kleding",
+                "tech": "Technologie",
+                "book": "Boeken / Kantoor",
+                "pharmacy": "Apotheek",
+                "cosmetic": "Cosmetica / Beauty",
+                "restaurant": "Restaurant / Café",
+                "sports": "Sport",
+                "gift": "Cadeau / Bloemen",
+                "homeware": "Huishoudtextiel",
+                "furniture": "Meubels / Decoratie",
+                "toy": "Speelgoed / Kinderen",
+                "pet": "Dierenwinkel",
+                "produce": "Groente & Fruit",
+                "butcher": "Slagerij / Vlees",
+                "deli": "Delicatessen / Gourmet",
+                "accessory": "Accessoires / Elektronica",
+                "showroom": "Showroom / Galerie",
+                "jewelry": "Juwelier / Sieraden",
+                "optic": "Opticien / Brillen",
+                "phone": "Mobiele telefoon / Tablet",
+                "whitegoods": "Huishoudapparaten",
+                "hotel": "Hotel / Verblijf",
+                "hospital": "Ziekenhuis / Gezondheidszorg",
+                "warehouse": "Magazijn / Logistiek",
+                "reception": "Receptie / Lobby",
+                "campus": "Campus / Onderwijs"
             }
         },
         "payment": {

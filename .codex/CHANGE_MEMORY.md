@@ -7513,3 +7513,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Browser/device cache may keep old template content briefly; manual sync/refresh may be needed.
 - Backup/restore safety:
   - No additional file rewrite automation used; user-edited template files committed as-is.
+## 2026-03-22 - Re-publish themes and locale updates from latest user session
+- Request: Commit/push/pull and send latest theme + language file updates to server again.
+- Changes:
+  - `public/priceview-templates/*.html` updated and re-published.
+  - `locales/*/pages/settings.json` updated from latest session.
+  - `public/assets/js/pages/settings/IntegrationSettings.js` included with related settings UI text usage.
+  - Locale completeness fix applied for missing `profile.*` keys (`passwordTips`, `passwordTipsTitle`, `passwordTip1`, `passwordTip2`, `passwordTip3`, `quickLinks`, `notificationSettings`, `allCompanies`) across `de/fr/ru/ar/az/nl`.
+- Checks run:
+  - `node --check public/assets/js/pages/settings/IntegrationSettings.js` (OK)
+  - Locale key parity check across 8 languages for `locales/*/pages/settings.json` (OK)
+  - `php -l api\priceview\display-template.php` (OK)
+- Risk/Follow-up:
+  - Newly added locale keys for non-EN/TR were populated using EN fallback text; optional later native translation pass may be needed.
+  - Browser/device cache may require refresh/sync for immediate template text visibility.
+- Backup/restore safety:
+  - Locale backup created: `.temp-backups/locale_settings_20260322_045141/`.

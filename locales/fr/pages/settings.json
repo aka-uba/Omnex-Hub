@@ -45,7 +45,15 @@
             "avatarUpdated": "Photo de profil mise à jour",
             "avatarRemoved": "Photo de profil supprimée",
             "passwordChanged": "Mot de passe modifié avec succès"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Super Admin",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "Enregistrer",
                 "syncNow": "Synchroniser maintenant"
+            },
+            "templates": {
+                "market": "Supermarché",
+                "fashion": "Mode / Vêtements",
+                "tech": "Technologie",
+                "book": "Livres / Papeterie",
+                "pharmacy": "Pharmacie",
+                "cosmetic": "Cosmétiques / Beauté",
+                "restaurant": "Restaurant / Café",
+                "sports": "Sport",
+                "gift": "Cadeaux / Fleuriste",
+                "homeware": "Textile de maison",
+                "furniture": "Meubles / Décoration",
+                "toy": "Jouets / Enfants",
+                "pet": "Animalerie",
+                "produce": "Fruits & Légumes",
+                "butcher": "Boucherie / Viande",
+                "deli": "Traiteur / Gourmet",
+                "accessory": "Accessoires / Électronique",
+                "showroom": "Showroom / Galerie",
+                "jewelry": "Bijouterie / Joaillerie",
+                "optic": "Opticien / Lunettes",
+                "phone": "Téléphone / Tablette",
+                "whitegoods": "Électroménager",
+                "hotel": "Hôtel / Hébergement",
+                "hospital": "Hôpital / Santé",
+                "warehouse": "Entrepôt / Logistique",
+                "reception": "Réception / Hall",
+                "campus": "Campus / Éducation"
             }
         },
         "payment": {

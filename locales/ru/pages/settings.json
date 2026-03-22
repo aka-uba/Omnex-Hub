@@ -45,7 +45,15 @@
             "avatarUpdated": "Фото профиля обновлено",
             "avatarRemoved": "Фото профиля удалено",
             "passwordChanged": "Пароль успешно изменён"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Супер‑администратор",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "Сохранить",
                 "syncNow": "Синхронизировать сейчас"
+            },
+            "templates": {
+                "market": "Продуктовый магазин",
+                "fashion": "Мода / Одежда",
+                "tech": "Технологии",
+                "book": "Книги / Канцтовары",
+                "pharmacy": "Аптека",
+                "cosmetic": "Косметика / Красота",
+                "restaurant": "Ресторан / Кафе",
+                "sports": "Спорт",
+                "gift": "Подарки / Цветы",
+                "homeware": "Домашний текстиль",
+                "furniture": "Мебель / Декор",
+                "toy": "Игрушки / Детские товары",
+                "pet": "Зоомагазин",
+                "produce": "Овощи и фрукты",
+                "butcher": "Мясная лавка",
+                "deli": "Деликатесы / Гурмэ",
+                "accessory": "Аксессуары / Электроника",
+                "showroom": "Шоурум / Галерея",
+                "jewelry": "Ювелирные изделия",
+                "optic": "Оптика / Очки",
+                "phone": "Мобильный телефон / Планшет",
+                "whitegoods": "Бытовая техника",
+                "hotel": "Гостиница / Проживание",
+                "hospital": "Больница / Здоровье",
+                "warehouse": "Склад / Логистика",
+                "reception": "Ресепшен / Лобби",
+                "campus": "Кампус / Образование"
             }
         },
         "payment": {

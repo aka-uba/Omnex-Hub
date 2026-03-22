@@ -5272,7 +5272,10 @@ export class IntegrationSettingsPage {
             this.priceviewDisplayTemplates.forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.name;
-                opt.textContent = t.label || t.name;
+                // Use i18n translation if available, fallback to label/name
+                const i18nKey = `integrations.priceview.templates.${t.name}`;
+                const translated = this.__(i18nKey);
+                opt.textContent = (translated && translated !== i18nKey) ? translated : (t.label || t.name);
                 if (s.product_display_template === t.name) opt.selected = true;
                 displaySelect.appendChild(opt);
             });

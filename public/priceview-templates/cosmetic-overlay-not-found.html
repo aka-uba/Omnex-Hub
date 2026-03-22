@@ -11,7 +11,7 @@
   /* Mobile responsive */
   /* Mobile responsive - comprehensive */
   @media (max-width:768px) {
-    .pv-card { padding:0 !important; }
+    .pv-card { padding:10px !important; }
     .pv-card-inner { padding:14px !important; gap:12px !important; }
     .pv-img-area { min-width:0 !important; flex-basis:100% !important; }
     .pv-text-area { min-width:0 !important; flex-basis:100% !important; }
@@ -48,7 +48,7 @@
     .pv-grid-bottom [style*="font-size:22px"] { font-size:17px !important; }
   }
   @media (max-width:480px) {
-    .pv-card { padding:0 !important; }
+    .pv-card { padding:10px !important; }
     .pv-card-inner { padding:10px !important; gap:10px !important; }
     .pv-price { font-size:32px !important; }
     .pv-title { font-size:22px !important; }
@@ -83,7 +83,7 @@
 </style>
 </head>
 <body>
-<div class="pv-card" style="border-radius:28px;padding:0;background:linear-gradient(145deg,#4c1d95 0%,#1f2937 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
+<div class="pv-card" style="border-radius:28px;padding:16px;background:linear-gradient(145deg,#4c1d95 0%,#1f2937 100%);box-shadow:0 20px 48px rgba(0,0,0,.35);">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;"><span data-bind="company_name" style="font-size:22px;font-weight:900;color:#fff;">Firma Adı</span><span style="color:rgba(255,255,255,.25);font-size:14px;font-weight:300;">•</span><span data-bind="branch_name" style="font-size:16px;font-weight:700;color:rgba(255,255,255,.55);">Şube Adı</span></div>
         <button onclick="event.stopPropagation()" title="Kapat" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;border:none;cursor:pointer;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);color:rgba(255,255,255,.65);font-size:18px;font-weight:700;line-height:1;flex-shrink:0;">&#10005;</button>
@@ -115,15 +115,7 @@ window.PriceView = {
       document.querySelectorAll('[data-bind]').forEach(function(el) {
         var key = el.getAttribute('data-bind');
         var val = p[key];
-        if (val === undefined || val === null) return;
-        if (el.tagName === 'IMG') {
-          if (val && val.trim()) {
-            el.src = val;
-            el.style.display = 'block';
-            el.onerror = function() {
-              this.style.display = 'none';
-              var fb = document.querySelector('
-        } else {
+        if (val !== undefined && val !== null && val !== '') {
           el.textContent = val;
         }
       });

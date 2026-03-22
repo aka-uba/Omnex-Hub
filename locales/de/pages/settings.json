@@ -45,7 +45,15 @@
             "avatarUpdated": "Profilfoto aktualisiert",
             "avatarRemoved": "Profilfoto entfernt",
             "passwordChanged": "Passwort erfolgreich geändert"
-        }
+        },
+        "passwordTips": "Security Tips",
+        "passwordTipsTitle": "For a strong password:",
+        "passwordTip1": "Use at least 8 characters",
+        "passwordTip2": "Mix uppercase/lowercase letters, numbers and special characters",
+        "passwordTip3": "Don't use personal information as your password",
+        "quickLinks": "Quick Links",
+        "notificationSettings": "Notification Settings",
+        "allCompanies": "All"
     },
     "roles": {
         "SuperAdmin": "Super-Administrator",
@@ -684,6 +692,35 @@
             "buttons": {
                 "save": "Speichern",
                 "syncNow": "Jetzt synchronisieren"
+            },
+            "templates": {
+                "market": "Supermarkt",
+                "fashion": "Mode / Bekleidung",
+                "tech": "Technologie",
+                "book": "Bücher / Schreibwaren",
+                "pharmacy": "Apotheke",
+                "cosmetic": "Kosmetik / Schönheit",
+                "restaurant": "Restaurant / Café",
+                "sports": "Sport",
+                "gift": "Geschenke / Blumen",
+                "homeware": "Heimtextilien",
+                "furniture": "Möbel / Dekoration",
+                "toy": "Spielzeug / Kinder",
+                "pet": "Tierhandlung",
+                "produce": "Obst & Gemüse",
+                "butcher": "Metzgerei / Fleisch",
+                "deli": "Feinkost / Gourmet",
+                "accessory": "Zubehör / Elektronik",
+                "showroom": "Showroom / Galerie",
+                "jewelry": "Juwelier / Schmuck",
+                "optic": "Optiker / Brillen",
+                "phone": "Mobiltelefon / Tablet",
+                "whitegoods": "Haushaltsgeräte",
+                "hotel": "Hotel / Unterkunft",
+                "hospital": "Krankenhaus / Gesundheit",
+                "warehouse": "Lager / Logistik",
+                "reception": "Rezeption / Empfang",
+                "campus": "Campus / Bildung"
             }
         },
         "payment": {

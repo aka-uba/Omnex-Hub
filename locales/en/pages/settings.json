@@ -747,6 +747,35 @@
             "buttons": {
                 "save": "Save",
                 "syncNow": "Sync Now"
+            },
+            "templates": {
+                "market": "Grocery / Market",
+                "fashion": "Fashion / Clothing",
+                "tech": "Technology",
+                "book": "Books / Stationery",
+                "pharmacy": "Pharmacy",
+                "cosmetic": "Cosmetics / Beauty",
+                "restaurant": "Restaurant / Café",
+                "sports": "Sports",
+                "gift": "Gift / Flower Shop",
+                "homeware": "Home Textile",
+                "furniture": "Furniture / Décor",
+                "toy": "Toys / Kids",
+                "pet": "Pet Shop",
+                "produce": "Produce / Fruits & Vegetables",
+                "butcher": "Butcher / Meat",
+                "deli": "Deli / Gourmet",
+                "accessory": "Accessories / Electronics",
+                "showroom": "Showroom / Gallery",
+                "jewelry": "Jewelry",
+                "optic": "Optician / Eyewear",
+                "phone": "Mobile Phone / Tablet",
+                "whitegoods": "Home Appliances",
+                "hotel": "Hotel / Accommodation",
+                "hospital": "Hospital / Healthcare",
+                "warehouse": "Warehouse / Logistics",
+                "reception": "Reception / Lobby",
+                "campus": "Campus / Education"
             }
         },
         "payment": {
