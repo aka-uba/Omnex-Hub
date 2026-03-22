@@ -8257,3 +8257,19 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Template behavioral differences reflect user-provided edits and were not normalized in this step.
 - Backup/restore safety:
   - Existing `.bak_priceview_release_*` JSON backups preserved.
+## 2026-03-23 - PriceView found templates fallback icon restore + circle bg removal
+- Request: In product-found templates, restore theme fallback search icon and remove the extra circular colored fallback background; do not apply this change to notfound template.
+- Changes:
+  - Updated 28 files under `public/priceview-templates/*-view-overlay.html` (excluding `universal-notfound-view-overlay.html`):
+    - `dot.innerHTML = ''` -> `dot.innerHTML = '&#128269;'`
+    - `.pv-missing-image-dot` fallback style `background:radial-gradient(...)` -> `background:transparent`
+- Validation:
+  - Verified all 28 found templates now contain `dot.innerHTML = '&#128269;'`.
+  - Verified all 28 found templates now contain `.pv-missing-image-dot{...background:transparent...}` and no radial fallback background.
+- Checks run:
+  - `php -l index.php` (OK; generic syntax check per quick-check minimum rule)
+- Risk/Follow-up:
+  - Notfound template intentionally untouched (`universal-notfound-view-overlay.html`).
+- Backup/restore safety:
+  - Backup created: `.temp-backups/priceview_template_fallback_fix_20260323_020541/`
+  - During first attempt, encoding risk observed; files were restored from backup and reapplied using byte-preserving (Latin-1 roundtrip) edits.
