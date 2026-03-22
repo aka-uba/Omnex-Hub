@@ -9,12 +9,12 @@
                                           "sha256":  "5f968fa9447d91fdf87caf2a3213cc591c0942a8f784a771f0dcd0b53df77524"
                                       },
                  "com.omnex.priceview":  {
-                                             "versionCode":  10,
-                                             "versionName":  "1.0.9",
-                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=10",
-                                             "releaseNotes":  "- Merkezi PriceView HTML şablonlarında resim fallback düzeltildi (URL varsa ikon görünmez, yalnızca URL yoksa gösterilir)\n- Fallback ikon konumu merkezlendi, duplicate/dekoratif arka katmanlar temizlendi\n- TV açılışında bloklayan senkron config beklemesi kaldırıldı (ANR riski azaltıldı)",
+                                             "versionCode":  11,
+                                             "versionName":  "1.0.10",
+                                             "downloadUrl":  "https://hub.omnexcore.com/downloads/omnex-priceview.apk?v=11",
+                                             "releaseNotes":  "- Wizard buton/tema stili android-player ile birebir hizalandi (AppCompat tabani)\n- Splash/wizard gorsel seti ve icon paket guncellemeleri yeni APK ile yayinlandi\n- Genel PriceView stabilizasyon ve onceki duzeltmeler bu surumde toplandi",
                                              "mandatory":  false,
-                                             "sha256":  "40d59baae99c27c6e7cc991de8d5ea02ebbb26506cfb9bec6636acf8397f8f7f"
+                                             "sha256":  "e400d7563aa4f6ee9768005b16eb658a841c9170e3d02da3aee8961701b0b846"
                                          }
              },
     "versionCode":  51,

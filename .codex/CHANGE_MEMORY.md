@@ -8033,3 +8033,203 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
   - Local workspace still contains many untracked backup/tmp artifacts; not included in commit.
 - Backup/restore safety:
   - Existing temp backup directories preserved; no cleanup performed.
+## 2026-03-23 - Android launcher icon pack normalization (48/72/96/144/192)
+- Request: Remove oversized icon-pack usage in APK and regenerate launcher icons from `kutuphane/price-icon-pack-dark/price-icon-pack/icon-1024x1024.png` using real Android density sizes (mdpi..xxxhdpi), avoiding shrunken logo appearance.
+- Changes:
+  - Replaced `ic_launcher.png` and `ic_launcher_round.png` in:
+    - `Omnex-PriceView/app/src/main/res/mipmap-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}`
+    - `Omnex-PriceView/app/src/main/res/mipmap-television-{mdpi,hdpi,xhdpi,xxhdpi,xxxhdpi}`
+  - Updated adaptive icon XML to prevent foreground inset shrink effect:
+    - `Omnex-PriceView/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+    - `Omnex-PriceView/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
+    - background now uses `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round`, foreground set transparent.
+- Validation:
+  - Verified alpha bounds are full-bleed for all generated launcher icons (no inner transparent padding).
+- Checks run:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+- Risk/Follow-up:
+  - Monochrome adaptive icon remains `@drawable/ic_logo`; only color icon rendering path was changed.
+  - APK build/install was intentionally skipped per request.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/icon_resize_20260323_001809/`.
+
+## 2026-03-23 - PriceView splash animation centering/scale fix + dual-device APK install
+- Request: Fix PriceView startup splash (HTML animation too large/off-center, first icon too small/hidden), then build and install APK to both devices for testing (`192.168.1.181` and `192.168.1.77:44329`).
+- Changes:
+  - `Omnex-PriceView/app/src/main/assets/splash_animation.html`
+    - Reduced logo wrapper size from `70vmin` to `clamp(180px,42vmin,320px)`.
+    - Increased inner phase icon size from `33%` to `41%`.
+    - Removed forced hide behavior for phase-1 player icon (`display:none`), kept white icon/logo overrides.
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_mobile.xml`
+    - Reworked layout to full-screen WebView + bottom-anchored metadata block so animation center is based on full screen.
+- Build/Deploy/Test actions:
+  - Built APK: `Omnex-PriceView` `:app:assembleStandaloneDebug` (success).
+  - Installed via ADB (success):
+    - `192.168.1.181:43303`
+    - `192.168.1.77:44329`
+  - Triggered app launch on both devices with `adb shell monkey`.
+  - Verified package version on both devices: `versionName=1.0.9`, `versionCode=10`.
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - Final visual validation still needs on-device human check (splash scale/centering and phase transition feel).
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_center_fix_20260323_002932/`.- Additional checks:
+  - `./gradlew.bat :app:compileDebugKotlin` (fails by design in flavor project: ambiguous task name)
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+## 2026-03-23 - Splash compatibility fix for legacy WebView device (181)
+- Request: 181 cihazda splash iç ikonlar görünmüyor, logo parçaları Android robot/kırık görsel gibi görünüyor; mobilde düzgündü.
+- Root cause hypothesis:
+  - 181 cihazındaki WebView sürümü eski (`com.android.webview 83.0.4103.120`) ve mask/data-uri kombinasyonunda uyumsuzluk olasılığı.
+- Changes:
+  - `Omnex-PriceView/app/src/main/assets/splash_animation.html`
+    - Embedded base64 logo parçaları asset dosyalarına çıkarıldı.
+    - `<img src="data:image...">` kaynakları yerel asset dosyalarına çevrildi (`splash_logo_*.png`).
+    - Legacy uyumluluk için CSS fallback eklendi (`html.fallback-mode`): mask yoksa img katmanları doğrudan gösterilip animasyon alıyor.
+    - Mask destek tespiti eklendi (`supportsMaskImage()`); destek varsa eski mask-mode akışı, yoksa fallback-mode.
+  - Added files:
+    - `Omnex-PriceView/app/src/main/assets/splash_logo_body.png`
+    - `Omnex-PriceView/app/src/main/assets/splash_logo_slice1.png`
+    - `Omnex-PriceView/app/src/main/assets/splash_logo_slice2.png`
+    - `Omnex-PriceView/app/src/main/assets/splash_logo_slice3.png`
+- Build/Deploy/Test actions:
+  - `:app:assembleStandaloneDebug` (success)
+  - ADB install (success): `192.168.1.181:43303`, `192.168.1.77:44329`
+  - 181 cihazda launch tetiklendi ve kısa log taraması yapıldı; splash asset load hatası görünmedi.
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - 181 cihazda görsel doğrulama kullanıcı tarafında gerekli (mask-mode yerine fallback-mode devreye girmesi bekleniyor).
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_webview_compat_20260323_003543/`.
+## 2026-03-23 - Splash animation parity + launcher robot icon fix attempt
+- Request: New regressions after splash fix: mobile outer logo animation disappeared, 181 outer logo animates but inner icon does not; launcher shortcuts still show Android robot/broken icon.
+- Changes:
+  - `Omnex-PriceView/app/src/main/assets/splash_animation.html`
+    - Raised inner icon layer above slices (`.inner z-index: 8`) so inner phase icons stay visible in fallback mode.
+    - Removed initial hardcoded `animated` class from logo container.
+    - Added `startLogoAnimation()` and trigger via `requestAnimationFrame(...)` after mode setup to restart animation timeline consistently.
+    - Kept mask/fallback split; now animation start is synchronized for both paths.
+  - `Omnex-PriceView/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+    - Adaptive icon changed to `background=@color/background`, `foreground=@mipmap/ic_launcher`.
+  - `Omnex-PriceView/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
+    - Adaptive icon changed to `background=@color/background`, `foreground=@mipmap/ic_launcher_round`.
+- Build/Deploy/Test actions:
+  - `:app:assembleStandaloneDebug` (success)
+  - ADB install success: `192.168.1.181:43303`, `192.168.1.77:44329`
+  - Launch triggered on both via `adb shell monkey`.
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - Launcher icon cache on some Android launchers may require launcher/app restart (or shortcut refresh) to reflect adaptive icon XML changes.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_icon_followup_20260323_004802/`.
+## 2026-03-23 - Splash rollback + PNG pathing + TV/video path removal + inner CSS fallback
+- Request: Revert splash to earlier stable behavior, keep logo assets as PNG, and fix inner icon animation missing on 181 while outer works.
+- Changes:
+  - `Omnex-PriceView/app/src/main/assets/splash_animation.html`
+    - Reworked to use PNG logo slices explicitly (`file:///android_asset/splash_logo_*.png`).
+    - Replaced fragile SVG-based inner icon rendering with pure CSS/HTML inner phases (player + scan) for legacy WebView compatibility.
+    - Added persistent outer slice idle motion and retained timed phase animations.
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_tv.xml`
+    - TV splash layout now contains `splashWebView` (HTML path parity).
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/SplashActivity.kt`
+    - Disabled splash video path for deterministic HTML splash on TV as well.
+- Icon path policy update:
+  - Removed adaptive icon XMLs earlier in this thread to force launcher icon selection from PNG mipmap sets.
+- Build/Deploy/Test actions:
+  - Rebuilt `:app:assembleStandaloneDebug` multiple times after each fix iteration.
+  - Reinstalled APK on both devices: `192.168.1.181:43303`, `192.168.1.77:44329` (all success).
+  - Captured device screenshots for visual verification during iterations.
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - 181 device renders splash more slowly; phase timing should be verified live by user to confirm perceived animation cadence.
+- Backup/restore safety:
+  - Backups created:
+    - `.temp-backups/splash_revert_png_20260323_005449/`
+    - `.temp-backups/splash_clean_rebuild_20260323_005847/`
+    - `.temp-backups/splash_inner_css_fallback_20260323_011725/`
+## 2026-03-23 - Mobile splash SVG restore
+- Request: Mobile splash broke; restore inner icon path back to SVG-based version.
+- Changes:
+  - `Omnex-PriceView/app/src/main/assets/splash_animation.html`
+    - Restored from backup (`.temp-backups/splash_inner_css_fallback_20260323_011725/splash_animation.before_inner_css.bak`) to SVG inner icon implementation.
+- Build/Deploy/Test actions:
+  - `:app:assembleStandaloneDebug` (success)
+  - ADB install success on both devices:
+    - `192.168.1.181:43303`
+    - `192.168.1.77:44329`
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - 181 legacy WebView may still render SVG inner phases differently; mobile path restored as requested.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_svg_restore_20260323_012126/`.
+## 2026-03-23 - Splash background transparency
+- Request: Make splash background transparent (remove navy background look).
+- Changes:
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_mobile.xml`
+    - FrameLayout background -> `@android:color/transparent`
+    - splash WebView background -> `@android:color/transparent`
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_tv.xml`
+    - FrameLayout background -> `@android:color/transparent`
+    - splash WebView background -> `@android:color/transparent`
+  - `Omnex-PriceView/app/src/main/java/com/omnex/priceview/SplashActivity.kt`
+    - Removed forced navy WebView background (`setBackgroundColor(0x00000000)`).
+- Build/Deploy/Test actions:
+  - `:app:assembleStandaloneDebug` (success)
+  - ADB install success on both devices:
+    - `192.168.1.181:43303`
+    - `192.168.1.77:44329`
+- Checks run:
+  - `./gradlew.bat :app:assembleStandaloneDebug` (OK)
+- Risk/Follow-up:
+  - Since splash is transparent, underlying activity/window content may be visible depending on device compositor timing.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_transparent_20260323_012636/`.
+## 2026-03-23 - Splash uses wizard background again
+- Request: Review history and restore nice first-entry background; use wizard background in splash.
+- Findings:
+  - Wizard screens use `@drawable/wizard_mobile_background`.
+  - Splash background had been made transparent, which removed that visual layer.
+- Changes:
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_mobile.xml`
+    - Frame background set to `@drawable/wizard_mobile_background`.
+  - `Omnex-PriceView/app/src/main/res/layout/activity_splash_tv.xml`
+    - Frame background set to `@drawable/wizard_mobile_background`.
+  - Kept splash WebView background transparent so wizard gradient shows behind splash animation.
+- Build/Deploy/Test actions:
+  - `./gradlew.bat :app:compileStandaloneDebugKotlin` (OK)
+  - APK install success:
+    - `192.168.1.181:43303`
+    - `192.168.1.77:44329`
+- Risk/Follow-up:
+  - None functionally; visual fine-tuning of gradient intensity can be done in `wizard_mobile_background.xml` if needed.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/splash_use_wizard_bg_20260323_013406/`.## 2026-03-23 - Wizard style parity + PriceView 1.0.10 release/deploy
+- Request: "android-player" wizard button/styles parity in Omnex-PriceView, then full release flow (APK build, downloads copy, update.json bump, commit/push/pull, deploy).
+- Changes:
+  - `Omnex-PriceView/app/src/main/res/values/themes.xml`
+    - `Theme.OmnexPriceView` parent reverted to `Theme.AppCompat.DayNight.NoActionBar`.
+    - `Theme.OmnexPriceView.Tv` parent reverted to `Theme.AppCompat.DayNight.NoActionBar`.
+  - `Omnex-PriceView/app/build.gradle`
+    - PriceView version bumped: `versionCode 11`, `versionName "1.0.10"`.
+  - `downloads/update.json`
+  - `public/downloads/update.json`
+    - Only `apps.com.omnex.priceview` release fields updated to v11/1.0.10 + new URL and SHA256.
+  - APK artifacts refreshed by Gradle publish task:
+    - `downloads/omnex-priceview.apk`
+    - `public/downloads/omnex-priceview.apk`
+- Checks run:
+  - `./gradlew.bat publishDebugApk` (OK; includes `:app:compileStandaloneDebugKotlin` and `:app:assembleStandaloneDebug`)
+  - JSON parse checks for both `update.json` files (OK)
+  - APK metadata verified via `app/build/outputs/apk/standalone/debug/output-metadata.json` (`versionCode=11`, `versionName=1.0.10`)
+  - SHA256 verified for both published APK copies:
+    - `e400d7563aa4f6ee9768005b16eb658a841c9170e3d02da3aee8961701b0b846`
+- Risk/Follow-up:
+  - Working tree contains many unrelated untracked backup/temp files; intentionally not staged.
+  - `aapt` is unavailable on this host, so APK version confirmation used Gradle output metadata.
+- Backup/restore safety:
+  - Temp backup created before theme edit:
+    - `.temp-backups/wizard_theme_sync_20260323_014605/themes.xml.bak`

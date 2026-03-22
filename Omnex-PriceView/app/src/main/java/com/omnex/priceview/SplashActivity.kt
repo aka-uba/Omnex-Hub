@@ -75,7 +75,7 @@ class SplashActivity : AppCompatActivity() {
     private fun setupSplashWebView() {
         splashWebView = findViewById(R.id.splashWebView)
         splashWebView?.let { wv ->
-            wv.setBackgroundColor(0xFF061536.toInt())
+            wv.setBackgroundColor(0x00000000)
             wv.settings.javaScriptEnabled = true
             wv.settings.domStorageEnabled = true
             wv.settings.allowFileAccess = true
@@ -113,35 +113,11 @@ class SplashActivity : AppCompatActivity() {
 
     private fun setupVideoSplashOrAnimated() {
         videoView = findViewById(R.id.splashVideoView)
-        val videoResId = resources.getIdentifier("splash_video", "raw", packageName)
-
-        if (videoResId != 0) {
-            try {
-                val logoContainer = findViewById<View?>(R.id.splashLogoContainer)
-                logoContainer?.visibility = View.GONE
-                videoView?.visibility = View.VISIBLE
-
-                val videoUri = Uri.parse("android.resource://$packageName/$videoResId")
-                videoView?.setVideoURI(videoUri)
-                videoView?.setOnPreparedListener { mp ->
-                    if (navigationTriggered.get() || isFinishing || isDestroyed) {
-                        return@setOnPreparedListener
-                    }
-                    mp.isLooping = false
-                    mp.start()
-                }
-                videoView?.setOnCompletionListener {
-                    mainHandler.removeCallbacksAndMessages(null)
-                    checkFirstRun()
-                }
-                videoView?.setOnErrorListener { _, _, _ ->
-                    videoView?.visibility = View.GONE
-                    true
-                }
-            } catch (_: Exception) {}
-        } else {
-            videoView?.visibility = View.GONE
-        }
+        val logoContainer = findViewById<View?>(R.id.splashLogoContainer)
+        // Keep startup behavior deterministic across device types:
+        // TV devices use the same HTML splash path as mobile.
+        videoView?.visibility = View.GONE
+        logoContainer?.visibility = View.VISIBLE
     }
 
     private fun playStartupChime() {

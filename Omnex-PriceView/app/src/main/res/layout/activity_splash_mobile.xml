@@ -1,57 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mobile Splash Screen - WebView animation + title + version -->
+<!-- Mobile Splash Screen - centered WebView animation with bottom metadata -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#061536">
+    android:background="@drawable/wizard_mobile_background">
 
-    <LinearLayout
+    <WebView
+        android:id="@+id/splashWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="48dp">
 
-        <!-- Animasyonlu logo (WebView ile HTML/CSS animasyon) -->
-        <WebView
-            android:id="@+id/splashWebView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="#061536" />
-
-        <!-- Alt bilgi alanı -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/splashTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingBottom="48dp">
+            android:letterSpacing="0.02"
+            android:text="OmneX Fiyat Gör"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:visibility="invisible" />
 
-            <!-- OmneX Fiyat Gör Başlığı -->
-            <TextView
-                android:id="@+id/splashTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="OmneX Fiyat Gör"
-                android:textColor="#FFFFFF"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.02"
-                android:visibility="invisible" />
-
-            <!-- Sürüm notu -->
-            <TextView
-                android:id="@+id/splashVersionText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/splash_version_placeholder"
-                android:textColor="#9FB2D2"
-                android:textSize="13sp"
-                android:visibility="invisible" />
-
-        </LinearLayout>
-
+        <TextView
+            android:id="@+id/splashVersionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/splash_version_placeholder"
+            android:textColor="#9FB2D2"
+            android:textSize="13sp"
+            android:visibility="invisible" />
     </LinearLayout>
 
 </FrameLayout>
