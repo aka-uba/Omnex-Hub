@@ -666,6 +666,9 @@
                 "fontSize": "Lettertypegroottemultiplicator",
                 "displayMode": "Weergavemodus",
                 "displayTemplate": "Weergavesjabloon",
+                "displayTuningEnabled": "Display Tuning (L0/L1/L2/L3) Enabled",
+                "displayTuningIncludeL0": "Show L0 (Effect Off) Level",
+                "displayTuningBoostLevels": "L2/L3 Contrast Levels",
                 "printEnabled": "Afdrukken ingeschakeld",
                 "defaultPrintTemplate": "Standaard afdruksjabloon",
                 "signageEnabled": "Signage-afspelen ingeschakeld"
@@ -676,7 +679,10 @@
                 "overlayTimeout": "Hoe lang het prijsscherm wordt weergegeven na het scannen",
                 "fontSize": "1.0 = Normaal, 1.5 = Groot, 2.0 = Extra groot",
                 "displayMode": "Native = APK-layout, HTML = websjabloon",
-                "displayTemplate": "Sjabloon voor productinformatieweergave (leeg = standaard)"
+                "displayTemplate": "Sjabloon voor productinformatieweergave (leeg = standaard)",
+                "displayTuningEnabled": "When disabled, display contrast tuning levels are turned off.",
+                "displayTuningIncludeL0": "When enabled, devices can select L0 = effect off mode.",
+                "displayTuningBoostLevels": "Comma separated. Example: 1.12,1.24 (greater than 1.00, max 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

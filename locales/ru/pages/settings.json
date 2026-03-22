@@ -666,6 +666,9 @@
                 "fontSize": "Множитель размера шрифта",
                 "displayMode": "Режим отображения",
                 "displayTemplate": "Шаблон отображения",
+                "displayTuningEnabled": "Display Tuning (L0/L1/L2/L3) Enabled",
+                "displayTuningIncludeL0": "Show L0 (Effect Off) Level",
+                "displayTuningBoostLevels": "L2/L3 Contrast Levels",
                 "printEnabled": "Печать включена",
                 "defaultPrintTemplate": "Шаблон печати по умолчанию",
                 "signageEnabled": "Воспроизведение Signage включено"
@@ -676,7 +679,10 @@
                 "overlayTimeout": "Длительность отображения экрана цены после сканирования",
                 "fontSize": "1.0 = Обычный, 1.5 = Крупный, 2.0 = Очень крупный",
                 "displayMode": "Native = макет APK, HTML = веб-шаблон",
-                "displayTemplate": "Шаблон отображения информации о товаре (пусто = по умолчанию)"
+                "displayTemplate": "Шаблон отображения информации о товаре (пусто = по умолчанию)",
+                "displayTuningEnabled": "When disabled, display contrast tuning levels are turned off.",
+                "displayTuningIncludeL0": "When enabled, devices can select L0 = effect off mode.",
+                "displayTuningBoostLevels": "Comma separated. Example: 1.12,1.24 (greater than 1.00, max 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

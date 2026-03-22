@@ -1407,6 +1407,8 @@ export class DeviceDetailPage {
      */
     async preload() {
         await this.app.i18n.loadPageTranslations('devices');
+        // Load settings translations for PriceView template names (integrations.priceview.templates.*)
+        await this.app.i18n.loadPageTranslations('settings');
     }
 
     async init() {
@@ -1601,7 +1603,10 @@ export class DeviceDetailPage {
                 presets.forEach(p => {
                     const opt = document.createElement('option');
                     opt.value = p.name;
-                    opt.textContent = p.label || p.name;
+                    // Use i18n translation if available, fallback to label/name
+                    const i18nKey = `integrations.priceview.templates.${p.name}`;
+                    const translated = this.__(i18nKey);
+                    opt.textContent = (translated && translated !== i18nKey) ? translated : (p.label || p.name);
                     if ((deviceSettings.device_display_template_override || '') === p.name) {
                         opt.selected = true;
                     }

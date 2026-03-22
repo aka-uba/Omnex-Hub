@@ -721,6 +721,9 @@
                 "fontSize": "Yazı Boyutu Çarpanı",
                 "displayMode": "Görüntüleme Modu",
                 "displayTemplate": "Görüntüleme Şablonu",
+                "displayTuningEnabled": "Ekran Düzeltme (L0/L1/L2/L3) Aktif",
+                "displayTuningIncludeL0": "L0 (Etkisiz) Seviyesi Göster",
+                "displayTuningBoostLevels": "L2/L3 Kontrast Seviyeleri",
                 "printEnabled": "Yazdırma Aktif",
                 "defaultPrintTemplate": "Varsayılan Yazdırma Şablonu",
                 "signageEnabled": "Signage Yayını Aktif"
@@ -731,7 +734,10 @@
                 "overlayTimeout": "Barkod okutulduktan sonra fiyat ekranının görünme süresi",
                 "fontSize": "1.0 = Normal, 1.5 = Büyük, 2.0 = Çok Büyük",
                 "displayMode": "Native = APK tasarımı, HTML = Web şablonu",
-                "displayTemplate": "Ürün bilgisi gösterim şablonu (boş = varsayılan)"
+                "displayTemplate": "Ürün bilgisi gösterim şablonu (boş = varsayılan)",
+                "displayTuningEnabled": "Kapalıysa kontrast düzeltme seviyeleri devre dışı kalır.",
+                "displayTuningIncludeL0": "Açık olduğunda cihazda L0 = efektsiz mod seçilebilir.",
+                "displayTuningBoostLevels": "Virgülle ayırın. Örn: 1.12,1.24 (1.00 üzeri, en fazla 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

@@ -166,6 +166,7 @@ class OmnexPlayer {
         this._displayTuningSupported = false;
         this._displayTuningLevels = [];
         this._displayTuningIndex = 0;
+        this._displayTuningPolicy = null;
 
         // Dual video element ping-pong for seamless video-to-video crossfade
         this._activeVideoSlot = 'primary'; // 'primary' or 'alt'
@@ -1653,31 +1654,147 @@ class OmnexPlayer {
         }
     }
 
+    parseDisplayTuningBoolean(value, fallback = true) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return fallback;
+        }
+        if (typeof value === 'boolean') {
+            return value;
+        }
+
+        const normalized = String(value).trim().toLowerCase();
+        if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+            return true;
+        }
+        if (['0', 'false', 'no', 'off'].includes(normalized)) {
+            return false;
+        }
+
+        return fallback;
+    }
+
+    normalizeDisplayTuningPolicy(payload) {
+        if (!payload || typeof payload !== 'object') {
+            return null;
+        }
+
+        const normalizeContrast = (value) => {
+            const parsed = Number(value);
+            if (!Number.isFinite(parsed)) return null;
+            if (parsed <= 1.0) return null;
+            if (parsed > 1.30) return null;
+            return Number(parsed.toFixed(2));
+        };
+
+        let boostLevels = [];
+        if (Array.isArray(payload.boost_levels)) {
+            boostLevels = payload.boost_levels
+                .map((value) => normalizeContrast(value))
+                .filter((value) => Number.isFinite(value));
+        }
+
+        if (boostLevels.length === 0 && typeof payload.boost_levels === 'string') {
+            boostLevels = payload.boost_levels
+                .split(',')
+                .map((part) => normalizeContrast(part))
+                .filter((value) => Number.isFinite(value));
+        }
+
+        return {
+            enabled: this.parseDisplayTuningBoolean(payload.enabled, true),
+            includeL0: this.parseDisplayTuningBoolean(payload.include_l0, true),
+            boostLevels: Array.from(new Set(boostLevels)).sort((a, b) => a - b)
+        };
+    }
+
+    applyDisplayTuningPolicyFromServer(payload) {
+        const normalized = this.normalizeDisplayTuningPolicy(payload);
+        const currentSignature = JSON.stringify(this._displayTuningPolicy || null);
+        const nextSignature = JSON.stringify(normalized || null);
+        if (currentSignature === nextSignature) {
+            return;
+        }
+
+        this._displayTuningPolicy = normalized;
+        this._displayTuningInitialized = false;
+        this._displayTuningSupported = false;
+        this._displayTuningLevels = [];
+        this._displayTuningIndex = 0;
+        this.ensureDisplayTuningControlInitialized();
+    }
+
     buildDisplayTuningLevels(tuning) {
-        const baseBrightness = Number.isFinite(Number(tuning?.brightness))
-            ? Number(tuning.brightness)
-            : 1.0;
+        const parseFloatSafe = (value, fallback) => {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        };
+        const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+        const baseBrightness = parseFloatSafe(tuning?.brightness, 1.0);
+        const profileBrightness = parseFloatSafe(tuning?.profileBrightness, baseBrightness);
         const contrastEnabled = tuning?.contrastEnabled !== false;
-        const safeMaxContrast = contrastEnabled ? 1.30 : 1.0;
+        const reportedMaxContrast = parseFloatSafe(tuning?.profileMaxContrast, 1.30);
+        const safeMaxContrast = contrastEnabled
+            ? clamp(reportedMaxContrast, 1.0, 1.30)
+            : 1.0;
+        const profileContrastRaw = parseFloatSafe(tuning?.profileContrast, parseFloatSafe(tuning?.contrast, 1.0));
+        const profileContrast = clamp(profileContrastRaw, 1.0, safeMaxContrast);
+        const policy = this._displayTuningPolicy || {};
+        const tuningEnabled = policy.enabled !== false && contrastEnabled;
+        const includeL0 = policy.includeL0 !== false;
         const profileId = String(this.performanceProfile || '').trim().toLowerCase();
         const profilePresetMap = {
-            legacy: [1.00, 1.15, 1.30],
-            balanced: [1.00, 1.12, 1.24],
-            default: [1.00, 1.15, 1.30]
+            legacy: [1.15, 1.30],
+            balanced: [1.12, 1.24],
+            default: [1.15, 1.30]
         };
-        const preset = profilePresetMap[profileId] || profilePresetMap.default;
-        const contrastCandidates = preset
-            .map((value) => Number(value.toFixed(2)))
-            .filter((value) => value <= safeMaxContrast + 0.0001);
-        if (contrastCandidates.length === 0) {
-            contrastCandidates.push(1.0);
+        const epsilon = 0.0001;
+        const presetBoostLevels = Array.isArray(policy.boostLevels) && policy.boostLevels.length > 0
+            ? policy.boostLevels
+            : (profilePresetMap[profileId] || profilePresetMap.default);
+
+        const levels = [];
+        const seen = new Set();
+        const pushLevel = (mode, contrast, brightness) => {
+            const normalizedContrast = Number(clamp(contrast, 1.0, safeMaxContrast).toFixed(2));
+            if (!Number.isFinite(normalizedContrast)) return;
+            const key = normalizedContrast.toFixed(2);
+            if (seen.has(key)) return;
+            seen.add(key);
+            levels.push({
+                mode,
+                brightness: Number(brightness.toFixed(3)),
+                contrast: normalizedContrast
+            });
+        };
+
+        if (includeL0 || !tuningEnabled) {
+            pushLevel('off', 1.0, profileBrightness);
         }
-        return contrastCandidates
-            .sort((a, b) => a - b)
-            .map((contrast) => ({
-                brightness: baseBrightness,
-                contrast: Number(contrast.toFixed(2))
-            }));
+
+        if (tuningEnabled) {
+            pushLevel('profile', profileContrast, profileBrightness);
+
+            presetBoostLevels
+                .map((value) => Number(value))
+                .filter((value) => Number.isFinite(value) && value > (1.0 + epsilon))
+                .filter((value) => value <= safeMaxContrast + epsilon)
+                .sort((a, b) => a - b)
+                .forEach((value) => {
+                    pushLevel('boost', value, baseBrightness);
+                });
+        }
+
+        if (levels.length === 0) {
+            pushLevel('off', 1.0, profileBrightness);
+        }
+
+        levels.forEach((level, index) => {
+            level.label = `L${index}`;
+            level.id = level.label;
+        });
+
+        return levels;
     }
 
     syncDisplayTuningStateFromBridge() {
@@ -1727,12 +1844,11 @@ class OmnexPlayer {
         if (!indicator) return;
         const activeLevel = this._displayTuningLevels[this._displayTuningIndex];
         if (!activeLevel) {
-            indicator.textContent = 'L1';
+            indicator.textContent = 'L0';
             indicator.title = '1.00';
             return;
         }
-        const levelNo = this._displayTuningIndex + 1;
-        indicator.textContent = `L${levelNo}`;
+        indicator.textContent = activeLevel.label || `L${this._displayTuningIndex}`;
         indicator.title = activeLevel.contrast.toFixed(2);
     }
 
@@ -1750,14 +1866,26 @@ class OmnexPlayer {
         const nextIndex = (this._displayTuningIndex + 1) % levels.length;
         const nextLevel = levels[nextIndex];
         try {
-            const applied = this.androidBridge.setDisplayTuning(nextLevel.brightness, nextLevel.contrast);
+            let applied;
+            if (
+                nextLevel.mode === 'profile' &&
+                typeof this.androidBridge.clearDisplayTuningOverride === 'function'
+            ) {
+                applied = this.androidBridge.clearDisplayTuningOverride();
+                if (applied === false) {
+                    applied = this.androidBridge.setDisplayTuning(nextLevel.brightness, nextLevel.contrast);
+                }
+            } else {
+                applied = this.androidBridge.setDisplayTuning(nextLevel.brightness, nextLevel.contrast);
+            }
             if (applied === false) {
                 return;
             }
             this.syncDisplayTuningStateFromBridge();
             this.showPlayerControlsOnActivity();
             const activeLevel = this._displayTuningLevels[this._displayTuningIndex] || nextLevel;
-            this.showToast(`L${this._displayTuningIndex + 1} • ${activeLevel.contrast.toFixed(2)}`, 'info', 900);
+            const activeLabel = activeLevel.label || `L${this._displayTuningIndex}`;
+            this.showToast(`${activeLabel} • ${activeLevel.contrast.toFixed(2)}`, 'info', 900);
         } catch (error) {
             // Silent fail
         }
@@ -2753,6 +2881,8 @@ class OmnexPlayer {
                 throw new Error('Sunucudan veri alınamadı');
             }
 
+            this.applyDisplayTuningPolicyFromServer(data.display_tuning || null);
+
             this.deviceConfig = {
                 deviceId: data.device ? data.device.id : null,
                 deviceName: (data.device && data.device.name) ? data.device.name : 'Omnex Player',
@@ -3241,6 +3371,7 @@ class OmnexPlayer {
 
     pauseForPriceView() {
         if (this._priceViewPauseState && this._priceViewPauseState.active) {
+            window.__pvOverlayActive = true;
             return true;
         }
 
@@ -3296,6 +3427,7 @@ class OmnexPlayer {
             remainingMs,
             mediaStates
         };
+        window.__pvOverlayActive = true;
 
         return true;
     }
@@ -3303,10 +3435,12 @@ class OmnexPlayer {
     resumeFromPriceView() {
         const state = this._priceViewPauseState;
         if (!state || !state.active) {
+            window.__pvOverlayActive = false;
             return true;
         }
 
         this._priceViewPauseState = null;
+        window.__pvOverlayActive = false;
 
         if (!state.wasPlaying) {
             return true;
@@ -6184,6 +6318,13 @@ class OmnexPlayer {
             this._nextContentSwitchAtMs = 0;
             this.recordPlaybackTimerLag(performance.now() - (scheduledAt + scheduledDelayMs));
 
+            if (window.__pvOverlayActive || (this._priceViewPauseState && this._priceViewPauseState.active)) {
+                if (this.debug) {
+                    console.log('[Player] scheduleNext tick skipped: PriceView overlay active');
+                }
+                return;
+            }
+
             // Don't immediately stop video here - let crossfade handle it.
             // hideAllContent() in playCurrentItem will apply exit transition to video,
             // then the exit transition timeout will pause/hide it after duration.
@@ -6264,6 +6405,12 @@ class OmnexPlayer {
      * Play next item
      */
     playNext() {
+        if (window.__pvOverlayActive || (this._priceViewPauseState && this._priceViewPauseState.active)) {
+            if (this.debug) {
+                console.log('[Player] playNext blocked: PriceView overlay active');
+            }
+            return;
+        }
         if (!this.isPlaying) return;
 
         const prevIndex = this.currentIndex;
@@ -6461,6 +6608,7 @@ class OmnexPlayer {
             }
 
             const data = response.data;
+            this.applyDisplayTuningPolicyFromServer(data.display_tuning || null);
 
             if (data.playlist) {
                 const newPlaylistId = data.playlist.id;

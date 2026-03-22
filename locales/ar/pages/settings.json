@@ -666,6 +666,9 @@
                 "fontSize": "مضاعف حجم الخط",
                 "displayMode": "وضع العرض",
                 "displayTemplate": "قالب العرض",
+                "displayTuningEnabled": "Display Tuning (L0/L1/L2/L3) Enabled",
+                "displayTuningIncludeL0": "Show L0 (Effect Off) Level",
+                "displayTuningBoostLevels": "L2/L3 Contrast Levels",
                 "printEnabled": "الطباعة مفعّلة",
                 "defaultPrintTemplate": "قالب الطباعة الافتراضي",
                 "signageEnabled": "تشغيل اللافتات الرقمية مفعّل"
@@ -676,7 +679,10 @@
                 "overlayTimeout": "مدة ظهور شاشة السعر بعد المسح الضوئي",
                 "fontSize": "1.0 = عادي، 1.5 = كبير، 2.0 = كبير جداً",
                 "displayMode": "Native = تصميم APK، HTML = قالب ويب",
-                "displayTemplate": "قالب عرض معلومات المنتج (فارغ = افتراضي)"
+                "displayTemplate": "قالب عرض معلومات المنتج (فارغ = افتراضي)",
+                "displayTuningEnabled": "When disabled, display contrast tuning levels are turned off.",
+                "displayTuningIncludeL0": "When enabled, devices can select L0 = effect off mode.",
+                "displayTuningBoostLevels": "Comma separated. Example: 1.12,1.24 (greater than 1.00, max 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

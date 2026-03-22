@@ -90,7 +90,10 @@ open class MainActivity : AppCompatActivity() {
         private const val REQUEST_NOTIFICATIONS_PERMISSION = 4002
         private const val REQUEST_CAMERA_PERMISSION = 4003
         private const val NOTIFICATION_CHANNEL_ID = "omnex_player_commands"
-        private const val BARCODE_SCAN_DEBOUNCE_MS = 900L
+        private const val BARCODE_SCAN_DEBOUNCE_MS = 300L
+        private const val NEGATIVE_CACHE_TTL_MS = 3 * 60 * 1000L
+        private const val NEGATIVE_CACHE_MAX_SIZE = 256
+        private const val STARTUP_SYNC_GRACE_MS = 6000L
         private var notificationIdCounter = 1000
     }
 
@@ -126,8 +129,15 @@ open class MainActivity : AppCompatActivity() {
     private var barcodeBufferRunnable: Runnable? = null
     private var hardwareScannerReceiver: android.content.BroadcastReceiver? = null
     private val barcodeLookupInFlight = AtomicBoolean(false)
+    private val pendingBarcode = AtomicReference<String?>(null)
+    private val initialSyncTriggered = AtomicBoolean(false)
+    private val syncProgressUiInitialized = AtomicBoolean(false)
     private var lastHandledBarcode: String = ""
     private var lastHandledBarcodeAtMs: Long = 0L
+    private val negativeBarcodeCache = LinkedHashMap<String, Long>(NEGATIVE_CACHE_MAX_SIZE, 0.75f, true)
+    private val appStartElapsedMs = SystemClock.elapsedRealtime()
+    private val startupSyncHandler = android.os.Handler(Looper.getMainLooper())
+    private val startupSyncRunnable = Runnable { bootstrapInitialSync("startup_grace_expired") }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -439,7 +449,7 @@ open class MainActivity : AppCompatActivity() {
         // Already registered - no need to poll
         if (priceViewConfig?.isDeviceRegistered == true) {
             android.util.Log.i("PriceView", "Token bridge: already registered, triggering sync")
-            triggerInitialSyncIfNeeded()
+            triggerInitialSyncWithStartupGate("token_bridge_registered")
             return
         }
 
@@ -1296,6 +1306,10 @@ open class MainActivity : AppCompatActivity() {
                 showUpdateDialog(pendingInfo)
             }
         }
+
+        if (priceViewConfig?.isDeviceRegistered == true && !initialSyncTriggered.get()) {
+            triggerInitialSyncWithStartupGate("on_resume")
+        }
     }
 
     override fun onPause() {
@@ -1343,6 +1357,7 @@ open class MainActivity : AppCompatActivity() {
         priceViewOverlayManager = null
         printHelper?.dispose()
         printHelper = null
+        startupSyncHandler.removeCallbacksAndMessages(null)
         barcodeBufferHandler.removeCallbacksAndMessages(null)
 
         // Ã¢Å"â€¦ PHASE 2: Release ExoPlayer resources
@@ -1569,7 +1584,7 @@ open class MainActivity : AppCompatActivity() {
             activity.priceViewConfig?.companyId = companyId
             // Trigger initial sync now that we have a token
             activity.runOnUiThread {
-                activity.triggerInitialSyncIfNeeded()
+                activity.triggerInitialSyncWithStartupGate("token_bridge_set_device_token")
             }
         }
 
@@ -2061,16 +2076,20 @@ open class MainActivity : AppCompatActivity() {
                     findViewById<FrameLayout>(R.id.priceViewOverlay)?.bringToFront()
                 }
                 priceViewOverlayManager?.onHideListener = {
-                    // Resume signage media; JS will restore per-item mute state.
-                    exoPlayerManager?.resume()
+                    // Resume signage media from WebView runtime; native Exo was hard-stopped on scan.
                     webView?.evaluateJavascript(
                         "(function(){" +
                         "var p=window.OmnexPlayer;" +
-                        "if(p&&typeof p.resumeFromPriceView==='function'){try{p.resumeFromPriceView();return;}catch(e){}}" +
-                        "document.querySelectorAll('video,audio').forEach(function(m){try{m.play();}catch(e){}});" +
-                        "if(p&&p._pvPaused){p._pvPaused=false;p.scheduleNext(2);}" +
-                        "})()", null
-                    )
+                        "var resumedByPlayer=false;" +
+                        "if(p&&typeof p.resumeFromPriceView==='function'){try{resumedByPlayer=!!p.resumeFromPriceView();}catch(e){}}" +
+                        "if(!resumedByPlayer){" +
+                        "try{document.querySelectorAll('video,audio').forEach(function(m){try{m.play();}catch(e){}});}catch(e){}" +
+                        "if(p&&p._pvPaused){try{p._pvPaused=false;}catch(e){};try{if(typeof p.scheduleNext==='function'){p.scheduleNext(2);}}catch(e){}}" +
+                        "}" +
+                        "window.__pvOverlayActive=false;" +
+                        "return 'ok';" +
+                        "})()"
+                    , null)
                 }
                 priceViewOverlayManager?.onPrintRequested = { product -> printProduct(product) }
             }
@@ -2080,15 +2099,14 @@ open class MainActivity : AppCompatActivity() {
             // Setup UI elements first (independent of permissions)
             interceptWebViewKeyEvents()
             setupFabScanButton()
-            setupSyncProgressUI()
 
             // These may fail on some Android versions (e.g. Android 16 BroadcastReceiver restrictions)
             try { registerHardwareScannerReceivers() } catch (e: Exception) {
                 android.util.Log.w("PriceView", "Hardware scanner receivers failed (non-fatal): ${e.message}")
             }
 
-            // Trigger initial sync with progress
-            triggerInitialSyncIfNeeded()
+            // Trigger initial sync with startup guard to avoid Splash->Main focus-loss ANR.
+            triggerInitialSyncWithStartupGate("init_priceview")
 
             android.util.Log.i("PriceView", "PriceView initialized (hardware scanner + camera mode)")
         } catch (e: Exception) {
@@ -2457,6 +2475,10 @@ open class MainActivity : AppCompatActivity() {
 
     fun triggerInitialSyncIfNeeded() {
         if (priceViewConfig?.isDeviceRegistered == true) {
+            if (!initialSyncTriggered.compareAndSet(false, true)) {
+                android.util.Log.d("PriceView", "Initial sync already triggered, skipping duplicate startup call")
+                return
+            }
             val config = priceViewConfig ?: return
             val apiClient = priceViewApiClient
 
@@ -2549,6 +2571,40 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun ensureSyncProgressUiInitialized() {
+        if (syncProgressUiInitialized.compareAndSet(false, true)) {
+            setupSyncProgressUI()
+        }
+    }
+
+    private fun bootstrapInitialSync(source: String) {
+        ensureSyncProgressUiInitialized()
+        android.util.Log.i("PriceView", "Initial sync bootstrap triggered (source=$source)")
+        priceViewScope.launch(Dispatchers.Default) {
+            triggerInitialSyncIfNeeded()
+        }
+    }
+
+    private fun triggerInitialSyncWithStartupGate(source: String) {
+        if (priceViewConfig?.isDeviceRegistered != true) return
+        if (initialSyncTriggered.get()) return
+
+        val elapsed = SystemClock.elapsedRealtime() - appStartElapsedMs
+        if (elapsed < STARTUP_SYNC_GRACE_MS) {
+            val delayMs = (STARTUP_SYNC_GRACE_MS - elapsed).coerceAtLeast(300L)
+            startupSyncHandler.removeCallbacks(startupSyncRunnable)
+            startupSyncHandler.postDelayed(startupSyncRunnable, delayMs)
+            android.util.Log.i(
+                "PriceView",
+                "Deferring initial sync during startup handoff (source=$source, delay=${delayMs}ms)"
+            )
+            return
+        }
+
+        startupSyncHandler.removeCallbacks(startupSyncRunnable)
+        bootstrapInitialSync(source)
+    }
+
     fun handleBarcodeScanned(scannedBarcode: String) {
         val normalizedBarcode = scannedBarcode.trim()
         if (normalizedBarcode.isBlank()) return
@@ -2562,7 +2618,8 @@ open class MainActivity : AppCompatActivity() {
         }
 
         if (!barcodeLookupInFlight.compareAndSet(false, true)) {
-            android.util.Log.d("PriceView", "Barcode lookup already in progress, ignored: $normalizedBarcode")
+            pendingBarcode.set(normalizedBarcode)
+            android.util.Log.d("PriceView", "Barcode lookup in progress, queued latest: $normalizedBarcode")
             return
         }
 
@@ -2572,16 +2629,24 @@ open class MainActivity : AppCompatActivity() {
         val barcode = normalizedBarcode
         applyOverlayDisplayConfig()
 
-        // Mute + pause ALL signage media when barcode scanned
+        // Keep current background frame visible while overlay is active.
+        // Hard stop/hide causes background to disappear; pause preserves visual continuity.
         exoPlayerManager?.setVolume(0f)
         exoPlayerManager?.pause()
         // Pause signage runtime (full playlist + media freeze) while PriceView overlay is active.
         webView?.evaluateJavascript(
             "(function(){" +
             "var p=window.OmnexPlayer;" +
-            "if(p&&typeof p.pauseForPriceView==='function'){try{p.pauseForPriceView();return;}catch(e){}}" +
-            "document.querySelectorAll('video,audio').forEach(function(m){try{m.pause();}catch(e){}});" +
-            "if(p&&p.contentTimer){clearTimeout(p.contentTimer);p._pvPaused=true;}" +
+            "var pausedByPlayer=false;" +
+            "if(p&&typeof p.pauseForPriceView==='function'){try{pausedByPlayer=!!p.pauseForPriceView();}catch(e){}}" +
+            "try{document.querySelectorAll('video,audio').forEach(function(m){try{m.pause();}catch(e){}});}catch(e){}" +
+            "if(p){" +
+            "try{if(p.contentTimer){clearTimeout(p.contentTimer);p.contentTimer=null;}}catch(e){}" +
+            "try{p._pvPaused=true;}catch(e){}" +
+            "try{p.isPlaying=false;}catch(e){}" +
+            "}" +
+            "window.__pvOverlayActive=true;" +
+            "return pausedByPlayer?'paused':'fallback';" +
             "})()", null
         )
 
@@ -2618,14 +2683,23 @@ open class MainActivity : AppCompatActivity() {
                 } else null
 
                 if (product != null) {
+                    removeNegativeBarcodeCache(barcode)
                     priceViewOverlayManager?.show()
                     priceViewOverlayManager?.showProduct(product)
                     return@launch
                 }
 
                 if (localBundle != null) {
+                    removeNegativeBarcodeCache(barcode)
                     priceViewOverlayManager?.show()
                     priceViewOverlayManager?.showProduct(bundleToProductEntity(localBundle, barcode))
+                    return@launch
+                }
+
+                if (isNegativeBarcodeCacheHit(barcode)) {
+                    priceViewOverlayManager?.show()
+                    priceViewOverlayManager?.showNotFound(barcode)
+                    android.util.Log.d("PriceView", "Negative cache hit (skip api): $barcode")
                     return@launch
                 }
 
@@ -2635,6 +2709,7 @@ open class MainActivity : AppCompatActivity() {
                 if (productResponse?.success == true) {
                     val json = productResponse.toJson()
                     if (json != null) {
+                        removeNegativeBarcodeCache(barcode)
                         priceViewOverlayManager?.show()
                         priceViewOverlayManager?.showProduct(jsonToProductEntity(json, barcode))
                         return@launch
@@ -2648,12 +2723,14 @@ open class MainActivity : AppCompatActivity() {
                 if (bundleResponse?.success == true) {
                     val bundleJson = bundleResponse.toJson()
                     if (bundleJson != null) {
+                        removeNegativeBarcodeCache(barcode)
                         priceViewOverlayManager?.show()
                         priceViewOverlayManager?.showProduct(bundleJsonToProductEntity(bundleJson, barcode))
                         return@launch
                     }
                 }
 
+                rememberNegativeBarcodeCache(barcode)
                 priceViewOverlayManager?.show()
                 priceViewOverlayManager?.showNotFound(barcode)
             } catch (e: Exception) {
@@ -2662,7 +2739,47 @@ open class MainActivity : AppCompatActivity() {
                 priceViewOverlayManager?.showNotFound(barcode)
             } finally {
                 barcodeLookupInFlight.set(false)
+                val queued = pendingBarcode.getAndSet(null)
+                if (!queued.isNullOrBlank() && queued != barcode) {
+                    runOnUiThread { handleBarcodeScanned(queued) }
+                }
             }
+        }
+    }
+
+    private fun isNegativeBarcodeCacheHit(barcode: String): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        synchronized(negativeBarcodeCache) {
+            val iterator = negativeBarcodeCache.entries.iterator()
+            while (iterator.hasNext()) {
+                if (iterator.next().value <= now) {
+                    iterator.remove()
+                }
+            }
+
+            val expiresAt = negativeBarcodeCache[barcode] ?: return false
+            if (expiresAt <= now) {
+                negativeBarcodeCache.remove(barcode)
+                return false
+            }
+            return true
+        }
+    }
+
+    private fun rememberNegativeBarcodeCache(barcode: String) {
+        val expiresAt = SystemClock.elapsedRealtime() + NEGATIVE_CACHE_TTL_MS
+        synchronized(negativeBarcodeCache) {
+            negativeBarcodeCache[barcode] = expiresAt
+            while (negativeBarcodeCache.size > NEGATIVE_CACHE_MAX_SIZE) {
+                val oldestKey = negativeBarcodeCache.entries.firstOrNull()?.key ?: break
+                negativeBarcodeCache.remove(oldestKey)
+            }
+        }
+    }
+
+    private fun removeNegativeBarcodeCache(barcode: String) {
+        synchronized(negativeBarcodeCache) {
+            negativeBarcodeCache.remove(barcode)
         }
     }
 

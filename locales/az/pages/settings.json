@@ -666,6 +666,9 @@
                 "fontSize": "Şrift Ölçüsü Çarpanı",
                 "displayMode": "Göstərmə Rejimi",
                 "displayTemplate": "Göstərmə Şablonu",
+                "displayTuningEnabled": "Display Tuning (L0/L1/L2/L3) Enabled",
+                "displayTuningIncludeL0": "Show L0 (Effect Off) Level",
+                "displayTuningBoostLevels": "L2/L3 Contrast Levels",
                 "printEnabled": "Çap Aktiv",
                 "defaultPrintTemplate": "Standart Çap Şablonu",
                 "signageEnabled": "Signage Yayımı Aktiv"
@@ -676,7 +679,10 @@
                 "overlayTimeout": "Barkod oxudulduqdan sonra qiymət ekranının görünmə müddəti",
                 "fontSize": "1.0 = Normal, 1.5 = Böyük, 2.0 = Çox Böyük",
                 "displayMode": "Native = APK dizaynı, HTML = web şablonu",
-                "displayTemplate": "Məhsul məlumatı göstərmə şablonu (boş = standart)"
+                "displayTemplate": "Məhsul məlumatı göstərmə şablonu (boş = standart)",
+                "displayTuningEnabled": "When disabled, display contrast tuning levels are turned off.",
+                "displayTuningIncludeL0": "When enabled, devices can select L0 = effect off mode.",
+                "displayTuningBoostLevels": "Comma separated. Example: 1.12,1.24 (greater than 1.00, max 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

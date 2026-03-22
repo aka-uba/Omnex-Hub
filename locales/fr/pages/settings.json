@@ -666,6 +666,9 @@
                 "fontSize": "Multiplicateur de taille de police",
                 "displayMode": "Mode d'affichage",
                 "displayTemplate": "Modèle d'affichage",
+                "displayTuningEnabled": "Display Tuning (L0/L1/L2/L3) Enabled",
+                "displayTuningIncludeL0": "Show L0 (Effect Off) Level",
+                "displayTuningBoostLevels": "L2/L3 Contrast Levels",
                 "printEnabled": "Impression activée",
                 "defaultPrintTemplate": "Modèle d'impression par défaut",
                 "signageEnabled": "Lecture Signage activée"
@@ -676,7 +679,10 @@
                 "overlayTimeout": "Durée d'affichage de l'écran de prix après le scan",
                 "fontSize": "1.0 = Normal, 1.5 = Grand, 2.0 = Très grand",
                 "displayMode": "Native = mise en page APK, HTML = modèle web",
-                "displayTemplate": "Modèle d'affichage des informations produit (vide = par défaut)"
+                "displayTemplate": "Modèle d'affichage des informations produit (vide = par défaut)",
+                "displayTuningEnabled": "When disabled, display contrast tuning levels are turned off.",
+                "displayTuningIncludeL0": "When enabled, devices can select L0 = effect off mode.",
+                "displayTuningBoostLevels": "Comma separated. Example: 1.12,1.24 (greater than 1.00, max 1.30)."
             },
             "displayModes": {
                 "native": "Native (APK)",

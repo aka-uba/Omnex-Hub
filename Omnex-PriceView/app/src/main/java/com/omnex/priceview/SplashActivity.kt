@@ -12,25 +12,26 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
-import android.view.animation.AnimationUtils
-import android.widget.ImageView
-import android.widget.ProgressBar
+import android.webkit.WebView
 import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Splash/Landing activity.
- * Shows brand logo PNG with entrance animation + startup chime,
- * then routes to wizard or player.
+ * WebView ile HTML/CSS animasyonlu logo (HTML logo pack'ten birebir).
+ * Altında "OmneX Fiyat Gör" başlığı + sürüm notu.
  */
 class SplashActivity : AppCompatActivity() {
 
     private var videoView: VideoView? = null
-    private val splashDuration = 3200L
+    private var splashWebView: WebView? = null
+    private val splashDuration = 5500L
     private val mainHandler = Handler(Looper.getMainLooper())
     private var startupPlayer: MediaPlayer? = null
     private var hasPlayedStartupChime = false
+    private val navigationTriggered = AtomicBoolean(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,27 +43,72 @@ class SplashActivity : AppCompatActivity() {
             setupVideoSplashOrAnimated()
         } else {
             setContentView(R.layout.activity_splash_mobile)
-            findViewById<TextView?>(R.id.splashVersionText)?.let { tv ->
-                tv.text = getString(R.string.splash_version_format, BuildConfig.VERSION_NAME)
-            }
         }
 
-        // Animate logo entrance (PNG with scale + fade)
-        startLogoAnimation()
+        // Sürüm metnini ayarla
+        findViewById<TextView?>(R.id.splashVersionText)?.let { tv ->
+            tv.text = getString(R.string.splash_version_format, BuildConfig.VERSION_NAME)
+        }
 
-        // Animate progress bar + version text
-        startOtherAnimations()
+        // WebView ile HTML animasyonu yükle
+        setupSplashWebView()
 
-        // Play startup chime sound
+        // Başlık ve sürüm animasyonu
+        setupTextAnimations()
+
+        // Startup chime
         playStartupChime()
 
         enableFullscreen()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Navigate after splash duration
+        // Navigate after splash
         mainHandler.postDelayed({
             checkFirstRun()
         }, splashDuration)
+    }
+
+    /**
+     * WebView ile assets/splash_animation.html yükle.
+     * Bu HTML, logo pack'teki CSS animasyonun birebir kopyası.
+     */
+    private fun setupSplashWebView() {
+        splashWebView = findViewById(R.id.splashWebView)
+        splashWebView?.let { wv ->
+            wv.setBackgroundColor(0xFF061536.toInt())
+            wv.settings.javaScriptEnabled = true
+            wv.settings.domStorageEnabled = true
+            wv.settings.allowFileAccess = true
+            // Hardware acceleration for smooth CSS animations
+            wv.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+            wv.loadUrl("file:///android_asset/splash_animation.html")
+        }
+    }
+
+    /**
+     * Başlık ve sürüm notu kademeli görünür.
+     */
+    private fun setupTextAnimations() {
+        val titleView = findViewById<TextView?>(R.id.splashTitle)
+        val versionView = findViewById<TextView?>(R.id.splashVersionText)
+
+        // Başlık: 2sn sonra
+        titleView?.let { tv ->
+            mainHandler.postDelayed({
+                tv.visibility = View.VISIBLE
+                tv.alpha = 0f
+                tv.animate().alpha(1f).setDuration(500).start()
+            }, 2000)
+        }
+
+        // Sürüm: 2.5sn sonra
+        versionView?.let { tv ->
+            mainHandler.postDelayed({
+                tv.visibility = View.VISIBLE
+                tv.alpha = 0f
+                tv.animate().alpha(1f).setDuration(400).start()
+            }, 2500)
+        }
     }
 
     private fun setupVideoSplashOrAnimated() {
@@ -78,6 +124,9 @@ class SplashActivity : AppCompatActivity() {
                 val videoUri = Uri.parse("android.resource://$packageName/$videoResId")
                 videoView?.setVideoURI(videoUri)
                 videoView?.setOnPreparedListener { mp ->
+                    if (navigationTriggered.get() || isFinishing || isDestroyed) {
+                        return@setOnPreparedListener
+                    }
                     mp.isLooping = false
                     mp.start()
                 }
@@ -87,61 +136,20 @@ class SplashActivity : AppCompatActivity() {
                 }
                 videoView?.setOnErrorListener { _, _, _ ->
                     videoView?.visibility = View.GONE
-                    logoContainer?.visibility = View.VISIBLE
                     true
                 }
-            } catch (_: Exception) {
-                // Keep animated splash
-            }
+            } catch (_: Exception) {}
         } else {
             videoView?.visibility = View.GONE
         }
     }
 
-    /**
-     * Animate the brand logo PNG: scale up from 85% with overshoot + fade in.
-     */
-    private fun startLogoAnimation() {
-        val logoIcon = findViewById<ImageView?>(R.id.splashLogoIcon) ?: return
-        val anim = AnimationUtils.loadAnimation(this, R.anim.splash_logo_enter)
-        logoIcon.startAnimation(anim)
-        mainHandler.postDelayed({ logoIcon.alpha = 1f }, 700)
-    }
-
-    /**
-     * Animate progress bar and version text with staggered delays.
-     */
-    private fun startOtherAnimations() {
-        // ProgressBar - fade in after logo settles
-        val progress = findViewById<ProgressBar?>(R.id.splashProgress)
-        progress?.let {
-            val anim = AnimationUtils.loadAnimation(this, R.anim.splash_progress_enter)
-            it.startAnimation(anim)
-            mainHandler.postDelayed({ it.alpha = 1f }, 2100)
-        }
-
-        // Version text (mobile only) - fade in with progress
-        val versionText = findViewById<TextView?>(R.id.splashVersionText)
-        versionText?.let {
-            val anim = AnimationUtils.loadAnimation(this, R.anim.splash_progress_enter)
-            it.startAnimation(anim)
-            mainHandler.postDelayed({ it.alpha = 1f }, 2100)
-        }
-    }
-
-    /**
-     * Play startup chime from res/raw/startup_chime.ogg (or .wav).
-     * Falls back to silent if file doesn't exist.
-     */
     private fun playStartupChime() {
         if (hasPlayedStartupChime) return
         hasPlayedStartupChime = true
 
         val chimeResId = resources.getIdentifier("startup_chime", "raw", packageName)
-        if (chimeResId == 0) {
-            playLegacyTone()
-            return
-        }
+        if (chimeResId == 0) { playLegacyTone(); return }
 
         try {
             val mp = MediaPlayer.create(this, chimeResId)
@@ -156,92 +164,64 @@ class SplashActivity : AppCompatActivity() {
                 mp.setOnCompletionListener { it.release() }
                 mp.start()
                 startupPlayer = mp
-            } else {
-                playLegacyTone()
-            }
-        } catch (_: Throwable) {
-            playLegacyTone()
-        }
+            } else { playLegacyTone() }
+        } catch (_: Throwable) { playLegacyTone() }
     }
 
-    /**
-     * Legacy 3-tone beep fallback (when no chime file exists).
-     */
     private fun playLegacyTone() {
         try {
-            val tone = android.media.ToneGenerator(
-                android.media.AudioManager.STREAM_MUSIC, 78
-            )
-            mainHandler.post {
-                tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP2, 110)
-            }
-            mainHandler.postDelayed({
-                tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 135)
-            }, 120)
-            mainHandler.postDelayed({
-                tone.startTone(android.media.ToneGenerator.TONE_PROP_ACK, 240)
-            }, 290)
+            val tone = android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 78)
+            mainHandler.post { tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP2, 110) }
+            mainHandler.postDelayed({ tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 135) }, 120)
+            mainHandler.postDelayed({ tone.startTone(android.media.ToneGenerator.TONE_PROP_ACK, 240) }, 290)
             mainHandler.postDelayed({ tone.release() }, 600)
-        } catch (_: Throwable) {
-            // Ignore audio failures
-        }
+        } catch (_: Throwable) {}
     }
 
     private fun checkFirstRun() {
+        if (!navigationTriggered.compareAndSet(false, true)) return
+        mainHandler.removeCallbacksAndMessages(null)
+
         val prefs = getSharedPreferences("omnex_player", MODE_PRIVATE)
         val isFirstRun = prefs.getBoolean("first_run", true)
         val hasServerUrl = !prefs.getString("server_url", null).isNullOrBlank()
 
-        if (isFirstRun || !hasServerUrl) {
-            navigateToWizard()
-        } else {
-            navigateToPlayer()
-        }
+        if (isFirstRun || !hasServerUrl) navigateToWizard() else navigateToPlayer()
     }
 
     private fun navigateToWizard() {
+        cleanupSplashMedia()
         startActivity(Intent(this, WizardActivity::class.java))
+        @Suppress("DEPRECATION") overridePendingTransition(0, 0)
         finish()
     }
 
     private fun navigateToPlayer() {
         val isTV = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-        val intent = if (isTV) {
-            Intent(this, TvActivity::class.java)
-        } else {
-            Intent(this, MainActivity::class.java)
-        }
-        startActivity(intent)
+        cleanupSplashMedia()
+        startActivity(Intent(this, if (isTV) TvActivity::class.java else MainActivity::class.java))
+        @Suppress("DEPRECATION") overridePendingTransition(0, 0)
         finish()
     }
 
     private fun enableFullscreen() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            val controller = window.insetsController
-            if (controller != null) {
-                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else {
+            window.insetsController?.let { c ->
+                c.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                c.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } ?: run {
                 @Suppress("DEPRECATION")
-                window.decorView.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    )
+                window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
             }
         } else {
             @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                )
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_FULLSCREEN)
         }
     }
 
@@ -253,14 +233,28 @@ class SplashActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         enableFullscreen()
-        videoView?.start()
+        if (!navigationTriggered.get() && !isFinishing && !isDestroyed) {
+            videoView?.start()
+        }
+    }
+
+    private fun cleanupSplashMedia() {
+        mainHandler.removeCallbacksAndMessages(null)
+        try { splashWebView?.destroy() } catch (_: Throwable) {}
+        splashWebView = null
+        try {
+            videoView?.setOnPreparedListener(null)
+            videoView?.setOnCompletionListener(null)
+            videoView?.setOnErrorListener(null)
+            videoView?.stopPlayback()
+        } catch (_: Throwable) {}
+        videoView = null
+        try { startupPlayer?.release() } catch (_: Throwable) {}
+        startupPlayer = null
     }
 
     override fun onDestroy() {
-        mainHandler.removeCallbacksAndMessages(null)
-        startupPlayer?.release()
-        startupPlayer = null
-        videoView?.stopPlayback()
+        cleanupSplashMedia()
         super.onDestroy()
     }
 }

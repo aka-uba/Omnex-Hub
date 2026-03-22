@@ -3,7 +3,6 @@ package com.omnex.priceview.overlay
 import android.animation.ObjectAnimator
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -47,7 +46,6 @@ class PriceViewOverlayManager(
     companion object {
         private const val TAG = "PriceViewOverlay"
         private const val ANIMATION_DURATION = 380L
-        private const val DUPLICATE_RENDER_WINDOW_MS = 900L
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -60,15 +58,22 @@ class PriceViewOverlayManager(
     private var notFoundTemplateHtml: String? = null
     private var companyName: String? = null
     private var branchName: String? = null
-    private var lastRenderedProductKey: String = ""
-    private var lastRenderedProductAtMs: Long = 0L
     private val htmlUiBridge = HtmlUiBridge()
+    private val htmlRenderStates = mutableMapOf<WebView, HtmlRenderState>()
 
     val isVisible: Boolean get() = _isVisible
 
     var onShowListener: (() -> Unit)? = null
     var onHideListener: (() -> Unit)? = null
     var onPrintRequested: ((ProductEntity) -> Unit)? = null
+
+    private data class HtmlRenderState(
+        var templateSignature: String = "",
+        var isLoaded: Boolean = false,
+        var pendingPayload: JSONObject? = null,
+        var pendingAnimateOnLoad: Boolean = false,
+        var pendingIsProductTemplate: Boolean = false
+    )
 
     init {
         closeButton?.setOnClickListener { hide() }
@@ -92,11 +97,20 @@ class PriceViewOverlayManager(
         companyName: String?,
         branchName: String?
     ) {
+        val productChanged = productTemplateHtml != productHtml
+        val notFoundChanged = notFoundTemplateHtml != notFoundHtml
         productDisplayMode = if (mode == "html") "html" else "native"
         productTemplateHtml = productHtml
         notFoundTemplateHtml = notFoundHtml
         this.companyName = companyName
         this.branchName = branchName
+
+        if (productChanged) {
+            resetHtmlRenderState(productHtmlWebView)
+        }
+        if (notFoundChanged) {
+            resetHtmlRenderState(notFoundHtmlWebView)
+        }
     }
 
     /**
@@ -163,12 +177,6 @@ class PriceViewOverlayManager(
      * Show product info after successful barcode scan.
      */
     fun showProduct(product: ProductEntity) {
-        if (isDuplicateProductRender(product)) {
-            resetTimeout()
-            Log.d(TAG, "Skipping duplicate product render: ${product.barcode ?: product.sku}")
-            return
-        }
-
         currentProduct = product
         cameraPreview.visibility = View.GONE
         scanPrompt.visibility = View.GONE
@@ -285,7 +293,6 @@ class PriceViewOverlayManager(
         }
 
         val payload = buildProductPayload(product)
-        val html = applyPlaceholderBindings(htmlTemplate, payload)
 
         productCard.visibility = View.GONE
         notFoundView.visibility = View.GONE
@@ -294,7 +301,7 @@ class PriceViewOverlayManager(
 
         loadHtml(
             productHtmlWebView,
-            html,
+            htmlTemplate,
             payload,
             animateOnLoad = true,
             isProductTemplate = true
@@ -320,14 +327,12 @@ class PriceViewOverlayManager(
             put("company_name", companyName ?: "")
             put("branch_name", branchName ?: "")
         }
-        val html = applyPlaceholderBindings(htmlTemplate, payload)
-
         notFoundView.visibility = View.GONE
         productCard.visibility = View.GONE
         notFoundHtmlWebView?.visibility = View.VISIBLE
         loadHtml(
             notFoundHtmlWebView,
-            html,
+            htmlTemplate,
             payload,
             animateOnLoad = true,
             isProductTemplate = false
@@ -350,27 +355,20 @@ class PriceViewOverlayManager(
         webView.addJavascriptInterface(htmlUiBridge, "PriceViewNative")
         webView.addJavascriptInterface(htmlUiBridge, "AndroidBridge")
         webView.addJavascriptInterface(htmlUiBridge, "Android")
-        webView.visibility = View.GONE
-    }
-
-    private fun loadHtml(
-        webView: WebView?,
-        html: String,
-        payload: JSONObject,
-        animateOnLoad: Boolean,
-        isProductTemplate: Boolean
-    ) {
-        if (webView == null) return
-
-        webView.alpha = 0f
-        webView.translationY = 120f
-        webView.stopLoading()
-
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 val target = view ?: return
+                val state = htmlRenderStates[target] ?: return
+                state.isLoaded = true
+
+                val payload = state.pendingPayload ?: return
+                val animateOnLoad = state.pendingAnimateOnLoad
+                val isProductTemplate = state.pendingIsProductTemplate
+
+                state.pendingPayload = null
                 bindJsData(target, payload, isProductTemplate)
+
                 if (animateOnLoad) {
                     animateSlideUp(target)
                 } else {
@@ -379,8 +377,50 @@ class PriceViewOverlayManager(
                 }
             }
         }
-        val preparedHtml = prepareHtmlForRender(html, isProductTemplate)
+        htmlRenderStates[webView] = HtmlRenderState()
+        webView.visibility = View.GONE
+    }
+
+    private fun loadHtml(
+        webView: WebView?,
+        htmlTemplate: String,
+        payload: JSONObject,
+        animateOnLoad: Boolean,
+        isProductTemplate: Boolean
+    ) {
+        if (webView == null) return
+
+        val preparedHtml = prepareHtmlForRender(htmlTemplate, isProductTemplate)
+        val signature = "${if (isProductTemplate) "product" else "not_found"}:${preparedHtml.hashCode()}"
+        val state = htmlRenderStates.getOrPut(webView) { HtmlRenderState() }
+
+        if (state.isLoaded && state.templateSignature == signature) {
+            bindJsData(webView, payload, isProductTemplate)
+            if (animateOnLoad) {
+                animateSlideUp(webView)
+            } else {
+                webView.alpha = 1f
+                webView.translationY = 0f
+            }
+            return
+        }
+
+        webView.alpha = 0f
+        webView.translationY = 120f
+        webView.stopLoading()
+
+        state.templateSignature = signature
+        state.isLoaded = false
+        state.pendingPayload = payload
+        state.pendingAnimateOnLoad = animateOnLoad
+        state.pendingIsProductTemplate = isProductTemplate
+
         webView.loadDataWithBaseURL(null, preparedHtml, "text/html", "UTF-8", null)
+    }
+
+    private fun resetHtmlRenderState(webView: WebView?) {
+        if (webView == null) return
+        htmlRenderStates[webView] = HtmlRenderState()
     }
 
     private fun bindJsData(webView: WebView, payload: JSONObject, isProductTemplate: Boolean) {
@@ -394,6 +434,7 @@ class PriceViewOverlayManager(
               try {
                 var data = $payloadJson;
                 var __pvTemplateKind = '$templateKind';
+                var __pvExpectedImage = String((data && data.image_url) || '').trim();
 
                 var __pvStyle = document.getElementById('__pv-runtime-style');
                 if (!__pvStyle) {
@@ -428,7 +469,7 @@ class PriceViewOverlayManager(
 
                   var outer = document.createElement('div');
                   outer.setAttribute('data-pv-img-fallback', '1');
-                  outer.style.cssText = 'flex: 0.8 1 240px; display: none; justify-content: center; opacity: 1;';
+                  outer.style.cssText = 'flex: 0.8 1 240px; display: none; align-items:center; justify-content:center; opacity: 1; margin:0 auto;';
 
                   var bubble = document.createElement('div');
                   bubble.style.cssText = 'width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fed7aa 0%,#ffedd5 60%);display:flex;align-items:center;justify-content:center;font-size:90px;';
@@ -473,7 +514,11 @@ class PriceViewOverlayManager(
                     var src = (img.getAttribute('src') || '').trim();
                     var validSrc = !!src && src !== 'null' && src !== 'undefined';
                     if (!validSrc) {
-                      __pvToggleImageFallback(img, false);
+                      if (__pvExpectedImage) {
+                        __pvToggleImageFallback(img, true);
+                      } else {
+                        __pvToggleImageFallback(img, false);
+                      }
                       continue;
                     }
 
@@ -604,19 +649,55 @@ class PriceViewOverlayManager(
     }
 
     private fun resolveImageUrl(product: ProductEntity): String {
-        if (!product.imageUrl.isNullOrBlank()) {
-            return product.imageUrl
+        val preferredFromImages = resolvePreferredImageFromImages(product.images)
+        if (preferredFromImages.isNotBlank()) {
+            return preferredFromImages
+        }
+
+        val directImage = product.imageUrl.orEmpty().trim()
+        if (directImage.isNotBlank() && directImage != "null") {
+            return directImage
+        }
+
+        return ""
+    }
+
+    private fun resolvePreferredImageFromImages(rawImages: String?): String {
+        if (rawImages.isNullOrBlank()) {
+            return ""
         }
 
         return try {
-            val raw = product.images ?: return ""
-            val trimmed = raw.trim()
-            if (trimmed.startsWith("[")) {
-                val arr = org.json.JSONArray(trimmed)
-                for (i in 0 until arr.length()) {
-                    val item = arr.optString(i, "")
-                    if (item.isNotBlank() && item != "null") {
-                        return item
+            val arr = org.json.JSONArray(rawImages)
+            for (i in 0 until arr.length()) {
+                val item = arr.opt(i)
+                when (item) {
+                    is String -> {
+                        val candidate = item.trim()
+                        if (candidate.isNotBlank() && candidate != "null") {
+                            return candidate
+                        }
+                    }
+                    is JSONObject -> {
+                        val thumbCandidate = firstNonBlank(
+                            item.optString("thumbnail_url", ""),
+                            item.optString("thumbnail", ""),
+                            item.optString("thumb_url", ""),
+                            item.optString("thumb", ""),
+                            item.optString("poster_url", ""),
+                            item.optString("poster", "")
+                        )
+                        if (thumbCandidate.isNotBlank()) {
+                            return thumbCandidate
+                        }
+
+                        val urlCandidate = firstNonBlank(
+                            item.optString("url", ""),
+                            item.optString("path", "")
+                        )
+                        if (urlCandidate.isNotBlank()) {
+                            return urlCandidate
+                        }
                     }
                 }
             }
@@ -624,6 +705,16 @@ class PriceViewOverlayManager(
         } catch (_: Exception) {
             ""
         }
+    }
+
+    private fun firstNonBlank(vararg values: String): String {
+        for (value in values) {
+            val normalized = value.trim()
+            if (normalized.isNotBlank() && normalized != "null" && normalized != "undefined") {
+                return normalized
+            }
+        }
+        return ""
     }
 
     private fun applyPlaceholderBindings(templateHtml: String, payload: JSONObject): String {
@@ -736,24 +827,6 @@ class PriceViewOverlayManager(
             .setDuration(ANIMATION_DURATION)
             .setInterpolator(DecelerateInterpolator())
             .start()
-    }
-
-    private fun isDuplicateProductRender(product: ProductEntity): Boolean {
-        val key = when {
-            product.id.isNotBlank() -> product.id
-            !product.barcode.isNullOrBlank() -> product.barcode
-            !product.sku.isNullOrBlank() -> product.sku
-            else -> ""
-        }
-        if (key.isBlank()) {
-            return false
-        }
-
-        val now = SystemClock.elapsedRealtime()
-        val duplicate = key == lastRenderedProductKey && (now - lastRenderedProductAtMs) <= DUPLICATE_RENDER_WINDOW_MS
-        lastRenderedProductKey = key
-        lastRenderedProductAtMs = now
-        return duplicate
     }
 
     private inner class HtmlUiBridge {

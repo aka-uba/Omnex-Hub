@@ -494,6 +494,26 @@ class ExoPlayerManager(
     }
 
     /**
+     * Hard stop native playback for PriceView overlay and hide video surface immediately.
+     * This removes compositor load while overlay is visible.
+     */
+    fun stopAndHideForOverlay() {
+        try {
+            exoPlayer?.apply {
+                playWhenReady = false
+                stop()
+                clearMediaItems()
+            }
+            switchToWebView()
+            currentVideoUrl = null
+            Log.d(TAG, "Overlay preemption: Exo stopped and surface hidden")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during overlay preemption", e)
+            switchToWebView()
+        }
+    }
+
+    /**
      * Resume playback
      */
     fun resume() {

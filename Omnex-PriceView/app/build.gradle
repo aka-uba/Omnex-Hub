@@ -140,6 +140,9 @@ dependencies {
 
     // Material Components (FAB, BottomSheet)
     implementation 'com.google.android.material:material:1.11.0'
+
+    // Lottie Animation (splash screen)
+    implementation 'com.airbnb.android:lottie:6.3.0'
 }
 
 tasks.register('publishDebugApk') {

@@ -42,6 +42,47 @@ export class IntegrationSettingsPage {
         return this.app.i18n ? this.app.i18n.t(key, params) : key;
     }
 
+    parsePriceviewBoolSetting(value, fallback = true) {
+        if (value === null || typeof value === 'undefined' || value === '') {
+            return fallback;
+        }
+        if (typeof value === 'boolean') {
+            return value;
+        }
+
+        const normalized = String(value).trim().toLowerCase();
+        if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+            return true;
+        }
+        if (['0', 'false', 'no', 'off'].includes(normalized)) {
+            return false;
+        }
+        return fallback;
+    }
+
+    normalizePriceviewBoostLevels(value) {
+        const source = Array.isArray(value)
+            ? value
+            : String(value || '').match(/\d+(?:[.,]\d+)?/g) || [];
+
+        const levels = source
+            .map((part) => Number.parseFloat(String(part).replace(',', '.')))
+            .filter((num) => Number.isFinite(num) && num > 1.0 && num <= 1.30)
+            .map((num) => Number(num.toFixed(2)));
+
+        if (!levels.length) {
+            return [1.15, 1.30];
+        }
+
+        return Array.from(new Set(levels)).sort((a, b) => a - b);
+    }
+
+    formatPriceviewBoostLevels(value) {
+        return this.normalizePriceviewBoostLevels(value)
+            .map((num) => num.toFixed(2))
+            .join(',');
+    }
+
     /**
      * Preload translations before render
      */
@@ -5111,6 +5152,32 @@ export class IntegrationSettingsPage {
                                     </select>
                                 </div>
                                 <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.displayTuningEnabled')}</label>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pv-display-tuning-enabled" ${s.display_tuning_enabled !== false ? 'checked' : ''}>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.displayTuningEnabled')}</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.displayTuningIncludeL0')}</label>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="pv-display-tuning-include-l0" ${s.display_tuning_include_l0 !== false ? 'checked' : ''}>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.displayTuningIncludeL0')}</small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">${this.__('integrations.priceview.fields.displayTuningBoostLevels')}</label>
+                                    <input type="text" id="pv-display-tuning-boost-levels" class="form-input"
+                                        value="${this._escapeHtml(this.formatPriceviewBoostLevels(s.display_tuning_boost_levels || [1.15, 1.30]))}">
+                                    <small class="form-hint">${this.__('integrations.priceview.hints.displayTuningBoostLevels')}</small>
+                                </div>
+                                <div class="form-group">
                                     <label class="form-label">${this.__('integrations.priceview.fields.signageEnabled')}</label>
                                     <div class="flex items-center gap-2 mt-2">
                                         <label class="toggle-switch">
@@ -5230,7 +5297,12 @@ export class IntegrationSettingsPage {
                 default_template: data.priceview_default_template || '',
                 font_size_multiplier: data.priceview_font_size_multiplier || 1.0,
                 product_display_template: data.priceview_product_display_template || '',
-                product_display_mode: data.priceview_product_display_mode || 'native'
+                product_display_mode: data.priceview_product_display_mode || 'native',
+                display_tuning_enabled: this.parsePriceviewBoolSetting(data.player_display_tuning_enabled, true),
+                display_tuning_include_l0: this.parsePriceviewBoolSetting(data.player_display_tuning_include_l0, true),
+                display_tuning_boost_levels: this.normalizePriceviewBoostLevels(
+                    data.player_display_tuning_boost_levels ?? data.player_display_tuning_levels
+                )
             };
 
             // Print templates (database templates)
@@ -5281,9 +5353,12 @@ export class IntegrationSettingsPage {
         setVal('pv-overlay-timeout', s.overlay_timeout);
         setVal('pv-font-size', s.font_size_multiplier);
         setVal('pv-display-mode', s.product_display_mode || 'native');
+        setVal('pv-display-tuning-boost-levels', this.formatPriceviewBoostLevels(s.display_tuning_boost_levels || [1.15, 1.30]));
         setChecked('pv-auto-sync', s.auto_sync);
         setChecked('pv-print-enabled', s.print_enabled);
         setChecked('pv-signage-enabled', s.signage_enabled);
+        setChecked('pv-display-tuning-enabled', s.display_tuning_enabled !== false);
+        setChecked('pv-display-tuning-include-l0', s.display_tuning_include_l0 !== false);
 
         // Populate template dropdowns
         const displaySelect = document.getElementById('pv-display-template');
@@ -5366,6 +5441,9 @@ export class IntegrationSettingsPage {
                 if (input) input.value = 15;
                 Toast.warning(this.__('integrations.priceview.hints.syncIntervalMin'));
             }
+            const boostLevels = this.normalizePriceviewBoostLevels(
+                document.getElementById('pv-display-tuning-boost-levels')?.value || ''
+            );
             const settings = {
                 priceview_sync_interval: syncInterval,
                 priceview_auto_sync: document.getElementById('pv-auto-sync')?.checked ?? true,
@@ -5375,7 +5453,10 @@ export class IntegrationSettingsPage {
                 priceview_default_template: document.getElementById('pv-default-template')?.value || null,
                 priceview_font_size_multiplier: parseFloat(document.getElementById('pv-font-size')?.value) || 1.0,
                 priceview_product_display_mode: document.getElementById('pv-display-mode')?.value || 'native',
-                priceview_product_display_template: document.getElementById('pv-display-template')?.value || null
+                priceview_product_display_template: document.getElementById('pv-display-template')?.value || null,
+                player_display_tuning_enabled: document.getElementById('pv-display-tuning-enabled')?.checked ?? true,
+                player_display_tuning_include_l0: document.getElementById('pv-display-tuning-include-l0')?.checked ?? true,
+                player_display_tuning_boost_levels: boostLevels
             };
 
             const currentSettingsRes = await this.app.api.get('/settings?scope=company');

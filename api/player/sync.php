@@ -191,6 +191,96 @@ function playerBuildStableHtmlItemId(array $item): string
     return 'web_' . substr(hash('sha256', $seed), 0, 16);
 }
 
+function playerParseBooleanSetting($value, bool $fallback): bool
+{
+    if ($value === null || $value === '') {
+        return $fallback;
+    }
+
+    if (is_bool($value)) {
+        return $value;
+    }
+
+    $normalized = strtolower(trim((string)$value));
+    if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+        return true;
+    }
+    if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+        return false;
+    }
+
+    return $fallback;
+}
+
+function playerNormalizeBoostLevels($value): array
+{
+    $raw = [];
+    if (is_array($value)) {
+        $raw = $value;
+    } elseif (is_string($value) && trim($value) !== '') {
+        $raw = explode(',', $value);
+    }
+
+    $levels = [];
+    foreach ($raw as $entry) {
+        $floatVal = (float)$entry;
+        if ($floatVal <= 1.0 || $floatVal > 1.30) {
+            continue;
+        }
+        $levels[] = round($floatVal, 2);
+    }
+
+    if (empty($levels)) {
+        return [1.15, 1.30];
+    }
+
+    $levels = array_values(array_unique($levels));
+    sort($levels, SORT_NUMERIC);
+    return $levels;
+}
+
+function playerFetchDisplayTuningPolicy(Database $db, ?string $companyId): array
+{
+    $defaults = [
+        'enabled' => true,
+        'include_l0' => true,
+        'boost_levels' => [1.15, 1.30]
+    ];
+
+    if (!is_string($companyId) || trim($companyId) === '') {
+        return $defaults;
+    }
+
+    $row = $db->fetch(
+        "SELECT data
+         FROM settings
+         WHERE company_id = ? AND user_id IS NULL
+         ORDER BY updated_at DESC NULLS LAST
+         LIMIT 1",
+        [$companyId]
+    );
+
+    if (empty($row['data'])) {
+        return $defaults;
+    }
+
+    $settings = json_decode((string)$row['data'], true);
+    if (!is_array($settings)) {
+        return $defaults;
+    }
+
+    $enabled = playerParseBooleanSetting($settings['player_display_tuning_enabled'] ?? null, $defaults['enabled']);
+    $includeL0 = playerParseBooleanSetting($settings['player_display_tuning_include_l0'] ?? null, $defaults['include_l0']);
+    $boostRaw = $settings['player_display_tuning_boost_levels'] ?? ($settings['player_display_tuning_levels'] ?? null);
+    $boostLevels = playerNormalizeBoostLevels($boostRaw);
+
+    return [
+        'enabled' => $enabled,
+        'include_l0' => $includeL0,
+        'boost_levels' => $boostLevels
+    ];
+}
+
 function playerResolveMediaPlayback(array $item, array $deviceInfo, ?string $companyId, string $basePath, TranscodeQueueService $transcodeService, ?int $deviceMaxHeight): array
 {
     $fallbackUrl = playerBuildMediaUrl((string)($item['media_path'] ?? ''), $basePath);
@@ -286,6 +376,7 @@ if (!$deviceInfo) {
     Response::notFound('Device not found');
 }
 $companyId = $deviceInfo['company_id'] ?? DeviceAuthMiddleware::companyId();
+$displayTuningPolicy = playerFetchDisplayTuningPolicy($db, is_string($companyId) ? $companyId : null);
 $transcodeService = new TranscodeQueueService();
 $deviceMaxHeight = playerResolveDeviceMaxHeight($deviceInfo);
 
@@ -617,6 +708,7 @@ $response = [
     'hasUpdate' => $hasUpdate,
     'since' => $sinceDateTime,
     'serverTime' => date('Y-m-d H:i:s'),
+    'display_tuning' => $displayTuningPolicy,
     'changes' => [
         'schedule' => $scheduleChanged,
         'assignment' => $assignmentChanged,
