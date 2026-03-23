@@ -8389,4 +8389,33 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Not committed/deployed yet in this step.
 - Backup/restore safety:
-  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_card_balance_20260323_030250/`
+  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_card_balance_20260323_030250/`## 2026-03-23 - Commit/push/deploy for missing-image card balance
+- Request: Apply missing-image card height/padding balancing and deploy.
+- Git:
+  - Commit: `fc52537` - `Balance missing-image card spacing across PriceView templates`
+  - Pushed to `origin/main`.
+- Server deploy:
+  - Pulled latest on `/opt/omnex-hub`.
+  - Rebuilt/restarted app: `docker compose -f deploy/docker-compose.yml up -d --build app`.
+- Live verification (`restaurant-view-overlay.html`):
+  - `pv-img-area.pv-missing-image-mode{min-height:320px;padding:24px 0}` present.
+  - `pv-missing-image-wrap` includes `padding:24px 0;box-sizing:border-box`.
+  - `dot.innerHTML = '&#128269;'` remains unchanged.
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - None.
+- Backup/restore safety:
+  - Backup used: `.temp-backups/priceview_missing_image_card_balance_20260323_030250/`.## 2026-03-23 - Increase missing-image min-height to 360 and redeploy
+- Request: "min yüksekliði 360 yap bir daha at".
+- Changes:
+  - Updated `public/priceview-templates/*-view-overlay.html` (29 templates):
+    - `.pv-img-area.pv-missing-image-mode{min-height:320px;padding:24px 0}`
+      -> `.pv-img-area.pv-missing-image-mode{min-height:360px;padding:24px 0}`
+  - Other fallback/icon design and mobile override values left unchanged.
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Deploy required for live effect.
+- Backup/restore safety:
+  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_360_20260323_030834/`
