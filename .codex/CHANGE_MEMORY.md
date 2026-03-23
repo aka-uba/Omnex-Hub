@@ -8418,4 +8418,16 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Deploy required for live effect.
 - Backup/restore safety:
-  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_360_20260323_030834/`
+  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_360_20260323_030834/`## 2026-03-23 - Mobile <=480 missing-image min-height increased to 240
+- Request: "200 ü 240 yap" for mobile fallback card height.
+- Changes:
+  - Updated 56 template files under `public/priceview-templates/`.
+  - Replaced `min-height:200px !important; padding:14px 0 !important;`
+    with `min-height:240px !important; padding:14px 0 !important;`.
+  - Other breakpoints unchanged (`<=768:240px`, desktop: `360px`).
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Not committed/deployed yet in this step.
+- Backup/restore safety:
+  - Backup created before bulk edit: `.temp-backups/priceview_mobile_200_to_240_20260323_031205/`
