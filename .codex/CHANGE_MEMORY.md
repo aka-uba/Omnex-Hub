@@ -8372,4 +8372,21 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Changes are local now; commit/push/deploy not run in this step.
 - Backup/restore safety:
-  - Backup created before bulk edit: `.temp-backups/priceview_mobile_fallback_layout_fix_20260323_025417/`
+  - Backup created before bulk edit: `.temp-backups/priceview_mobile_fallback_layout_fix_20260323_025417/`## 2026-03-23 - Missing-image card height/padding balance for mobile overlay
+- Request: In missing-image state, ensure icon + outer fallback design stays inside image background card; equal top/bottom spacing in card.
+- Changes:
+  - Updated 56 template files under `public/priceview-templates/` (view + overlay-not-found sets).
+  - Added missing-image mode sizing class:
+    - `.pv-img-area.pv-missing-image-mode{min-height:320px;padding:24px 0}`
+    - Mobile overrides: `240px/16px` (`<=768`) and `200px/14px` (`<=480`).
+  - Updated fallback wrapper spacing:
+    - `.pv-missing-image-wrap` gains `padding:24px 0; box-sizing:border-box`.
+    - Runtime fallback wrapper inline style updated with same spacing.
+  - JS show/hide flow now toggles `pv-missing-image-mode` on `.pv-img-area` during missing-image state.
+  - Icon design/content left unchanged (`dot.innerHTML` untouched).
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Not committed/deployed yet in this step.
+- Backup/restore safety:
+  - Backup created before bulk edit: `.temp-backups/priceview_missing_image_card_balance_20260323_030250/`

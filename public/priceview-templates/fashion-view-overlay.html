@@ -40,6 +40,7 @@
     [title="Kapat"] { width:30px !important; height:30px !important; font-size:14px !important; }
     /* Fallback icon */
     .pv-missing-image-dot { width:160px !important; height:160px !important; font-size:80px !important; }
+    .pv-img-area.pv-missing-image-mode { min-height:240px !important; padding:16px 0 !important; }
     /* Print button */
     [onclick*="printSection"] { font-size:12px !important; padding:10px 14px !important; min-width:140px !important; }
     /* Grid info boxes */
@@ -60,6 +61,7 @@
     [style*="border-radius:14px"] { font-size:11px !important; padding:6px 8px !important; }
     [style*="font-size:26px"][style*="font-weight:800"] { font-size:16px !important; }
     .pv-missing-image-dot { width:120px !important; height:120px !important; font-size:60px !important; }
+    .pv-img-area.pv-missing-image-mode { min-height:200px !important; padding:14px 0 !important; }
     /* Not-found heading */
     [style*="font-size:42px"] { font-size:26px !important; }
     [style*="font-size:44px"] { font-size:26px !important; }
@@ -80,10 +82,11 @@
     [data-bind="description"] { font-size:12px !important; }
   }
   /* pv-missing-image-fallback */
-  .pv-missing-image-wrap{display:none;align-items:center;justify-content:center;flex:0.8 1 240px;width:100%;min-height:220px;position:relative;z-index:5}
+  .pv-missing-image-wrap{display:none;align-items:center;justify-content:center;flex:0.8 1 240px;width:100%;min-height:220px;position:relative;z-index:5;padding:24px 0;box-sizing:border-box}
   .pv-missing-image-wrap.active{display:flex}
   .pv-missing-image-dot{width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#fecdd3 0%,#ffe4e6 48%,rgba(255,228,230,.2) 70%);display:flex;align-items:center;justify-content:center;font-size:108px;line-height:1}
   .pv-img-area{min-height:220px}
+  .pv-img-area.pv-missing-image-mode{min-height:320px;padding:24px 0}
 </style>
 </head>
 <body>
@@ -218,7 +221,7 @@ window.PriceView = {
     if(existing){ return existing; }
     var wrap = document.createElement('div');
     wrap.className = 'pv-missing-image-wrap';
-    wrap.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30;';
+    wrap.style.cssText = 'position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:30;padding:24px 0;box-sizing:border-box;';
     var dot = document.createElement('div');
     dot.className = 'pv-missing-image-dot';
     dot.style.margin = '0 auto';
@@ -249,12 +252,15 @@ window.PriceView = {
     if(!wrap){ return; }
     wrap.classList.add('active');
     wrap.style.display = 'flex';
+    var parent = img.parentElement;
+    if(parent){ parent.classList.add('pv-missing-image-mode'); }
     img.style.display = 'none';
     img.style.visibility = 'hidden';
   }
   function showImage(img){
     var parent = img && img.parentElement;
     if(parent){
+      parent.classList.remove('pv-missing-image-mode');
       var wrap = parent.querySelector(':scope > .pv-missing-image-wrap');
       if(wrap){
         wrap.classList.remove('active');
