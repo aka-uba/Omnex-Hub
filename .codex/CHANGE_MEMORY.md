@@ -8430,4 +8430,20 @@ esolveDirectStreamUrl() generalized to honor resolver target (variant or flat), 
 - Risk/Follow-up:
   - Not committed/deployed yet in this step.
 - Backup/restore safety:
-  - Backup created before bulk edit: `.temp-backups/priceview_mobile_200_to_240_20260323_031205/`
+  - Backup created before bulk edit: `.temp-backups/priceview_mobile_200_to_240_20260323_031205/`## 2026-03-23 - Mobile found-template fallback aligned to notfound '?' layout
+- Request: On mobile, remove found-template image background card in missing-image state and align fallback icon/container position/size to notfound `?` look.
+- Changes:
+  - Updated 28 found templates: `public/priceview-templates/*-view-overlay.html` (excluding `universal-notfound-view-overlay.html`).
+  - In mobile missing-image mode (`<=768` and `<=480`):
+    - Hide image background card: `.pv-img-area.pv-missing-image-mode > div:first-child { display:none !important; }`
+    - Force notfound-like centered fallback container:
+      - `.pv-missing-image-wrap` -> `position:relative`, `width:220px`, `min-height:220px`, `padding:0`, centered.
+      - `.pv-missing-image-dot` -> `220x220`, `font-size:108px`.
+    - Missing mode area -> `min-height:260px`, `padding:0`, centered alignment.
+  - Desktop rules and icon content are unchanged.
+- Checks run:
+  - `php -l index.php` (OK)
+- Risk/Follow-up:
+  - Not committed/deployed yet in this step.
+- Backup/restore safety:
+  - Backup created: `.temp-backups/priceview_mobile_missing_match_notfound_20260323_031802/`.
